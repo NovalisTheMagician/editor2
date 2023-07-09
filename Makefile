@@ -6,7 +6,7 @@ SRC_DIR := src
 DEFINES := UNICODE _UNICODE
 INC_DIRS := $(SRC_DIR) $(INC_PATH)
 
-LIBS := m 
+LIBS := m cimgui cglm nfd SDL2 glad
 LIB_DIRS := $(LIB_GCC_PATH)
 
 CC := gcc
@@ -30,7 +30,7 @@ SRCS := $(wildcard $(SRC_DIR)/*.c)
 OBJS := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
 
 ifeq ($(OS),Windows_NT)
-    LIBS += dinput8 dxguid dxerr8 user32 gdi32 winmm imm32 ole32 oleaut32 shell32 setupapi version uuid ws2_32 Iphlpapi comctl32 gdi32 comdlg32
+    LIBS += dinput8 dxguid dxerr8 user32 gdi32 winmm imm32 ole32 oleaut32 shell32 setupapi version uuid ws2_32 Iphlpapi comctl32 gdi32 comdlg32 opengl32
     APPLICATION := $(APPLICATION).exe
     ifeq ($(CONFIG),release)
         LDFLAGS += -mwindows

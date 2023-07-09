@@ -22,7 +22,7 @@
                 "ignoreFailures": true
                 }
             ],
-            "preLaunchTask": "build editor",
+            "preLaunchTask": "build",
             "logging": {
                 "moduleLoad": false
             }
