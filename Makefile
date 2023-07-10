@@ -3,11 +3,11 @@ APPLICATION := editor
 BUILD_DIR := build
 SRC_DIR := src
 
-DEFINES := UNICODE _UNICODE
-INC_DIRS := $(SRC_DIR) $(INC_PATH)
+DEFINES := 
+INC_DIRS := $(SRC_DIR)
 
-LIBS := m cimgui cglm nfd SDL2 glad
-LIB_DIRS := $(LIB_GCC_PATH)
+LIBS := m cimgui cimgui_sdl cglm nfd SDL2 glad stdc++
+LIB_DIRS := 
 
 CC := gcc
 CCFLAGS := -Wall -std=c17 -Wstrict-prototypes
@@ -23,15 +23,11 @@ else
     CCFLAGS += -g
 endif
 
-CPPFLAGS := $(addprefix -I,$(INC_DIRS)) $(addprefix -D,$(DEFINES)) -MMD -MP
-LIB_FLAGS := $(addprefix -L,$(LIB_DIRS)) $(addprefix -l,$(LIBS))
-
-SRCS := $(wildcard $(SRC_DIR)/*.c)
-OBJS := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
-
 ifeq ($(OS),Windows_NT)
     LIBS += dinput8 dxguid dxerr8 user32 gdi32 winmm imm32 ole32 oleaut32 shell32 setupapi version uuid ws2_32 Iphlpapi comctl32 gdi32 comdlg32 opengl32
     APPLICATION := $(APPLICATION).exe
+    LIB_DIRS += $(LIB_GCC_PATH)
+    INC_DIRS += $(INC_PATH)
     ifeq ($(CONFIG),release)
         LDFLAGS += -mwindows
     else
@@ -48,6 +44,12 @@ else
     ifeq ($(UNAME_S),FreeBSD)
     endif
 endif
+
+CPPFLAGS := $(addprefix -I,$(INC_DIRS)) $(addprefix -D,$(DEFINES)) -MMD -MP
+LIB_FLAGS := $(addprefix -L,$(LIB_DIRS)) $(addprefix -l,$(LIBS))
+
+SRCS := $(wildcard $(SRC_DIR)/*.c)
+OBJS := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
 
 all: $(BUILD_DIR) $(APPLICATION)
 
@@ -68,6 +70,10 @@ clean:
 	@rm -rf $(BUILD_DIR)
 	@echo "RM $(APPLICATION)"
 	@rm -f $(APPLICATION)
+
+echo:
+	@echo "LIBS= $(LIBS)"
+	@echo "INC_DIRS= $(INC_DIRS)"
 
 -include $(OBJS:.o=.d)
 

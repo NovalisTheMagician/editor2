@@ -3,5 +3,6 @@
 *.exe
 *.dll
 *.so
+*.ini
 
 build/
