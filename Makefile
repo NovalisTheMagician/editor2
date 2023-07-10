@@ -66,10 +66,12 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c Makefile
 
 .PHONY: clean echo
 clean:
-	@echo "RM $(BUILD_DIR)"
+	@echo "RM $(BUILD_DIR)/"
 	@rm -rf $(BUILD_DIR)
 	@echo "RM $(APPLICATION)"
 	@rm -f $(APPLICATION)
+	@echo "RM ini files"
+	@rm -f *.ini
 
 echo:
 	@echo "LIBS= $(LIBS)"
