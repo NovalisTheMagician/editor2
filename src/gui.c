@@ -49,13 +49,11 @@ void SetStyle(ImGuiStyle *style)
     //style->Colors[ImGuiCol_ModalWindowDarkening]  = (ImVec4){0.20f, 0.20f, 0.20f, 0.35f};
 }
 
-static bool showMetrics = false;
-static bool showAbout = false;
-
 static void AboutWindow(bool *p_open);
-static void EditorWindow(struct EdSettings *settings);
+static void SettingsWindow(bool *p_open, struct EdState *state);
+static void ToolbarWindow(bool *p_open, struct EdState *state);
 
-bool DoGui(struct EdSettings *settings, struct Map *map)
+bool DoGui(struct EdState *state, struct Map *map)
 {
     bool doQuit = false;
     if(igBeginMainMenuBar())
@@ -78,7 +76,23 @@ bool DoGui(struct EdSettings *settings, struct Map *map)
             if(igMenuItem_Bool("Undo", "Ctrl+Z", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_Z, 0, 0)) { printf("Undo!\n"); }
             if(igMenuItem_Bool("Redo", "Ctrl+Y", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_Y, 0, 0)) { printf("Redo!\n"); }
             igSeparator();
-            if(igMenuItem_Bool("Settings", "", false, true)) {  }
+            if(igBeginMenu("Modes", true))
+            {
+                if(igMenuItem_Bool("Vertex", "", false, true)) {  }
+                if(igMenuItem_Bool("Line", "", false, true)) {  }
+                if(igMenuItem_Bool("Sector", "", false, true)) {  }
+                igEndMenu();
+            }
+            igSeparator();
+            igMenuItem_BoolPtr("Settings", "", &state->showSettings, true);
+            igEndMenu();
+        }
+
+        if(igBeginMenu("Windows", true))
+        {
+            igMenuItem_BoolPtr("Toolbar", "", &state->showToolbar, true);
+            if(igMenuItem_Bool("Textures", "", false, true)) {  }
+            if(igMenuItem_Bool("Entities", "", false, true)) {  }
             igEndMenu();
         }
 
@@ -89,21 +103,25 @@ bool DoGui(struct EdSettings *settings, struct Map *map)
 
         if(igBeginMenu("Help", true))
         {
-            if(igMenuItem_Bool("Show Metrics", "", showMetrics, true)) { showMetrics = !showMetrics; }
-            if(igMenuItem_Bool("About", "", showAbout, true)) { showAbout = !showAbout; }
+            igMenuItem_BoolPtr("Show Metrics", "", &state->showMetrics, true);
+            igMenuItem_BoolPtr("About", "", &state->showAbout, true);
             igEndMenu();
         }
 
         igEndMainMenuBar();
     }
 
-    //EditorWindow(settings);
+    if(state->showAbout)
+        AboutWindow(&state->showAbout);
 
-    if(showAbout)
-        AboutWindow(&showAbout);
+    if(state->showMetrics)
+        igShowMetricsWindow(&state->showMetrics);
 
-    if(showMetrics)
-        igShowMetricsWindow(&showMetrics);
+    if(state->showToolbar)
+        ToolbarWindow(&state->showToolbar, state);
+
+    if(state->showSettings)
+        SettingsWindow(&state->showSettings, state);
 
     return doQuit;
 }
@@ -117,42 +135,38 @@ static void AboutWindow(bool *p_open)
     }
 }
 
-static void EditorWindow(struct EdSettings *settings)
+static void SettingsWindow(bool *p_open, struct EdState *state)
 {
-    ImGuiViewport *vp = igGetMainViewport();
-    igSetNextWindowSize(vp->WorkSize, 0);
-    igSetNextWindowPos(vp->WorkPos, 0, (ImVec2){ 0, 0 });
-
-    igBegin("Editor", NULL, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus);
-    igButton("A", (ImVec2){ 24, 24 });
-    igSameLine(0, 4);
-    igButton("B", (ImVec2){ 24, 24 });
-    igSameLine(0, 4);
-    igButton("C", (ImVec2){ 24, 24 });
-    igSameLine(0, 4);
-    igButton("D", (ImVec2){ 24, 24 });
-
-    igBeginChild_ID(1000, (ImVec2){ 0, 0 }, false, 0);
-    ImVec2 clientArea;
-    igGetWindowSize(&clientArea);
-
-    ImVec2 clientPos;
-    igGetWindowPos(&clientPos);
-
-    if(igIsMouseClicked_Bool(ImGuiMouseButton_Left, false)) 
+    if(igBegin("Settings", p_open, 0))
     {
-        ImVec2 mpos;
-        igGetMousePos(&mpos);
-        int relX = (int)mpos.x - (int)clientPos.x;
-        int relY = (int)mpos.y - (int)clientPos.y;
-        
-        if(igIsWindowFocused(0) && (relX >= 0 && relX < clientArea.x && relY >= 0 && relY < clientArea.y))
-            printf("Click: %d | %d\n", relX,  relY);
+        if(igBeginTabBar("", 0))
+        {
+            if(igBeginTabItem("Game", NULL, 0))
+            {
+                igEndTabItem();
+            }
+
+            if(igBeginTabItem("Appearence", NULL, 0))
+            {
+                igEndTabItem();
+            }
+            igEndTabBar();
+        }
+        igEnd();
     }
+}
 
-    ResizeEditor(settings, clientArea.x, clientArea.y);
-    igImage((void*)(intptr_t)settings->editorColorTexture, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 0 });
-    igEndChild();
-
-    igEnd();
+static void ToolbarWindow(bool *p_open, struct EdState *state)
+{
+    if(igBegin("Toolbar", p_open, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNavFocus))
+    {
+        if(igButton("A", (ImVec2){ 24, 24 })) { igFocusWindow(NULL, 0); }
+        igSameLine(0, 4);
+        if(igButton("B", (ImVec2){ 24, 24 })) { igFocusWindow(NULL, 0); }
+        igSameLine(0, 4);
+        if(igButton("C", (ImVec2){ 24, 24 })) { igFocusWindow(NULL, 0); }
+        igSameLine(0, 4);
+        if(igButton("D", (ImVec2){ 24, 24 })) { igFocusWindow(NULL, 0); }
+        igEnd();
+    }
 }

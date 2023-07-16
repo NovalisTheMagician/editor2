@@ -8,4 +8,4 @@
 #include <cimgui.h>
 
 void SetStyle(ImGuiStyle *style);
-bool DoGui(struct EdSettings *settings, struct Map *map);
+bool DoGui(struct EdState *state, struct Map *map);

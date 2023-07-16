@@ -25,11 +25,11 @@ int EditorMain(int argc, char *argv[])
 {
     atexit(SDL_Quit);
 
-    struct EdSettings settings = { 0 };
-    if(!LoadSettings(SETTINGS_FILE, &settings))
+    struct EdState state = { 0 };
+    if(!LoadSettings(SETTINGS_FILE, &state.settings))
     {
         printf("failed to load settings from %s!\nusing default values\n", SETTINGS_FILE);
-        ResetSettings(&settings);
+        ResetSettings(&state.settings);
     }
 
     SDL_Window *window = InitSDL();
@@ -40,9 +40,11 @@ int EditorMain(int argc, char *argv[])
 
     if(!InitImgui(window, glContext)) return EXIT_FAILURE;
 
-    if(!InitEditor(&settings)) return EXIT_FAILURE;
+    if(!InitEditor(&state)) return EXIT_FAILURE;
 
     struct Map map = { 0 };
+
+    ImGuiIO *ioptr = igGetIO();
 
     SDL_Event e;
     bool quit = false;
@@ -51,8 +53,9 @@ int EditorMain(int argc, char *argv[])
         while(SDL_PollEvent(&e) > 0)
         {
             ImGui_ImplSDL2_ProcessEvent(&e);
-            if(!igIsWindowFocused(ImGuiFocusedFlags_AnyWindow))
-                HandleInputEvents(&e, &settings, &map);
+            //if(!igIsWindowFocused(ImGuiFocusedFlags_AnyWindow))
+            if(!ioptr->WantCaptureKeyboard && !ioptr->WantCaptureMouse)
+                HandleInputEvents(&e, &state, &map);
 
             switch(e.type)
             {
@@ -66,26 +69,25 @@ int EditorMain(int argc, char *argv[])
         ImGui_ImplSDL2_NewFrame();
         igNewFrame();
 
-        if(DoGui(&settings, &map))
+        if(DoGui(&state, &map))
             quit = true;
 
         igRender();
-        ImGuiIO *ioptr = igGetIO();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, (int)ioptr->DisplaySize.x, (int)ioptr->DisplaySize.y);
-        glClearColor(settings.colors[BACKGROUND][0], settings.colors[BACKGROUND][1], settings.colors[BACKGROUND][2], settings.colors[BACKGROUND][3]);
+        glClearColor(state.settings.colors[BACKGROUND][0], state.settings.colors[BACKGROUND][1], state.settings.colors[BACKGROUND][2], state.settings.colors[BACKGROUND][3]);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        RenderEditor(&settings, &map);
+        RenderEditor(&state, &map);
 
         ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
 
         SDL_GL_SwapWindow(window);
     }
 
-    SaveSettings(SETTINGS_FILE, &settings);
+    SaveSettings(SETTINGS_FILE, &state.settings);
 
-    DestroyEditor(&settings);
+    DestroyEditor(&state);
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();

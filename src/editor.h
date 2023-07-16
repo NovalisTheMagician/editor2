@@ -25,20 +25,24 @@ struct EdSettings
 
     char *gamePath;
     char *launchArguments;
+};
 
-    int editorFramebufferWidth;
-    int editorFramebufferHeight;
-    GLuint editorFramebuffer;
-    GLuint editorColorTexture;
-    GLuint editorDepthTexture;
+struct EdState
+{
+    struct EdSettings settings;
+
+    bool showMetrics;
+    bool showAbout;
+    bool showToolbar;
+    bool showSettings;
 };
 
 void ResetSettings(struct EdSettings *settings);
 bool LoadSettings(const char *settingsPath, struct EdSettings *settings);
 void SaveSettings(const char *settingsPath, const struct EdSettings *settings);
 
-bool InitEditor(struct EdSettings *settings);
-void DestroyEditor(struct EdSettings *settings);
-void ResizeEditor(struct EdSettings *settings, int width, int height);
-bool HandleInputEvents(const SDL_Event *e, struct EdSettings *settings, struct Map *map);
-void RenderEditor(const struct EdSettings *settings, const struct Map *map);
+bool InitEditor(struct EdState *state);
+void DestroyEditor(struct EdState *state);
+void ResizeEditor(struct EdState *state, int width, int height);
+bool HandleInputEvents(const SDL_Event *e, struct EdState *state, struct Map *map);
+void RenderEditor(const struct EdState *state, const struct Map *map);

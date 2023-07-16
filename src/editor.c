@@ -1,48 +1,21 @@
 #include "editor.h"
 
-bool InitEditor(struct EdSettings *settings)
+bool InitEditor(struct EdState *state)
 {
-    glCreateFramebuffers(1, &settings->editorFramebuffer);
-
+    state->showToolbar = true;
     return true;
 }
 
-void DestroyEditor(struct EdSettings *settings)
+void DestroyEditor(struct EdState *state)
 {
-    glDeleteFramebuffers(1, &settings->editorFramebuffer);
 }
 
-void ResizeEditor(struct EdSettings *settings, int width, int height)
+void ResizeEditor(struct EdState *state, int width, int height)
 {
-    if(settings->editorFramebufferWidth == width && settings->editorFramebufferHeight == height)
-        return;
-
-    if(settings->editorColorTexture > 0)
-    {
-        glDeleteTextures(1, &settings->editorColorTexture);
-        glDeleteTextures(1, &settings->editorDepthTexture);
-    }
-
-    glCreateTextures(GL_TEXTURE_2D, 1, &settings->editorColorTexture);
-    glCreateTextures(GL_TEXTURE_2D, 1, &settings->editorDepthTexture);
-
-    glTextureStorage2D(settings->editorColorTexture, 1, GL_RGBA8, width, height);
-    glTextureStorage2D(settings->editorDepthTexture, 1, GL_DEPTH24_STENCIL8, width, height);
-
-    glTextureParameteri(settings->editorColorTexture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTextureParameteri(settings->editorColorTexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glTextureParameteri(settings->editorDepthTexture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTextureParameteri(settings->editorDepthTexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glNamedFramebufferTexture(settings->editorFramebuffer, GL_COLOR_ATTACHMENT0, settings->editorColorTexture, 0);
-    glNamedFramebufferTexture(settings->editorFramebuffer, GL_DEPTH_STENCIL_ATTACHMENT, settings->editorDepthTexture, 0);
-
-    settings->editorFramebufferWidth = width;
-    settings->editorFramebufferHeight = height;
+    
 }
 
-bool HandleInputEvents(const SDL_Event *e, struct EdSettings *settings, struct Map *map)
+bool HandleInputEvents(const SDL_Event *e, struct EdState *state, struct Map *map)
 {
     switch(e->type)
     {
@@ -56,7 +29,7 @@ bool HandleInputEvents(const SDL_Event *e, struct EdSettings *settings, struct M
     return false;
 }
 
-void RenderEditor(const struct EdSettings *settings, const struct Map *map)
+void RenderEditor(const struct EdState *state, const struct Map *map)
 {
 
 }
