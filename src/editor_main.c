@@ -1,68 +1,48 @@
-#include <stdlib.h>
-#include <stdio.h>
+#include "common.h"
 
-#include <cglm/cglm.h>
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #define CIMGUI_USE_OPENGL3
 #define CIMGUI_USE_SDL2
 #include <cimgui.h>
 #include <cimgui_impl.h>
+
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 
-#include <glad2/gl.h>
+#include "editor.h"
+#include "map.h"
+#include "gui.h"
+
+#define SETTINGS_FILE "./settings.ini"
+#define DEFAULT_WINDOW_WIDTH 1600
+#define DEFAULT_WINDOW_HEIGHT 900
+
+static SDL_Window* InitSDL(void);
+static bool InitImgui(SDL_Window *window, SDL_GLContext context);
+static SDL_GLContext InitOpenGL(SDL_Window *window);
 
 int EditorMain(int argc, char *argv[])
 {
-    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
+    atexit(SDL_Quit);
+
+    struct EdSettings settings = { 0 };
+    if(!LoadSettings(SETTINGS_FILE, &settings))
     {
-        printf("failed to init sdl\n");
-        return EXIT_FAILURE;
+        printf("failed to load settings from %s!\nusing default values\n", SETTINGS_FILE);
+        ResetSettings(&settings);
     }
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+    SDL_Window *window = InitSDL();
+    if(!window) return EXIT_FAILURE;
 
-    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GLContext glContext = InitOpenGL(window);
+    if(!glContext) return EXIT_FAILURE;
 
-    SDL_Window *window = SDL_CreateWindow("Editor", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 600, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
-    if(!window)
-    {
-        printf("failed to create window\n");
-        return EXIT_FAILURE;
-    }
+    if(!InitImgui(window, glContext)) return EXIT_FAILURE;
 
-    SDL_GLContext glContext = SDL_GL_CreateContext(window);
-    SDL_GL_SetSwapInterval(1);
+    if(!InitEditor(&settings)) return EXIT_FAILURE;
 
-    igCreateContext(NULL);
-
-    ImGuiIO *ioptr = igGetIO();
-    ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-
-    ImGui_ImplSDL2_InitForOpenGL(window, glContext);
-    ImGui_ImplOpenGL3_Init("#version 460");
-
-    igStyleColorsDark(NULL);
-
-    if(!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress))
-    {
-        printf("couldn't load GL functions");
-        return EXIT_FAILURE;
-    }
-
-    SDL_GL_MakeCurrent(window, glContext);
-
-    ImVec4 clearColor;
-    clearColor.x = 0.45f;
-    clearColor.y = 0.55f;
-    clearColor.z = 0.60f;
-    clearColor.w = 1.00f;
+    struct Map map = { 0 };
 
     SDL_Event e;
     bool quit = false;
@@ -71,6 +51,9 @@ int EditorMain(int argc, char *argv[])
         while(SDL_PollEvent(&e) > 0)
         {
             ImGui_ImplSDL2_ProcessEvent(&e);
+            if(!igIsWindowFocused(ImGuiFocusedFlags_AnyWindow))
+                HandleInputEvents(&e, &settings, &map);
+
             switch(e.type)
             {
             case SDL_QUIT:
@@ -83,20 +66,26 @@ int EditorMain(int argc, char *argv[])
         ImGui_ImplSDL2_NewFrame();
         igNewFrame();
 
-        bool showDemo = true;
-        igShowDemoWindow(&showDemo);
+        if(DoGui(&settings, &map))
+            quit = true;
 
         igRender();
+        ImGuiIO *ioptr = igGetIO();
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, (int)ioptr->DisplaySize.x, (int)ioptr->DisplaySize.y);
-        glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
+        glClearColor(settings.colors[BACKGROUND][0], settings.colors[BACKGROUND][1], settings.colors[BACKGROUND][2], settings.colors[BACKGROUND][3]);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // render editor stuff
+        RenderEditor(&settings, &map);
 
         ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
 
         SDL_GL_SwapWindow(window);
     }
+
+    SaveSettings(SETTINGS_FILE, &settings);
+
+    DestroyEditor(&settings);
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();
@@ -105,6 +94,73 @@ int EditorMain(int argc, char *argv[])
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(window);
 
-    SDL_Quit();
-    return 0;
+    return EXIT_SUCCESS;
+}
+
+static SDL_Window* InitSDL(void)
+{
+    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
+    {
+        printf("failed to init sdl\n");
+        return NULL;
+    }
+
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+
+    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+
+    uint32_t flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+#ifndef _DEBUG
+    flags |= SDL_WINDOW_MAXIMIZED;
+#endif
+
+    SDL_Window *window = SDL_CreateWindow("Editor", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, flags);
+    if(!window)
+    {
+        printf("failed to create window\n");
+        return NULL;
+    }
+
+    return window;
+}
+
+static bool InitImgui(SDL_Window *window, SDL_GLContext context)
+{
+    igCreateContext(NULL);
+
+    ImGuiIO *ioptr = igGetIO();
+    ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    //ioptr->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+    ioptr->IniFilename = NULL;
+
+    ImGui_ImplSDL2_InitForOpenGL(window, context);
+    ImGui_ImplOpenGL3_Init("#version 460");
+
+    //igStyleColorsDark(NULL);
+    igStyleColorsLight(NULL);
+    //SetStyle(igGetStyle());
+
+    return true;
+}
+
+static SDL_GLContext InitOpenGL(SDL_Window *window)
+{
+    SDL_GLContext glContext = SDL_GL_CreateContext(window);
+    SDL_GL_SetSwapInterval(1);
+
+    if(!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress))
+    {
+        printf("couldn't load GL functions");
+        return NULL;
+    }
+
+    SDL_GL_MakeCurrent(window, glContext);
+    return glContext;
 }
