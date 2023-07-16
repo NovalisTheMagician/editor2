@@ -137,7 +137,7 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
     igCreateContext(NULL);
 
     ImGuiIO *ioptr = igGetIO();
-    ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    //ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     //ioptr->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     ioptr->IniFilename = NULL;
