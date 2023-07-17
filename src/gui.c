@@ -1,5 +1,7 @@
 #include "gui.h"
 
+#include <tgmath.h>
+
 void SetStyle(ImGuiStyle *style)
 {
     style->Colors[ImGuiCol_Text]                  = (ImVec4){0.00f, 0.00f, 0.00f, 1.00f};
@@ -85,13 +87,15 @@ bool DoGui(struct EdState *state, struct Map *map)
                 igEndMenu();
             }
             igSeparator();
-            igMenuItem_BoolPtr("Settings", "", &state->showSettings, true);
+            igMenuItem_BoolPtr("Editor Options", "", &state->ui.showMapSettings, true);
+            igSeparator();
+            igMenuItem_BoolPtr("Editor Options", "", &state->ui.showSettings, true);
             igEndMenu();
         }
 
         if(igBeginMenu("Windows", true))
         {
-            igMenuItem_BoolPtr("Toolbar", "", &state->showToolbar, true);
+            igMenuItem_BoolPtr("Toolbar", "", &state->ui.showToolbar, true);
             if(igMenuItem_Bool("Textures", "", false, true)) {  }
             if(igMenuItem_Bool("Entities", "", false, true)) {  }
             if(igMenuItem_Bool("3D View", "", false, true)) {  }
@@ -105,33 +109,32 @@ bool DoGui(struct EdState *state, struct Map *map)
 
         if(igBeginMenu("Help", true))
         {
-            igMenuItem_BoolPtr("Show Metrics", "", &state->showMetrics, true);
-            igMenuItem_BoolPtr("About", "", &state->showAbout, true);
+            igMenuItem_BoolPtr("About", "", &state->ui.showAbout, true);
             igEndMenu();
         }
 
         char buffer[128];
         snprintf(buffer, sizeof buffer, "%d FPS (%.4f ms)", (int)round(igGetIO()->Framerate), 1.0f / igGetIO()->Framerate);
         ImVec2 textSize;
-        igCalcTextSize(&textSize, buffer, buffer + strlen(buffer)+1, false, 0);
+        igCalcTextSize(&textSize, buffer, buffer + strlen(buffer) + 1, false, 0);
 
         igSameLine(igGetWindowWidth() - textSize.x - 4, 0);
-        igTextColored((ImVec4){ 0, 0.5f, 0.09f, 1 }, buffer);
+        igTextColored((ImVec4){ 0, 0.8f, 0.09f, 1 }, buffer);
 
         igEndMainMenuBar();
     }
 
-    if(state->showAbout)
-        AboutWindow(&state->showAbout);
+    if(state->ui.showAbout)
+        AboutWindow(&state->ui.showAbout);
 
-    if(state->showMetrics)
-        igShowMetricsWindow(&state->showMetrics);
+    if(state->ui.showMetrics)
+        igShowMetricsWindow(&state->ui.showMetrics);
 
-    if(state->showToolbar)
-        ToolbarWindow(&state->showToolbar, state);
+    if(state->ui.showToolbar)
+        ToolbarWindow(&state->ui.showToolbar, state);
 
-    if(state->showSettings)
-        SettingsWindow(&state->showSettings, state);
+    if(state->ui.showSettings)
+        SettingsWindow(&state->ui.showSettings, state);
 
     EditorWindow(NULL, state);
 
@@ -221,7 +224,7 @@ static void EditorWindow(bool *p_open, struct EdState *state)
             }
 
             ResizeEditor(state, clientArea.x, clientArea.y);
-            igImage((void*)(intptr_t)state->editorColorTexture, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 0 });
+            igImage((void*)(intptr_t)state->gl.editorColorTexture, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 0 });
         }
         igEndChild();
     }

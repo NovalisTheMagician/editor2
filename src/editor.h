@@ -31,16 +31,28 @@ struct EdState
 {
     struct EdSettings settings;
 
-    bool showMetrics;
-    bool showAbout;
-    bool showToolbar;
-    bool showSettings;
+    struct
+    {
+        bool showMetrics;
+        bool showAbout;
 
-    int editorFramebufferWidth;
-    int editorFramebufferHeight;
-    GLuint editorFramebuffer;
-    GLuint editorColorTexture;
-    GLuint editorDepthTexture;
+        bool showToolbar;
+        bool showTextures;
+        bool showEntities;
+        bool show3dView;
+
+        bool showSettings;
+        bool showMapSettings;
+    } ui;
+
+    struct
+    {
+        int editorFramebufferWidth;
+        int editorFramebufferHeight;
+        GLuint editorFramebuffer;
+        GLuint editorColorTexture;
+        GLuint editorDepthTexture;
+    } gl;
 };
 
 void ResetSettings(struct EdSettings *settings);

@@ -72,8 +72,8 @@ int EditorMain(int argc, char *argv[])
         if(DoGui(&state, &map))
             quit = true;
 
-        glBindFramebuffer(GL_FRAMEBUFFER, state.editorFramebuffer);
-        glViewport(0, 0, state.editorFramebufferWidth, state.editorFramebufferHeight);
+        glBindFramebuffer(GL_FRAMEBUFFER, state.gl.editorFramebuffer);
+        glViewport(0, 0, state.gl.editorFramebufferWidth, state.gl.editorFramebufferHeight);
         glClearColor(0, 1, 0, 1);
         glClear(GL_COLOR_BUFFER_BIT);
         RenderEditor(&state, &map);
@@ -151,8 +151,8 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
     ImGui_ImplSDL2_InitForOpenGL(window, context);
     ImGui_ImplOpenGL3_Init("#version 460");
 
-    //igStyleColorsDark(NULL);
-    igStyleColorsLight(NULL);
+    igStyleColorsDark(NULL);
+    //igStyleColorsLight(NULL);
     //SetStyle(igGetStyle());
 
     return true;
