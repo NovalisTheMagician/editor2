@@ -52,6 +52,7 @@ void SetStyle(ImGuiStyle *style)
 static void AboutWindow(bool *p_open);
 static void SettingsWindow(bool *p_open, struct EdState *state);
 static void ToolbarWindow(bool *p_open, struct EdState *state);
+static void EditorWindow(bool *p_open, struct EdState *state);
 
 bool DoGui(struct EdState *state, struct Map *map)
 {
@@ -93,6 +94,7 @@ bool DoGui(struct EdState *state, struct Map *map)
             igMenuItem_BoolPtr("Toolbar", "", &state->showToolbar, true);
             if(igMenuItem_Bool("Textures", "", false, true)) {  }
             if(igMenuItem_Bool("Entities", "", false, true)) {  }
+            if(igMenuItem_Bool("3D View", "", false, true)) {  }
             igEndMenu();
         }
 
@@ -107,6 +109,14 @@ bool DoGui(struct EdState *state, struct Map *map)
             igMenuItem_BoolPtr("About", "", &state->showAbout, true);
             igEndMenu();
         }
+
+        char buffer[128];
+        snprintf(buffer, sizeof buffer, "%d FPS (%.4f ms)", (int)round(igGetIO()->Framerate), 1.0f / igGetIO()->Framerate);
+        ImVec2 textSize;
+        igCalcTextSize(&textSize, buffer, buffer + strlen(buffer)+1, false, 0);
+
+        igSameLine(igGetWindowWidth() - textSize.x - 4, 0);
+        igTextColored((ImVec4){ 0, 0.5f, 0.09f, 1 }, buffer);
 
         igEndMainMenuBar();
     }
@@ -123,6 +133,8 @@ bool DoGui(struct EdState *state, struct Map *map)
     if(state->showSettings)
         SettingsWindow(&state->showSettings, state);
 
+    EditorWindow(NULL, state);
+
     return doQuit;
 }
 
@@ -131,8 +143,8 @@ static void AboutWindow(bool *p_open)
     if(igBegin("About", p_open, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
     {
         igText("Editor2\nA map editor for the WeekRPG project\nMade by Novalis");
-        igEnd();
     }
+    igEnd();
 }
 
 static void SettingsWindow(bool *p_open, struct EdState *state)
@@ -143,17 +155,17 @@ static void SettingsWindow(bool *p_open, struct EdState *state)
         {
             if(igBeginTabItem("Game", NULL, 0))
             {
-                igEndTabItem();
             }
+            igEndTabItem();
 
             if(igBeginTabItem("Appearence", NULL, 0))
             {
-                igEndTabItem();
             }
-            igEndTabBar();
+            igEndTabItem();
         }
-        igEnd();
+        igEndTabBar();
     }
+    igEnd();
 }
 
 static void ToolbarWindow(bool *p_open, struct EdState *state)
@@ -167,6 +179,51 @@ static void ToolbarWindow(bool *p_open, struct EdState *state)
         if(igButton("C", (ImVec2){ 24, 24 })) { igFocusWindow(NULL, 0); }
         igSameLine(0, 4);
         if(igButton("D", (ImVec2){ 24, 24 })) { igFocusWindow(NULL, 0); }
-        igEnd();
     }
+    igEnd();
+}
+
+static void EditorWindow(bool *p_open, struct EdState *state)
+{
+    igSetNextWindowSize((ImVec2){ 400, 300 }, ImGuiCond_FirstUseEver);
+    igSetNextWindowPos((ImVec2){ 20, 20 }, ImGuiCond_FirstUseEver, (ImVec2){ 0, 0 });
+
+    if(igBegin("Editor", p_open, ImGuiWindowFlags_NoScrollbar))
+    {
+        igButton("A", (ImVec2){ 24, 24 });
+        igSameLine(0, 4);
+        igButton("B", (ImVec2){ 24, 24 });
+        igSameLine(0, 4);
+        igButton("C", (ImVec2){ 24, 24 });
+        igSameLine(0, 4);
+        igButton("D", (ImVec2){ 24, 24 });
+
+        if(igBeginChild_ID(1000, (ImVec2){ 0, 0 }, false, ImGuiWindowFlags_NoMove))
+        {
+            ImVec2 clientArea;
+            igGetContentRegionAvail(&clientArea);
+
+            ImVec2 clientPos;
+            igGetWindowPos(&clientPos);
+
+            bool hovored = igIsWindowHovered(0);
+            bool focused = igIsWindowFocused(0);
+
+            if(igIsMouseClicked_Bool(ImGuiMouseButton_Left, false)) 
+            {
+                ImVec2 mpos;
+                igGetMousePos(&mpos);
+                int relX = (int)mpos.x - (int)clientPos.x;
+                int relY = (int)mpos.y - (int)clientPos.y;
+                
+                if((relX >= 0 && relX < clientArea.x && relY >= 0 && relY < clientArea.y))
+                    printf("Click: %d | %d; Hovered: %d; Focused: %d\n", relX,  relY, hovored, focused);
+            }
+
+            ResizeEditor(state, clientArea.x, clientArea.y);
+            igImage((void*)(intptr_t)state->editorColorTexture, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 0 });
+        }
+        igEndChild();
+    }
+    igEnd();
 }

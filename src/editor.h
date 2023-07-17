@@ -35,6 +35,12 @@ struct EdState
     bool showAbout;
     bool showToolbar;
     bool showSettings;
+
+    int editorFramebufferWidth;
+    int editorFramebufferHeight;
+    GLuint editorFramebuffer;
+    GLuint editorColorTexture;
+    GLuint editorDepthTexture;
 };
 
 void ResetSettings(struct EdSettings *settings);

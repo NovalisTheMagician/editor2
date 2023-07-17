@@ -54,8 +54,8 @@ int EditorMain(int argc, char *argv[])
         {
             ImGui_ImplSDL2_ProcessEvent(&e);
             //if(!igIsWindowFocused(ImGuiFocusedFlags_AnyWindow))
-            if(!ioptr->WantCaptureKeyboard && !ioptr->WantCaptureMouse)
-                HandleInputEvents(&e, &state, &map);
+            //if(!ioptr->WantCaptureKeyboard && !ioptr->WantCaptureMouse)
+            //    HandleInputEvents(&e, &state, &map);
 
             switch(e.type)
             {
@@ -72,13 +72,19 @@ int EditorMain(int argc, char *argv[])
         if(DoGui(&state, &map))
             quit = true;
 
+        glBindFramebuffer(GL_FRAMEBUFFER, state.editorFramebuffer);
+        glViewport(0, 0, state.editorFramebufferWidth, state.editorFramebufferHeight);
+        glClearColor(0, 1, 0, 1);
+        glClear(GL_COLOR_BUFFER_BIT);
+        RenderEditor(&state, &map);
+
         igRender();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, (int)ioptr->DisplaySize.x, (int)ioptr->DisplaySize.y);
         glClearColor(state.settings.colors[BACKGROUND][0], state.settings.colors[BACKGROUND][1], state.settings.colors[BACKGROUND][2], state.settings.colors[BACKGROUND][3]);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        RenderEditor(&state, &map);
+        //RenderEditor(&state, &map);
 
         ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
 
@@ -137,7 +143,7 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
     igCreateContext(NULL);
 
     ImGuiIO *ioptr = igGetIO();
-    //ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     //ioptr->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     ioptr->IniFilename = NULL;
