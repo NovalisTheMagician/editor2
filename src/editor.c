@@ -9,6 +9,7 @@ bool InitEditor(struct EdState *state)
 void DestroyEditor(struct EdState *state)
 {
     glDeleteFramebuffers(1, &state->gl.editorFramebuffer);
+    glDeleteTextures(2, (GLuint[]){ state->gl.editorColorTexture, state->gl.editorDepthTexture });
 }
 
 void ResizeEditor(struct EdState *state, int width, int height)
@@ -21,8 +22,7 @@ void ResizeEditor(struct EdState *state, int width, int height)
 
     if(state->gl.editorColorTexture > 0)
     {
-        glDeleteTextures(1, &state->gl.editorColorTexture);
-        glDeleteTextures(1, &state->gl.editorDepthTexture);
+        glDeleteTextures(2, (GLuint[]){ state->gl.editorColorTexture, state->gl.editorDepthTexture });
     }
 
     glCreateTextures(GL_TEXTURE_2D, 1, &state->gl.editorColorTexture);

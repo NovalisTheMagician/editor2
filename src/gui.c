@@ -158,15 +158,16 @@ static void SettingsWindow(bool *p_open, struct EdState *state)
         {
             if(igBeginTabItem("Game", NULL, 0))
             {
+                igEndTabItem();
             }
-            igEndTabItem();
 
             if(igBeginTabItem("Appearence", NULL, 0))
             {
+                igEndTabItem();
             }
-            igEndTabItem();
+
+            igEndTabBar();
         }
-        igEndTabBar();
     }
     igEnd();
 }
@@ -188,8 +189,8 @@ static void ToolbarWindow(bool *p_open, struct EdState *state)
 
 static void EditorWindow(bool *p_open, struct EdState *state)
 {
-    igSetNextWindowSize((ImVec2){ 400, 300 }, ImGuiCond_FirstUseEver);
-    igSetNextWindowPos((ImVec2){ 20, 20 }, ImGuiCond_FirstUseEver, (ImVec2){ 0, 0 });
+    igSetNextWindowSize((ImVec2){ 800, 600 }, ImGuiCond_FirstUseEver);
+    igSetNextWindowPos((ImVec2){ 40, 40 }, ImGuiCond_FirstUseEver, (ImVec2){ 0, 0 });
 
     if(igBegin("Editor", p_open, ImGuiWindowFlags_NoScrollbar))
     {
