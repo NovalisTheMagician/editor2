@@ -115,6 +115,8 @@ bool DoGui(struct EdState *state, struct Map *map)
             if(igMenuItem_Bool("Textures", "", false, true)) {  }
             if(igMenuItem_Bool("Entities", "", false, true)) {  }
             if(igMenuItem_Bool("3D View", "", false, true)) {  }
+            igSeparator();
+            if(igMenuItem_Bool("Logs", "", false, true)) {  }
             igEndMenu();
         }
 
@@ -195,7 +197,7 @@ static void SettingsWindow(bool *p_open, struct EdState *state)
 
 static void ToolbarWindow(bool *p_open, struct EdState *state)
 {
-    if(igBegin("Toolbar", p_open, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNavFocus))
+    if(igBegin("Toolbar", p_open, 0))
     {
         if(igButton("A", (ImVec2){ 24, 24 })) { igFocusWindow(NULL, 0); }
         igSameLine(0, 4);
