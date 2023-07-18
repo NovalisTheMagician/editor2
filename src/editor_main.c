@@ -75,7 +75,7 @@ int EditorMain(int argc, char *argv[])
         glClear(GL_COLOR_BUFFER_BIT);
         RenderEditorView(&state, &map);
 
-        if(state.ui.show3dView)
+        if(state.ui.show3dView && state.gl.realtimeColorTexture > 0)
         {
             glEnable(GL_DEPTH_TEST);
 
@@ -161,9 +161,9 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
     ImGui_ImplSDL2_InitForOpenGL(window, context);
     ImGui_ImplOpenGL3_Init("#version 460");
 
-    igStyleColorsDark(NULL);
+    //igStyleColorsDark(NULL);
     //igStyleColorsLight(NULL);
-    //SetStyle(igGetStyle());
+    SetStyle(igGetStyle());
 
     return true;
 }

@@ -25,6 +25,13 @@ enum Colors
     NUM_COLORS
 };
 
+enum SelectionMode
+{
+    MODE_VERTEX,
+    MODE_LINE,
+    MODE_SECTOR
+};
+
 typedef float Color[4];
 static inline void SetColor(Color *to, Color from)
 {
@@ -62,6 +69,7 @@ struct EdState
         uint16_t gridSize;
         float zoomLevel;
         ImVec2 viewPosition;
+        uint8_t selectionMode;
     } ui;
 
     struct

@@ -4,51 +4,66 @@
 
 void SetStyle(ImGuiStyle *style)
 {
-    style->Colors[ImGuiCol_Text]                  = (ImVec4){0.00f, 0.00f, 0.00f, 1.00f};
-    style->Colors[ImGuiCol_TextDisabled]          = (ImVec4){0.60f, 0.60f, 0.60f, 1.00f};
-    //style->Colors[ImGuiCol_TextHovered]           = (ImVec4){1.00f, 1.00f, 1.00f, 1.00f};
-    //style->Colors[ImGuiCol_TextActive]            = (ImVec4){1.00f, 1.00f, 0.00f, 1.00f};
-    style->Colors[ImGuiCol_WindowBg]              = (ImVec4){0.94f, 0.94f, 0.94f, 1.00f};
-    //style->Colors[ImGuiCol_ChildWindowBg]         = (ImVec4){0.00f, 0.00f, 0.00f, 0.00f};
-    style->Colors[ImGuiCol_Border]                = (ImVec4){0.00f, 0.00f, 0.00f, 0.39f};
-    style->Colors[ImGuiCol_BorderShadow]          = (ImVec4){1.00f, 1.00f, 1.00f, 0.10f};
-    style->Colors[ImGuiCol_FrameBg]               = (ImVec4){1.00f, 1.00f, 1.00f, 1.00f};
-    style->Colors[ImGuiCol_FrameBgHovered]        = (ImVec4){0.26f, 0.59f, 0.98f, 0.40f};
-    style->Colors[ImGuiCol_FrameBgActive]         = (ImVec4){0.26f, 0.59f, 0.98f, 0.67f};
-    style->Colors[ImGuiCol_TitleBg]               = (ImVec4){0.96f, 0.96f, 0.96f, 1.00f};
-    style->Colors[ImGuiCol_TitleBgCollapsed]      = (ImVec4){1.00f, 1.00f, 1.00f, 0.51f};
-    style->Colors[ImGuiCol_TitleBgActive]         = (ImVec4){0.82f, 0.82f, 0.82f, 1.00f};
-    style->Colors[ImGuiCol_MenuBarBg]             = (ImVec4){0.86f, 0.86f, 0.86f, 1.00f};
-    style->Colors[ImGuiCol_ScrollbarBg]           = (ImVec4){0.98f, 0.98f, 0.98f, 0.53f};
-    style->Colors[ImGuiCol_ScrollbarGrab]         = (ImVec4){0.69f, 0.69f, 0.69f, 0.80f};
-    style->Colors[ImGuiCol_ScrollbarGrabHovered]  = (ImVec4){0.49f, 0.49f, 0.49f, 0.80f};
-    style->Colors[ImGuiCol_ScrollbarGrabActive]   = (ImVec4){0.49f, 0.49f, 0.49f, 1.00f};
-    //style->Colors[ImGuiCol_ComboBg]               = (ImVec4){0.86f, 0.86f, 0.86f, 0.99f};
-    style->Colors[ImGuiCol_CheckMark]             = (ImVec4){0.26f, 0.59f, 0.98f, 1.00f};
-    style->Colors[ImGuiCol_SliderGrab]            = (ImVec4){0.26f, 0.59f, 0.98f, 0.78f};
-    style->Colors[ImGuiCol_SliderGrabActive]      = (ImVec4){0.26f, 0.59f, 0.98f, 1.00f};
-    style->Colors[ImGuiCol_Button]                = (ImVec4){0.26f, 0.59f, 0.98f, 0.40f};
-    style->Colors[ImGuiCol_ButtonHovered]         = (ImVec4){0.26f, 0.59f, 0.98f, 1.00f};
-    style->Colors[ImGuiCol_ButtonActive]          = (ImVec4){0.06f, 0.53f, 0.98f, 1.00f};
-    style->Colors[ImGuiCol_Header]                = (ImVec4){0.26f, 0.59f, 0.98f, 0.31f};
-    style->Colors[ImGuiCol_HeaderHovered]         = (ImVec4){0.26f, 0.59f, 0.98f, 0.80f};
-    style->Colors[ImGuiCol_HeaderActive]          = (ImVec4){0.26f, 0.59f, 0.98f, 1.00f};
-    //style->Colors[ImGuiCol_Column]                = (ImVec4){0.39f, 0.39f, 0.39f, 1.00f};
-    //style->Colors[ImGuiCol_ColumnHovered]         = (ImVec4){0.26f, 0.59f, 0.98f, 0.78f};
-    //style->Colors[ImGuiCol_ColumnActive]          = (ImVec4){0.26f, 0.59f, 0.98f, 1.00f};
-    style->Colors[ImGuiCol_ResizeGrip]            = (ImVec4){1.00f, 1.00f, 1.00f, 0.00f};
-    style->Colors[ImGuiCol_ResizeGripHovered]     = (ImVec4){0.26f, 0.59f, 0.98f, 0.67f};
-    style->Colors[ImGuiCol_ResizeGripActive]      = (ImVec4){0.26f, 0.59f, 0.98f, 0.95f};
-    //style->Colors[ImGuiCol_CloseButton]           = (ImVec4){0.59f, 0.59f, 0.59f, 0.50f};
-    //style->Colors[ImGuiCol_CloseButtonHovered]    = (ImVec4){0.98f, 0.39f, 0.36f, 1.00f};
-    //style->Colors[ImGuiCol_CloseButtonActive]     = (ImVec4){0.98f, 0.39f, 0.36f, 1.00f};
-    style->Colors[ImGuiCol_PlotLines]             = (ImVec4){0.39f, 0.39f, 0.39f, 1.00f};
-    style->Colors[ImGuiCol_PlotLinesHovered]      = (ImVec4){1.00f, 0.43f, 0.35f, 1.00f};
-    style->Colors[ImGuiCol_PlotHistogram]         = (ImVec4){0.90f, 0.70f, 0.00f, 1.00f};
-    style->Colors[ImGuiCol_PlotHistogramHovered]  = (ImVec4){1.00f, 0.60f, 0.00f, 1.00f};
-    style->Colors[ImGuiCol_TextSelectedBg]        = (ImVec4){0.26f, 0.59f, 0.98f, 0.35f};
-    //style->Colors[ImGuiCol_TooltipBg]             = (ImVec4){1.00f, 1.00f, 1.00f, 0.94f};
-    //style->Colors[ImGuiCol_ModalWindowDarkening]  = (ImVec4){0.20f, 0.20f, 0.20f, 0.35f};
+    ImVec4* colors = style->Colors;
+    colors[ImGuiCol_Text]                       = (ImVec4){1.00f, 1.00f, 1.00f, 1.00f};
+    colors[ImGuiCol_TextDisabled]               = (ImVec4){0.50f, 0.50f, 0.50f, 1.00f};
+    colors[ImGuiCol_WindowBg]                   = (ImVec4){0.29f, 0.34f, 0.26f, 1.00f};
+    colors[ImGuiCol_ChildBg]                    = (ImVec4){0.29f, 0.34f, 0.26f, 1.00f};
+    colors[ImGuiCol_PopupBg]                    = (ImVec4){0.24f, 0.27f, 0.20f, 1.00f};
+    colors[ImGuiCol_Border]                     = (ImVec4){0.54f, 0.57f, 0.51f, 0.50f};
+    colors[ImGuiCol_BorderShadow]               = (ImVec4){0.14f, 0.16f, 0.11f, 0.52f};
+    colors[ImGuiCol_FrameBg]                    = (ImVec4){0.24f, 0.27f, 0.20f, 1.00f};
+    colors[ImGuiCol_FrameBgHovered]             = (ImVec4){0.27f, 0.30f, 0.23f, 1.00f};
+    colors[ImGuiCol_FrameBgActive]              = (ImVec4){0.30f, 0.34f, 0.26f, 1.00f};
+    colors[ImGuiCol_TitleBg]                    = (ImVec4){0.24f, 0.27f, 0.20f, 1.00f};
+    colors[ImGuiCol_TitleBgActive]              = (ImVec4){0.29f, 0.34f, 0.26f, 1.00f};
+    colors[ImGuiCol_TitleBgCollapsed]           = (ImVec4){0.00f, 0.00f, 0.00f, 0.51f};
+    colors[ImGuiCol_MenuBarBg]                  = (ImVec4){0.24f, 0.27f, 0.20f, 1.00f};
+    colors[ImGuiCol_ScrollbarBg]                = (ImVec4){0.35f, 0.42f, 0.31f, 1.00f};
+    colors[ImGuiCol_ScrollbarGrab]              = (ImVec4){0.28f, 0.32f, 0.24f, 1.00f};
+    colors[ImGuiCol_ScrollbarGrabHovered]       = (ImVec4){0.25f, 0.30f, 0.22f, 1.00f};
+    colors[ImGuiCol_ScrollbarGrabActive]        = (ImVec4){0.23f, 0.27f, 0.21f, 1.00f};
+    colors[ImGuiCol_CheckMark]                  = (ImVec4){0.59f, 0.54f, 0.18f, 1.00f};
+    colors[ImGuiCol_SliderGrab]                 = (ImVec4){0.35f, 0.42f, 0.31f, 1.00f};
+    colors[ImGuiCol_SliderGrabActive]           = (ImVec4){0.54f, 0.57f, 0.51f, 0.50f};
+    colors[ImGuiCol_Button]                     = (ImVec4){0.29f, 0.34f, 0.26f, 0.40f};
+    colors[ImGuiCol_ButtonHovered]              = (ImVec4){0.35f, 0.42f, 0.31f, 1.00f};
+    colors[ImGuiCol_ButtonActive]               = (ImVec4){0.54f, 0.57f, 0.51f, 0.50f};
+    colors[ImGuiCol_Header]                     = (ImVec4){0.35f, 0.42f, 0.31f, 1.00f};
+    colors[ImGuiCol_HeaderHovered]              = (ImVec4){0.35f, 0.42f, 0.31f, 0.6f};
+    colors[ImGuiCol_HeaderActive]               = (ImVec4){0.54f, 0.57f, 0.51f, 0.50f};
+    colors[ImGuiCol_Separator]                  = (ImVec4){0.14f, 0.16f, 0.11f, 1.00f};
+    colors[ImGuiCol_SeparatorHovered]           = (ImVec4){0.54f, 0.57f, 0.51f, 1.00f};
+    colors[ImGuiCol_SeparatorActive]            = (ImVec4){0.59f, 0.54f, 0.18f, 1.00f};
+    colors[ImGuiCol_ResizeGrip]                 = (ImVec4){0.19f, 0.23f, 0.18f, 0.00f}; // grip invs
+    colors[ImGuiCol_ResizeGripHovered]          = (ImVec4){0.54f, 0.57f, 0.51f, 1.00f};
+    colors[ImGuiCol_ResizeGripActive]           = (ImVec4){0.59f, 0.54f, 0.18f, 1.00f};
+    colors[ImGuiCol_Tab]                        = (ImVec4){0.35f, 0.42f, 0.31f, 1.00f};
+    colors[ImGuiCol_TabHovered]                 = (ImVec4){0.54f, 0.57f, 0.51f, 0.78f};
+    colors[ImGuiCol_TabActive]                  = (ImVec4){0.59f, 0.54f, 0.18f, 1.00f};
+    colors[ImGuiCol_TabUnfocused]               = (ImVec4){0.24f, 0.27f, 0.20f, 1.00f};
+    colors[ImGuiCol_TabUnfocusedActive]         = (ImVec4){0.35f, 0.42f, 0.31f, 1.00f};
+    colors[ImGuiCol_DockingPreview]             = (ImVec4){0.59f, 0.54f, 0.18f, 1.00f};
+    colors[ImGuiCol_DockingEmptyBg]             = (ImVec4){0.20f, 0.20f, 0.20f, 1.00f};
+    colors[ImGuiCol_PlotLines]                  = (ImVec4){0.61f, 0.61f, 0.61f, 1.00f};
+    colors[ImGuiCol_PlotLinesHovered]           = (ImVec4){0.59f, 0.54f, 0.18f, 1.00f};
+    colors[ImGuiCol_PlotHistogram]              = (ImVec4){1.00f, 0.78f, 0.28f, 1.00f};
+    colors[ImGuiCol_PlotHistogramHovered]       = (ImVec4){1.00f, 0.60f, 0.00f, 1.00f};
+    colors[ImGuiCol_TextSelectedBg]             = (ImVec4){0.59f, 0.54f, 0.18f, 1.00f};
+    colors[ImGuiCol_DragDropTarget]             = (ImVec4){0.73f, 0.67f, 0.24f, 1.00f};
+    colors[ImGuiCol_NavHighlight]               = (ImVec4){0.59f, 0.54f, 0.18f, 1.00f};
+    colors[ImGuiCol_NavWindowingHighlight]      = (ImVec4){1.00f, 1.00f, 1.00f, 0.70f};
+    colors[ImGuiCol_NavWindowingDimBg]          = (ImVec4){0.80f, 0.80f, 0.80f, 0.20f};
+    colors[ImGuiCol_ModalWindowDimBg]           = (ImVec4){0.80f, 0.80f, 0.80f, 0.35f};
+
+    style->FrameBorderSize = 1.0f;
+    style->WindowRounding = 0.0f;
+    style->ChildRounding = 0.0f;
+    style->FrameRounding = 0.0f;
+    style->PopupRounding = 0.0f;
+    style->ScrollbarRounding = 0.0f;
+    style->GrabRounding = 0.0f;
+    style->TabRounding = 0.0f;
 }
 
 static void AboutWindow(bool *p_open);
@@ -56,41 +71,69 @@ static void SettingsWindow(bool *p_open, struct EdState *state);
 static void ToolbarWindow(bool *p_open, struct EdState *state);
 static void EditorWindow(bool *p_open, struct EdState *state);
 static void RealtimeWindow(bool *p_open, struct EdState *state);
+static void MainMenuBar(bool *doQuit, struct EdState *state);
 
 static void HandleShortcuts(struct EdState *state);
 
 bool DoGui(struct EdState *state, struct Map *map)
 {
     bool doQuit = false;
+
+    MainMenuBar(&doQuit, state);
+
+    if(state->ui.showAbout)
+        AboutWindow(&state->ui.showAbout);
+
+    if(state->ui.showMetrics)
+        igShowMetricsWindow(&state->ui.showMetrics);
+
+    if(state->ui.showToolbar)
+        ToolbarWindow(&state->ui.showToolbar, state);
+
+    if(state->ui.showSettings)
+        SettingsWindow(&state->ui.showSettings, state);
+
+    if(state->ui.show3dView)
+        RealtimeWindow(&state->ui.show3dView, state);
+
+    EditorWindow(NULL, state);
+
+    HandleShortcuts(state);
+
+    return doQuit;
+}
+
+static void MainMenuBar(bool *doQuit, struct EdState *state)
+{
     if(igBeginMainMenuBar())
     {
         if(igBeginMenu("File", true))
         {
             if(igMenuItem_Bool("New", "Ctrl+N", false, true)) { printf("New Map!\n"); }
-            if(igMenuItem_Bool("Open", "Ctrl+O", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_O, 0, 0)) { printf("Open Map!\n"); }
-            if(igMenuItem_Bool("Save", "Ctrl+S", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_S, 0, 0)) { printf("Save Map!\n"); }
+            if(igMenuItem_Bool("Open", "Ctrl+O", false, true)) { printf("Open Map!\n"); }
+            if(igMenuItem_Bool("Save", "Ctrl+S", false, true)) { printf("Save Map!\n"); }
             if(igMenuItem_Bool("SaveAs", "", false, true)) { printf("Save Map As!\n"); }
             igSeparator();
-            if(igMenuItem_Bool("Export", "Ctrl+E", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_E, 0, 0)) {  }
+            if(igMenuItem_Bool("Export", "Ctrl+E", false, true)) {  }
             igSeparator();
-            if(igMenuItem_Bool("Quit", "Alt+F4", false, true) || igShortcut(ImGuiMod_Alt | ImGuiKey_F4, 0, 0)) { doQuit = true; }
+            if(igMenuItem_Bool("Quit", "Alt+F4", false, true)) { *doQuit = true; }
             igEndMenu();
         }
 
         if(igBeginMenu("Edit", true))
         {
-            if(igMenuItem_Bool("Undo", "Ctrl+Z", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_Z, 0, 0)) { printf("Undo!\n"); }
-            if(igMenuItem_Bool("Redo", "Ctrl+Y", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_Y, 0, 0)) { printf("Redo!\n"); }
+            if(igMenuItem_Bool("Undo", "Ctrl+Z", false, true)) { printf("Undo!\n"); }
+            if(igMenuItem_Bool("Redo", "Ctrl+Y", false, true)) { printf("Redo!\n"); }
             igSeparator();
             if(igMenuItem_Bool("Copy", "Ctrl+C", false, true)) { printf("Copy Menu!\n"); }
-            if(igMenuItem_Bool("Paste", "Ctrl+V", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_V, 0, 0)) { printf("Paste!\n"); }
-            if(igMenuItem_Bool("Cut", "Ctrl+X", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_X, 0, 0)) { printf("Cut!\n"); }
+            if(igMenuItem_Bool("Paste", "Ctrl+V", false, true)) { printf("Paste!\n"); }
+            if(igMenuItem_Bool("Cut", "Ctrl+X", false, true)) { printf("Cut!\n"); }
             igSeparator();
             if(igBeginMenu("Modes", true))
             {
-                if(igMenuItem_Bool("Vertex", "", false, true)) {  }
-                if(igMenuItem_Bool("Line", "", false, true)) {  }
-                if(igMenuItem_Bool("Sector", "", false, true)) {  }
+                if(igMenuItem_Bool("Vertex", "", state->ui.selectionMode == MODE_VERTEX, true)) { state->ui.selectionMode = MODE_VERTEX; }
+                if(igMenuItem_Bool("Line", "", state->ui.selectionMode == MODE_LINE, true)) { state->ui.selectionMode = MODE_LINE; }
+                if(igMenuItem_Bool("Sector", "", state->ui.selectionMode == MODE_SECTOR, true)) { state->ui.selectionMode = MODE_SECTOR; }
                 igEndMenu();
             }
             igSeparator();
@@ -102,13 +145,13 @@ bool DoGui(struct EdState *state, struct Map *map)
 
         if(igBeginMenu("Tools", true))
         {
-            
+            igMenuItem_Bool("DRAGONS!", "", false, false);
             igEndMenu();
         }
 
         if(igBeginMenu("Build", true))
         {
-            
+            igMenuItem_Bool("DRAGONS!", "", false, false);
             igEndMenu();
         }
 
@@ -117,7 +160,7 @@ bool DoGui(struct EdState *state, struct Map *map)
             igMenuItem_BoolPtr("Toolbar", "", &state->ui.showToolbar, true);
             if(igMenuItem_Bool("Textures", "", false, true)) {  }
             if(igMenuItem_Bool("Entities", "", false, true)) {  }
-            igMenuItem_BoolPtr("3D View", "", &state->ui.show3dView, true);
+            igMenuItem_BoolPtr("3D View", "Ctrl+W", &state->ui.show3dView, true);
             igSeparator();
             if(igMenuItem_Bool("Logs", "", false, true)) {  }
             igEndMenu();
@@ -149,27 +192,6 @@ bool DoGui(struct EdState *state, struct Map *map)
 
         igEndMainMenuBar();
     }
-
-    if(state->ui.showAbout)
-        AboutWindow(&state->ui.showAbout);
-
-    if(state->ui.showMetrics)
-        igShowMetricsWindow(&state->ui.showMetrics);
-
-    if(state->ui.showToolbar)
-        ToolbarWindow(&state->ui.showToolbar, state);
-
-    if(state->ui.showSettings)
-        SettingsWindow(&state->ui.showSettings, state);
-
-    if(state->ui.show3dView)
-        RealtimeWindow(&state->ui.show3dView, state);
-
-    EditorWindow(NULL, state);
-
-    HandleShortcuts(state);
-
-    return doQuit;
 }
 
 static void AboutWindow(bool *p_open)
@@ -315,8 +337,48 @@ static void HandleShortcuts(struct EdState *state)
         printf("New Map!\n");
     }
 
+    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_O, 0, ImGuiInputFlags_RouteGlobalLow))
+    {
+        printf("Open Map!\n");
+    }
+
+    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_S, 0, ImGuiInputFlags_RouteGlobalLow))
+    {
+        printf("Save Map!\n");
+    }
+
+    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_E, 0, ImGuiInputFlags_RouteGlobalLow))
+    {
+        printf("Export Map!\n");
+    }
+
     if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_C, 0, ImGuiInputFlags_RouteGlobalLow))
     {
         printf("Copy!\n");
+    }
+
+    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_V, 0, ImGuiInputFlags_RouteGlobalLow))
+    {
+        printf("Paste!\n");
+    }
+
+    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_X, 0, ImGuiInputFlags_RouteGlobalLow))
+    {
+        printf("Cut!\n");
+    }
+
+    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_Z, 0, ImGuiInputFlags_RouteGlobalLow))
+    {
+        printf("Undo!\n");
+    }
+
+    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_Y, 0, ImGuiInputFlags_RouteGlobalLow))
+    {
+        printf("Redo!\n");
+    }
+
+    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_W, 0, ImGuiInputFlags_RouteGlobalLow))
+    {
+        state->ui.show3dView = !state->ui.show3dView;
     }
 }
