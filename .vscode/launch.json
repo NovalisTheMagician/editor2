@@ -5,10 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "editor",
+            "name": "editor2",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/editor",
+            "program": "${workspaceFolder}/editor2",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

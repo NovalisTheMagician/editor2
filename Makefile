@@ -1,4 +1,4 @@
-APPLICATION := editor
+APPLICATION := editor2
 
 BUILD_DIR := build
 SRC_DIR := src
@@ -10,7 +10,7 @@ LIBS := m cimgui_sdl nfd SDL2 glad stdc++
 LIB_DIRS := 
 
 CC := gcc
-CCFLAGS := -Wall -std=c17 -Wstrict-prototypes
+CCFLAGS := -Wall -std=gnu17 -Wstrict-prototypes
 
 LD := gcc
 LDFLAGS := -pthread

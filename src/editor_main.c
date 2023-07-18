@@ -71,14 +71,28 @@ int EditorMain(int argc, char *argv[])
 
         glBindFramebuffer(GL_FRAMEBUFFER, state.gl.editorFramebuffer);
         glViewport(0, 0, state.gl.editorFramebufferWidth, state.gl.editorFramebufferHeight);
-        glClearColor(0, 1, 0, 1);
+        glClearColor(state.settings.colors[COL_BACKGROUND][0], state.settings.colors[COL_BACKGROUND][1], state.settings.colors[COL_BACKGROUND][2], state.settings.colors[COL_BACKGROUND][3]);
         glClear(GL_COLOR_BUFFER_BIT);
-        RenderEditor(&state, &map);
+        RenderEditorView(&state, &map);
+
+        if(state.ui.show3dView)
+        {
+            glEnable(GL_DEPTH_TEST);
+
+            glBindFramebuffer(GL_FRAMEBUFFER, state.gl.realtimeFramebuffer);
+            glViewport(0, 0, state.gl.realtimeFramebufferWidth, state.gl.realtimeFramebufferHeight);
+            glClearColor(state.settings.colors[COL_RTBACKGROUND][0], state.settings.colors[COL_RTBACKGROUND][1], state.settings.colors[COL_RTBACKGROUND][2], state.settings.colors[COL_RTBACKGROUND][3]);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            RenderRealtimeView(&state, &map);
+
+            glDisable(GL_DEPTH_TEST);
+        }
 
         igRender();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, (int)ioptr->DisplaySize.x, (int)ioptr->DisplaySize.y);
-        glClearColor(state.settings.colors[BACKGROUND][0], state.settings.colors[BACKGROUND][1], state.settings.colors[BACKGROUND][2], state.settings.colors[BACKGROUND][3]);
+        glClearColor(state.settings.colors[COL_WORKSPACE_BACK][0], state.settings.colors[COL_WORKSPACE_BACK][1], state.settings.colors[COL_WORKSPACE_BACK][2], state.settings.colors[COL_WORKSPACE_BACK][3]);
         glClear(GL_COLOR_BUFFER_BIT);
         ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
 
@@ -122,7 +136,7 @@ static SDL_Window* InitSDL(void)
     flags |= SDL_WINDOW_MAXIMIZED;
 #endif
 
-    SDL_Window *window = SDL_CreateWindow("Editor", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, flags);
+    SDL_Window *window = SDL_CreateWindow("Editor2", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, flags);
     if(!window)
     {
         printf("failed to create window\n");

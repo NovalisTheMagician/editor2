@@ -55,6 +55,9 @@ static void AboutWindow(bool *p_open);
 static void SettingsWindow(bool *p_open, struct EdState *state);
 static void ToolbarWindow(bool *p_open, struct EdState *state);
 static void EditorWindow(bool *p_open, struct EdState *state);
+static void RealtimeWindow(bool *p_open, struct EdState *state);
+
+static void HandleShortcuts(struct EdState *state);
 
 bool DoGui(struct EdState *state, struct Map *map)
 {
@@ -63,7 +66,7 @@ bool DoGui(struct EdState *state, struct Map *map)
     {
         if(igBeginMenu("File", true))
         {
-            if(igMenuItem_Bool("New", "Ctrl+N", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_N, 0, 0)) { printf("New Map!\n"); }
+            if(igMenuItem_Bool("New", "Ctrl+N", false, true)) { printf("New Map!\n"); }
             if(igMenuItem_Bool("Open", "Ctrl+O", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_O, 0, 0)) { printf("Open Map!\n"); }
             if(igMenuItem_Bool("Save", "Ctrl+S", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_S, 0, 0)) { printf("Save Map!\n"); }
             if(igMenuItem_Bool("SaveAs", "", false, true)) { printf("Save Map As!\n"); }
@@ -79,7 +82,7 @@ bool DoGui(struct EdState *state, struct Map *map)
             if(igMenuItem_Bool("Undo", "Ctrl+Z", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_Z, 0, 0)) { printf("Undo!\n"); }
             if(igMenuItem_Bool("Redo", "Ctrl+Y", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_Y, 0, 0)) { printf("Redo!\n"); }
             igSeparator();
-            if(igMenuItem_Bool("Copy", "Ctrl+C", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_C, 0, 0)) { printf("Copy!\n"); }
+            if(igMenuItem_Bool("Copy", "Ctrl+C", false, true)) { printf("Copy Menu!\n"); }
             if(igMenuItem_Bool("Paste", "Ctrl+V", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_V, 0, 0)) { printf("Paste!\n"); }
             if(igMenuItem_Bool("Cut", "Ctrl+X", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_X, 0, 0)) { printf("Cut!\n"); }
             igSeparator();
@@ -114,7 +117,7 @@ bool DoGui(struct EdState *state, struct Map *map)
             igMenuItem_BoolPtr("Toolbar", "", &state->ui.showToolbar, true);
             if(igMenuItem_Bool("Textures", "", false, true)) {  }
             if(igMenuItem_Bool("Entities", "", false, true)) {  }
-            if(igMenuItem_Bool("3D View", "", false, true)) {  }
+            igMenuItem_BoolPtr("3D View", "", &state->ui.show3dView, true);
             igSeparator();
             if(igMenuItem_Bool("Logs", "", false, true)) {  }
             igEndMenu();
@@ -159,7 +162,12 @@ bool DoGui(struct EdState *state, struct Map *map)
     if(state->ui.showSettings)
         SettingsWindow(&state->ui.showSettings, state);
 
+    if(state->ui.show3dView)
+        RealtimeWindow(&state->ui.show3dView, state);
+
     EditorWindow(NULL, state);
+
+    HandleShortcuts(state);
 
     return doQuit;
 }
@@ -175,17 +183,26 @@ static void AboutWindow(bool *p_open)
 
 static void SettingsWindow(bool *p_open, struct EdState *state)
 {
-    if(igBegin("Settings", p_open, 0))
+    //igSetNextWindowSize((ImVec2){ 0 }, ImGuiCond_FirstUseEver);
+    if(igBegin("Options", p_open, 0))
     {
         if(igBeginTabBar("", 0))
         {
-            if(igBeginTabItem("Game", NULL, 0))
+            if(igBeginTabItem("General", NULL, 0))
             {
+                igInputText("Gamepath", state->settings.gamePath, sizeof state->settings.gamePath, 0, NULL, NULL);
+                igInputText("Launch Arguments", state->settings.launchArguments, sizeof state->settings.launchArguments, 0, NULL, NULL);
+                igSeparator();
+                if(igButton("Reset Settings", (ImVec2){ 0, 0 })) { ResetSettings(&state->settings); }
                 igEndTabItem();
             }
 
-            if(igBeginTabItem("Appearence", NULL, 0))
+            if(igBeginTabItem("Colors", NULL, 0))
             {
+                for(int i = 0; i < NUM_COLORS; ++i)
+                {
+                    igColorEdit4(ColorIndexToString(i), state->settings.colors[i], 0);
+                }
                 igEndTabItem();
             }
 
@@ -247,10 +264,59 @@ static void EditorWindow(bool *p_open, struct EdState *state)
                     printf("Click: %d | %d; Hovered: %d; Focused: %d\n", relX,  relY, hovored, focused);
             }
 
-            ResizeEditor(state, clientArea.x, clientArea.y);
+            ResizeEditorView(state, clientArea.x, clientArea.y);
             igImage((void*)(intptr_t)state->gl.editorColorTexture, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 0 });
         }
         igEndChild();
     }
     igEnd();
+}
+
+static void RealtimeWindow(bool *p_open, struct EdState *state)
+{
+    igSetNextWindowSize((ImVec2){ 800, 600 }, ImGuiCond_FirstUseEver);
+
+    if(igBegin("3D View", p_open, ImGuiWindowFlags_NoScrollbar))
+    {
+        if(igBeginChild_ID(1000, (ImVec2){ 0, 0 }, false, ImGuiWindowFlags_NoMove))
+        {
+            ImVec2 clientArea;
+            igGetContentRegionAvail(&clientArea);
+
+            ImVec2 clientPos;
+            igGetWindowPos(&clientPos);
+
+            bool hovored = igIsWindowHovered(0);
+            bool focused = igIsWindowFocused(0);
+
+            if(igIsMouseClicked_Bool(ImGuiMouseButton_Left, false)) 
+            {
+                ImVec2 mpos;
+                igGetMousePos(&mpos);
+                int relX = (int)mpos.x - (int)clientPos.x;
+                int relY = (int)mpos.y - (int)clientPos.y;
+                
+                if((relX >= 0 && relX < clientArea.x && relY >= 0 && relY < clientArea.y))
+                    printf("Click: %d | %d; Hovered: %d; Focused: %d\n", relX,  relY, hovored, focused);
+            }
+
+            ResizeRealtimeView(state, clientArea.x, clientArea.y);
+            igImage((void*)(intptr_t)state->gl.realtimeColorTexture, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 0 });
+        }
+        igEndChild();
+    }
+    igEnd();
+}
+
+static void HandleShortcuts(struct EdState *state)
+{
+    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_N, 0, ImGuiInputFlags_RouteGlobalLow))
+    {
+        printf("New Map!\n");
+    }
+
+    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_C, 0, ImGuiInputFlags_RouteGlobalLow))
+    {
+        printf("Copy!\n");
+    }
 }
