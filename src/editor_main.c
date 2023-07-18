@@ -140,6 +140,8 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
     ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
     //ioptr->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
+    ImFontAtlas_AddFontFromFileTTF(ioptr->Fonts, "UbuntuMono-Regular.ttf", 15, NULL, NULL);
+
     ioptr->IniFilename = NULL;
 
     ImGui_ImplSDL2_InitForOpenGL(window, context);
