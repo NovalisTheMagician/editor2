@@ -52,10 +52,7 @@ int EditorMain(int argc, char *argv[])
     {
         while(SDL_PollEvent(&e) > 0)
         {
-            ImGui_ImplSDL2_ProcessEvent(&e);
-            //if(!igIsWindowFocused(ImGuiFocusedFlags_AnyWindow))
-            //if(!ioptr->WantCaptureKeyboard && !ioptr->WantCaptureMouse)
-            //    HandleInputEvents(&e, &state, &map);
+            if(ImGui_ImplSDL2_ProcessEvent(&e)) continue;
 
             switch(e.type)
             {
@@ -83,9 +80,6 @@ int EditorMain(int argc, char *argv[])
         glViewport(0, 0, (int)ioptr->DisplaySize.x, (int)ioptr->DisplaySize.y);
         glClearColor(state.settings.colors[BACKGROUND][0], state.settings.colors[BACKGROUND][1], state.settings.colors[BACKGROUND][2], state.settings.colors[BACKGROUND][3]);
         glClear(GL_COLOR_BUFFER_BIT);
-
-        //RenderEditor(&state, &map);
-
         ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
 
         SDL_GL_SwapWindow(window);

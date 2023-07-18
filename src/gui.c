@@ -79,6 +79,10 @@ bool DoGui(struct EdState *state, struct Map *map)
             if(igMenuItem_Bool("Undo", "Ctrl+Z", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_Z, 0, 0)) { printf("Undo!\n"); }
             if(igMenuItem_Bool("Redo", "Ctrl+Y", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_Y, 0, 0)) { printf("Redo!\n"); }
             igSeparator();
+            if(igMenuItem_Bool("Copy", "Ctrl+C", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_C, 0, 0)) { printf("Copy!\n"); }
+            if(igMenuItem_Bool("Paste", "Ctrl+V", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_V, 0, 0)) { printf("Paste!\n"); }
+            if(igMenuItem_Bool("Cut", "Ctrl+X", false, true) || igShortcut(ImGuiMod_Ctrl | ImGuiKey_X, 0, 0)) { printf("Cut!\n"); }
+            igSeparator();
             if(igBeginMenu("Modes", true))
             {
                 if(igMenuItem_Bool("Vertex", "", false, true)) {  }
@@ -87,9 +91,21 @@ bool DoGui(struct EdState *state, struct Map *map)
                 igEndMenu();
             }
             igSeparator();
-            igMenuItem_BoolPtr("Editor Options", "", &state->ui.showMapSettings, true);
+            igMenuItem_BoolPtr("Map Settings", "", &state->ui.showMapSettings, true);
             igSeparator();
             igMenuItem_BoolPtr("Editor Options", "", &state->ui.showSettings, true);
+            igEndMenu();
+        }
+
+        if(igBeginMenu("Tools", true))
+        {
+            
+            igEndMenu();
+        }
+
+        if(igBeginMenu("Build", true))
+        {
+            
             igEndMenu();
         }
 
@@ -102,8 +118,13 @@ bool DoGui(struct EdState *state, struct Map *map)
             igEndMenu();
         }
 
-        if(igBeginMenu("Connect", false))
+        if(igBeginMenu("Connect", true))
         {
+            if(igMenuItem_Bool("Connect", "", false, true)) {  }
+            if(igMenuItem_Bool("Disconnect", "", false, false)) {  }
+            if(igMenuItem_Bool("Host", "", false, true)) {  }
+            igSeparator();
+            if(igMenuItem_Bool("Userlist", "", false, false)) {  }
             igEndMenu();
         }
 
