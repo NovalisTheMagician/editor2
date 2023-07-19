@@ -82,6 +82,7 @@ int EditorMain(int argc, char *argv[])
         if(state.ui.show3dView && state.gl.realtimeColorTexture > 0)
         {
             glEnable(GL_DEPTH_TEST);
+            glEnable(GL_CULL_FACE);
 
             glBindFramebuffer(GL_FRAMEBUFFER, state.gl.realtimeFramebuffer);
             glViewport(0, 0, state.gl.realtimeFramebufferWidth, state.gl.realtimeFramebufferHeight);
@@ -90,6 +91,7 @@ int EditorMain(int argc, char *argv[])
 
             RenderRealtimeView(&state, &map);
 
+            glDisable(GL_CULL_FACE);
             glDisable(GL_DEPTH_TEST);
         }
 
@@ -134,6 +136,8 @@ static SDL_Window* InitSDL(void)
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 16);
 
     uint32_t flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
 #ifndef _DEBUG

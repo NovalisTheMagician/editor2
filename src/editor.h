@@ -74,14 +74,15 @@ struct EdState
         bool showTextures;
         bool showEntities;
         bool show3dView;
+        bool showLogs;
 
         bool showSettings;
         bool showMapSettings;
 
-        uint16_t gridSize;
+        int gridSize;
         float zoomLevel;
         ImVec2 viewPosition;
-        uint8_t selectionMode;
+        int selectionMode;
     } ui;
 
     struct

@@ -198,7 +198,7 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
             if(igMenuItem_Bool("Save", "Ctrl+S", false, true)) { printf("Save Map!\n"); }
             if(igMenuItem_Bool("SaveAs", "", false, true)) { printf("Save Map As!\n"); }
             igSeparator();
-            if(igMenuItem_Bool("Export", "Ctrl+E", false, true)) {  }
+            if(igMenuItem_Bool("Export", "", false, true)) {  }
             igSeparator();
             if(igMenuItem_Bool("Quit", "Alt+F4", false, true)) { *doQuit = true; }
             igEndMenu();
@@ -215,9 +215,9 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
             igSeparator();
             if(igBeginMenu("Modes", true))
             {
-                if(igMenuItem_Bool("Vertex", "", state->ui.selectionMode == MODE_VERTEX, true)) { state->ui.selectionMode = MODE_VERTEX; }
-                if(igMenuItem_Bool("Line", "", state->ui.selectionMode == MODE_LINE, true)) { state->ui.selectionMode = MODE_LINE; }
-                if(igMenuItem_Bool("Sector", "", state->ui.selectionMode == MODE_SECTOR, true)) { state->ui.selectionMode = MODE_SECTOR; }
+                if(igMenuItem_Bool("Vertex", "V", state->ui.selectionMode == MODE_VERTEX, true)) { state->ui.selectionMode = MODE_VERTEX; }
+                if(igMenuItem_Bool("Line", "L", state->ui.selectionMode == MODE_LINE, true)) { state->ui.selectionMode = MODE_LINE; }
+                if(igMenuItem_Bool("Sector", "S", state->ui.selectionMode == MODE_SECTOR, true)) { state->ui.selectionMode = MODE_SECTOR; }
                 igEndMenu();
             }
             igSeparator();
@@ -242,11 +242,11 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
         if(igBeginMenu("Windows", true))
         {
             igMenuItem_BoolPtr("Toolbar", "", &state->ui.showToolbar, true);
-            if(igMenuItem_Bool("Textures", "", false, true)) {  }
-            if(igMenuItem_Bool("Entities", "", false, true)) {  }
+            igMenuItem_BoolPtr("Textures", "Ctrl+T", &state->ui.showTextures, true);
+            igMenuItem_BoolPtr("Entities", "Ctrl+E", &state->ui.showEntities, true);
             igMenuItem_BoolPtr("3D View", "Ctrl+W", &state->ui.show3dView, true);
             igSeparator();
-            if(igMenuItem_Bool("Logs", "", false, true)) {  }
+            igMenuItem_BoolPtr("Logs", "Ctrl+L", &state->ui.showLogs, true);
             igEndMenu();
         }
 
@@ -289,16 +289,17 @@ static void AboutWindow(bool *p_open)
 
 static void SettingsWindow(bool *p_open, struct EdState *state)
 {
-    //igSetNextWindowSize((ImVec2){ 0 }, ImGuiCond_FirstUseEver);
+    igSetNextWindowSize((ImVec2){ 600, 300 }, ImGuiCond_FirstUseEver);
     if(igBegin("Options", p_open, 0))
     {
         if(igBeginTabBar("", 0))
         {
             if(igBeginTabItem("General", NULL, 0))
             {
+                igSeparatorText("Game");
                 igInputText("Gamepath", state->settings.gamePath, sizeof state->settings.gamePath, 0, NULL, NULL);
                 igInputText("Launch Arguments", state->settings.launchArguments, sizeof state->settings.launchArguments, 0, NULL, NULL);
-                igSeparator();
+                igSeparatorText("Other");
                 if(igButton("Reset Settings", (ImVec2){ 0, 0 })) { ResetSettings(&state->settings); }
                 igEndTabItem();
             }
@@ -315,7 +316,7 @@ static void SettingsWindow(bool *p_open, struct EdState *state)
             if(igBeginTabItem("Appearance", NULL, 0))
             {
                 static const char *themeElements[] = {"Imgui Light", "Imgui Dark", "Imgui Classic", "Valve", "Deus Ex"};
-                static const size_t count = sizeof themeElements / sizeof *themeElements;
+                static const size_t count = COUNT_OF(themeElements);
                 if(igCombo_Str_arr("Theme", &state->settings.theme, themeElements, count, 5)) { SetStyle(state->settings.theme); }
                 igEndTabItem();
             }
@@ -346,15 +347,13 @@ static void EditorWindow(bool *p_open, struct EdState *state)
     igSetNextWindowSize((ImVec2){ 800, 600 }, ImGuiCond_FirstUseEver);
     igSetNextWindowPos((ImVec2){ 40, 40 }, ImGuiCond_FirstUseEver, (ImVec2){ 0, 0 });
 
+    igPushStyleVar_Vec2(ImGuiStyleVar_WindowMinSize, (ImVec2){ 400, 300 });
     if(igBegin("Editor", p_open, ImGuiWindowFlags_NoScrollbar))
     {
-        igButton("A", (ImVec2){ 24, 24 });
-        igSameLine(0, 4);
-        igButton("B", (ImVec2){ 24, 24 });
-        igSameLine(0, 4);
-        igButton("C", (ImVec2){ 24, 24 });
-        igSameLine(0, 4);
-        igButton("D", (ImVec2){ 24, 24 });
+        igPushItemWidth(80);
+        static const char *modeNames[] = { "Vertex", "Line", "Sector" };
+        static const size_t numModes = COUNT_OF(modeNames);
+        igCombo_Str_arr("Mode", &state->ui.selectionMode, modeNames, numModes, 3);
 
         if(igBeginChild_ID(1000, (ImVec2){ 0, 0 }, false, ImGuiWindowFlags_NoMove))
         {
@@ -384,6 +383,7 @@ static void EditorWindow(bool *p_open, struct EdState *state)
         igEndChild();
     }
     igEnd();
+    igPopStyleVar(1);
 }
 
 static void RealtimeWindow(bool *p_open, struct EdState *state)
@@ -439,11 +439,6 @@ static void HandleShortcuts(struct EdState *state)
         printf("Save Map!\n");
     }
 
-    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_E, 0, ImGuiInputFlags_RouteGlobalLow))
-    {
-        printf("Export Map!\n");
-    }
-
     if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_C, 0, ImGuiInputFlags_RouteGlobalLow))
     {
         printf("Copy!\n");
@@ -472,5 +467,20 @@ static void HandleShortcuts(struct EdState *state)
     if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_W, 0, ImGuiInputFlags_RouteGlobalLow))
     {
         state->ui.show3dView = !state->ui.show3dView;
+    }
+
+    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_E, 0, ImGuiInputFlags_RouteGlobalLow))
+    {
+        state->ui.showEntities = !state->ui.showEntities;
+    }
+
+    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_T, 0, ImGuiInputFlags_RouteGlobalLow))
+    {
+        state->ui.showTextures = !state->ui.showTextures;
+    }
+
+    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_L, 0, ImGuiInputFlags_RouteGlobalLow))
+    {
+        state->ui.showLogs = !state->ui.showLogs;
     }
 }
