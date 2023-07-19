@@ -109,8 +109,7 @@ struct EdState
     } gl;
 
     float realtimeFov;
-    vec2 backOffset, backPeriod;
-    int hBackLineCount, vBackLineCount;
+    vec2 backOffset;
 
     mat4 editorView, editorProjection;
     mat4 realtimeView, realtimeProjection;
