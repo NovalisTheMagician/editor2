@@ -42,6 +42,136 @@ static void message_callback(GLenum source, GLenum type, GLuint id, GLenum sever
     printf("%s, %s, %s, %u: %s\n", src_str, type_str, severity_str, id, message);
 }
 
+static bool InitBackground(struct EdState *state)
+{
+    const char *hVertShaderSrc = 
+        "#version 460 core\n"
+        "layout(location=0) in vec2 inPosition;\n"
+        "uniform mat4 viewProj;\n"
+        "uniform float offset;\n"
+        "uniform float period;\n"
+        "void main() {\n"
+        "   float off = period * gl_InstanceID + offset;\n"
+        "   vec2 pos = inPosition + vec2(0, off);\n"
+        "   gl_Position = viewProj * vec4(pos, 0, 1);\n"
+        "}\n";
+
+    const char *vVertShaderSrc = 
+        "#version 460 core\n"
+        "layout(location=0) in vec2 inPosition;\n"
+        "uniform mat4 viewProj;\n"
+        "uniform float offset;\n"
+        "uniform float period;\n"
+        "void main() {\n"
+        "   float off = period * gl_InstanceID + offset;\n"
+        "   vec2 pos = inPosition + vec2(off, 0);\n"
+        "   gl_Position = viewProj * vec4(pos, 0, 1);\n"
+        "}\n";
+
+    const char *fragShaderSrc = 
+        "#version 460 core\n"
+        "uniform vec4 tint;\n"
+        "out vec4 fragColor;\n"
+        "void main() {\n"
+        "   fragColor = tint;\n"
+        "}\n";
+
+    int success;
+    char infoLog[512];
+
+    GLuint hVertShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(hVertShader, 1, &hVertShaderSrc, NULL);
+    glCompileShader(hVertShader);
+    glGetShaderiv(hVertShader, GL_COMPILE_STATUS, &success);
+    if(!success)
+    {
+        glGetShaderInfoLog(hVertShader, sizeof infoLog, NULL, infoLog);
+        printf("Failed to compile hVertex Shader: %s\n", infoLog);
+        return false;
+    };
+
+    GLuint vVertShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vVertShader, 1, &vVertShaderSrc, NULL);
+    glCompileShader(vVertShader);
+    glGetShaderiv(vVertShader, GL_COMPILE_STATUS, &success);
+    if(!success)
+    {
+        glGetShaderInfoLog(vVertShader, sizeof infoLog, NULL, infoLog);
+        printf("Failed to compile vVertex Shader: %s\n", infoLog);
+        return false;
+    };
+
+    GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragShader, 1, &fragShaderSrc, NULL);
+    glCompileShader(fragShader);
+    glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
+    if(!success)
+    {
+        glGetShaderInfoLog(fragShader, sizeof infoLog, NULL, infoLog);
+        printf("Failed to compile fragment Shader: %s\n", infoLog);
+        return false;
+    };
+
+    GLuint hProg = glCreateProgram();
+    glAttachShader(hProg, hVertShader);
+    glAttachShader(hProg, fragShader);
+    glLinkProgram(hProg);
+    glGetProgramiv(hProg, GL_LINK_STATUS, &success);
+    if(!success)
+    {
+        glGetProgramInfoLog(hProg, sizeof infoLog, NULL, infoLog);
+        printf("Failed to link hProg: %s\n", infoLog);
+        return false;
+    }
+
+    GLuint vProg = glCreateProgram();
+    glAttachShader(vProg, vVertShader);
+    glAttachShader(vProg, fragShader);
+    glLinkProgram(vProg);
+    glGetProgramiv(vProg, GL_LINK_STATUS, &success);
+    if(!success)
+    {
+        glGetProgramInfoLog(vProg, sizeof infoLog, NULL, infoLog);
+        printf("Failed to link vProg: %s\n", infoLog);
+        return false;
+    }
+
+    glDeleteShader(hVertShader);
+    glDeleteShader(vVertShader);
+    glDeleteShader(fragShader);
+
+    state->gl.editorBackProg.hProgram = hProg;
+    state->gl.editorBackProg.vProgram = vProg;
+
+    GLuint vao;
+    glCreateVertexArrays(1, &vao);
+    glEnableVertexArrayAttrib(vao, 0);
+    glVertexArrayAttribFormat(vao, 0, 2, GL_FLOAT, GL_FALSE, 0);
+    glVertexArrayAttribBinding(vao, 0, 0);
+
+    state->gl.editorBackProg.backVertexFormat = vao;
+
+    GLuint lineBuffer;
+    glCreateBuffers(1, &lineBuffer);
+    glNamedBufferStorage(lineBuffer, 4 * sizeof(vec2), NULL, GL_DYNAMIC_STORAGE_BIT);
+
+    glVertexArrayVertexBuffer(vao, 0, lineBuffer, 0, sizeof(vec2));
+
+    state->gl.backgroundLinesBuffer = lineBuffer;
+
+    state->gl.editorBackProg.hOffsetUniform = glGetUniformLocation(hProg, "offset");
+    state->gl.editorBackProg.hPeriodUniform = glGetUniformLocation(hProg, "period");
+    state->gl.editorBackProg.hTintUniform = glGetUniformLocation(hProg, "tint");
+    state->gl.editorBackProg.hVPUniform = glGetUniformLocation(hProg, "viewProj");
+
+    state->gl.editorBackProg.vOffsetUniform = glGetUniformLocation(vProg, "offset");
+    state->gl.editorBackProg.vPeriodUniform = glGetUniformLocation(vProg, "period");
+    state->gl.editorBackProg.vTintUniform = glGetUniformLocation(vProg, "tint");
+    state->gl.editorBackProg.vVPUniform = glGetUniformLocation(vProg, "viewProj");
+
+    return true;
+}
+
 bool InitEditor(struct EdState *state)
 {
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE);
@@ -55,11 +185,18 @@ bool InitEditor(struct EdState *state)
     state->ui.gridSize = 32;
     state->ui.zoomLevel = 1.0f;
 
+    if(!InitBackground(state))
+        return false;
+
     return true;
 }
 
 void DestroyEditor(struct EdState *state)
 {
+    glDeleteBuffers(1, &state->gl.backgroundLinesBuffer);
+    glDeleteVertexArrays(1, &state->gl.editorBackProg.backVertexFormat);
+    glDeleteProgram(state->gl.editorBackProg.hProgram);
+    glDeleteProgram(state->gl.editorBackProg.vProgram);
     glDeleteFramebuffers(2, (GLuint[]){ state->gl.editorFramebuffer, state->gl.realtimeFramebuffer });
     glDeleteTextures(3, (GLuint[])
                                 { 
@@ -79,13 +216,11 @@ void ResizeEditorView(struct EdState *state, int width, int height)
 
     if(state->gl.editorColorTexture > 0)
     {
-        glDeleteTextures(1, (GLuint[]){ state->gl.editorColorTexture });
+        glDeleteTextures(1, &state->gl.editorColorTexture);
     }
 
     glCreateTextures(GL_TEXTURE_2D, 1, &state->gl.editorColorTexture);
-
     glTextureStorage2D(state->gl.editorColorTexture, 1, GL_RGBA8, width, height);
-
     glTextureParameteri(state->gl.editorColorTexture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTextureParameteri(state->gl.editorColorTexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -93,6 +228,22 @@ void ResizeEditorView(struct EdState *state, int width, int height)
 
     state->gl.editorFramebufferWidth = width;
     state->gl.editorFramebufferHeight = height;
+
+    vec2 horLine[] = {{ 0, 0 }, { width, 0 }};
+    vec2 verLine[] = {{ 0, 0 }, { 0, height }};
+    glNamedBufferSubData(state->gl.backgroundLinesBuffer, 0, 2 * sizeof(vec2), horLine);
+    glNamedBufferSubData(state->gl.backgroundLinesBuffer, 2 * sizeof(vec2), 2 * sizeof(vec2), verLine);
+
+    glm_ortho(0, width, 0, height, -1, 1, state->editorProjection);
+
+    state->backPeriod[0] = state->ui.gridSize;
+    state->backPeriod[1] = state->ui.gridSize;
+
+    state->vBackLineCount = (width / state->backPeriod[0]) + 1;
+    state->hBackLineCount = (height / state->backPeriod[1]) + 1;
+
+    //state->backOffset[0] = state->ui.gridSize / width;
+    //state->backOffset[1] = state->ui.gridSize / height;
 }
 
 void ResizeRealtimeView(struct EdState *state, int width, int height)
@@ -109,14 +260,12 @@ void ResizeRealtimeView(struct EdState *state, int width, int height)
     }
 
     glCreateTextures(GL_TEXTURE_2D, 1, &state->gl.realtimeColorTexture);
-    glCreateTextures(GL_TEXTURE_2D, 1, &state->gl.realtimeDepthTexture);
-
     glTextureStorage2D(state->gl.realtimeColorTexture, 1, GL_RGBA8, width, height);
-    glTextureStorage2D(state->gl.realtimeDepthTexture, 1, GL_DEPTH24_STENCIL8, width, height);
-
     glTextureParameteri(state->gl.realtimeColorTexture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTextureParameteri(state->gl.realtimeColorTexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    glCreateTextures(GL_TEXTURE_2D, 1, &state->gl.realtimeDepthTexture);
+    glTextureStorage2D(state->gl.realtimeDepthTexture, 1, GL_DEPTH24_STENCIL8, width, height);
     glTextureParameteri(state->gl.realtimeDepthTexture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTextureParameteri(state->gl.realtimeDepthTexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
@@ -129,7 +278,22 @@ void ResizeRealtimeView(struct EdState *state, int width, int height)
 
 void RenderEditorView(const struct EdState *state, const struct Map *map)
 {
+    glBindVertexArray(state->gl.editorBackProg.backVertexFormat);
+    glUseProgram(state->gl.editorBackProg.hProgram);
+    glUniform1f(state->gl.editorBackProg.hOffsetUniform, state->backOffset[1]);
+    glUniform1f(state->gl.editorBackProg.hPeriodUniform, state->backPeriod[1]);
+    glUniform4fv(state->gl.editorBackProg.hTintUniform, 1, state->settings.colors[COL_BACK_LINES]);
+    glUniformMatrix4fv(state->gl.editorBackProg.hVPUniform, 1, false, (float*)state->editorProjection);
 
+    glDrawArraysInstanced(GL_LINES, 0, 2, state->hBackLineCount);
+
+    glUseProgram(state->gl.editorBackProg.vProgram);
+    glUniform1f(state->gl.editorBackProg.vOffsetUniform, state->backOffset[0]);
+    glUniform1f(state->gl.editorBackProg.vPeriodUniform, state->backPeriod[0]);
+    glUniform4fv(state->gl.editorBackProg.vTintUniform, 1, state->settings.colors[COL_BACK_LINES]);
+    glUniformMatrix4fv(state->gl.editorBackProg.vVPUniform, 1, false, (float*)state->editorProjection);
+
+    glDrawArraysInstanced(GL_LINES, 2, 2, state->vBackLineCount);
 }
 
 void RenderRealtimeView(const struct EdState *state, const struct Map *map)

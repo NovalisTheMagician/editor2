@@ -39,6 +39,7 @@ int EditorMain(int argc, char *argv[])
     if(!glContext) return EXIT_FAILURE;
 
     if(!InitImgui(window, glContext)) return EXIT_FAILURE;
+    SetStyle(state.settings.theme);
 
     if(!InitEditor(&state)) return EXIT_FAILURE;
 
@@ -69,11 +70,14 @@ int EditorMain(int argc, char *argv[])
         if(DoGui(&state, &map))
             quit = true;
 
-        glBindFramebuffer(GL_FRAMEBUFFER, state.gl.editorFramebuffer);
-        glViewport(0, 0, state.gl.editorFramebufferWidth, state.gl.editorFramebufferHeight);
-        glClearColor(state.settings.colors[COL_BACKGROUND][0], state.settings.colors[COL_BACKGROUND][1], state.settings.colors[COL_BACKGROUND][2], state.settings.colors[COL_BACKGROUND][3]);
-        glClear(GL_COLOR_BUFFER_BIT);
-        RenderEditorView(&state, &map);
+        if(state.gl.editorColorTexture > 0)
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, state.gl.editorFramebuffer);
+            glViewport(0, 0, state.gl.editorFramebufferWidth, state.gl.editorFramebufferHeight);
+            glClearColor(state.settings.colors[COL_BACKGROUND][0], state.settings.colors[COL_BACKGROUND][1], state.settings.colors[COL_BACKGROUND][2], state.settings.colors[COL_BACKGROUND][3]);
+            glClear(GL_COLOR_BUFFER_BIT);
+            RenderEditorView(&state, &map);
+        }
 
         if(state.ui.show3dView && state.gl.realtimeColorTexture > 0)
         {
@@ -152,7 +156,9 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
 
     ImGuiIO *ioptr = igGetIO();
     ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    //ioptr->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+#if defined(USE_DOCKING)
+    ioptr->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+#endif
 
     ImFontAtlas_AddFontFromFileTTF(ioptr->Fonts, "UbuntuMono-Regular.ttf", 15, NULL, NULL);
 
@@ -160,10 +166,6 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
 
     ImGui_ImplSDL2_InitForOpenGL(window, context);
     ImGui_ImplOpenGL3_Init("#version 460");
-
-    //igStyleColorsDark(NULL);
-    //igStyleColorsLight(NULL);
-    SetStyle(igGetStyle());
 
     return true;
 }

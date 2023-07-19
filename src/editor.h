@@ -9,6 +9,17 @@
 #define MAX_GAMEPATH_LEN 256
 #define MAX_GAMEARGUMENTS_LEN 256
 
+enum Theme
+{
+    THEME_IMGUI_LIGHT,
+    THEME_IMGUI_DARK,
+    THEME_IMGUI_CLASSIC,
+    THEME_VALVE,
+    THEME_DEUSEX,
+
+    NUM_THEMES
+};
+
 enum Colors
 {
     COL_WORKSPACE_BACK,
@@ -44,6 +55,7 @@ static inline void SetColor(Color *to, Color from)
 struct EdSettings
 {
     Color colors[NUM_COLORS];
+    int theme;
 
     char gamePath[MAX_GAMEPATH_LEN];
     char launchArguments[MAX_GAMEARGUMENTS_LEN];
@@ -85,8 +97,23 @@ struct EdState
         GLuint realtimeColorTexture;
         GLuint realtimeDepthTexture;
 
-        GLuint hBackLinesBuffer, vBackLinesBuffer;
+        GLuint backgroundLinesBuffer;
+
+        struct 
+        {
+            GLuint hProgram, vProgram;
+            GLuint hOffsetUniform, vOffsetUniform, hPeriodUniform, vPeriodUniform, hTintUniform, vTintUniform;
+            GLuint hVPUniform, vVPUniform;
+            GLuint backVertexFormat;
+        } editorBackProg;
     } gl;
+
+    float realtimeFov;
+    vec2 backOffset, backPeriod;
+    int hBackLineCount, vBackLineCount;
+
+    mat4 editorView, editorProjection;
+    mat4 realtimeView, realtimeProjection;
 };
 
 const char* ColorIndexToString(enum Colors color);

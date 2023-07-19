@@ -31,6 +31,8 @@ void ResetSettings(struct EdSettings *settings)
     memset(settings->gamePath, 0, MAX_GAMEPATH_LEN);
     memset(settings->launchArguments, 0, MAX_GAMEPATH_LEN);
     strncpy(settings->launchArguments, "-debug -map %1", MAX_GAMEPATH_LEN);
+
+    settings->theme = 0;
 }
 
 bool LoadSettings(const char *settingsPath, struct EdSettings *settings)

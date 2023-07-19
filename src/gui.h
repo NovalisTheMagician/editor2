@@ -7,5 +7,7 @@
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include <cimgui.h>
 
-void SetStyle(ImGuiStyle *style);
+void SetValveStyle(ImGuiStyle *style);
+void SetDeusExStyle(ImGuiStyle *style);
+void SetStyle(enum Theme theme);
 bool DoGui(struct EdState *state, struct Map *map);
