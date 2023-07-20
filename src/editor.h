@@ -76,8 +76,11 @@ struct EdState
         bool show3dView;
         bool showLogs;
 
+        bool showBuildLog;
+
         bool showSettings;
         bool showMapSettings;
+        bool showProjectSettings;
 
         int gridSize;
         float zoomLevel;

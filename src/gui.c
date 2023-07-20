@@ -57,6 +57,8 @@ void SetValveStyle(ImGuiStyle *style)
     colors[ImGuiCol_ModalWindowDimBg]           = (ImVec4){0.80f, 0.80f, 0.80f, 0.35f};
 
     style->FrameBorderSize = 1.0f;
+
+    /*
     style->WindowRounding = 0.0f;
     style->ChildRounding = 0.0f;
     style->FrameRounding = 0.0f;
@@ -64,6 +66,7 @@ void SetValveStyle(ImGuiStyle *style)
     style->ScrollbarRounding = 0.0f;
     style->GrabRounding = 0.0f;
     style->TabRounding = 0.0f;
+    */
 }
 
 void SetDeusExStyle(ImGuiStyle *style)
@@ -119,6 +122,7 @@ void SetDeusExStyle(ImGuiStyle *style)
     colors[ImGuiCol_NavWindowingDimBg]      = (ImVec4){0.80f, 0.80f, 0.80f, 0.20f};
     colors[ImGuiCol_ModalWindowDimBg]       = (ImVec4){0.80f, 0.80f, 0.80f, 0.35f};
 
+    /*
     style->FramePadding = (ImVec2){4, 2};
     style->ItemSpacing = (ImVec2){10, 2};
     style->IndentSpacing = 12;
@@ -130,6 +134,7 @@ void SetDeusExStyle(ImGuiStyle *style)
     style->ScrollbarRounding = 6;
     style->GrabRounding = 4;
     style->TabRounding = 4;
+    */
 
     //style->WindowTitleAlign = (ImVec2){1.0f, 0.5f};
     //style->WindowMenuButtonPosition = ImGuiDir_Right;
@@ -139,14 +144,16 @@ void SetDeusExStyle(ImGuiStyle *style)
 
 void SetStyle(enum Theme theme)
 {
+    ImGuiStyle *style = igGetStyle();
+    style->FrameBorderSize = 0.0f;
     switch(theme)
     {
-    case THEME_IMGUI_LIGHT: igStyleColorsLight(igGetStyle()); break;
-    case THEME_IMGUI_DARK: igStyleColorsDark(igGetStyle()); break;
-    case THEME_IMGUI_CLASSIC: igStyleColorsClassic(igGetStyle()); break;
-    case THEME_VALVE: SetValveStyle(igGetStyle()); break;
-    case THEME_DEUSEX: SetDeusExStyle(igGetStyle()); break;
-    default: igStyleColorsLight(igGetStyle()); break;
+    case THEME_IMGUI_LIGHT: igStyleColorsLight(style); break;
+    case THEME_IMGUI_DARK: igStyleColorsDark(style); break;
+    case THEME_IMGUI_CLASSIC: igStyleColorsClassic(style); break;
+    case THEME_VALVE: SetValveStyle(style); break;
+    case THEME_DEUSEX: SetDeusExStyle(style); break;
+    default: igStyleColorsLight(style); break;
     }
 }
 
@@ -193,12 +200,14 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
     {
         if(igBeginMenu("File", true))
         {
-            if(igMenuItem_Bool("New", "Ctrl+N", false, true)) { printf("New Map!\n"); }
-            if(igMenuItem_Bool("Open", "Ctrl+O", false, true)) { printf("Open Map!\n"); }
-            if(igMenuItem_Bool("Save", "Ctrl+S", false, true)) { printf("Save Map!\n"); }
-            if(igMenuItem_Bool("SaveAs", "", false, true)) { printf("Save Map As!\n"); }
+            if(igMenuItem_Bool("New Project", "", false, true)) { printf("New Project!\n"); }
+            if(igMenuItem_Bool("Open Project", "", false, true)) { printf("Open Project!\n"); }
+            if(igMenuItem_Bool("Save Project", "", false, true)) { printf("Save Project!\n"); }
             igSeparator();
-            if(igMenuItem_Bool("Export", "", false, true)) {  }
+            if(igMenuItem_Bool("New Map", "Ctrl+N", false, true)) { printf("New Map!\n"); }
+            if(igMenuItem_Bool("Open Map", "Ctrl+O", false, true)) { printf("Open Map!\n"); }
+            if(igMenuItem_Bool("Save Map", "Ctrl+S", false, true)) { printf("Save Map!\n"); }
+            if(igMenuItem_Bool("SaveAs Map", "", false, true)) { printf("Save Map As!\n"); }
             igSeparator();
             if(igMenuItem_Bool("Quit", "Alt+F4", false, true)) { *doQuit = true; }
             igEndMenu();
@@ -222,6 +231,7 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
             }
             igSeparator();
             igMenuItem_BoolPtr("Map Settings", "", &state->ui.showMapSettings, true);
+            igMenuItem_BoolPtr("Project Settings", "", &state->ui.showProjectSettings, true);
             igSeparator();
             igMenuItem_BoolPtr("Editor Options", "", &state->ui.showSettings, true);
             igEndMenu();
@@ -235,7 +245,19 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
 
         if(igBeginMenu("Build", true))
         {
-            igMenuItem_Bool("DRAGONS!", "", false, false);
+            if(igMenuItem_Bool("Map", "Ctrl+B", false, true)) {  }
+            if(igBeginMenu("Make", true))
+            {
+                if(igMenuItem_Bool("Textures", "", false, true)) {  }
+                if(igMenuItem_Bool("Maps", "", false, true)) {  }
+                igSeparator();
+                if(igMenuItem_Bool("All", "Ctrl+M", false, true)) {  }
+                if(igMenuItem_Bool("Clean", "", false, true)) {  }
+                igEndMenu();
+            }
+            if(igMenuItem_Bool("Run Map", "Ctrl+R", false, true)) {  }
+            igSeparator();
+            igMenuItem_BoolPtr("Build Log", "", &state->ui.showBuildLog, true);
             igEndMenu();
         }
 
@@ -266,7 +288,7 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
             igEndMenu();
         }
 
-        char buffer[128];
+        char buffer[64];
         snprintf(buffer, sizeof buffer, "%d FPS (%.4f ms)", (int)round(igGetIO()->Framerate), 1.0f / igGetIO()->Framerate);
         ImVec2 textSize;
         igCalcTextSize(&textSize, buffer, buffer + strlen(buffer) + 1, false, 0);
