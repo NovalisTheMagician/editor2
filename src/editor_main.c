@@ -44,6 +44,7 @@ int EditorMain(int argc, char *argv[])
     if(!InitEditor(&state)) return EXIT_FAILURE;
 
     struct Map map = { 0 };
+    NewMap(&map);
 
     ImGuiIO *ioptr = igGetIO();
 

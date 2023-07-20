@@ -24,15 +24,15 @@ void NewMap(struct Map *map)
     if(map->file) free(map->file);
     map->file = NULL;
 
-    map->dirty = true;
+    map->dirty = false;
 }
 
-bool LoadMap(struct Map *map, const char *file)
+bool LoadMap(struct Map *map)
 {
     return false;
 }
 
-void SaveMap(const struct Map *map, const char *file)
+void SaveMap(const struct Map *map, bool useDialog)
 {
 
 }

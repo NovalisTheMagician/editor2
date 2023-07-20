@@ -36,8 +36,8 @@ struct Map
 };
 
 void NewMap(struct Map *map);
-bool LoadMap(struct Map *map, const char *file);
-void SaveMap(const struct Map *map, const char *file);
+bool LoadMap(struct Map *map);
+void SaveMap(const struct Map *map, bool useDialog);
 
 void AddVertex(struct Map *map, struct Vertex pos);
 void RemoveVertex(struct Map *map, size_t index);
