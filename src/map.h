@@ -52,3 +52,6 @@ void SaveMap(const struct Map *map, bool useDialog);
 void AddVertex(struct Map *map, struct Vertex pos);
 void RemoveVertex(struct Map *map, size_t index);
 bool GetVertex(struct Map *map, struct Vertex pos, size_t *ind);
+
+void AddLine(struct Map *map, size_t v0, size_t v1);
+void RemoveLine(struct Map *map, size_t index);

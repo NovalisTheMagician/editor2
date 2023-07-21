@@ -153,6 +153,8 @@ static SDL_Window* InitSDL(void)
         return NULL;
     }
 
+    SDL_EnableScreenSaver();
+
     return window;
 }
 

@@ -42,136 +42,6 @@ static void message_callback(GLenum source, GLenum type, GLuint id, GLenum sever
     printf("%s, %s, %s, %u: %s\n", src_str, type_str, severity_str, id, message);
 }
 
-static bool InitBackground(struct EdState *state)
-{
-    const char *hVertShaderSrc = 
-        "#version 460 core\n"
-        "layout(location=0) in vec2 inPosition;\n"
-        "uniform mat4 viewProj;\n"
-        "uniform float offset;\n"
-        "uniform float period;\n"
-        "void main() {\n"
-        "   float off = period * gl_InstanceID + offset;\n"
-        "   vec2 pos = inPosition + vec2(0, off);\n"
-        "   gl_Position = viewProj * vec4(pos, 0, 1);\n"
-        "}\n";
-
-    const char *vVertShaderSrc = 
-        "#version 460 core\n"
-        "layout(location=0) in vec2 inPosition;\n"
-        "uniform mat4 viewProj;\n"
-        "uniform float offset;\n"
-        "uniform float period;\n"
-        "void main() {\n"
-        "   float off = period * gl_InstanceID + offset;\n"
-        "   vec2 pos = inPosition + vec2(off, 0);\n"
-        "   gl_Position = viewProj * vec4(pos, 0, 1);\n"
-        "}\n";
-
-    const char *fragShaderSrc = 
-        "#version 460 core\n"
-        "uniform vec4 tint;\n"
-        "out vec4 fragColor;\n"
-        "void main() {\n"
-        "   fragColor = tint;\n"
-        "}\n";
-
-    int success;
-    char infoLog[512];
-
-    GLuint hVertShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(hVertShader, 1, &hVertShaderSrc, NULL);
-    glCompileShader(hVertShader);
-    glGetShaderiv(hVertShader, GL_COMPILE_STATUS, &success);
-    if(!success)
-    {
-        glGetShaderInfoLog(hVertShader, sizeof infoLog, NULL, infoLog);
-        printf("Failed to compile hVertex Shader: %s\n", infoLog);
-        return false;
-    };
-
-    GLuint vVertShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vVertShader, 1, &vVertShaderSrc, NULL);
-    glCompileShader(vVertShader);
-    glGetShaderiv(vVertShader, GL_COMPILE_STATUS, &success);
-    if(!success)
-    {
-        glGetShaderInfoLog(vVertShader, sizeof infoLog, NULL, infoLog);
-        printf("Failed to compile vVertex Shader: %s\n", infoLog);
-        return false;
-    };
-
-    GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragShader, 1, &fragShaderSrc, NULL);
-    glCompileShader(fragShader);
-    glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
-    if(!success)
-    {
-        glGetShaderInfoLog(fragShader, sizeof infoLog, NULL, infoLog);
-        printf("Failed to compile fragment Shader: %s\n", infoLog);
-        return false;
-    };
-
-    GLuint hProg = glCreateProgram();
-    glAttachShader(hProg, hVertShader);
-    glAttachShader(hProg, fragShader);
-    glLinkProgram(hProg);
-    glGetProgramiv(hProg, GL_LINK_STATUS, &success);
-    if(!success)
-    {
-        glGetProgramInfoLog(hProg, sizeof infoLog, NULL, infoLog);
-        printf("Failed to link hProg: %s\n", infoLog);
-        return false;
-    }
-
-    GLuint vProg = glCreateProgram();
-    glAttachShader(vProg, vVertShader);
-    glAttachShader(vProg, fragShader);
-    glLinkProgram(vProg);
-    glGetProgramiv(vProg, GL_LINK_STATUS, &success);
-    if(!success)
-    {
-        glGetProgramInfoLog(vProg, sizeof infoLog, NULL, infoLog);
-        printf("Failed to link vProg: %s\n", infoLog);
-        return false;
-    }
-
-    glDeleteShader(hVertShader);
-    glDeleteShader(vVertShader);
-    glDeleteShader(fragShader);
-
-    state->gl.editorBackProg.hProgram = hProg;
-    state->gl.editorBackProg.vProgram = vProg;
-
-    GLuint vao;
-    glCreateVertexArrays(1, &vao);
-    glEnableVertexArrayAttrib(vao, 0);
-    glVertexArrayAttribFormat(vao, 0, 2, GL_FLOAT, GL_FALSE, 0);
-    glVertexArrayAttribBinding(vao, 0, 0);
-
-    state->gl.editorBackProg.backVertexFormat = vao;
-
-    GLuint lineBuffer;
-    glCreateBuffers(1, &lineBuffer);
-    glNamedBufferStorage(lineBuffer, 4 * sizeof(vec2), NULL, GL_DYNAMIC_STORAGE_BIT);
-
-    glVertexArrayVertexBuffer(vao, 0, lineBuffer, 0, sizeof(vec2));
-
-    state->gl.backgroundLinesBuffer = lineBuffer;
-
-    state->gl.editorBackProg.hOffsetUniform = glGetUniformLocation(hProg, "offset");
-    state->gl.editorBackProg.hPeriodUniform = glGetUniformLocation(hProg, "period");
-    state->gl.editorBackProg.hTintUniform = glGetUniformLocation(hProg, "tint");
-    state->gl.editorBackProg.hVPUniform = glGetUniformLocation(hProg, "viewProj");
-
-    state->gl.editorBackProg.vOffsetUniform = glGetUniformLocation(vProg, "offset");
-    state->gl.editorBackProg.vPeriodUniform = glGetUniformLocation(vProg, "period");
-    state->gl.editorBackProg.vTintUniform = glGetUniformLocation(vProg, "tint");
-    state->gl.editorBackProg.vVPUniform = glGetUniformLocation(vProg, "viewProj");
-
-    return true;
-}
-
 bool InitEditor(struct EdState *state)
 {
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE);
@@ -185,7 +55,7 @@ bool InitEditor(struct EdState *state)
     state->ui.gridSize = 32;
     state->ui.zoomLevel = 1.0f;
 
-    if(!InitBackground(state))
+    if(!LoadShaders(state))
         return false;
 
     return true;
@@ -204,6 +74,10 @@ void DestroyEditor(struct EdState *state)
                                     state->gl.realtimeColorTexture, 
                                     state->gl.realtimeDepthTexture
                                 });
+
+    glDeleteProgram(state->gl.editorVertex.program);
+    glDeleteBuffers(1, &state->gl.editorVertex.vertBuffer);
+    glDeleteVertexArrays(1, &state->gl.editorVertex.vertFormat);
 }
 
 void ResizeEditorView(struct EdState *state, int width, int height)

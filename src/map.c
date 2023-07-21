@@ -63,8 +63,6 @@ void RemoveVertex(struct Map *map, size_t index)
     map->numVertices--;
 
     // remove lines affected by vertex
-
-    // remove sector affected by vertex
 }
 
 bool GetVertex(struct Map *map, struct Vertex pos, size_t *ind)

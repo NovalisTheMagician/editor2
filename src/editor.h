@@ -61,6 +61,12 @@ struct EdSettings
     char launchArguments[MAX_GAMEARGUMENTS_LEN];
 };
 
+struct VertexType
+{
+    int32_t x, y;
+    Color color;
+};
+
 struct EdState
 {
     struct EdSettings settings;
@@ -110,6 +116,15 @@ struct EdState
             GLuint hVPUniform, vVPUniform;
             GLuint backVertexFormat;
         } editorBackProg;
+
+        struct
+        {
+            GLuint program;
+            GLuint viewProjUniform;
+            GLuint vertBuffer;
+            GLuint vertFormat;
+            void *bufferMap;
+        } editorVertex;
     } gl;
 
     float realtimeFov;
@@ -124,6 +139,8 @@ const char* ColorIndexToString(enum Colors color);
 void ResetSettings(struct EdSettings *settings);
 bool LoadSettings(const char *settingsPath, struct EdSettings *settings);
 void SaveSettings(const char *settingsPath, const struct EdSettings *settings);
+
+bool LoadShaders(struct EdState *state);
 
 bool InitEditor(struct EdState *state);
 void DestroyEditor(struct EdState *state);
