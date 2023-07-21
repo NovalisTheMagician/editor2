@@ -187,7 +187,8 @@ static SDL_GLContext InitOpenGL(SDL_Window *window)
     SDL_GL_MakeCurrent(window, glContext);
     if(!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress))
     {
-        printf("couldn't load GL functions\n");
+        GLenum err = glGetError();
+        printf("couldn't load GL functions: %d\n", err);
         return NULL;
     }
 
