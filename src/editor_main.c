@@ -184,12 +184,12 @@ static SDL_GLContext InitOpenGL(SDL_Window *window)
     SDL_GLContext glContext = SDL_GL_CreateContext(window);
     SDL_GL_SetSwapInterval(1);
 
+    SDL_GL_MakeCurrent(window, glContext);
     if(!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress))
     {
         printf("couldn't load GL functions");
         return NULL;
     }
 
-    SDL_GL_MakeCurrent(window, glContext);
     return glContext;
 }
