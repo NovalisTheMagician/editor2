@@ -81,6 +81,7 @@ struct EdState
         bool showEntities;
         bool show3dView;
         bool showLogs;
+        bool showStats;
 
         bool showBuildLog;
 

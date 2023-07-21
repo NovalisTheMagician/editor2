@@ -162,6 +162,7 @@ static void SettingsWindow(bool *p_open, struct EdState *state);
 static void ToolbarWindow(bool *p_open, struct EdState *state);
 static void EditorWindow(bool *p_open, struct EdState *state);
 static void RealtimeWindow(bool *p_open, struct EdState *state);
+static void StatsWindow(bool *p_open, struct EdState *state);
 static void MainMenuBar(bool *doQuit, struct EdState *state, struct Map *map);
 
 static void ProjectSavePopup(struct EdState *state);
@@ -201,6 +202,9 @@ bool DoGui(struct EdState *state, struct Map *map)
 
     if(state->ui.show3dView)
         RealtimeWindow(&state->ui.show3dView, state);
+
+    if(state->ui.showStats)
+        StatsWindow(&state->ui.showStats, state);
 
     EditorWindow(NULL, state);
 
@@ -293,6 +297,10 @@ static void MainMenuBar(bool *doQuit, struct EdState *state, struct Map *map)
             igMenuItem_BoolPtr("3D View", "Ctrl+W", &state->ui.show3dView, true);
             igSeparator();
             igMenuItem_BoolPtr("Logs", "Ctrl+L", &state->ui.showLogs, true);
+#ifdef _DEBUG
+            igSeparator();
+            igMenuItem_BoolPtr("Stats", "", &state->ui.showStats, true);
+#endif
             igEndMenu();
         }
 
@@ -439,6 +447,15 @@ static void EditorWindow(bool *p_open, struct EdState *state)
 
             if(hovored)
             {
+                if(igIsMouseDragging(ImGuiMouseButton_Middle, 2))
+                {
+                    ImVec2 dragDelta;
+                    igGetMouseDragDelta(&dragDelta, ImGuiMouseButton_Middle, 2);
+                    state->ui.viewPosition.x -= dragDelta.x;
+                    state->ui.viewPosition.y -= dragDelta.y;
+                    igResetMouseDragDelta(ImGuiMouseButton_Middle);
+                }
+
                 if(igIsMouseClicked_Bool(ImGuiMouseButton_Left, false)) 
                 {
                     
@@ -454,8 +471,15 @@ static void EditorWindow(bool *p_open, struct EdState *state)
                     
                 }
 
-                ImGuiKeyData *data = igGetKeyData_Key(ImGuiKey_MouseWheelY);
-                (void)data;
+                ImGuiKeyData *wheelData = igGetKeyData_Key(ImGuiKey_MouseWheelY);
+                if(wheelData->AnalogValue != 0)
+                {
+                    state->ui.zoomLevel += wheelData->AnalogValue * 0.05f;
+                    if(state->ui.zoomLevel < 0.05f)
+                        state->ui.zoomLevel = 0.05f;
+                    if(state->ui.zoomLevel > 4)
+                        state->ui.zoomLevel = 4;
+                }
             }
 
             if(focused)
@@ -489,21 +513,38 @@ static void RealtimeWindow(bool *p_open, struct EdState *state)
             bool hovored = igIsWindowHovered(0);
             bool focused = igIsWindowFocused(0);
 
-            if(igIsMouseClicked_Bool(ImGuiMouseButton_Left, false)) 
+            ImVec2 mpos;
+            igGetMousePos(&mpos);
+            int relX = (int)mpos.x - (int)clientPos.x;
+            int relY = (int)mpos.y - (int)clientPos.y;
+            (void)relX;
+            (void)relY;
+
+            if(hovored)
             {
-                ImVec2 mpos;
-                igGetMousePos(&mpos);
-                int relX = (int)mpos.x - (int)clientPos.x;
-                int relY = (int)mpos.y - (int)clientPos.y;
-                
-                if((relX >= 0 && relX < clientArea.x && relY >= 0 && relY < clientArea.y))
-                    printf("Click: %d | %d; Hovered: %d; Focused: %d\n", relX,  relY, hovored, focused);
+
+            }
+
+            if(focused)
+            {
+
             }
 
             ResizeRealtimeView(state, clientArea.x, clientArea.y);
             igImage((void*)(intptr_t)state->gl.realtimeColorTexture, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 0 });
         }
         igEndChild();
+    }
+    igEnd();
+}
+
+static void StatsWindow(bool *p_open, struct EdState *state)
+{
+    if(igBegin("Debug Stats", p_open, 0))
+    {
+        igSeparatorText("Editor");
+        igText("Viewposition: %.2f | %.2f", state->ui.viewPosition.x, state->ui.viewPosition.y);
+        igText("Zoomlevel: %.2f", state->ui.zoomLevel);
     }
     igEnd();
 }

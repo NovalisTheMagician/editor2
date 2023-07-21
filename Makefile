@@ -36,7 +36,7 @@ ifeq ($(OS),Windows_NT)
 else
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
-        LIBS += asound gtk-3 gdk-3 gdk_pixbuf-2.0 pangocairo-1.0 pango-1.0 cairo gobject-2.0 gmodule-2.0 glib-2.0 Xext X11
+        LIBS += asound gtk-3 gdk-3 gdk_pixbuf-2.0 pangocairo-1.0 pango-1.0 cairo gobject-2.0 gmodule-2.0 glib-2.0 Xext X11 GL
         DEFINES += 
     endif
     ifeq ($(UNAME_S),Darwin)

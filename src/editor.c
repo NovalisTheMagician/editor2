@@ -1,5 +1,7 @@
 #include "editor.h"
 
+#include <tgmath.h>
+
 static void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
 {
     const char *src_str = ({
@@ -143,14 +145,17 @@ void ResizeRealtimeView(struct EdState *state, int width, int height)
 
 void RenderEditorView(const struct EdState *state, const struct Map *map)
 {
+    float offsetX = fmod(-state->ui.viewPosition.x, (float)state->ui.gridSize);
+    float offsetY = fmod(-state->ui.viewPosition.y, (float)state->ui.gridSize);
+
     float period = state->ui.gridSize;
 
-    int vLines = (state->gl.editorFramebufferWidth / period) + 1;
-    int hLines = (state->gl.editorFramebufferHeight / period) + 1;
+    int vLines = (state->gl.editorFramebufferWidth / period) + 2;
+    int hLines = (state->gl.editorFramebufferHeight / period) + 2;
 
     glBindVertexArray(state->gl.editorBackProg.backVertexFormat);
     glUseProgram(state->gl.editorBackProg.hProgram);
-    glUniform1f(state->gl.editorBackProg.hOffsetUniform, state->backOffset[1]);
+    glUniform1f(state->gl.editorBackProg.hOffsetUniform, offsetY);
     glUniform1f(state->gl.editorBackProg.hPeriodUniform, period);
     glUniform4fv(state->gl.editorBackProg.hTintUniform, 1, state->settings.colors[COL_BACK_LINES]);
     glUniformMatrix4fv(state->gl.editorBackProg.hVPUniform, 1, false, (float*)state->editorProjection);
@@ -158,7 +163,7 @@ void RenderEditorView(const struct EdState *state, const struct Map *map)
     glDrawArraysInstanced(GL_LINES, 0, 2, hLines);
 
     glUseProgram(state->gl.editorBackProg.vProgram);
-    glUniform1f(state->gl.editorBackProg.vOffsetUniform, state->backOffset[0]);
+    glUniform1f(state->gl.editorBackProg.vOffsetUniform, offsetX);
     glUniform1f(state->gl.editorBackProg.vPeriodUniform, period);
     glUniform4fv(state->gl.editorBackProg.vTintUniform, 1, state->settings.colors[COL_BACK_LINES]);
     glUniformMatrix4fv(state->gl.editorBackProg.vVPUniform, 1, false, (float*)state->editorProjection);
