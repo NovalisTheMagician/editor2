@@ -149,7 +149,8 @@ static SDL_Window* InitSDL(void)
     SDL_Window *window = SDL_CreateWindow("Editor2", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, flags);
     if(!window)
     {
-        printf("failed to create window\n");
+        const char *errMsg = SDL_GetError();
+        printf("failed to create window: %s\n", errMsg);
         return NULL;
     }
 
