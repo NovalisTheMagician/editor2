@@ -2,6 +2,16 @@
 
 #include "common.h"
 
+enum LineType
+{
+    LT_NORMAL
+};
+
+enum SectorType
+{
+    ST_NORMAL
+};
+
 struct Vertex
 {
     int32_t x, y;
