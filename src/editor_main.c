@@ -47,8 +47,7 @@ int EditorMain(int argc, char *argv[])
 
     if(!InitEditor(&state)) return EXIT_FAILURE;
 
-    struct Map map = { 0 };
-    NewMap(&map);
+    NewMap(&state.map);
 
     ImGuiIO *ioptr = igGetIO();
 
@@ -72,8 +71,7 @@ int EditorMain(int argc, char *argv[])
         ImGui_ImplSDL2_NewFrame();
         igNewFrame();
 
-        if(DoGui(&state, &map))
-            quit = true;
+        quit = DoGui(&state, quit);
 
         if(state.gl.editorColorTexture > 0)
         {
@@ -81,7 +79,7 @@ int EditorMain(int argc, char *argv[])
             glViewport(0, 0, state.gl.editorFramebufferWidth, state.gl.editorFramebufferHeight);
             glClearColor(state.settings.colors[COL_BACKGROUND][0], state.settings.colors[COL_BACKGROUND][1], state.settings.colors[COL_BACKGROUND][2], state.settings.colors[COL_BACKGROUND][3]);
             glClear(GL_COLOR_BUFFER_BIT);
-            RenderEditorView(&state, &map);
+            RenderEditorView(&state);
         }
 
         if(state.ui.show3dView && state.gl.realtimeColorTexture > 0)
@@ -94,7 +92,7 @@ int EditorMain(int argc, char *argv[])
             glClearColor(state.settings.colors[COL_RTBACKGROUND][0], state.settings.colors[COL_RTBACKGROUND][1], state.settings.colors[COL_RTBACKGROUND][2], state.settings.colors[COL_RTBACKGROUND][3]);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            RenderRealtimeView(&state, &map);
+            RenderRealtimeView(&state);
 
             glDisable(GL_CULL_FACE);
             glDisable(GL_DEPTH_TEST);
@@ -174,7 +172,7 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
     ioptr->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 #endif
 
-    uint8_t *font = malloc(gFontSize); // why do we have to make a copy here? should probably free it at the end but eh
+    uint8_t *font = malloc(gFontSize); // imgui needs ownership of the font and the embedded data cant be free'd at imgui destruction time. should probably free it at the end but eh
     memcpy(font, gFontData, gFontSize);
     ImFontAtlas_AddFontFromMemoryTTF(ioptr->Fonts, font, gFontSize, 15, NULL, NULL); // why does imgui take ownership of the font ???
 

@@ -3,8 +3,9 @@
 
 static void IncreaseBufferSize(void **buffer, size_t *capacity, size_t elementSize);
 
-void EditAddVertex(struct EdState *state, struct Map *map, struct Vertex pos)
+void EditAddVertex(struct EdState *state, struct Vertex pos)
 {
+    struct Map *map = &state->map;
     for(size_t i = 0; i < map->numVertices; ++i)
     {
         const struct Vertex v = map->vertices[i];
@@ -16,8 +17,9 @@ void EditAddVertex(struct EdState *state, struct Map *map, struct Vertex pos)
         IncreaseBufferSize((void**)&map->vertices, &map->numAllocVertices, sizeof *map->vertices);
 }
 
-void EditRemoveVertex(struct EdState *state, struct Map *map, size_t index)
+void EditRemoveVertex(struct EdState *state, size_t index)
 {
+    struct Map *map = &state->map;
     if(index >= map->numVertices) return;
 
     // shift everything above index down
@@ -30,7 +32,7 @@ void EditRemoveVertex(struct EdState *state, struct Map *map, size_t index)
     // remove lines affected by vertex
 }
 
-bool EditGetVertex(struct EdState *state, struct Map *map, struct Vertex pos, size_t *ind)
+bool EditGetVertex(struct EdState *state, struct Vertex pos, size_t *ind)
 {
     return false;
 }

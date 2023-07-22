@@ -143,7 +143,7 @@ void ResizeRealtimeView(struct EdState *state, int width, int height)
     state->gl.realtimeFramebufferHeight = height;
 }
 
-void RenderEditorView(const struct EdState *state, const struct Map *map)
+void RenderEditorView(const struct EdState *state)
 {
     float offsetX = fmod(-state->ui.viewPosition.x, (float)state->ui.gridSize);
     float offsetY = fmod(-state->ui.viewPosition.y, (float)state->ui.gridSize);
@@ -171,7 +171,7 @@ void RenderEditorView(const struct EdState *state, const struct Map *map)
     glDrawArraysInstanced(GL_LINES, 2, 2, vLines);
 }
 
-void RenderRealtimeView(const struct EdState *state, const struct Map *map)
+void RenderRealtimeView(const struct EdState *state)
 {
 
 }

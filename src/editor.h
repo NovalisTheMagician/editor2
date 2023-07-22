@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "map.h"
+#include "project.h"
 
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include <cimgui.h>
@@ -70,6 +71,8 @@ struct VertexType
 struct EdState
 {
     struct EdSettings settings;
+    struct Map map;
+    struct Project project;
 
     struct
     {
@@ -149,5 +152,5 @@ void DestroyEditor(struct EdState *state);
 void ResizeEditorView(struct EdState *state, int width, int height);
 void ResizeRealtimeView(struct EdState *state, int width, int height);
 
-void RenderEditorView(const struct EdState *state, const struct Map *map);
-void RenderRealtimeView(const struct EdState *state, const struct Map *map);
+void RenderEditorView(const struct EdState *state);
+void RenderRealtimeView(const struct EdState *state);

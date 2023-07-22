@@ -2,7 +2,7 @@
 
 #include <tgmath.h>
 
-void SetValveStyle(ImGuiStyle *style)
+static void SetValveStyle(ImGuiStyle *style)
 {
     ImVec4* colors = style->Colors;
     colors[ImGuiCol_Text]                       = (ImVec4){1.00f, 1.00f, 1.00f, 1.00f};
@@ -69,7 +69,7 @@ void SetValveStyle(ImGuiStyle *style)
     */
 }
 
-void SetDeusExStyle(ImGuiStyle *style)
+static void SetDeusExStyle(ImGuiStyle *style)
 {
     ImVec4* colors = style->Colors;
 
@@ -163,30 +163,30 @@ static void ToolbarWindow(bool *p_open, struct EdState *state);
 static void EditorWindow(bool *p_open, struct EdState *state);
 static void RealtimeWindow(bool *p_open, struct EdState *state);
 static void StatsWindow(bool *p_open, struct EdState *state);
-static void MainMenuBar(bool *doQuit, struct EdState *state, struct Map *map);
+static void MainMenuBar(bool *doQuit, struct EdState *state);
 
 static void ProjectSavePopup(struct EdState *state);
-static void MapSavePopup(struct EdState *state, struct Map *map);
+static void MapSavePopup(struct EdState *state, bool *quitRequest);
 
-static void HandleShortcuts(struct EdState *state, struct Map *map);
+static void HandleShortcuts(struct EdState *state);
 
 enum SaveModalAction
 {
     SMA_NEW,
-    SMA_OPEN
+    SMA_OPEN,
+    SMA_QUIT
 };
 
 static bool openProjectPopup = false;
 static bool openMapPopup = false;
 static enum SaveModalAction modalAction = SMA_NEW;
 
-bool DoGui(struct EdState *state, struct Map *map)
+bool DoGui(struct EdState *state, bool doQuit)
 {
-    bool doQuit = false;
     openProjectPopup = false;
     openMapPopup = false;
 
-    MainMenuBar(&doQuit, state, map);
+    MainMenuBar(&doQuit, state);
 
     if(state->ui.showAbout)
         AboutWindow(&state->ui.showAbout);
@@ -208,6 +208,19 @@ bool DoGui(struct EdState *state, struct Map *map)
 
     EditorWindow(NULL, state);
 
+    if(doQuit)
+    {
+        if(state->map.dirty)
+        {
+            doQuit = false; // dont quit yet
+
+            openMapPopup = true;
+            modalAction = SMA_QUIT;
+        }
+
+        // do the same for project settings
+    }
+
     if(openProjectPopup)
         igOpenPopup_Str("Save Project?", 0);
 
@@ -215,14 +228,14 @@ bool DoGui(struct EdState *state, struct Map *map)
         igOpenPopup_Str("Save Map?", 0);
 
     ProjectSavePopup(state);
-    MapSavePopup(state, map);
+    MapSavePopup(state, &doQuit);
 
-    HandleShortcuts(state, map);
+    HandleShortcuts(state);
 
     return doQuit;
 }
 
-static void MainMenuBar(bool *doQuit, struct EdState *state, struct Map *map)
+static void MainMenuBar(bool *doQuit, struct EdState *state)
 {
     if(igBeginMainMenuBar())
     {
@@ -232,10 +245,10 @@ static void MainMenuBar(bool *doQuit, struct EdState *state, struct Map *map)
             if(igMenuItem_Bool("Open Project", "", false, true)) { printf("Open Project!\n"); }
             if(igMenuItem_Bool("Save Project", "", false, true)) { printf("Save Project!\n"); }
             igSeparator();
-            if(igMenuItem_Bool("New Map", "Ctrl+N", false, true)) { if(map->dirty) { openMapPopup = true; modalAction = SMA_NEW; } else NewMap(map); }
-            if(igMenuItem_Bool("Open Map", "Ctrl+O", false, true)) { if(map->dirty) { openMapPopup = true; modalAction = SMA_OPEN; } else LoadMap(map); }
-            if(igMenuItem_Bool("Save Map", "Ctrl+S", false, map->dirty)) { SaveMap(map, map->file == NULL); }
-            if(igMenuItem_Bool("SaveAs Map", "", false, true)) { SaveMap(map, true); }
+            if(igMenuItem_Bool("New Map", "Ctrl+N", false, true)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_NEW; } else NewMap(&state->map); }
+            if(igMenuItem_Bool("Open Map", "Ctrl+O", false, true)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_OPEN; } else LoadMap(&state->map); }
+            if(igMenuItem_Bool("Save Map", "Ctrl+S", false, state->map.dirty)) { SaveMap(&state->map, state->map.file == NULL); }
+            if(igMenuItem_Bool("SaveAs Map", "", false, true)) { SaveMap(&state->map, true); }
             igSeparator();
             if(igMenuItem_Bool("Quit", "Alt+F4", false, true)) { *doQuit = true; }
             igEndMenu();
@@ -484,7 +497,8 @@ static void EditorWindow(bool *p_open, struct EdState *state)
 
             if(focused)
             {
-                
+                if(igIsKeyPressed_Bool(ImGuiKey_D, false))
+                    state->map.dirty = true;
             }
 
             ResizeEditorView(state, clientArea.x, clientArea.y);
@@ -572,18 +586,19 @@ static void ProjectSavePopup(struct EdState *state)
     }
 }
 
-static void MapSavePopup(struct EdState *state, struct Map *map)
+static void MapSavePopup(struct EdState *state, bool *quitRequest)
 {
     if(igBeginPopupModal("Save Map?", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse))
     {
         igText("You have unsaved changes to the Map.\nDo you want to save them?");
         if(igButton("Yes", (ImVec2){ 64, 0 }))
         {
-            SaveMap(map, map->file == NULL);
+            SaveMap(&state->map, state->map.file == NULL);
             switch(modalAction)
             {
-            case SMA_NEW: NewMap(map); break;
-            case SMA_OPEN: LoadMap(map); break;
+            case SMA_NEW: NewMap(&state->map); break;
+            case SMA_OPEN: LoadMap(&state->map); break;
+            case SMA_QUIT: *quitRequest = true; break;
             }
             igCloseCurrentPopup();
         }
@@ -592,38 +607,40 @@ static void MapSavePopup(struct EdState *state, struct Map *map)
         {
             switch(modalAction)
             {
-            case SMA_NEW: NewMap(map); break;
-            case SMA_OPEN: LoadMap(map); break;
+            case SMA_NEW: NewMap(&state->map); break;
+            case SMA_OPEN: LoadMap(&state->map); break;
+            case SMA_QUIT: *quitRequest = true; break;
             }
             igCloseCurrentPopup();
         }
         igSameLine(0, 4);
         if(igButton("Cancel", (ImVec2){ 64, 0 }))
         {
+            if(modalAction == SMA_QUIT) *quitRequest = false;
             igCloseCurrentPopup();
         }
         igEndPopup();
     }
 }
 
-static void HandleShortcuts(struct EdState *state, struct Map *map)
+static void HandleShortcuts(struct EdState *state)
 {
     if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_N, 0, ImGuiInputFlags_RouteGlobalLow))
     {
-        if(map->dirty) { openMapPopup = true; modalAction = SMA_NEW; }
-        else NewMap(map);
+        if(state->map.dirty) { openMapPopup = true; modalAction = SMA_NEW; }
+        else NewMap(&state->map);
     }
 
     if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_O, 0, ImGuiInputFlags_RouteGlobalLow))
     {
-        if(map->dirty) { openMapPopup = true; modalAction = SMA_OPEN; }
-        else LoadMap(map);
+        if(state->map.dirty) { openMapPopup = true; modalAction = SMA_OPEN; }
+        else LoadMap(&state->map);
     }
 
     if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_S, 0, ImGuiInputFlags_RouteGlobalLow))
     {
-        if(map->dirty) 
-            SaveMap(map, map->file == NULL);
+        if(state->map.dirty) 
+            SaveMap(&state->map, state->map.file == NULL);
     }
 
     if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_W, 0, ImGuiInputFlags_RouteGlobalLow))
