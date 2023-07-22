@@ -13,9 +13,13 @@
 #include "map.h"
 #include "gui.h"
 
+#include <incbin.h>
+INCBIN_EXTERN(Font);
+
 #define SETTINGS_FILE "./settings.ini"
 #define DEFAULT_WINDOW_WIDTH 1600
 #define DEFAULT_WINDOW_HEIGHT 900
+
 
 static SDL_Window* InitSDL(void);
 static bool InitImgui(SDL_Window *window, SDL_GLContext context);
@@ -124,7 +128,8 @@ static SDL_Window* InitSDL(void)
 {
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
     {
-        printf("failed to init sdl\n");
+        const char *errMsg = SDL_GetError();
+        printf("failed to init sdl: %s\n", errMsg);
         return NULL;
     }
 #ifdef _DEBUG
@@ -169,12 +174,16 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
     ioptr->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 #endif
 
-    ImFontAtlas_AddFontFromFileTTF(ioptr->Fonts, "UbuntuMono-Regular.ttf", 15, NULL, NULL);
+    uint8_t *font = malloc(gFontSize); // why do we have to make a copy here? should probably free it at the end but eh
+    memcpy(font, gFontData, gFontSize);
+    ImFontAtlas_AddFontFromMemoryTTF(ioptr->Fonts, font, gFontSize, 15, NULL, NULL); // why does imgui take ownership of the font ???
 
     ioptr->IniFilename = NULL;
 
-    ImGui_ImplSDL2_InitForOpenGL(window, context);
-    ImGui_ImplOpenGL3_Init("#version 460");
+    if(!ImGui_ImplSDL2_InitForOpenGL(window, context))
+        return false;
+    if(!ImGui_ImplOpenGL3_Init("#version 460"))
+        return false;
 
     return true;
 }
@@ -184,7 +193,13 @@ static SDL_GLContext InitOpenGL(SDL_Window *window)
     SDL_GLContext glContext = SDL_GL_CreateContext(window);
     SDL_GL_SetSwapInterval(1);
 
-    SDL_GL_MakeCurrent(window, glContext);
+    if(SDL_GL_MakeCurrent(window, glContext) < 0)
+    {
+        const char *errMsg = SDL_GetError();
+        printf("failed to make context current: %s\n", errMsg);
+        return false;
+    }
+
     if(!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress))
     {
         GLenum err = glGetError();
