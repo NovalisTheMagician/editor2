@@ -165,7 +165,7 @@ static bool InitVertex(struct EdState *state)
         "vec2 coord = gl_PointCoord - vec2(0.5);\n"
         "if(length(coord) > 0.5)\n"
         "   discard;\n"
-        "   fragColor = outColor;\n"
+        "   fragColor = outColor * tint;\n"
         "}\n";
 
     GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
@@ -185,6 +185,7 @@ static bool InitVertex(struct EdState *state)
 
     state->gl.editorVertex.program = program;
     state->gl.editorVertex.viewProjUniform = glGetUniformLocation(program, "viewProj");
+    state->gl.editorVertex.tintUniform = glGetUniformLocation(program, "tint");
 
     const GLbitfield 
 	mapping_flags = GL_MAP_WRITE_BIT | GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
@@ -209,7 +210,6 @@ static bool InitVertex(struct EdState *state)
     glVertexArrayVertexBuffer(vao, 0, buffer, 0, sizeof(struct VertexType));
 
     state->gl.editorVertex.vertFormat = vao;
-
 
     state->gl.editorVertex.bufferMap = glMapNamedBufferRange(buffer, 0, bufferSize, mapping_flags);
 

@@ -123,7 +123,7 @@ struct EdState
         struct
         {
             GLuint program;
-            GLuint viewProjUniform;
+            GLuint viewProjUniform, tintUniform;
             GLuint vertBuffer;
             GLuint vertFormat;
             void *bufferMap;

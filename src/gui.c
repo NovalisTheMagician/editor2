@@ -167,7 +167,7 @@ static void RealtimeWindow(bool *p_open, struct EdState *state);
 static void StatsWindow(bool *p_open, struct EdState *state);
 static void MainMenuBar(bool *doQuit, struct EdState *state);
 
-static void ProjectSavePopup(struct EdState *state);
+static void ProjectSavePopup(struct EdState *state, bool *quitRequest);
 static void MapSavePopup(struct EdState *state, bool *quitRequest);
 
 static void HandleShortcuts(struct EdState *state);
@@ -220,7 +220,13 @@ bool DoGui(struct EdState *state, bool doQuit)
             modalAction = SMA_QUIT;
         }
 
-        // do the same for project settings
+        if(state->project.dirty)
+        {
+            doQuit = false; // dont quit yet
+
+            openProjectPopup = true;
+            modalAction = SMA_QUIT;
+        }
     }
 
     if(openProjectPopup)
@@ -229,7 +235,7 @@ bool DoGui(struct EdState *state, bool doQuit)
     if(openMapPopup)
         igOpenPopup_Str("Save Map?", 0);
 
-    ProjectSavePopup(state);
+    ProjectSavePopup(state, &doQuit);
     MapSavePopup(state, &doQuit);
 
     HandleShortcuts(state);
@@ -385,7 +391,7 @@ static void SettingsWindow(bool *p_open, struct EdState *state)
 
             if(igBeginTabItem("Appearance", NULL, 0))
             {
-                static const char *themeElements[] = {"Imgui Light", "Imgui Dark", "Imgui Classic", "Valve", "Deus Ex"};
+                static const char *themeElements[] = {"Imgui Light", "Imgui Dark", "Imgui Classic", "Valve old VGUI", "Deus Ex Human Barbecue"};
                 static const size_t count = COUNT_OF(themeElements);
                 if(igCombo_Str_arr("Theme", &state->settings.theme, themeElements, count, 5)) { SetStyle(state->settings.theme); }
                 igEndTabItem();
@@ -417,7 +423,10 @@ static void EditorWindow(bool *p_open, struct EdState *state)
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
     if(state->map.dirty)
         flags |= ImGuiWindowFlags_UnsavedDocument;
-    if(igBegin("Editor", p_open, flags))
+
+    char buffer[128];
+    snprintf(buffer, sizeof buffer, "Editor %s", state->map.file ? state->map.file : "no name");
+    if(igBegin(buffer, p_open, flags))
     {
         if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_C, 0, 0))
             EditCopy(state);
@@ -592,7 +601,7 @@ static void StatsWindow(bool *p_open, struct EdState *state)
     igEnd();
 }
 
-static void ProjectSavePopup(struct EdState *state)
+static void ProjectSavePopup(struct EdState *state, bool *quitRequest)
 {
     if(igBeginPopupModal("Save Project?", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse))
     {

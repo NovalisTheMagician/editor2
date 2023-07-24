@@ -154,6 +154,7 @@ static void RenderVertices(const struct EdState *state, const mat4 viewProjMat)
     glBindVertexArray(state->gl.editorVertex.vertFormat);
     glUseProgram(state->gl.editorVertex.program);
     glUniformMatrix4fv(state->gl.editorVertex.viewProjUniform, 1, false, (float*)viewProjMat);
+    glUniform4fv(state->gl.editorVertex.tintUniform, 1, state->settings.colors[COL_VERTEX]);
 
     glDrawArrays(GL_POINTS, 0, state->map.numVertices);
 }
