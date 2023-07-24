@@ -25,10 +25,11 @@ void NewMap(struct Map *map)
 
 bool LoadMap(struct Map *map)
 {
+    map->dirty = false;
     return false;
 }
 
-void SaveMap(const struct Map *map, bool useDialog)
+void SaveMap(struct Map *map, bool useDialog)
 {
-
+    map->dirty = false;
 }

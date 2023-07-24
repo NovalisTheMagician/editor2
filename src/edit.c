@@ -30,6 +30,21 @@ void ScreenToEditorSpaceGrid(const struct EdState *state, int32_t *x, int32_t *y
     *y = yt / state->data.gridSize * state->data.gridSize;
 }
 
+void EditCopy(struct EdState *state)
+{
+    printf("Copy!!\n");
+}
+
+void EditPaste(struct EdState *state)
+{
+    printf("Paste!!\n");
+}
+
+void EditCut(struct EdState *state)
+{
+    printf("Cut!!\n");
+}
+
 void EditAddVertex(struct EdState *state, struct Vertex pos)
 {
     struct Map *map = &state->map;
@@ -45,6 +60,8 @@ void EditAddVertex(struct EdState *state, struct Vertex pos)
         IncreaseBufferSize((void**)&map->vertices, &map->numAllocVertices, sizeof *map->vertices);
 
     ((struct VertexType*)state->gl.editorVertex.bufferMap)[idx] = (struct VertexType){ .position = { pos.x, pos.y }, .color = { 1, 1, 1, 1 } };
+
+    map->dirty = true;
 }
 
 void EditRemoveVertex(struct EdState *state, size_t index)
@@ -60,6 +77,8 @@ void EditRemoveVertex(struct EdState *state, size_t index)
     map->numVertices--;
 
     // remove lines affected by vertex
+
+    map->dirty = true;
 }
 
 bool EditGetVertex(struct EdState *state, struct Vertex pos, size_t *ind)

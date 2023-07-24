@@ -205,5 +205,7 @@ static SDL_GLContext InitOpenGL(SDL_Window *window)
         return NULL;
     }
 
+    glEnable(GL_MULTISAMPLE);
+
     return glContext;
 }

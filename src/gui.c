@@ -239,18 +239,19 @@ bool DoGui(struct EdState *state, bool doQuit)
 
 static void MainMenuBar(bool *doQuit, struct EdState *state)
 {
+    bool allowFileOps = state->network.hosting || !state->network.connected;
     if(igBeginMainMenuBar())
     {
         if(igBeginMenu("File", true))
         {
-            if(igMenuItem_Bool("New Project", "", false, true)) { printf("New Project!\n"); openProjectPopup = true; }
-            if(igMenuItem_Bool("Open Project", "", false, true)) { printf("Open Project!\n"); }
-            if(igMenuItem_Bool("Save Project", "", false, true)) { printf("Save Project!\n"); }
+            if(igMenuItem_Bool("New Project", "", false, allowFileOps)) { printf("New Project!\n"); openProjectPopup = true; }
+            if(igMenuItem_Bool("Open Project", "", false, allowFileOps)) { printf("Open Project!\n"); }
+            if(igMenuItem_Bool("Save Project", "", false, allowFileOps)) { printf("Save Project!\n"); }
             igSeparator();
-            if(igMenuItem_Bool("New Map", "Ctrl+N", false, true)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_NEW; } else NewMap(&state->map); }
-            if(igMenuItem_Bool("Open Map", "Ctrl+O", false, true)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_OPEN; } else LoadMap(&state->map); }
-            if(igMenuItem_Bool("Save Map", "Ctrl+S", false, state->map.dirty)) { SaveMap(&state->map, state->map.file == NULL); }
-            if(igMenuItem_Bool("SaveAs Map", "", false, true)) { SaveMap(&state->map, true); }
+            if(igMenuItem_Bool("New Map", "Ctrl+N", false, allowFileOps)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_NEW; } else NewMap(&state->map); }
+            if(igMenuItem_Bool("Open Map", "Ctrl+O", false, allowFileOps)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_OPEN; } else LoadMap(&state->map); }
+            if(igMenuItem_Bool("Save Map", "Ctrl+S", false, state->map.dirty && allowFileOps)) { SaveMap(&state->map, state->map.file == NULL); }
+            if(igMenuItem_Bool("SaveAs Map", "", false, allowFileOps)) { SaveMap(&state->map, true); }
             igSeparator();
             if(igMenuItem_Bool("Quit", "Alt+F4", false, true)) { *doQuit = true; }
             igEndMenu();
@@ -261,9 +262,9 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
             if(igMenuItem_Bool("Undo", "Ctrl+Z", false, true)) { printf("Undo!\n"); }
             if(igMenuItem_Bool("Redo", "Ctrl+Y", false, true)) { printf("Redo!\n"); }
             igSeparator();
-            if(igMenuItem_Bool("Copy", "Ctrl+C", false, true)) { printf("Copy Menu!\n"); }
-            if(igMenuItem_Bool("Paste", "Ctrl+V", false, true)) { printf("Paste!\n"); }
-            if(igMenuItem_Bool("Cut", "Ctrl+X", false, true)) { printf("Cut!\n"); }
+            if(igMenuItem_Bool("Copy", "Ctrl+C", false, true)) { EditCopy(state); }
+            if(igMenuItem_Bool("Paste", "Ctrl+V", false, true)) { EditPaste(state); }
+            if(igMenuItem_Bool("Cut", "Ctrl+X", false, true)) { EditCut(state); }
             igSeparator();
             if(igBeginMenu("Modes", true))
             {
@@ -321,11 +322,11 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
 
         if(igBeginMenu("Connect", true))
         {
-            if(igMenuItem_Bool("Connect", "", false, true)) {  }
-            if(igMenuItem_Bool("Disconnect", "", false, false)) {  }
-            if(igMenuItem_Bool("Host", "", false, true)) {  }
+            if(igMenuItem_Bool("Connect", "", false, !state->network.connected)) { state->network.connected = true; }
+            if(igMenuItem_Bool("Disconnect", "", false, state->network.connected)) { state->network.connected = false; state->network.hosting = false; }
+            if(igMenuItem_Bool("Host", "", false, !state->network.connected)) { state->network.hosting = true; state->network.connected = true; }
             igSeparator();
-            if(igMenuItem_Bool("Userlist", "", false, false)) {  }
+            if(igMenuItem_Bool("Userlist", "", false, state->network.connected)) {  }
             igEndMenu();
         }
 
@@ -400,13 +401,7 @@ static void ToolbarWindow(bool *p_open, struct EdState *state)
 {
     if(igBegin("Toolbar", p_open, 0))
     {
-        if(igButton("A", (ImVec2){ 24, 24 })) { igFocusWindow(NULL, 0); }
-        igSameLine(0, 4);
-        if(igButton("B", (ImVec2){ 24, 24 })) { igFocusWindow(NULL, 0); }
-        igSameLine(0, 4);
-        if(igButton("C", (ImVec2){ 24, 24 })) { igFocusWindow(NULL, 0); }
-        igSameLine(0, 4);
-        if(igButton("D", (ImVec2){ 24, 24 })) { igFocusWindow(NULL, 0); }
+        
     }
     igEnd();
 }
@@ -419,14 +414,17 @@ static void EditorWindow(bool *p_open, struct EdState *state)
     igSetNextWindowPos((ImVec2){ 40, 40 }, ImGuiCond_FirstUseEver, (ImVec2){ 0, 0 });
 
     igPushStyleVar_Vec2(ImGuiStyleVar_WindowMinSize, (ImVec2){ 400, 300 });
-    if(igBegin("Editor", p_open, ImGuiWindowFlags_NoScrollbar))
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
+    if(state->map.dirty)
+        flags |= ImGuiWindowFlags_UnsavedDocument;
+    if(igBegin("Editor", p_open, flags))
     {
         if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_C, 0, 0))
-            printf("Copy!\n");
+            EditCopy(state);
         if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_V, 0, 0))
-            printf("Paste!\n");
+            EditPaste(state);
         if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_X, 0, 0))
-            printf("Cut!\n");
+            EditCut(state);
         if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_Z, 0, 0))
             printf("Undo!\n");
         if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_Y, 0, 0))
@@ -522,8 +520,7 @@ static void EditorWindow(bool *p_open, struct EdState *state)
 
             if(focused)
             {
-                if(igIsKeyPressed_Bool(ImGuiKey_D, false))
-                    state->map.dirty = true;
+                
             }
 
             ResizeEditorView(state, clientArea.x, clientArea.y);
