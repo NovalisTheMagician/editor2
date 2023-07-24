@@ -1,5 +1,7 @@
 #include "gui.h"
 
+#include "edit.h"
+
 #include <tgmath.h>
 
 static void SetValveStyle(ImGuiStyle *style)
@@ -440,6 +442,24 @@ static void EditorWindow(bool *p_open, struct EdState *state)
         static const size_t numModes = COUNT_OF(modeNames);
         igCombo_Str_arr("Mode", &state->ui.selectionMode, modeNames, numModes, 3);
 
+        igSameLine(0, 16);
+        igPushItemWidth(80);
+        static const char *gridSizes[] = { "4", "8", "16", "32", "64", "128" };
+        static const size_t numGrids = COUNT_OF(gridSizes);
+        int gridSelection = log2(state->ui.gridSize) - 2;
+        igCombo_Str_arr("Gridsize", &gridSelection, gridSizes, numGrids, numGrids);
+        state->ui.gridSize = pow(2, gridSelection + 2);
+
+        igSameLine(0, 16);
+        igPushItemWidth(80);
+        igSliderFloat("Zoom", &state->ui.zoomLevel, 0.05f, 4, "%.2f", 0);
+
+        igSameLine(0, 16);
+        if(igButton("Go To Origin", (ImVec2){ 0, 0 })) 
+        {
+            state->ui.viewPosition = (ImVec2){ -state->gl.editorFramebufferWidth / 2, -state->gl.editorFramebufferHeight / 2 };
+        }
+
         if(igBeginChild_ID(1000, (ImVec2){ 0, 0 }, false, ImGuiWindowFlags_NoMove))
         {
             ImVec2 clientArea;
@@ -455,11 +475,14 @@ static void EditorWindow(bool *p_open, struct EdState *state)
             igGetMousePos(&mpos);
             int relX = (int)mpos.x - (int)clientPos.x;
             int relY = (int)mpos.y - (int)clientPos.y;
-            (void)relX;
-            (void)relY;
 
             if(hovored)
             {
+                int edX = relX, edY = relY;
+                ScreenToEditorSpaceGrid(state, &edX, &edY);
+                state->ui.mx = edX;
+                state->ui.my = edY;
+
                 if(igIsMouseDragging(ImGuiMouseButton_Middle, 2))
                 {
                     ImVec2 dragDelta;
@@ -476,7 +499,7 @@ static void EditorWindow(bool *p_open, struct EdState *state)
 
                 if(igIsMouseClicked_Bool(ImGuiMouseButton_Right, false)) 
                 {
-                    
+                    EditAddVertex(state, (struct Vertex){ edX, edY });
                 }
 
                 if(igIsMouseClicked_Bool(ImGuiMouseButton_Middle, false)) 
@@ -558,6 +581,7 @@ static void StatsWindow(bool *p_open, struct EdState *state)
     {
         igSeparatorText("Editor");
         igText("Viewposition: %.2f | %.2f", state->ui.viewPosition.x, state->ui.viewPosition.y);
+        igText("Mouse World Pos: %d | %d", state->ui.mx, state->ui.my);
         igText("Zoomlevel: %.2f", state->ui.zoomLevel);
     }
     igEnd();

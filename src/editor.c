@@ -143,7 +143,7 @@ void ResizeRealtimeView(struct EdState *state, int width, int height)
     state->gl.realtimeFramebufferHeight = height;
 }
 
-void RenderEditorView(const struct EdState *state)
+static void RenderBackground(const struct EdState *state)
 {
     float offsetX = fmod(-state->ui.viewPosition.x, (float)state->ui.gridSize);
     float offsetY = fmod(-state->ui.viewPosition.y, (float)state->ui.gridSize);
@@ -153,12 +153,17 @@ void RenderEditorView(const struct EdState *state)
     int vLines = (state->gl.editorFramebufferWidth / period) + 2;
     int hLines = (state->gl.editorFramebufferHeight / period) + 2;
 
+    int hMajorIdx = -state->ui.viewPosition.y / period;
+    int vMajorIdx = -state->ui.viewPosition.x / period;
+
     glBindVertexArray(state->gl.editorBackProg.backVertexFormat);
     glUseProgram(state->gl.editorBackProg.hProgram);
     glUniform1f(state->gl.editorBackProg.hOffsetUniform, offsetY);
     glUniform1f(state->gl.editorBackProg.hPeriodUniform, period);
     glUniform4fv(state->gl.editorBackProg.hTintUniform, 1, state->settings.colors[COL_BACK_LINES]);
+    glUniform4fv(state->gl.editorBackProg.hMajorTintUniform, 1, state->settings.colors[COL_BACK_MAJOR_LINES]);
     glUniformMatrix4fv(state->gl.editorBackProg.hVPUniform, 1, false, (float*)state->editorProjection);
+    glUniform1i(state->gl.editorBackProg.hMajorIdxUniform, hMajorIdx);
 
     glDrawArraysInstanced(GL_LINES, 0, 2, hLines);
 
@@ -166,12 +171,34 @@ void RenderEditorView(const struct EdState *state)
     glUniform1f(state->gl.editorBackProg.vOffsetUniform, offsetX);
     glUniform1f(state->gl.editorBackProg.vPeriodUniform, period);
     glUniform4fv(state->gl.editorBackProg.vTintUniform, 1, state->settings.colors[COL_BACK_LINES]);
+    glUniform4fv(state->gl.editorBackProg.vMajorTintUniform, 1, state->settings.colors[COL_BACK_MAJOR_LINES]);
     glUniformMatrix4fv(state->gl.editorBackProg.vVPUniform, 1, false, (float*)state->editorProjection);
+    glUniform1i(state->gl.editorBackProg.vMajorIdxUniform, vMajorIdx);
 
     glDrawArraysInstanced(GL_LINES, 2, 2, vLines);
 }
 
-void RenderRealtimeView(const struct EdState *state)
+static void RenderVertices(const struct EdState *state, const mat4 viewProjMat)
+{
+    glPointSize(8);
+    glBindVertexArray(state->gl.editorVertex.vertFormat);
+    glUseProgram(state->gl.editorVertex.program);
+    glUniformMatrix4fv(state->gl.editorVertex.viewProjUniform, 1, false, (float*)viewProjMat);
+
+    glDrawArrays(GL_POINTS, 0, state->map.numVertices);
+}
+
+void RenderEditorView(struct EdState *state)
+{
+    mat4 viewProjMat, viewMat;
+    glm_translate_make(viewMat, (vec3){ -state->ui.viewPosition.x, -state->ui.viewPosition.y, 0 });
+    glm_mul(state->editorProjection, viewMat, viewProjMat);
+
+    RenderBackground(state);
+    RenderVertices(state, viewProjMat);
+}
+
+void RenderRealtimeView(struct EdState *state)
 {
 
 }

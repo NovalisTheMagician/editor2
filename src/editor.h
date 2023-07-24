@@ -27,6 +27,7 @@ enum Colors
 
     COL_BACKGROUND,
     COL_BACK_LINES,
+    COL_BACK_MAJOR_LINES,
 
     COL_RTBACKGROUND,
 
@@ -64,7 +65,7 @@ struct EdSettings
 
 struct VertexType
 {
-    int32_t x, y;
+    vec2 position;
     Color color;
 };
 
@@ -95,6 +96,7 @@ struct EdState
         int gridSize;
         float zoomLevel;
         ImVec2 viewPosition;
+        int mx, my;
         int selectionMode;
     } ui;
 
@@ -117,6 +119,7 @@ struct EdState
         {
             GLuint hProgram, vProgram;
             GLuint hOffsetUniform, vOffsetUniform, hPeriodUniform, vPeriodUniform, hTintUniform, vTintUniform;
+            GLuint hMajorTintUniform, hMajorIdxUniform, vMajorTintUniform, vMajorIdxUniform;
             GLuint hVPUniform, vVPUniform;
             GLuint backVertexFormat;
         } editorBackProg;
@@ -132,7 +135,6 @@ struct EdState
     } gl;
 
     float realtimeFov;
-    vec2 backOffset;
 
     mat4 editorView, editorProjection;
     mat4 realtimeView, realtimeProjection;
@@ -152,5 +154,5 @@ void DestroyEditor(struct EdState *state);
 void ResizeEditorView(struct EdState *state, int width, int height);
 void ResizeRealtimeView(struct EdState *state, int width, int height);
 
-void RenderEditorView(const struct EdState *state);
-void RenderRealtimeView(const struct EdState *state);
+void RenderEditorView(struct EdState *state);
+void RenderRealtimeView(struct EdState *state);

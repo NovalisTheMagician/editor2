@@ -47,10 +47,12 @@ static bool InitBackground(struct EdState *state)
         "uniform mat4 viewProj;\n"
         "uniform float offset;\n"
         "uniform float period;\n"
+        "flat out int idx;\n"
         "void main() {\n"
         "   float off = period * gl_InstanceID + offset;\n"
         "   vec2 pos = inPosition + vec2(0, off);\n"
         "   gl_Position = viewProj * vec4(pos, 0, 1);\n"
+        "   idx = gl_InstanceID;\n"
         "}\n";
 
     const char *vVertShaderSrc = 
@@ -59,18 +61,26 @@ static bool InitBackground(struct EdState *state)
         "uniform mat4 viewProj;\n"
         "uniform float offset;\n"
         "uniform float period;\n"
+        "flat out int idx;\n"
         "void main() {\n"
         "   float off = period * gl_InstanceID + offset;\n"
         "   vec2 pos = inPosition + vec2(off, 0);\n"
         "   gl_Position = viewProj * vec4(pos, 0, 1);\n"
+        "   idx = gl_InstanceID;\n"
         "}\n";
 
     const char *fragShaderSrc = 
         "#version 460 core\n"
         "uniform vec4 tint;\n"
+        "uniform vec4 majorTint;\n"
+        "uniform int majorIndex;\n"
+        "flat in int idx;"
         "out vec4 fragColor;\n"
         "void main() {\n"
-        "   fragColor = tint;\n"
+        "   if(idx == majorIndex)\n"
+        "       fragColor = majorTint;\n"
+        "   else\n"
+        "       fragColor = tint;\n"
         "}\n";
 
     GLuint hVertShader = glCreateShader(GL_VERTEX_SHADER);
@@ -120,11 +130,15 @@ static bool InitBackground(struct EdState *state)
     state->gl.editorBackProg.hPeriodUniform = glGetUniformLocation(hProg, "period");
     state->gl.editorBackProg.hTintUniform = glGetUniformLocation(hProg, "tint");
     state->gl.editorBackProg.hVPUniform = glGetUniformLocation(hProg, "viewProj");
+    state->gl.editorBackProg.hMajorTintUniform = glGetUniformLocation(hProg, "majorTint");
+    state->gl.editorBackProg.hMajorIdxUniform = glGetUniformLocation(hProg, "majorIndex");
 
     state->gl.editorBackProg.vOffsetUniform = glGetUniformLocation(vProg, "offset");
     state->gl.editorBackProg.vPeriodUniform = glGetUniformLocation(vProg, "period");
     state->gl.editorBackProg.vTintUniform = glGetUniformLocation(vProg, "tint");
     state->gl.editorBackProg.vVPUniform = glGetUniformLocation(vProg, "viewProj");
+    state->gl.editorBackProg.vMajorTintUniform = glGetUniformLocation(vProg, "majorTint");
+    state->gl.editorBackProg.vMajorIdxUniform = glGetUniformLocation(vProg, "majorIndex");
 
     return true;
 }
@@ -184,7 +198,7 @@ static bool InitVertex(struct EdState *state)
     glCreateVertexArrays(1, &vao);
     glEnableVertexArrayAttrib(vao, 0);
     glEnableVertexArrayAttrib(vao, 1);
-    glVertexArrayAttribIFormat(vao, 0, 2, GL_INT, offsetof(struct VertexType, x));
+    glVertexArrayAttribFormat(vao, 0, 2, GL_FLOAT, GL_FALSE, offsetof(struct VertexType, position));
     glVertexArrayAttribFormat(vao, 1, 4, GL_FLOAT, GL_FALSE, offsetof(struct VertexType, color));
     glVertexArrayAttribBinding(vao, 0, 0);
     glVertexArrayAttribBinding(vao, 1, 0);
