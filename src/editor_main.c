@@ -201,7 +201,7 @@ static SDL_GLContext InitOpenGL(SDL_Window *window)
         return false;
     }
 
-    if(!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress))
+    if(!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
     {
         GLenum err = glGetError();
         printf("couldn't load GL functions: %d\n", err);
