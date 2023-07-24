@@ -8,7 +8,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-#include <glad/glad.h>
+#include <glad2/gl.h>
 #include <cglm/cglm.h>
 
 #define COUNT_OF(arr) (sizeof(arr)/sizeof(0[arr]))

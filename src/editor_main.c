@@ -191,21 +191,18 @@ GLenum glGetError(void);
 #undef glGetString
 const GLubyte *glGetString(GLenum name);
 
-
 static SDL_GLContext InitOpenGL(SDL_Window *window)
 {
     SDL_GLContext glContext = SDL_GL_CreateContext(window);
-    SDL_GL_SetSwapInterval(1);
 
-    if(SDL_GL_MakeCurrent(window, glContext) < 0)
+    if(SDL_GL_MakeCurrent(window, glContext) != 0)
     {
         const char *errMsg = SDL_GetError();
         printf("failed to make context current: %s\n", errMsg);
         return false;
     }
 
-    //if(!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
-    if(!gladLoadGL())
+    if(!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress))
     {
         const char *vendor = glGetString(GL_VENDOR);
         const char *version = glGetString(GL_VERSION);
@@ -216,6 +213,7 @@ static SDL_GLContext InitOpenGL(SDL_Window *window)
         return NULL;
     }
 
+    SDL_GL_SetSwapInterval(1);
     glEnable(GL_MULTISAMPLE);
 
     return glContext;
