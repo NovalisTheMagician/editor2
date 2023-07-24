@@ -186,6 +186,9 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
     return true;
 }
 
+#undef glGetError
+GLenum glGetError(void);
+
 static SDL_GLContext InitOpenGL(SDL_Window *window)
 {
     SDL_GLContext glContext = SDL_GL_CreateContext(window);
