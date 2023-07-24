@@ -188,6 +188,9 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
 
 #undef glGetError
 GLenum glGetError(void);
+#undef glGetString
+const GLubyte *glGetString(GLenum name);
+
 
 static SDL_GLContext InitOpenGL(SDL_Window *window)
 {
@@ -204,6 +207,10 @@ static SDL_GLContext InitOpenGL(SDL_Window *window)
     //if(!gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress))
     if(!gladLoadGL())
     {
+        const char *vendor = glGetString(GL_VENDOR);
+        const char *version = glGetString(GL_VERSION);
+        const char *renderer = glGetString(GL_RENDERER);
+        printf("%s %s %s\n", vendor, version, renderer);
         GLenum err = glGetError();
         printf("couldn't load GL functions: %d\n", err);
         return NULL;
