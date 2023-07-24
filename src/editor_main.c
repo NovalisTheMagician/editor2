@@ -194,6 +194,12 @@ const GLubyte *glGetString(GLenum name);
 static SDL_GLContext InitOpenGL(SDL_Window *window)
 {
     SDL_GLContext glContext = SDL_GL_CreateContext(window);
+    if(!glContext)
+    {
+        const char *errMsg = SDL_GetError();
+        printf("failed to create context: %s\n", errMsg);
+        return false;
+    }
 
     if(SDL_GL_MakeCurrent(window, glContext) != 0)
     {
