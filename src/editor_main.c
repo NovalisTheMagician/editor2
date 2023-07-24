@@ -142,7 +142,7 @@ static SDL_Window* InitSDL(void)
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 16);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
 
     uint32_t flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
 #ifndef _DEBUG
@@ -186,11 +186,6 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
     return true;
 }
 
-#undef glGetError
-GLenum glGetError(void);
-#undef glGetString
-const GLubyte *glGetString(GLenum name);
-
 static SDL_GLContext InitOpenGL(SDL_Window *window)
 {
     SDL_GLContext glContext = SDL_GL_CreateContext(window);
@@ -210,12 +205,7 @@ static SDL_GLContext InitOpenGL(SDL_Window *window)
 
     if(!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress))
     {
-        const char *vendor = glGetString(GL_VENDOR);
-        const char *version = glGetString(GL_VERSION);
-        const char *renderer = glGetString(GL_RENDERER);
-        printf("%s %s %s\n", vendor, version, renderer);
-        GLenum err = glGetError();
-        printf("couldn't load GL functions: %d\n", err);
+        printf("couldn't load GL functions: %d\n");
         return NULL;
     }
 
