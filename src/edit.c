@@ -5,16 +5,16 @@ static void IncreaseBufferSize(void **buffer, size_t *capacity, size_t elementSi
 
 void ScreenToEditorSpace(const struct EdState *state, int32_t *x, int32_t *y)
 {
-    int32_t xTrans = *x + state->ui.viewPosition.x;
-    int32_t yTrans = *y + state->ui.viewPosition.y;
+    int32_t xTrans = *x + state->data.viewPosition.x;
+    int32_t yTrans = *y + state->data.viewPosition.y;
     *x = xTrans;
     *y = yTrans;
 }
 
 void EditorToScreenSpace(const struct EdState *state, int32_t *x, int32_t *y)
 {
-    int32_t xTrans = *x - state->ui.viewPosition.x;
-    int32_t yTrans = *y - state->ui.viewPosition.y;
+    int32_t xTrans = *x - state->data.viewPosition.x;
+    int32_t yTrans = *y - state->data.viewPosition.y;
     *x = xTrans;
     *y = yTrans;
 }
@@ -22,12 +22,12 @@ void EditorToScreenSpace(const struct EdState *state, int32_t *x, int32_t *y)
 void ScreenToEditorSpaceGrid(const struct EdState *state, int32_t *x, int32_t *y)
 {
     ScreenToEditorSpace(state, x, y);
-    const int offset = state->ui.gridSize / 2;
+    const int offset = state->data.gridSize / 2;
     int32_t xt = *x, yt = *y;
     xt += xt < 0 ? -offset : offset;
-    *x = xt / state->ui.gridSize * state->ui.gridSize;
+    *x = xt / state->data.gridSize * state->data.gridSize;
     yt += yt < 0 ? -offset : offset;
-    *y = yt / state->ui.gridSize * state->ui.gridSize;
+    *y = yt / state->data.gridSize * state->data.gridSize;
 }
 
 void EditAddVertex(struct EdState *state, struct Vertex pos)

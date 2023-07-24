@@ -267,9 +267,9 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
             igSeparator();
             if(igBeginMenu("Modes", true))
             {
-                if(igMenuItem_Bool("Vertex", "V", state->ui.selectionMode == MODE_VERTEX, true)) { state->ui.selectionMode = MODE_VERTEX; }
-                if(igMenuItem_Bool("Line", "L", state->ui.selectionMode == MODE_LINE, true)) { state->ui.selectionMode = MODE_LINE; }
-                if(igMenuItem_Bool("Sector", "S", state->ui.selectionMode == MODE_SECTOR, true)) { state->ui.selectionMode = MODE_SECTOR; }
+                if(igMenuItem_Bool("Vertex", "V", state->data.selectionMode == MODE_VERTEX, true)) { state->data.selectionMode = MODE_VERTEX; }
+                if(igMenuItem_Bool("Line", "L", state->data.selectionMode == MODE_LINE, true)) { state->data.selectionMode = MODE_LINE; }
+                if(igMenuItem_Bool("Sector", "S", state->data.selectionMode == MODE_SECTOR, true)) { state->data.selectionMode = MODE_SECTOR; }
                 igEndMenu();
             }
             igSeparator();
@@ -433,33 +433,33 @@ static void EditorWindow(bool *p_open, struct EdState *state)
             printf("Redo!\n");
 
         if(igShortcut(ImGuiKey_V, 0, 0))
-            state->ui.selectionMode = MODE_VERTEX;
+            state->data.selectionMode = MODE_VERTEX;
         if(igShortcut(ImGuiKey_L, 0, 0))
-            state->ui.selectionMode = MODE_LINE;
+            state->data.selectionMode = MODE_LINE;
         if(igShortcut(ImGuiKey_S, 0, 0))
-            state->ui.selectionMode = MODE_SECTOR;
+            state->data.selectionMode = MODE_SECTOR;
 
         igPushItemWidth(80);
         static const char *modeNames[] = { "Vertex", "Line", "Sector" };
         static const size_t numModes = COUNT_OF(modeNames);
-        igCombo_Str_arr("Mode", &state->ui.selectionMode, modeNames, numModes, 3);
+        igCombo_Str_arr("Mode", &state->data.selectionMode, modeNames, numModes, 3);
 
         igSameLine(0, 16);
         igPushItemWidth(80);
         static const char *gridSizes[] = { "1", "2", "4", "8", "16", "32", "64", "128", "256", "512", "1024" };
         static const size_t numGrids = COUNT_OF(gridSizes);
-        int gridSelection = log2(state->ui.gridSize);
+        int gridSelection = log2(state->data.gridSize);
         igCombo_Str_arr("Gridsize", &gridSelection, gridSizes, numGrids, numGrids);
-        state->ui.gridSize = pow(2, gridSelection);
+        state->data.gridSize = pow(2, gridSelection);
 
         igSameLine(0, 16);
         igPushItemWidth(80);
-        igSliderFloat("Zoom", &state->ui.zoomLevel, 0.05f, 4, "%.2f", 0);
+        igSliderFloat("Zoom", &state->data.zoomLevel, 0.05f, 4, "%.2f", 0);
 
         igSameLine(0, 16);
         if(igButton("Go To Origin", (ImVec2){ 0, 0 })) 
         {
-            state->ui.viewPosition = (ImVec2){ -state->gl.editorFramebufferWidth / 2, -state->gl.editorFramebufferHeight / 2 };
+            state->data.viewPosition = (ImVec2){ -state->gl.editorFramebufferWidth / 2, -state->gl.editorFramebufferHeight / 2 };
         }
 
         if(igBeginChild_ID(1000, (ImVec2){ 0, 0 }, false, ImGuiWindowFlags_NoMove))
@@ -482,15 +482,15 @@ static void EditorWindow(bool *p_open, struct EdState *state)
             {
                 int edX = relX, edY = relY;
                 ScreenToEditorSpaceGrid(state, &edX, &edY);
-                state->ui.mx = edX;
-                state->ui.my = edY;
+                state->data.mx = edX;
+                state->data.my = edY;
 
                 if(igIsMouseDragging(ImGuiMouseButton_Middle, 2))
                 {
                     ImVec2 dragDelta;
                     igGetMouseDragDelta(&dragDelta, ImGuiMouseButton_Middle, 2);
-                    state->ui.viewPosition.x -= dragDelta.x;
-                    state->ui.viewPosition.y -= dragDelta.y;
+                    state->data.viewPosition.x -= dragDelta.x;
+                    state->data.viewPosition.y -= dragDelta.y;
                     igResetMouseDragDelta(ImGuiMouseButton_Middle);
                 }
 
@@ -512,11 +512,11 @@ static void EditorWindow(bool *p_open, struct EdState *state)
                 ImGuiKeyData *wheelData = igGetKeyData_Key(ImGuiKey_MouseWheelY);
                 if(wheelData->AnalogValue != 0)
                 {
-                    state->ui.zoomLevel += wheelData->AnalogValue * 0.05f;
-                    if(state->ui.zoomLevel < 0.05f)
-                        state->ui.zoomLevel = 0.05f;
-                    if(state->ui.zoomLevel > 4)
-                        state->ui.zoomLevel = 4;
+                    state->data.zoomLevel += wheelData->AnalogValue * 0.05f;
+                    if(state->data.zoomLevel < 0.05f)
+                        state->data.zoomLevel = 0.05f;
+                    if(state->data.zoomLevel > 4)
+                        state->data.zoomLevel = 4;
                 }
             }
 
@@ -532,7 +532,7 @@ static void EditorWindow(bool *p_open, struct EdState *state)
             if(firstTime)
             {
                 firstTime = false;
-                state->ui.viewPosition = (ImVec2){ -state->gl.editorFramebufferWidth / 2, -state->gl.editorFramebufferHeight / 2 };
+                state->data.viewPosition = (ImVec2){ -state->gl.editorFramebufferWidth / 2, -state->gl.editorFramebufferHeight / 2 };
             }
         }
         igEndChild();
@@ -588,9 +588,9 @@ static void StatsWindow(bool *p_open, struct EdState *state)
     if(igBegin("Debug Stats", p_open, 0))
     {
         igSeparatorText("Editor");
-        igText("Viewposition: %.2f | %.2f", state->ui.viewPosition.x, state->ui.viewPosition.y);
-        igText("Mouse World Pos: %d | %d", state->ui.mx, state->ui.my);
-        igText("Zoomlevel: %.2f", state->ui.zoomLevel);
+        igText("Viewposition: %.2f | %.2f", state->data.viewPosition.x, state->data.viewPosition.y);
+        igText("Mouse World Pos: %d | %d", state->data.mx, state->data.my);
+        igText("Zoomlevel: %.2f", state->data.zoomLevel);
     }
     igEnd();
 }

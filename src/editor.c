@@ -54,8 +54,8 @@ bool InitEditor(struct EdState *state)
     glCreateFramebuffers(1, &state->gl.editorFramebuffer);
     glCreateFramebuffers(1, &state->gl.realtimeFramebuffer);
 
-    state->ui.gridSize = 32;
-    state->ui.zoomLevel = 1.0f;
+    state->data.gridSize = 32;
+    state->data.zoomLevel = 1.0f;
 
     if(!LoadShaders(state))
         return false;
@@ -110,51 +110,21 @@ void ResizeEditorView(struct EdState *state, int width, int height)
     glNamedBufferSubData(state->gl.backgroundLinesBuffer, 0, 2 * sizeof(vec2), horLine);
     glNamedBufferSubData(state->gl.backgroundLinesBuffer, 2 * sizeof(vec2), 2 * sizeof(vec2), verLine);
 
-    glm_ortho(0, width, 0, height, -1, 1, state->editorProjection);
-}
-
-void ResizeRealtimeView(struct EdState *state, int width, int height)
-{
-    if(width == 0 || height == 0)
-        return;
-
-    if(state->gl.realtimeFramebufferWidth == width && state->gl.realtimeFramebufferHeight == height)
-        return;
-
-    if(state->gl.realtimeColorTexture > 0)
-    {
-        glDeleteTextures(2, (GLuint[]){ state->gl.realtimeColorTexture, state->gl.realtimeDepthTexture });
-    }
-
-    glCreateTextures(GL_TEXTURE_2D, 1, &state->gl.realtimeColorTexture);
-    glTextureStorage2D(state->gl.realtimeColorTexture, 1, GL_RGBA8, width, height);
-    glTextureParameteri(state->gl.realtimeColorTexture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTextureParameteri(state->gl.realtimeColorTexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glCreateTextures(GL_TEXTURE_2D, 1, &state->gl.realtimeDepthTexture);
-    glTextureStorage2D(state->gl.realtimeDepthTexture, 1, GL_DEPTH24_STENCIL8, width, height);
-    glTextureParameteri(state->gl.realtimeDepthTexture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTextureParameteri(state->gl.realtimeDepthTexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    glNamedFramebufferTexture(state->gl.realtimeFramebuffer, GL_COLOR_ATTACHMENT0, state->gl.realtimeColorTexture, 0);
-    glNamedFramebufferTexture(state->gl.realtimeFramebuffer, GL_DEPTH_STENCIL_ATTACHMENT, state->gl.realtimeDepthTexture, 0);
-
-    state->gl.realtimeFramebufferWidth = width;
-    state->gl.realtimeFramebufferHeight = height;
+    glm_ortho(0, width, 0, height, -1, 1, state->data.editorProjection);
 }
 
 static void RenderBackground(const struct EdState *state)
 {
-    float offsetX = fmod(-state->ui.viewPosition.x, (float)state->ui.gridSize);
-    float offsetY = fmod(-state->ui.viewPosition.y, (float)state->ui.gridSize);
+    float offsetX = fmod(-state->data.viewPosition.x, (float)state->data.gridSize);
+    float offsetY = fmod(-state->data.viewPosition.y, (float)state->data.gridSize);
 
-    float period = state->ui.gridSize;
+    float period = state->data.gridSize;
 
     int vLines = (state->gl.editorFramebufferWidth / period) + 2;
     int hLines = (state->gl.editorFramebufferHeight / period) + 2;
 
-    int hMajorIdx = -state->ui.viewPosition.y / period;
-    int vMajorIdx = -state->ui.viewPosition.x / period;
+    int hMajorIdx = -state->data.viewPosition.y / period;
+    int vMajorIdx = -state->data.viewPosition.x / period;
 
     glBindVertexArray(state->gl.editorBackProg.backVertexFormat);
     glUseProgram(state->gl.editorBackProg.hProgram);
@@ -162,7 +132,7 @@ static void RenderBackground(const struct EdState *state)
     glUniform1f(state->gl.editorBackProg.hPeriodUniform, period);
     glUniform4fv(state->gl.editorBackProg.hTintUniform, 1, state->settings.colors[COL_BACK_LINES]);
     glUniform4fv(state->gl.editorBackProg.hMajorTintUniform, 1, state->settings.colors[COL_BACK_MAJOR_LINES]);
-    glUniformMatrix4fv(state->gl.editorBackProg.hVPUniform, 1, false, (float*)state->editorProjection);
+    glUniformMatrix4fv(state->gl.editorBackProg.hVPUniform, 1, false, (float*)state->data.editorProjection);
     glUniform1i(state->gl.editorBackProg.hMajorIdxUniform, hMajorIdx);
 
     glDrawArraysInstanced(GL_LINES, 0, 2, hLines);
@@ -172,7 +142,7 @@ static void RenderBackground(const struct EdState *state)
     glUniform1f(state->gl.editorBackProg.vPeriodUniform, period);
     glUniform4fv(state->gl.editorBackProg.vTintUniform, 1, state->settings.colors[COL_BACK_LINES]);
     glUniform4fv(state->gl.editorBackProg.vMajorTintUniform, 1, state->settings.colors[COL_BACK_MAJOR_LINES]);
-    glUniformMatrix4fv(state->gl.editorBackProg.vVPUniform, 1, false, (float*)state->editorProjection);
+    glUniformMatrix4fv(state->gl.editorBackProg.vVPUniform, 1, false, (float*)state->data.editorProjection);
     glUniform1i(state->gl.editorBackProg.vMajorIdxUniform, vMajorIdx);
 
     glDrawArraysInstanced(GL_LINES, 2, 2, vLines);
@@ -191,14 +161,9 @@ static void RenderVertices(const struct EdState *state, const mat4 viewProjMat)
 void RenderEditorView(struct EdState *state)
 {
     mat4 viewProjMat, viewMat;
-    glm_translate_make(viewMat, (vec3){ -state->ui.viewPosition.x, -state->ui.viewPosition.y, 0 });
-    glm_mul(state->editorProjection, viewMat, viewProjMat);
+    glm_translate_make(viewMat, (vec3){ -state->data.viewPosition.x, -state->data.viewPosition.y, 0 });
+    glm_mul(state->data.editorProjection, viewMat, viewProjMat);
 
     RenderBackground(state);
     RenderVertices(state, viewProjMat);
-}
-
-void RenderRealtimeView(struct EdState *state)
-{
-
 }

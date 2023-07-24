@@ -92,12 +92,6 @@ struct EdState
         bool showSettings;
         bool showMapSettings;
         bool showProjectSettings;
-
-        int gridSize;
-        float zoomLevel;
-        ImVec2 viewPosition;
-        int mx, my;
-        int selectionMode;
     } ui;
 
     struct
@@ -134,10 +128,19 @@ struct EdState
         } editorVertex;
     } gl;
 
-    float realtimeFov;
+    struct
+    {
+        int gridSize;
+        float zoomLevel;
+        ImVec2 viewPosition;
+        int mx, my;
+        int selectionMode;
 
-    mat4 editorView, editorProjection;
-    mat4 realtimeView, realtimeProjection;
+        float realtimeFov;
+
+        mat4 editorProjection;
+        mat4 realtimeProjection;
+    } data;
 };
 
 const char* ColorIndexToString(enum Colors color);
