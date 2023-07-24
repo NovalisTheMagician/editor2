@@ -162,6 +162,9 @@ static bool InitVertex(struct EdState *state)
         "out vec4 fragColor;\n"
         "uniform vec4 tint;\n"
         "void main() {\n"
+        "vec2 coord = gl_PointCoord - vec2(0.5);\n"
+        "if(length(coord) > 0.5)\n"
+        "   discard;\n"
         "   fragColor = outColor;\n"
         "}\n";
 

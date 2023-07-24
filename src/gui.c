@@ -413,6 +413,8 @@ static void ToolbarWindow(bool *p_open, struct EdState *state)
 
 static void EditorWindow(bool *p_open, struct EdState *state)
 {
+    static bool firstTime = true;
+
     igSetNextWindowSize((ImVec2){ 800, 600 }, ImGuiCond_FirstUseEver);
     igSetNextWindowPos((ImVec2){ 40, 40 }, ImGuiCond_FirstUseEver, (ImVec2){ 0, 0 });
 
@@ -444,11 +446,11 @@ static void EditorWindow(bool *p_open, struct EdState *state)
 
         igSameLine(0, 16);
         igPushItemWidth(80);
-        static const char *gridSizes[] = { "4", "8", "16", "32", "64", "128" };
+        static const char *gridSizes[] = { "1", "2", "4", "8", "16", "32", "64", "128", "256", "512", "1024" };
         static const size_t numGrids = COUNT_OF(gridSizes);
-        int gridSelection = log2(state->ui.gridSize) - 2;
+        int gridSelection = log2(state->ui.gridSize);
         igCombo_Str_arr("Gridsize", &gridSelection, gridSizes, numGrids, numGrids);
-        state->ui.gridSize = pow(2, gridSelection + 2);
+        state->ui.gridSize = pow(2, gridSelection);
 
         igSameLine(0, 16);
         igPushItemWidth(80);
@@ -526,6 +528,12 @@ static void EditorWindow(bool *p_open, struct EdState *state)
 
             ResizeEditorView(state, clientArea.x, clientArea.y);
             igImage((void*)(intptr_t)state->gl.editorColorTexture, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 0 });
+
+            if(firstTime)
+            {
+                firstTime = false;
+                state->ui.viewPosition = (ImVec2){ -state->gl.editorFramebufferWidth / 2, -state->gl.editorFramebufferHeight / 2 };
+            }
         }
         igEndChild();
     }
