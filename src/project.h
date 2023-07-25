@@ -6,8 +6,8 @@
 
 enum AssetPathType
 {
-    TEXPATH_FS,
-    TEXPATH_FTP
+    ASSPATH_FS,
+    ASSPATH_FTP
 };
 
 struct AssetPath
@@ -32,9 +32,11 @@ struct AssetPath
 
 struct Project
 {
-    struct AssetPath texturesPath;
-    struct AssetPath entitiesPath;
+    struct AssetPath basePath;
+    char texturesPath[MAX_ASSETPATH_LEN];
+    char thingsPath[MAX_ASSETPATH_LEN];
     bool dirty;
+    char *file;
 };
 
 void NewProject(struct Project *project);

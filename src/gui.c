@@ -166,6 +166,8 @@ static void EditorWindow(bool *p_open, struct EdState *state);
 static void RealtimeWindow(bool *p_open, struct EdState *state);
 static void StatsWindow(bool *p_open, struct EdState *state);
 static void MainMenuBar(bool *doQuit, struct EdState *state);
+static void ProjectSettingsWindow(bool *p_open, struct EdState *state);
+static void MapSettingsWindow(bool *p_open, struct EdState *state);
 
 static void ProjectSavePopup(struct EdState *state, bool *quitRequest);
 static void MapSavePopup(struct EdState *state, bool *quitRequest);
@@ -207,6 +209,12 @@ bool DoGui(struct EdState *state, bool doQuit)
 
     if(state->ui.showStats)
         StatsWindow(&state->ui.showStats, state);
+
+    if(state->ui.showProjectSettings)
+        ProjectSettingsWindow(&state->ui.showProjectSettings, state);
+
+    if(state->ui.showMapSettings)
+        MapSettingsWindow(&state->ui.showMapSettings, state);
 
     EditorWindow(NULL, state);
 
@@ -250,9 +258,9 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
     {
         if(igBeginMenu("File", true))
         {
-            if(igMenuItem_Bool("New Project", "", false, allowFileOps)) { printf("New Project!\n"); openProjectPopup = true; }
-            if(igMenuItem_Bool("Open Project", "", false, allowFileOps)) { printf("Open Project!\n"); }
-            if(igMenuItem_Bool("Save Project", "", false, allowFileOps)) { printf("Save Project!\n"); }
+            if(igMenuItem_Bool("New Project", "", false, allowFileOps)) { if(state->project.dirty) { openProjectPopup = true; modalAction = SMA_NEW; } else NewProject(&state->project); }
+            if(igMenuItem_Bool("Open Project", "", false, allowFileOps)) { if(state->project.dirty) { openProjectPopup = true; modalAction = SMA_OPEN; } else LoadProject(&state->project); }
+            if(igMenuItem_Bool("Save Project", "", false, state->project.dirty && allowFileOps)) { SaveProject(&state->project, state->project.file == NULL); }
             igSeparator();
             if(igMenuItem_Bool("New Map", "Ctrl+N", false, allowFileOps)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_NEW; } else NewMap(&state->map); }
             if(igMenuItem_Bool("Open Map", "Ctrl+O", false, allowFileOps)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_OPEN; } else LoadMap(&state->map); }
@@ -319,6 +327,14 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
             igMenuItem_BoolPtr("3D View", "Ctrl+W", &state->ui.show3dView, true);
             igSeparator();
             igMenuItem_BoolPtr("Logs", "Ctrl+L", &state->ui.showLogs, true);
+            igSeparator();
+            if(igBeginMenu("Arrange", true))
+            {
+                if(igMenuItem_Bool("Fullsize", "", false, true)) {  }
+                if(igMenuItem_Bool("Side by Side", "", false, true)) {  }
+                if(igMenuItem_Bool("Texturing", "", false, true)) {  }
+                igEndMenu();
+            }
 #ifdef _DEBUG
             igSeparator();
             igMenuItem_BoolPtr("Stats", "", &state->ui.showStats, true);
@@ -608,8 +624,11 @@ static void ProjectSavePopup(struct EdState *state, bool *quitRequest)
         igText("You have unsaved changes to the Project.\nDo you want to save them?");
         if(igButton("Yes", (ImVec2){ 64, 0 }))
         {
+            SaveProject(&state->project, state->project.file == NULL);
             switch(modalAction)
             {
+            case SMA_NEW: NewProject(&state->project); break;
+            case SMA_OPEN: LoadProject(&state->project); break;
             case SMA_QUIT: *quitRequest = true; break;
             }
             igCloseCurrentPopup();
@@ -619,6 +638,8 @@ static void ProjectSavePopup(struct EdState *state, bool *quitRequest)
         {
             switch(modalAction)
             {
+            case SMA_NEW: NewProject(&state->project); break;
+            case SMA_OPEN: LoadProject(&state->project); break;
             case SMA_QUIT: *quitRequest = true; break;
             }
             igCloseCurrentPopup();
@@ -667,6 +688,60 @@ static void MapSavePopup(struct EdState *state, bool *quitRequest)
         }
         igEndPopup();
     }
+}
+
+static void ProjectSettingsWindow(bool *p_open, struct EdState *state)
+{
+    igSetNextWindowSize((ImVec2){ 400, 250 }, ImGuiCond_FirstUseEver);
+    if(igBegin("Project Settings", p_open, 0))
+    {
+        igSeparatorText("Base");
+        bool isFtp = state->project.basePath.type == ASSPATH_FTP;
+        igCheckbox("FTP", &isFtp);
+        state->project.basePath.type = isFtp ? ASSPATH_FTP : ASSPATH_FS;
+        if(igInputText("Path", state->project.basePath.fs.path, sizeof state->project.basePath.fs.path, 0, NULL, NULL)) { state->project.dirty = true; }
+        igSameLine(0, 8);
+        if(igButton("Browse", (ImVec2){ 0, 0 }))
+        {
+
+        }
+        if(isFtp)
+        {
+            if(igInputText("URL", state->project.basePath.ftp.url, sizeof state->project.basePath.ftp.url, 0, NULL, NULL)) { state->project.dirty = true; }
+            if(igInputText("Login", state->project.basePath.ftp.login, sizeof state->project.basePath.ftp.login, 0, NULL, NULL)) { state->project.dirty = true; }
+            if(igInputText("Password", state->project.basePath.ftp.password, sizeof state->project.basePath.ftp.password, 0, NULL, NULL)) { state->project.dirty = true; }
+        }
+
+        igSeparatorText("Textures");
+        igPushID_Str("Textures");
+        if(igInputText("Path", state->project.texturesPath, sizeof state->project.texturesPath, 0, NULL, NULL)) { state->project.dirty = true; }
+        igSameLine(0, 8);
+        if(igButton("Browse", (ImVec2){ 0, 0 }))
+        {
+
+        }
+        igPopID();
+
+        igSeparatorText("Things");
+        igPushID_Str("Things");
+        if(igInputText("Path", state->project.thingsPath, sizeof state->project.thingsPath, 0, NULL, NULL)) { state->project.dirty = true; }
+        igSameLine(0, 8);
+        if(igButton("Browse", (ImVec2){ 0, 0 }))
+        {
+
+        }
+        igPopID();
+    }
+    igEnd();
+}
+
+static void MapSettingsWindow(bool *p_open, struct EdState *state)
+{
+    if(igBegin("Map Settings", p_open, 0))
+    {
+        igTextColored((ImVec4){ 1, 0.2f, 0.1f, 1 }, "DRAGONS!!!");
+    }
+    igEnd();
 }
 
 static void HandleShortcuts(struct EdState *state)

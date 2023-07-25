@@ -47,6 +47,7 @@ int EditorMain(int argc, char *argv[])
 
     if(!InitEditor(&state)) return EXIT_FAILURE;
 
+    NewProject(&state.project);
     NewMap(&state.map);
 
     ImGuiIO *ioptr = igGetIO();
@@ -208,7 +209,8 @@ static SDL_GLContext InitOpenGL(SDL_Window *window)
         return NULL;
     }
 
-    SDL_GL_SetSwapInterval(1);
+    if(SDL_GL_SetSwapInterval(-1) == -1)
+        SDL_GL_SetSwapInterval(1);
     glEnable(GL_MULTISAMPLE);
 
     return glContext;
