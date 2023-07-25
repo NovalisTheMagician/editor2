@@ -91,7 +91,6 @@ int EditorMain(int argc, char *argv[])
             glViewport(0, 0, state.gl.realtimeFramebufferWidth, state.gl.realtimeFramebufferHeight);
             glClearColor(state.settings.colors[COL_RTBACKGROUND][0], state.settings.colors[COL_RTBACKGROUND][1], state.settings.colors[COL_RTBACKGROUND][2], state.settings.colors[COL_RTBACKGROUND][3]);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
             RenderRealtimeView(&state);
 
             glDisable(GL_CULL_FACE);
@@ -174,7 +173,7 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
 
     uint8_t *font = malloc(gFontSize); // imgui needs ownership of the font and the embedded data cant be free'd at imgui destruction time. should probably free it at the end but eh
     memcpy(font, gFontData, gFontSize);
-    ImFontAtlas_AddFontFromMemoryTTF(ioptr->Fonts, font, gFontSize, 15, NULL, NULL); // why does imgui take ownership of the font ???
+    ImFontAtlas_AddFontFromMemoryTTF(ioptr->Fonts, font, gFontSize, 15, NULL, NULL); // why does imgui take ownership of the font ??? or does it??
 
     ioptr->IniFilename = NULL;
 
@@ -193,14 +192,14 @@ static SDL_GLContext InitOpenGL(SDL_Window *window)
     {
         const char *errMsg = SDL_GetError();
         printf("failed to create context: %s\n", errMsg);
-        return false;
+        return NULL;
     }
 
     if(SDL_GL_MakeCurrent(window, glContext) != 0)
     {
         const char *errMsg = SDL_GetError();
         printf("failed to make context current: %s\n", errMsg);
-        return false;
+        return NULL;
     }
 
     if(!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress))

@@ -608,11 +608,19 @@ static void ProjectSavePopup(struct EdState *state, bool *quitRequest)
         igText("You have unsaved changes to the Project.\nDo you want to save them?");
         if(igButton("Yes", (ImVec2){ 64, 0 }))
         {
+            switch(modalAction)
+            {
+            case SMA_QUIT: *quitRequest = true; break;
+            }
             igCloseCurrentPopup();
         }
         igSameLine(0, 4);
         if(igButton("No", (ImVec2){ 64, 0 }))
         {
+            switch(modalAction)
+            {
+            case SMA_QUIT: *quitRequest = true; break;
+            }
             igCloseCurrentPopup();
         }
         igSameLine(0, 4);
