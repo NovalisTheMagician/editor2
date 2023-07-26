@@ -407,8 +407,8 @@ static void SettingsWindow(bool *p_open, struct EdState *state)
             if(igBeginTabItem("General", NULL, 0))
             {
                 igSeparatorText("Game");
-                igInputText("Gamepath", state->settings.gamePath, sizeof state->settings.gamePath, 0, NULL, NULL);
-                igInputText("Launch Arguments", state->settings.launchArguments, sizeof state->settings.launchArguments, 0, NULL, NULL);
+                igInputText("Gamepath", state->settings.gamePath.data, state->settings.gamePath.size, 0, NULL, NULL);
+                igInputText("Launch Arguments", state->settings.launchArguments.data, state->settings.launchArguments.size, 0, NULL, NULL);
                 igSeparatorText("Other");
                 if(igButton("Reset Settings", (ImVec2){ 0, 0 })) { ResetSettings(&state->settings); }
                 igEndTabItem();
@@ -458,9 +458,7 @@ static void EditorWindow(bool *p_open, struct EdState *state)
     if(state->map.dirty)
         flags |= ImGuiWindowFlags_UnsavedDocument;
 
-    char buffer[128];
-    snprintf(buffer, sizeof buffer, "Editor %s", state->map.file.size > 0 ? pstr_tocstr(state->map.file) : "no name");
-    if(igBegin(buffer, p_open, flags))
+    if(igBegin("Editor", p_open, flags))
     {
         if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_C, 0, 0))
             EditCopy(state);

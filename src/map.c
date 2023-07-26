@@ -55,7 +55,7 @@ void SaveMap(struct Map *map, bool useDialog)
             return;
         }
     }
-    if(!map->file.size == 0) return;
+    if(map->file.size == 0) return;
 
     map->dirty = false;
 }

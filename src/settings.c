@@ -30,9 +30,10 @@ void ResetSettings(struct EdSettings *settings)
     SetColor(&settings->colors[COL_LINE], (Color){ 0.8f, 0.8f, 0.8f, 1.00f });
     SetColor(&settings->colors[COL_SECTOR], (Color){ 0.8f, 0.8f, 0.8f, 1.00f });
 
-    memset(settings->gamePath, 0, MAX_GAMEPATH_LEN);
-    memset(settings->launchArguments, 0, MAX_GAMEPATH_LEN);
-    strncpy(settings->launchArguments, "-debug -map %1", MAX_GAMEPATH_LEN);
+    pstr_free(settings->gamePath);
+    pstr_free(settings->launchArguments);
+    settings->gamePath = pstr_alloc(MAX_GAMEPATH_LEN);
+    settings->launchArguments = pstr_cstr_size("-debug -map %1", MAX_GAMEPATH_LEN);
 
     settings->theme = 0;
 }
@@ -45,4 +46,10 @@ bool LoadSettings(const char *settingsPath, struct EdSettings *settings)
 void SaveSettings(const char *settingsPath, const struct EdSettings *settings)
 {
 
+}
+
+void FreeSettings(struct EdSettings *settings)
+{
+    pstr_free(settings->gamePath);
+    pstr_free(settings->launchArguments);
 }

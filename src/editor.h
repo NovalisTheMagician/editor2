@@ -60,8 +60,8 @@ struct EdSettings
     Color colors[NUM_COLORS];
     int theme;
 
-    char gamePath[MAX_GAMEPATH_LEN];
-    char launchArguments[MAX_GAMEARGUMENTS_LEN];
+    pstring gamePath;
+    pstring launchArguments;
 };
 
 struct VertexType
@@ -150,6 +150,7 @@ const char* ColorIndexToString(enum Colors color);
 void ResetSettings(struct EdSettings *settings);
 bool LoadSettings(const char *settingsPath, struct EdSettings *settings);
 void SaveSettings(const char *settingsPath, const struct EdSettings *settings);
+void FreeSettings(struct EdSettings *settings);
 
 bool LoadShaders(struct EdState *state);
 
