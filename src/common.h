@@ -11,4 +11,6 @@
 #include <glad2/gl.h>
 #include <cglm/cglm.h>
 
+#include "pstring.h"
+
 #define COUNT_OF(arr) (sizeof(arr)/sizeof(0[arr]))

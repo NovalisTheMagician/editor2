@@ -2,6 +2,7 @@
 
 #include "edit.h"
 
+#include <nfd.h>
 #include <tgmath.h>
 
 static void SetValveStyle(ImGuiStyle *style)
@@ -159,6 +160,23 @@ void SetStyle(enum Theme theme)
     }
 }
 
+static void BrowseFolder(char *path, size_t pathLen)
+{
+    char *folderPath = NULL;
+    nfdresult_t res = NFD_PickFolder(NULL, &folderPath);
+    if(res == NFD_OKAY)
+    {
+        size_t len = strlen(folderPath);
+        if(len <= pathLen)
+            strncpy(path, folderPath, pathLen - 1);
+    }
+    else if(res != NFD_CANCEL)
+    {
+        printf("Error: %s\n", NFD_GetError());
+    }
+    free(folderPath);
+}
+
 static void AboutWindow(bool *p_open);
 static void SettingsWindow(bool *p_open, struct EdState *state);
 static void ToolbarWindow(bool *p_open, struct EdState *state);
@@ -260,11 +278,11 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
         {
             if(igMenuItem_Bool("New Project", "", false, allowFileOps)) { if(state->project.dirty) { openProjectPopup = true; modalAction = SMA_NEW; } else NewProject(&state->project); }
             if(igMenuItem_Bool("Open Project", "", false, allowFileOps)) { if(state->project.dirty) { openProjectPopup = true; modalAction = SMA_OPEN; } else LoadProject(&state->project); }
-            if(igMenuItem_Bool("Save Project", "", false, state->project.dirty && allowFileOps)) { SaveProject(&state->project, state->project.file == NULL); }
+            if(igMenuItem_Bool("Save Project", "", false, state->project.dirty && allowFileOps)) { SaveProject(&state->project, state->project.file.size == 0); }
             igSeparator();
             if(igMenuItem_Bool("New Map", "Ctrl+N", false, allowFileOps)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_NEW; } else NewMap(&state->map); }
             if(igMenuItem_Bool("Open Map", "Ctrl+O", false, allowFileOps)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_OPEN; } else LoadMap(&state->map); }
-            if(igMenuItem_Bool("Save Map", "Ctrl+S", false, state->map.dirty && allowFileOps)) { SaveMap(&state->map, state->map.file == NULL); }
+            if(igMenuItem_Bool("Save Map", "Ctrl+S", false, state->map.dirty && allowFileOps)) { SaveMap(&state->map, state->map.file.size == 0); }
             if(igMenuItem_Bool("SaveAs Map", "", false, allowFileOps)) { SaveMap(&state->map, true); }
             igSeparator();
             if(igMenuItem_Bool("Quit", "Alt+F4", false, true)) { *doQuit = true; }
@@ -441,7 +459,7 @@ static void EditorWindow(bool *p_open, struct EdState *state)
         flags |= ImGuiWindowFlags_UnsavedDocument;
 
     char buffer[128];
-    snprintf(buffer, sizeof buffer, "Editor %s", state->map.file ? state->map.file : "no name");
+    snprintf(buffer, sizeof buffer, "Editor %s", state->map.file.size > 0 ? pstr_tocstr(state->map.file) : "no name");
     if(igBegin(buffer, p_open, flags))
     {
         if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_C, 0, 0))
@@ -624,7 +642,7 @@ static void ProjectSavePopup(struct EdState *state, bool *quitRequest)
         igText("You have unsaved changes to the Project.\nDo you want to save them?");
         if(igButton("Yes", (ImVec2){ 64, 0 }))
         {
-            SaveProject(&state->project, state->project.file == NULL);
+            SaveProject(&state->project, state->project.file.size == 0);
             switch(modalAction)
             {
             case SMA_NEW: NewProject(&state->project); break;
@@ -660,7 +678,7 @@ static void MapSavePopup(struct EdState *state, bool *quitRequest)
         igText("You have unsaved changes to the Map.\nDo you want to save them?");
         if(igButton("Yes", (ImVec2){ 64, 0 }))
         {
-            SaveMap(&state->map, state->map.file == NULL);
+            SaveMap(&state->map, state->map.file.size == 0);
             switch(modalAction)
             {
             case SMA_NEW: NewMap(&state->map); break;
@@ -692,44 +710,42 @@ static void MapSavePopup(struct EdState *state, bool *quitRequest)
 
 static void ProjectSettingsWindow(bool *p_open, struct EdState *state)
 {
-    igSetNextWindowSize((ImVec2){ 400, 250 }, ImGuiCond_FirstUseEver);
+    igSetNextWindowSize((ImVec2){ 400, 290 }, ImGuiCond_FirstUseEver);
     if(igBegin("Project Settings", p_open, 0))
     {
         igSeparatorText("Base");
         bool isFtp = state->project.basePath.type == ASSPATH_FTP;
         igCheckbox("FTP", &isFtp);
         state->project.basePath.type = isFtp ? ASSPATH_FTP : ASSPATH_FS;
-        if(igInputText("Path", state->project.basePath.fs.path, sizeof state->project.basePath.fs.path, 0, NULL, NULL)) { state->project.dirty = true; }
+        if(isFtp)
+        {
+            igSameLine(0, 8);
+            if(igButton("Check Connection", (ImVec2){ 0, 0 }))
+            {
+
+            }
+        }
+        if(igInputText("Path", state->project.basePath.fs.path.data, state->project.basePath.fs.path.size, 0, NULL, NULL)) { state->project.dirty = true; }
         igSameLine(0, 8);
         if(igButton("Browse", (ImVec2){ 0, 0 }))
         {
-
+            if(!isFtp) BrowseFolder(state->project.basePath.fs.path.data, state->project.basePath.fs.path.size);
         }
         if(isFtp)
         {
-            if(igInputText("URL", state->project.basePath.ftp.url, sizeof state->project.basePath.ftp.url, 0, NULL, NULL)) { state->project.dirty = true; }
-            if(igInputText("Login", state->project.basePath.ftp.login, sizeof state->project.basePath.ftp.login, 0, NULL, NULL)) { state->project.dirty = true; }
-            if(igInputText("Password", state->project.basePath.ftp.password, sizeof state->project.basePath.ftp.password, 0, NULL, NULL)) { state->project.dirty = true; }
+            if(igInputText("URL", state->project.basePath.ftp.url.data, state->project.basePath.ftp.url.size, 0, NULL, NULL)) { state->project.dirty = true; }
+            if(igInputText("Login", state->project.basePath.ftp.login.data, state->project.basePath.ftp.login.size, 0, NULL, NULL)) { state->project.dirty = true; }
+            if(igInputText("Password", state->project.basePath.ftp.password.data, state->project.basePath.ftp.password.size, 0, NULL, NULL)) { state->project.dirty = true; }
         }
 
         igSeparatorText("Textures");
         igPushID_Str("Textures");
-        if(igInputText("Path", state->project.texturesPath, sizeof state->project.texturesPath, 0, NULL, NULL)) { state->project.dirty = true; }
-        igSameLine(0, 8);
-        if(igButton("Browse", (ImVec2){ 0, 0 }))
-        {
-
-        }
+        if(igInputText("Subpath", state->project.texturesPath.data, state->project.texturesPath.size, 0, NULL, NULL)) { state->project.dirty = true; }
         igPopID();
 
         igSeparatorText("Things");
         igPushID_Str("Things");
-        if(igInputText("Path", state->project.thingsPath, sizeof state->project.thingsPath, 0, NULL, NULL)) { state->project.dirty = true; }
-        igSameLine(0, 8);
-        if(igButton("Browse", (ImVec2){ 0, 0 }))
-        {
-
-        }
+        if(igInputText("Subpath", state->project.thingsFile.data, state->project.thingsFile.size, 0, NULL, NULL)) { state->project.dirty = true; }
         igPopID();
     }
     igEnd();
@@ -761,7 +777,7 @@ static void HandleShortcuts(struct EdState *state)
     if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_S, 0, ImGuiInputFlags_RouteGlobalLow))
     {
         if(state->map.dirty) 
-            SaveMap(&state->map, state->map.file == NULL);
+            SaveMap(&state->map, state->map.file.size == 0);
     }
 
     if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_W, 0, ImGuiInputFlags_RouteGlobalLow))

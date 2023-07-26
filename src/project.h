@@ -17,15 +17,15 @@ struct AssetPath
     {
         struct 
         {
-            char path[MAX_ASSETPATH_LEN];
+            pstring path;
         } fs;
 
         struct 
         {
-            char path[MAX_ASSETPATH_LEN];
-            char url[MAX_ASSETPATH_LEN];
-            char login[MAX_ASSETPATH_LEN];
-            char password[MAX_ASSETPATH_LEN];
+            pstring path;
+            pstring url;
+            pstring login;
+            pstring password;
         } ftp;
     };
 };
@@ -33,12 +33,13 @@ struct AssetPath
 struct Project
 {
     struct AssetPath basePath;
-    char texturesPath[MAX_ASSETPATH_LEN];
-    char thingsPath[MAX_ASSETPATH_LEN];
+    pstring texturesPath;
+    pstring thingsFile;
     bool dirty;
-    char *file;
+    pstring file;
 };
 
 void NewProject(struct Project *project);
 bool LoadProject(struct Project *project);
 void SaveProject(struct Project *project, bool openDialog);
+void FreeProject(struct Project *project);

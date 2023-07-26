@@ -19,8 +19,8 @@ void NewMap(struct Map *map)
     map->numSectors = 0;
     map->numAllocSectors = DEFAULT_CAPACITY;
 
-    if(map->file) free(map->file);
-    map->file = NULL;
+    pstr_free(map->file);
+    map->file = pstr_alloc(0);
 
     map->dirty = false;
 }
@@ -39,9 +39,8 @@ void SaveMap(struct Map *map, bool useDialog)
         nfdresult_t res = NFD_SaveDialog("map", NULL, &newFile);
         if(res == NFD_OKAY)
         {
-            size_t size = strlen(newFile);
-            map->file = malloc(size + 1);
-            strcpy(map->file, newFile);
+            pstr_free(map->file);
+            map->file = pstr_cstr(newFile);
             free(newFile);
         }
         else if(res == NFD_CANCEL)
@@ -56,7 +55,12 @@ void SaveMap(struct Map *map, bool useDialog)
             return;
         }
     }
-    if(!map->file) return;
+    if(!map->file.size == 0) return;
 
     map->dirty = false;
 }
+void FreeMap(struct Map *map)
+{
+    pstr_free(map->file);
+}
+

@@ -44,9 +44,10 @@ struct Map
     size_t numSectors, numAllocSectors;
 
     bool dirty;
-    char *file;
+    pstring file;
 };
 
 void NewMap(struct Map *map);
 bool LoadMap(struct Map *map);
 void SaveMap(struct Map *map, bool useDialog);
+void FreeMap(struct Map *map);

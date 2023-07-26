@@ -20,7 +20,6 @@ INCBIN_EXTERN(Font);
 #define DEFAULT_WINDOW_WIDTH 1600
 #define DEFAULT_WINDOW_HEIGHT 900
 
-
 static SDL_Window* InitSDL(void);
 static bool InitImgui(SDL_Window *window, SDL_GLContext context);
 static SDL_GLContext InitOpenGL(SDL_Window *window);
@@ -110,6 +109,8 @@ int EditorMain(int argc, char *argv[])
 
     SaveSettings(SETTINGS_FILE, &state.settings);
 
+    FreeMap(&state.map);
+    FreeProject(&state.project);
     DestroyEditor(&state);
 
     ImGui_ImplOpenGL3_Shutdown();
