@@ -23,6 +23,8 @@ void NewMap(struct Map *map)
     map->file = pstr_alloc(0);
 
     map->dirty = false;
+
+    map->textureScale = 1;
 }
 
 bool LoadMap(struct Map *map)

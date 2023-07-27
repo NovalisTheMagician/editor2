@@ -45,6 +45,8 @@ struct Map
 
     bool dirty;
     pstring file;
+
+    int textureScale;
 };
 
 void NewMap(struct Map *map);

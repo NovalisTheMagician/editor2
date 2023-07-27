@@ -6,7 +6,7 @@ SRC_DIR := src
 DEFINES := 
 INC_DIRS := $(SRC_DIR)
 
-LIBS := m cimgui_sdl nfd SDL2 glad2 stdc++
+LIBS := m cimgui_sdl nfd SDL2 glad2 stdc++ igfd
 LIB_DIRS := 
 
 CC := gcc

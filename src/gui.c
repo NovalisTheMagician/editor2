@@ -5,6 +5,8 @@
 #include <nfd.h>
 #include <tgmath.h>
 
+#include <ImGuiFileDialog.h>
+
 static void SetValveStyle(ImGuiStyle *style)
 {
     ImVec4* colors = style->Colors;
@@ -274,6 +276,7 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
     bool allowFileOps = state->network.hosting || !state->network.connected;
     if(igBeginMainMenuBar())
     {
+        float menubarHeight = igGetWindowHeight();
         if(igBeginMenu("File", true))
         {
             if(igMenuItem_Bool("New Project", "", false, allowFileOps)) { if(state->project.dirty) { openProjectPopup = true; modalAction = SMA_NEW; } else NewProject(&state->project); }
@@ -348,9 +351,32 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
             igSeparator();
             if(igBeginMenu("Arrange", true))
             {
-                if(igMenuItem_Bool("Fullsize", "", false, true)) {  }
-                if(igMenuItem_Bool("Side by Side", "", false, true)) {  }
-                if(igMenuItem_Bool("Texturing", "", false, true)) {  }
+                ImVec2 displaySize = igGetIO()->DisplaySize;
+                if(igMenuItem_Bool("Fullsize", "", false, true)) 
+                { 
+                    ImVec2 size = { .x = displaySize.x, .y = displaySize.y - menubarHeight };
+                    ImVec2 pos = { .x = 0, .y = menubarHeight };
+                    igSetWindowSize_Str("Editor", size, 0);
+                    igSetWindowPos_Str("Editor", pos, 0);
+                }
+                if(igMenuItem_Bool("Side by Side", "", false, true)) 
+                { 
+                    ImVec2 edsize = { .x = displaySize.x * 0.60f, .y = displaySize.y - menubarHeight };
+                    ImVec2 edpos = { .x = 0, .y = menubarHeight };
+                    igSetWindowSize_Str("Editor", edsize, 0);
+                    igSetWindowPos_Str("Editor", edpos, 0);
+                    ImVec2 rtsize = { .x = displaySize.x * 0.40f, .y = displaySize.y - menubarHeight };
+                    ImVec2 rtpos = { .x = displaySize.x * 0.60f, .y = menubarHeight };
+                    igSetWindowSize_Str("3D View", rtsize, 0);
+                    igSetWindowPos_Str("3D View", rtpos, 0);
+                }
+                if(igMenuItem_Bool("Texturing", "", false, true)) 
+                { 
+                    ImVec2 rtsize = { .x = displaySize.x * 0.65f, .y = displaySize.y - menubarHeight };
+                    ImVec2 rtpos = { .x = 0, .y = menubarHeight };
+                    igSetWindowSize_Str("3D View", rtsize, 0);
+                    igSetWindowPos_Str("3D View", rtpos, 0);
+                }
                 igEndMenu();
             }
 #ifdef _DEBUG
@@ -531,6 +557,8 @@ static void EditorWindow(bool *p_open, struct EdState *state)
                     state->data.viewPosition.x -= dragDelta.x;
                     state->data.viewPosition.y -= dragDelta.y;
                     igResetMouseDragDelta(ImGuiMouseButton_Middle);
+
+                    igSetWindowFocus_Nil();
                 }
 
                 if(igIsMouseClicked_Bool(ImGuiMouseButton_Left, false)) 
@@ -541,11 +569,12 @@ static void EditorWindow(bool *p_open, struct EdState *state)
                 if(igIsMouseClicked_Bool(ImGuiMouseButton_Right, false)) 
                 {
                     EditAddVertex(state, (struct Vertex){ edX, edY });
+                    igSetWindowFocus_Nil();
                 }
 
                 if(igIsMouseClicked_Bool(ImGuiMouseButton_Middle, false)) 
                 {
-                    
+                    igSetWindowFocus_Nil();
                 }
 
                 ImGuiKeyData *wheelData = igGetKeyData_Key(ImGuiKey_MouseWheelY);
@@ -556,6 +585,8 @@ static void EditorWindow(bool *p_open, struct EdState *state)
                         state->data.zoomLevel = 0.05f;
                     if(state->data.zoomLevel > 4)
                         state->data.zoomLevel = 4;
+
+                    igSetWindowFocus_Nil();
                 }
             }
 
@@ -753,7 +784,7 @@ static void MapSettingsWindow(bool *p_open, struct EdState *state)
 {
     if(igBegin("Map Settings", p_open, 0))
     {
-        igTextColored((ImVec4){ 1, 0.2f, 0.1f, 1 }, "DRAGONS!!!");
+        igSliderInt("Texture Scale", &state->map.textureScale, 1, 10, NULL, 0);
     }
     igEnd();
 }
