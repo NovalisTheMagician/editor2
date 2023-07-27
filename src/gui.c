@@ -195,6 +195,7 @@ static void OpenFolderCallback(const char *path, void *data)
 {
     pstring *str = data;
     size_t len = strlen(path);
+    memset(str->data, 0, str->size);
     memcpy(str->data, path, len < str->size ? len : str->size);
 }
 
@@ -203,15 +204,7 @@ static void OpenFolderDialog(pstring *folderPath)
     struct FileDialogAction *fda = malloc(sizeof *fda);
     fda->data = folderPath;
     fda->callback = OpenFolderCallback;
-    IGFD_OpenDialog(cfileDialog,
-                    "filedlg",                              // dialog key (make it possible to have different treatment reagrding the dialog key
-                    "Choose a Folder",                      // dialog title
-                    NULL,                                   // dialog filter syntax : simple => .h,.c,.pp, etc and collections : text1{filter0,filter1,filter2}, text2{filter0,filter1,filter2}, etc..
-                    ".",                                    // base directory for files scan
-                    "",                                     // base filename
-                    1,                                      // count selection : 0 infinite, 1 one file (default), n (n files)
-                    fda,                                    // some user datas
-                    ImGuiFileDialogFlags_Modal);
+    IGFD_OpenDialog(cfileDialog, "filedlg", "Choose a Folder", NULL, ".", "", 1, fda, ImGuiFileDialogFlags_Modal);
 }
 
 static void SaveMapCallback(const char *path, void *data)
@@ -227,15 +220,7 @@ static void SaveMapDialog(struct Map *map)
     struct FileDialogAction *fda = malloc(sizeof *fda);
     fda->data = map;
     fda->callback = SaveMapCallback;
-    IGFD_OpenDialog(cfileDialog,
-                    "filedlg",                              // dialog key (make it possible to have different treatment reagrding the dialog key
-                    "Save Map",                             // dialog title
-                    "Map Files(*.map){.map}",                                   // dialog filter syntax : simple => .h,.c,.pp, etc and collections : text1{filter0,filter1,filter2}, text2{filter0,filter1,filter2}, etc..
-                    ".",                                    // base directory for files scan
-                    "",                                     // base filename
-                    1,                                      // count selection : 0 infinite, 1 one file (default), n (n files)
-                    fda,                                    // some user datas
-                    ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite);
+    IGFD_OpenDialog(cfileDialog, "filedlg", "Save Map", "Map Files(*.map){.map}", ".", "", 1, fda, ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite | ImGuiFileDialogFlags_CaseInsensitiveExtention);
 }
 
 static void SaveProjectCallback(const char *path, void *data)
@@ -251,15 +236,7 @@ static void SaveProjectDialog(struct Project *project)
     struct FileDialogAction *fda = malloc(sizeof *fda);
     fda->data = project;
     fda->callback = SaveProjectCallback;
-    IGFD_OpenDialog(cfileDialog,
-                    "filedlg",                              // dialog key (make it possible to have different treatment reagrding the dialog key
-                    "Save Project",                             // dialog title
-                    "Project Files(*.pro){.pro}",                                   // dialog filter syntax : simple => .h,.c,.pp, etc and collections : text1{filter0,filter1,filter2}, text2{filter0,filter1,filter2}, etc..
-                    ".",                                    // base directory for files scan
-                    "",                                     // base filename
-                    1,                                      // count selection : 0 infinite, 1 one file (default), n (n files)
-                    fda,                                    // some user datas
-                    ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite);
+    IGFD_OpenDialog(cfileDialog, "filedlg", "Save Project", "Project Files(*.pro){.pro}", ".", "", 1, fda, ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite | ImGuiFileDialogFlags_CaseInsensitiveExtention);
 }
 
 static void OpenMapCallback(const char *path, void *data)
@@ -275,15 +252,7 @@ static void OpenMapDialog(struct Map *map)
     struct FileDialogAction *fda = malloc(sizeof *fda);
     fda->data = map;
     fda->callback = OpenMapCallback;
-    IGFD_OpenDialog(cfileDialog,
-                    "filedlg",                              // dialog key (make it possible to have different treatment reagrding the dialog key
-                    "Open Map",                             // dialog title
-                    "Map Files(*.map){.map}, All(*.*){.*}",                                   // dialog filter syntax : simple => .h,.c,.pp, etc and collections : text1{filter0,filter1,filter2}, text2{filter0,filter1,filter2}, etc..
-                    ".",                                    // base directory for files scan
-                    "",
-                    1,                                      // count selection : 0 infinite, 1 one file (default), n (n files)
-                    fda,                                    // some user datas
-                    ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ReadOnlyFileNameField);
+    IGFD_OpenDialog(cfileDialog, "filedlg", "Open Map", "Map Files(*.map){.map}, All(*.*){.*}", ".", "", 1, fda, ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ReadOnlyFileNameField | ImGuiFileDialogFlags_CaseInsensitiveExtention);
 }
 
 static void OpenProjectCallback(const char *path, void *data)
@@ -299,15 +268,7 @@ static void OpenProjectDialog(struct Project *project)
     struct FileDialogAction *fda = malloc(sizeof *fda);
     fda->data = project;
     fda->callback = OpenProjectCallback;
-    IGFD_OpenDialog(cfileDialog,
-                    "filedlg",                              // dialog key (make it possible to have different treatment reagrding the dialog key
-                    "Open Map",                             // dialog title
-                    "Project Files(*.pro){.pro}, All(*.*){.*}",                                   // dialog filter syntax : simple => .h,.c,.pp, etc and collections : text1{filter0,filter1,filter2}, text2{filter0,filter1,filter2}, etc..
-                    ".",                                    // base directory for files scan
-                    "",
-                    1,                                      // count selection : 0 infinite, 1 one file (default), n (n files)
-                    fda,                                    // some user datas
-                    ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ReadOnlyFileNameField);
+    IGFD_OpenDialog(cfileDialog, "filedlg", "Open Map", "Project Files(*.pro){.pro}, All(*.*){.*}", ".", "", 1, fda, ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ReadOnlyFileNameField | ImGuiFileDialogFlags_CaseInsensitiveExtention);
 }
 
 static bool openProjectPopup = false;
