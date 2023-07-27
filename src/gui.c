@@ -360,7 +360,6 @@ bool DoGui(struct EdState *state, bool doQuit)
         if (IGFD_IsOk(cfileDialog))
         {
             char* cfilePathName = IGFD_GetFilePathName(cfileDialog, IGFD_ResultMode_AddIfNoFileExt);
-            printf("GetFilePathName : %s\n", cfilePathName);
 
             struct FileDialogAction *action = IGFD_GetUserDatas(cfileDialog);
             if (action)
