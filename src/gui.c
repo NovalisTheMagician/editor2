@@ -2,7 +2,6 @@
 
 #include "edit.h"
 
-#include <nfd.h>
 #include <tgmath.h>
 
 #include <ImGuiFileDialog.h>
@@ -162,23 +161,6 @@ void SetStyle(enum Theme theme)
     }
 }
 
-static void BrowseFolder(char *path, size_t pathLen)
-{
-    char *folderPath = NULL;
-    nfdresult_t res = NFD_PickFolder(NULL, &folderPath);
-    if(res == NFD_OKAY)
-    {
-        size_t len = strlen(folderPath);
-        if(len <= pathLen)
-            strncpy(path, folderPath, pathLen - 1);
-    }
-    else if(res != NFD_CANCEL)
-    {
-        printf("Error: %s\n", NFD_GetError());
-    }
-    free(folderPath);
-}
-
 static void AboutWindow(bool *p_open);
 static void SettingsWindow(bool *p_open, struct EdState *state);
 static void ToolbarWindow(bool *p_open, struct EdState *state);
@@ -201,9 +183,146 @@ enum SaveModalAction
     SMA_QUIT
 };
 
+struct FileDialogAction 
+{
+    void *data;
+    void (*callback)(const char *path, void *data);
+};
+
+static ImGuiFileDialog *cfileDialog;
+
+static void OpenFolderCallback(const char *path, void *data)
+{
+    pstring *str = data;
+    size_t len = strlen(path);
+    memcpy(str->data, path, len < str->size ? len : str->size);
+}
+
+static void OpenFolderDialog(pstring *folderPath)
+{
+    struct FileDialogAction *fda = malloc(sizeof *fda);
+    fda->data = folderPath;
+    fda->callback = OpenFolderCallback;
+    IGFD_OpenDialog(cfileDialog,
+                    "filedlg",                              // dialog key (make it possible to have different treatment reagrding the dialog key
+                    "Choose a Folder",                      // dialog title
+                    NULL,                                   // dialog filter syntax : simple => .h,.c,.pp, etc and collections : text1{filter0,filter1,filter2}, text2{filter0,filter1,filter2}, etc..
+                    ".",                                    // base directory for files scan
+                    "",                                     // base filename
+                    1,                                      // count selection : 0 infinite, 1 one file (default), n (n files)
+                    fda,                                    // some user datas
+                    ImGuiFileDialogFlags_Modal);
+}
+
+static void SaveMapCallback(const char *path, void *data)
+{
+    struct Map *map = data;
+    pstr_free(map->file);
+    map->file = pstr_cstr(path);
+    SaveMap(map);
+}
+
+static void SaveMapDialog(struct Map *map)
+{
+    struct FileDialogAction *fda = malloc(sizeof *fda);
+    fda->data = map;
+    fda->callback = SaveMapCallback;
+    IGFD_OpenDialog(cfileDialog,
+                    "filedlg",                              // dialog key (make it possible to have different treatment reagrding the dialog key
+                    "Save Map",                             // dialog title
+                    "Map Files(*.map){.map}",                                   // dialog filter syntax : simple => .h,.c,.pp, etc and collections : text1{filter0,filter1,filter2}, text2{filter0,filter1,filter2}, etc..
+                    ".",                                    // base directory for files scan
+                    "",                                     // base filename
+                    1,                                      // count selection : 0 infinite, 1 one file (default), n (n files)
+                    fda,                                    // some user datas
+                    ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite);
+}
+
+static void SaveProjectCallback(const char *path, void *data)
+{
+    struct Project *project = data;
+    pstr_free(project->file);
+    project->file = pstr_cstr(path);
+    SaveProject(project);
+}
+
+static void SaveProjectDialog(struct Project *project)
+{
+    struct FileDialogAction *fda = malloc(sizeof *fda);
+    fda->data = project;
+    fda->callback = SaveProjectCallback;
+    IGFD_OpenDialog(cfileDialog,
+                    "filedlg",                              // dialog key (make it possible to have different treatment reagrding the dialog key
+                    "Save Project",                             // dialog title
+                    "Project Files(*.pro){.pro}",                                   // dialog filter syntax : simple => .h,.c,.pp, etc and collections : text1{filter0,filter1,filter2}, text2{filter0,filter1,filter2}, etc..
+                    ".",                                    // base directory for files scan
+                    "",                                     // base filename
+                    1,                                      // count selection : 0 infinite, 1 one file (default), n (n files)
+                    fda,                                    // some user datas
+                    ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite);
+}
+
+static void OpenMapCallback(const char *path, void *data)
+{
+    struct Map *map = data;
+    pstr_free(map->file);
+    map->file = pstr_cstr(path);
+    LoadMap(map);
+}
+
+static void OpenMapDialog(struct Map *map)
+{
+    struct FileDialogAction *fda = malloc(sizeof *fda);
+    fda->data = map;
+    fda->callback = OpenMapCallback;
+    IGFD_OpenDialog(cfileDialog,
+                    "filedlg",                              // dialog key (make it possible to have different treatment reagrding the dialog key
+                    "Open Map",                             // dialog title
+                    "Map Files(*.map){.map}, All(*.*){.*}",                                   // dialog filter syntax : simple => .h,.c,.pp, etc and collections : text1{filter0,filter1,filter2}, text2{filter0,filter1,filter2}, etc..
+                    ".",                                    // base directory for files scan
+                    "",
+                    1,                                      // count selection : 0 infinite, 1 one file (default), n (n files)
+                    fda,                                    // some user datas
+                    ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ReadOnlyFileNameField);
+}
+
+static void OpenProjectCallback(const char *path, void *data)
+{
+    struct Project *project = data;
+    pstr_free(project->file);
+    project->file = pstr_cstr(path);
+    LoadProject(project);
+}
+
+static void OpenProjectDialog(struct Project *project)
+{
+    struct FileDialogAction *fda = malloc(sizeof *fda);
+    fda->data = project;
+    fda->callback = OpenProjectCallback;
+    IGFD_OpenDialog(cfileDialog,
+                    "filedlg",                              // dialog key (make it possible to have different treatment reagrding the dialog key
+                    "Open Map",                             // dialog title
+                    "Project Files(*.pro){.pro}, All(*.*){.*}",                                   // dialog filter syntax : simple => .h,.c,.pp, etc and collections : text1{filter0,filter1,filter2}, text2{filter0,filter1,filter2}, etc..
+                    ".",                                    // base directory for files scan
+                    "",
+                    1,                                      // count selection : 0 infinite, 1 one file (default), n (n files)
+                    fda,                                    // some user datas
+                    ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ReadOnlyFileNameField);
+}
+
 static bool openProjectPopup = false;
 static bool openMapPopup = false;
 static enum SaveModalAction modalAction = SMA_NEW;
+
+void InitGui(void)
+{
+    cfileDialog = IGFD_Create();
+}
+
+void FreeGui(void)
+{
+    IGFD_Destroy(cfileDialog);
+}
 
 bool DoGui(struct EdState *state, bool doQuit)
 {
@@ -268,6 +387,32 @@ bool DoGui(struct EdState *state, bool doQuit)
 
     HandleShortcuts(state);
 
+    ImGuiIO* ioptr = igGetIO();
+    ImVec2 maxSize;
+    maxSize.x = ioptr->DisplaySize.x * 0.8f;
+    maxSize.y = ioptr->DisplaySize.y * 0.8f;
+    ImVec2 minSize;
+    minSize.x = maxSize.x * 0.5f;
+    minSize.y = maxSize.y * 0.5f;
+    if (IGFD_DisplayDialog(cfileDialog, "filedlg", ImGuiWindowFlags_NoCollapse, minSize, maxSize))
+    {
+        if (IGFD_IsOk(cfileDialog))
+        {
+            char* cfilePathName = IGFD_GetFilePathName(cfileDialog, IGFD_ResultMode_AddIfNoFileExt);
+            printf("GetFilePathName : %s\n", cfilePathName);
+
+            struct FileDialogAction *action = IGFD_GetUserDatas(cfileDialog);
+            if (action)
+            {
+                action->callback(cfilePathName, action->data);
+                free(action);
+            }
+
+            if (cfilePathName) free(cfilePathName);
+        }
+        IGFD_CloseDialog(cfileDialog);
+    }
+
     return doQuit;
 }
 
@@ -280,13 +425,25 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
         if(igBeginMenu("File", true))
         {
             if(igMenuItem_Bool("New Project", "", false, allowFileOps)) { if(state->project.dirty) { openProjectPopup = true; modalAction = SMA_NEW; } else NewProject(&state->project); }
-            if(igMenuItem_Bool("Open Project", "", false, allowFileOps)) { if(state->project.dirty) { openProjectPopup = true; modalAction = SMA_OPEN; } else LoadProject(&state->project); }
-            if(igMenuItem_Bool("Save Project", "", false, state->project.dirty && allowFileOps)) { SaveProject(&state->project, state->project.file.size == 0); }
+            if(igMenuItem_Bool("Open Project", "", false, allowFileOps)) { if(state->project.dirty) { openProjectPopup = true; modalAction = SMA_OPEN; } else OpenProjectDialog(&state->project); }
+            if(igMenuItem_Bool("Save Project", "", false, state->project.dirty && allowFileOps)) 
+            { 
+                if(state->project.file.size == 0)
+                    SaveProjectDialog(&state->project);
+                else
+                    SaveProject(&state->project);
+            }
             igSeparator();
             if(igMenuItem_Bool("New Map", "Ctrl+N", false, allowFileOps)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_NEW; } else NewMap(&state->map); }
-            if(igMenuItem_Bool("Open Map", "Ctrl+O", false, allowFileOps)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_OPEN; } else LoadMap(&state->map); }
-            if(igMenuItem_Bool("Save Map", "Ctrl+S", false, state->map.dirty && allowFileOps)) { SaveMap(&state->map, state->map.file.size == 0); }
-            if(igMenuItem_Bool("SaveAs Map", "", false, allowFileOps)) { SaveMap(&state->map, true); }
+            if(igMenuItem_Bool("Open Map", "Ctrl+O", false, allowFileOps)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_OPEN; } else OpenMapDialog(&state->map); }
+            if(igMenuItem_Bool("Save Map", "Ctrl+S", false, state->map.dirty && allowFileOps)) 
+            { 
+                if(state->map.file.size == 0)
+                    SaveMapDialog(&state->map);
+                else
+                    SaveMap(&state->map);
+            }
+            if(igMenuItem_Bool("SaveAs Map", "", false, allowFileOps)) { SaveMapDialog(&state->map); }
             igSeparator();
             if(igMenuItem_Bool("Quit", "Alt+F4", false, true)) { *doQuit = true; }
             igEndMenu();
@@ -671,11 +828,15 @@ static void ProjectSavePopup(struct EdState *state, bool *quitRequest)
         igText("You have unsaved changes to the Project.\nDo you want to save them?");
         if(igButton("Yes", (ImVec2){ 64, 0 }))
         {
-            SaveProject(&state->project, state->project.file.size == 0);
+            if(state->project.file.size == 0)
+                SaveProjectDialog(&state->project);
+            else
+                SaveProject(&state->project);
+            
             switch(modalAction)
             {
             case SMA_NEW: NewProject(&state->project); break;
-            case SMA_OPEN: LoadProject(&state->project); break;
+            case SMA_OPEN: OpenProjectDialog(&state->project); break;
             case SMA_QUIT: *quitRequest = true; break;
             }
             igCloseCurrentPopup();
@@ -686,7 +847,7 @@ static void ProjectSavePopup(struct EdState *state, bool *quitRequest)
             switch(modalAction)
             {
             case SMA_NEW: NewProject(&state->project); break;
-            case SMA_OPEN: LoadProject(&state->project); break;
+            case SMA_OPEN: OpenProjectDialog(&state->project); break;
             case SMA_QUIT: *quitRequest = true; break;
             }
             igCloseCurrentPopup();
@@ -707,11 +868,15 @@ static void MapSavePopup(struct EdState *state, bool *quitRequest)
         igText("You have unsaved changes to the Map.\nDo you want to save them?");
         if(igButton("Yes", (ImVec2){ 64, 0 }))
         {
-            SaveMap(&state->map, state->map.file.size == 0);
+            if(state->map.file.size == 0)
+                SaveMapDialog(&state->map);
+            else
+                SaveMap(&state->map);
+
             switch(modalAction)
             {
             case SMA_NEW: NewMap(&state->map); break;
-            case SMA_OPEN: LoadMap(&state->map); break;
+            case SMA_OPEN: OpenMapDialog(&state->map); break;
             case SMA_QUIT: *quitRequest = true; break;
             }
             igCloseCurrentPopup();
@@ -722,7 +887,7 @@ static void MapSavePopup(struct EdState *state, bool *quitRequest)
             switch(modalAction)
             {
             case SMA_NEW: NewMap(&state->map); break;
-            case SMA_OPEN: LoadMap(&state->map); break;
+            case SMA_OPEN: OpenMapDialog(&state->map); break;
             case SMA_QUIT: *quitRequest = true; break;
             }
             igCloseCurrentPopup();
@@ -742,6 +907,7 @@ static void ProjectSettingsWindow(bool *p_open, struct EdState *state)
     igSetNextWindowSize((ImVec2){ 400, 290 }, ImGuiCond_FirstUseEver);
     if(igBegin("Project Settings", p_open, 0))
     {
+
         igSeparatorText("Base");
         bool isFtp = state->project.basePath.type == ASSPATH_FTP;
         igCheckbox("FTP", &isFtp);
@@ -758,7 +924,10 @@ static void ProjectSettingsWindow(bool *p_open, struct EdState *state)
         igSameLine(0, 8);
         if(igButton("Browse", (ImVec2){ 0, 0 }))
         {
-            if(!isFtp) BrowseFolder(state->project.basePath.fs.path.data, state->project.basePath.fs.path.size);
+            if(!isFtp)
+            {
+                OpenFolderDialog(&state->project.basePath.fs.path);
+            }
         }
         if(isFtp)
         {
@@ -800,13 +969,18 @@ static void HandleShortcuts(struct EdState *state)
     if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_O, 0, ImGuiInputFlags_RouteGlobalLow))
     {
         if(state->map.dirty) { openMapPopup = true; modalAction = SMA_OPEN; }
-        else LoadMap(&state->map);
+        else OpenMapDialog(&state->map);
     }
 
     if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_S, 0, ImGuiInputFlags_RouteGlobalLow))
     {
-        if(state->map.dirty) 
-            SaveMap(&state->map, state->map.file.size == 0);
+        if(state->map.dirty)
+        {
+            if(state->map.file.size == 0)
+                SaveMapDialog(&state->map);
+            else
+                SaveMap(&state->map);
+        }
     }
 
     if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_W, 0, ImGuiInputFlags_RouteGlobalLow))

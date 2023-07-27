@@ -1,7 +1,5 @@
 #include "map.h"
 
-#include <nfd.h>
-
 void NewMap(struct Map *map)
 {
     if(map->vertices) free(map->vertices);
@@ -33,30 +31,8 @@ bool LoadMap(struct Map *map)
     return false;
 }
 
-void SaveMap(struct Map *map, bool useDialog)
+void SaveMap(struct Map *map)
 {
-    if(useDialog)
-    {
-        char *newFile = NULL;
-        nfdresult_t res = NFD_SaveDialog("map", NULL, &newFile);
-        if(res == NFD_OKAY)
-        {
-            pstr_free(map->file);
-            map->file = pstr_cstr(newFile);
-            free(newFile);
-        }
-        else if(res == NFD_CANCEL)
-        {
-            free(newFile);
-            return;
-        }
-        else
-        {
-            free(newFile);
-            printf("Error: %s\n", NFD_GetError());
-            return;
-        }
-    }
     if(map->file.size == 0) return;
 
     map->dirty = false;

@@ -41,5 +41,5 @@ struct Project
 
 void NewProject(struct Project *project);
 bool LoadProject(struct Project *project);
-void SaveProject(struct Project *project, bool openDialog);
+void SaveProject(struct Project *project);
 void FreeProject(struct Project *project);

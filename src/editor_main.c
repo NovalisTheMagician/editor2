@@ -46,6 +46,8 @@ int EditorMain(int argc, char *argv[])
 
     if(!InitEditor(&state)) return EXIT_FAILURE;
 
+    InitGui();
+
     NewProject(&state.project);
     NewMap(&state.map);
 
@@ -108,6 +110,8 @@ int EditorMain(int argc, char *argv[])
     }
 
     SaveSettings(SETTINGS_FILE, &state.settings);
+
+    FreeGui();
 
     FreeMap(&state.map);
     FreeProject(&state.project);

@@ -28,7 +28,7 @@ bool LoadProject(struct Project *project)
     return false;
 }
 
-void SaveProject(struct Project *project, bool openDialog)
+void SaveProject(struct Project *project)
 {
     project->dirty = false;
 }
