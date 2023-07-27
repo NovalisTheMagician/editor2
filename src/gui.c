@@ -3,7 +3,7 @@
 #include "edit.h"
 
 #include <tgmath.h>
-
+#include <assert.h>
 #include <ImGuiFileDialog.h>
 
 static void SetValveStyle(ImGuiStyle *style)
@@ -170,6 +170,7 @@ static void StatsWindow(bool *p_open, struct EdState *state);
 static void MainMenuBar(bool *doQuit, struct EdState *state);
 static void ProjectSettingsWindow(bool *p_open, struct EdState *state);
 static void MapSettingsWindow(bool *p_open, struct EdState *state);
+static void FileDialog(bool *doQuit);
 
 static void ProjectSavePopup(struct EdState *state, bool *quitRequest);
 static void MapSavePopup(struct EdState *state, bool *quitRequest);
@@ -187,6 +188,7 @@ struct FileDialogAction
 {
     void *data;
     void (*callback)(const char *path, void *data);
+    bool quitRequest;
 };
 
 static ImGuiFileDialog *cfileDialog;
@@ -201,7 +203,7 @@ static void OpenFolderCallback(const char *path, void *data)
 
 static void OpenFolderDialog(pstring *folderPath)
 {
-    struct FileDialogAction *fda = malloc(sizeof *fda);
+    struct FileDialogAction *fda = calloc(1, sizeof *fda);
     fda->data = folderPath;
     fda->callback = OpenFolderCallback;
     IGFD_OpenDialog(cfileDialog, "filedlg", "Choose a Folder", NULL, ".", "", 1, fda, ImGuiFileDialogFlags_Modal);
@@ -215,11 +217,12 @@ static void SaveMapCallback(const char *path, void *data)
     SaveMap(map);
 }
 
-static void SaveMapDialog(struct Map *map)
+static void SaveMapDialog(struct Map *map, bool quitRequest)
 {
-    struct FileDialogAction *fda = malloc(sizeof *fda);
+    struct FileDialogAction *fda = calloc(1, sizeof *fda);
     fda->data = map;
     fda->callback = SaveMapCallback;
+    fda->quitRequest = quitRequest;
     IGFD_OpenDialog(cfileDialog, "filedlg", "Save Map", "Map Files(*.map){.map}", ".", "", 1, fda, ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite | ImGuiFileDialogFlags_CaseInsensitiveExtention);
 }
 
@@ -231,11 +234,12 @@ static void SaveProjectCallback(const char *path, void *data)
     SaveProject(project);
 }
 
-static void SaveProjectDialog(struct Project *project)
+static void SaveProjectDialog(struct Project *project, bool quitRequest)
 {
-    struct FileDialogAction *fda = malloc(sizeof *fda);
+    struct FileDialogAction *fda = calloc(1, sizeof *fda);
     fda->data = project;
     fda->callback = SaveProjectCallback;
+    fda->quitRequest = true;
     IGFD_OpenDialog(cfileDialog, "filedlg", "Save Project", "Project Files(*.pro){.pro}", ".", "", 1, fda, ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite | ImGuiFileDialogFlags_CaseInsensitiveExtention);
 }
 
@@ -249,7 +253,7 @@ static void OpenMapCallback(const char *path, void *data)
 
 static void OpenMapDialog(struct Map *map)
 {
-    struct FileDialogAction *fda = malloc(sizeof *fda);
+    struct FileDialogAction *fda = calloc(1, sizeof *fda);
     fda->data = map;
     fda->callback = OpenMapCallback;
     IGFD_OpenDialog(cfileDialog, "filedlg", "Open Map", "Map Files(*.map){.map}, All(*.*){.*}", ".", "", 1, fda, ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ReadOnlyFileNameField | ImGuiFileDialogFlags_CaseInsensitiveExtention);
@@ -265,7 +269,7 @@ static void OpenProjectCallback(const char *path, void *data)
 
 static void OpenProjectDialog(struct Project *project)
 {
-    struct FileDialogAction *fda = malloc(sizeof *fda);
+    struct FileDialogAction *fda = calloc(1, sizeof *fda);
     fda->data = project;
     fda->callback = OpenProjectCallback;
     IGFD_OpenDialog(cfileDialog, "filedlg", "Open Map", "Project Files(*.pro){.pro}, All(*.*){.*}", ".", "", 1, fda, ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ReadOnlyFileNameField | ImGuiFileDialogFlags_CaseInsensitiveExtention);
@@ -348,30 +352,7 @@ bool DoGui(struct EdState *state, bool doQuit)
 
     HandleShortcuts(state);
 
-    ImGuiIO* ioptr = igGetIO();
-    ImVec2 maxSize;
-    maxSize.x = ioptr->DisplaySize.x * 0.8f;
-    maxSize.y = ioptr->DisplaySize.y * 0.8f;
-    ImVec2 minSize;
-    minSize.x = maxSize.x * 0.5f;
-    minSize.y = maxSize.y * 0.5f;
-    if (IGFD_DisplayDialog(cfileDialog, "filedlg", ImGuiWindowFlags_NoCollapse, minSize, maxSize))
-    {
-        if (IGFD_IsOk(cfileDialog))
-        {
-            char* cfilePathName = IGFD_GetFilePathName(cfileDialog, IGFD_ResultMode_AddIfNoFileExt);
-
-            struct FileDialogAction *action = IGFD_GetUserDatas(cfileDialog);
-            if (action)
-            {
-                action->callback(cfilePathName, action->data);
-                free(action);
-            }
-
-            if (cfilePathName) free(cfilePathName);
-        }
-        IGFD_CloseDialog(cfileDialog);
-    }
+    FileDialog(&doQuit);
 
     return doQuit;
 }
@@ -389,7 +370,7 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
             if(igMenuItem_Bool("Save Project", "", false, state->project.dirty && allowFileOps)) 
             { 
                 if(state->project.file.size == 0)
-                    SaveProjectDialog(&state->project);
+                    SaveProjectDialog(&state->project, false);
                 else
                     SaveProject(&state->project);
             }
@@ -399,11 +380,11 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
             if(igMenuItem_Bool("Save Map", "Ctrl+S", false, state->map.dirty && allowFileOps)) 
             { 
                 if(state->map.file.size == 0)
-                    SaveMapDialog(&state->map);
+                    SaveMapDialog(&state->map, false);
                 else
                     SaveMap(&state->map);
             }
-            if(igMenuItem_Bool("SaveAs Map", "", false, allowFileOps)) { SaveMapDialog(&state->map); }
+            if(igMenuItem_Bool("SaveAs Map", "", false, allowFileOps)) { SaveMapDialog(&state->map, doQuit); }
             igSeparator();
             if(igMenuItem_Bool("Quit", "Alt+F4", false, true)) { *doQuit = true; }
             igEndMenu();
@@ -788,16 +769,18 @@ static void ProjectSavePopup(struct EdState *state, bool *quitRequest)
         igText("You have unsaved changes to the Project.\nDo you want to save them?");
         if(igButton("Yes", (ImVec2){ 64, 0 }))
         {
-            if(state->project.file.size == 0)
-                SaveProjectDialog(&state->project);
-            else
+            if(state->project.file.size > 0)
                 SaveProject(&state->project);
             
             switch(modalAction)
             {
             case SMA_NEW: NewProject(&state->project); break;
             case SMA_OPEN: OpenProjectDialog(&state->project); break;
-            case SMA_QUIT: *quitRequest = true; break;
+            case SMA_QUIT: 
+            {
+                SaveProjectDialog(&state->project, true);
+                break;
+            }
             }
             igCloseCurrentPopup();
         }
@@ -828,16 +811,18 @@ static void MapSavePopup(struct EdState *state, bool *quitRequest)
         igText("You have unsaved changes to the Map.\nDo you want to save them?");
         if(igButton("Yes", (ImVec2){ 64, 0 }))
         {
-            if(state->map.file.size == 0)
-                SaveMapDialog(&state->map);
-            else
+            if(state->map.file.size > 0)
                 SaveMap(&state->map);
 
             switch(modalAction)
             {
             case SMA_NEW: NewMap(&state->map); break;
             case SMA_OPEN: OpenMapDialog(&state->map); break;
-            case SMA_QUIT: *quitRequest = true; break;
+            case SMA_QUIT: 
+            {
+                SaveMapDialog(&state->map, true);
+                break;
+            }
             }
             igCloseCurrentPopup();
         }
@@ -919,6 +904,32 @@ static void MapSettingsWindow(bool *p_open, struct EdState *state)
     igEnd();
 }
 
+static void FileDialog(bool *doQuit)
+{
+    ImGuiIO* ioptr = igGetIO();
+    ImVec2 maxSize;
+    maxSize.x = ioptr->DisplaySize.x * 0.8f;
+    maxSize.y = ioptr->DisplaySize.y * 0.8f;
+    ImVec2 minSize;
+    minSize.x = maxSize.x * 0.5f;
+    minSize.y = maxSize.y * 0.5f;
+    if (IGFD_DisplayDialog(cfileDialog, "filedlg", ImGuiWindowFlags_NoCollapse, minSize, maxSize))
+    {
+        struct FileDialogAction *action = IGFD_GetUserDatas(cfileDialog);
+        assert(action);
+        if(IGFD_IsOk(cfileDialog))
+        {
+            char* cfilePathName = IGFD_GetFilePathName(cfileDialog, IGFD_ResultMode_AddIfNoFileExt);
+            action->callback(cfilePathName, action->data);
+            if (cfilePathName) free(cfilePathName);
+        }
+        
+        *doQuit = action->quitRequest;
+        free(action);
+        IGFD_CloseDialog(cfileDialog);
+    }
+}
+
 static void HandleShortcuts(struct EdState *state)
 {
     if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_N, 0, ImGuiInputFlags_RouteGlobalLow))
@@ -938,7 +949,7 @@ static void HandleShortcuts(struct EdState *state)
         if(state->map.dirty)
         {
             if(state->map.file.size == 0)
-                SaveMapDialog(&state->map);
+                SaveMapDialog(&state->map, false);
             else
                 SaveMap(&state->map);
         }
