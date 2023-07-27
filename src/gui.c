@@ -927,6 +927,7 @@ static void ProjectSettingsWindow(bool *p_open, struct EdState *state)
             if(!isFtp)
             {
                 OpenFolderDialog(&state->project.basePath.fs.path);
+                state->project.dirty = true;
             }
         }
         if(isFtp)

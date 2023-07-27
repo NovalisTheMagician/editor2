@@ -28,6 +28,7 @@ ifeq ($(OS),Windows_NT)
     APPLICATION := $(APPLICATION).exe
     LIB_DIRS += $(LIB_GCC_PATH)
     INC_DIRS += $(INC_PATH)
+    LDFLAGS += -static
     ifeq ($(CONFIG),release)
         LDFLAGS += -mwindows
     else
