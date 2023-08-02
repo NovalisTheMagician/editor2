@@ -5,18 +5,16 @@ static void IncreaseBufferSize(void **buffer, size_t *capacity, size_t elementSi
 
 void ScreenToEditorSpace(const struct EdState *state, int32_t *x, int32_t *y)
 {
-    int32_t xTrans = *x + state->data.viewPosition.x;
-    int32_t yTrans = *y + state->data.viewPosition.y;
-    *x = xTrans;
-    *y = yTrans;
+    const float z = state->data.zoomLevel;
+    *x = (int32_t)((*x + state->data.viewPosition.x) / z);
+    *y = (int32_t)((*y + state->data.viewPosition.y) / z);
 }
 
 void EditorToScreenSpace(const struct EdState *state, int32_t *x, int32_t *y)
 {
-    int32_t xTrans = *x - state->data.viewPosition.x;
-    int32_t yTrans = *y - state->data.viewPosition.y;
-    *x = xTrans;
-    *y = yTrans;
+    const float z = state->data.zoomLevel;
+    *x = (int32_t)((*x - state->data.viewPosition.x) * z);
+    *y = (int32_t)((*y - state->data.viewPosition.y) * z);
 }
 
 void ScreenToEditorSpaceGrid(const struct EdState *state, int32_t *x, int32_t *y)

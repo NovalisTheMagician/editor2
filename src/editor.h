@@ -11,6 +11,9 @@
 #define MAX_GAMEPATH_LEN 256
 #define MAX_GAMEARGUMENTS_LEN 256
 
+#define MAX_ZOOM 10.0f
+#define MIN_ZOOM 0.15f
+
 enum Theme
 {
     THEME_IMGUI_LIGHT,
@@ -135,8 +138,11 @@ struct EdState
         int gridSize;
         float zoomLevel;
         ImVec2 viewPosition;
-        int mx, my;
         int selectionMode;
+
+#ifdef _DEBUG
+        int mx, my, mtx, mty;
+#endif
 
         float realtimeFov;
 

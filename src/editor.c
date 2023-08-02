@@ -115,37 +115,69 @@ void ResizeEditorView(struct EdState *state, int width, int height)
 
 static void RenderBackground(const struct EdState *state)
 {
-    float offsetX = fmod(-state->data.viewPosition.x, (float)state->data.gridSize);
-    float offsetY = fmod(-state->data.viewPosition.y, (float)state->data.gridSize);
+    const float period = state->data.gridSize * state->data.zoomLevel;
 
-    float period = state->data.gridSize;
+    if(period >= 4)
+    {
+        const float offsetX = fmod(-state->data.viewPosition.x, period);
+        const float offsetY = fmod(-state->data.viewPosition.y, period);
 
-    int vLines = (state->gl.editorFramebufferWidth / period) + 2;
-    int hLines = (state->gl.editorFramebufferHeight / period) + 2;
+        const int vLines = (state->gl.editorFramebufferWidth / period) + 2;
+        const int hLines = (state->gl.editorFramebufferHeight / period) + 2;
 
-    int hMajorIdx = -state->data.viewPosition.y / period;
-    int vMajorIdx = -state->data.viewPosition.x / period;
+        const int hMajorIdx = floor(-state->data.viewPosition.y / period);
+        const int vMajorIdx = floor(-state->data.viewPosition.x / period);
 
-    glBindVertexArray(state->gl.editorBackProg.backVertexFormat);
-    glUseProgram(state->gl.editorBackProg.hProgram);
-    glUniform1f(state->gl.editorBackProg.hOffsetUniform, offsetY);
-    glUniform1f(state->gl.editorBackProg.hPeriodUniform, period);
-    glUniform4fv(state->gl.editorBackProg.hTintUniform, 1, state->settings.colors[COL_BACK_LINES]);
-    glUniform4fv(state->gl.editorBackProg.hMajorTintUniform, 1, state->settings.colors[COL_BACK_MAJOR_LINES]);
-    glUniformMatrix4fv(state->gl.editorBackProg.hVPUniform, 1, false, (float*)state->data.editorProjection);
-    glUniform1i(state->gl.editorBackProg.hMajorIdxUniform, hMajorIdx);
+        glBindVertexArray(state->gl.editorBackProg.backVertexFormat);
+        glUseProgram(state->gl.editorBackProg.hProgram);
+        glUniform1f(state->gl.editorBackProg.hOffsetUniform, offsetY);
+        glUniform1f(state->gl.editorBackProg.hPeriodUniform, period);
+        glUniform4fv(state->gl.editorBackProg.hTintUniform, 1, state->settings.colors[COL_BACK_LINES]);
+        glUniform4fv(state->gl.editorBackProg.hMajorTintUniform, 1, state->settings.colors[COL_BACK_MAJOR_LINES]);
+        glUniformMatrix4fv(state->gl.editorBackProg.hVPUniform, 1, false, (float*)state->data.editorProjection);
+        glUniform1i(state->gl.editorBackProg.hMajorIdxUniform, hMajorIdx);
 
-    glDrawArraysInstanced(GL_LINES, 0, 2, hLines);
+        glDrawArraysInstanced(GL_LINES, 0, 2, hLines);
 
-    glUseProgram(state->gl.editorBackProg.vProgram);
-    glUniform1f(state->gl.editorBackProg.vOffsetUniform, offsetX);
-    glUniform1f(state->gl.editorBackProg.vPeriodUniform, period);
-    glUniform4fv(state->gl.editorBackProg.vTintUniform, 1, state->settings.colors[COL_BACK_LINES]);
-    glUniform4fv(state->gl.editorBackProg.vMajorTintUniform, 1, state->settings.colors[COL_BACK_MAJOR_LINES]);
-    glUniformMatrix4fv(state->gl.editorBackProg.vVPUniform, 1, false, (float*)state->data.editorProjection);
-    glUniform1i(state->gl.editorBackProg.vMajorIdxUniform, vMajorIdx);
+        glUseProgram(state->gl.editorBackProg.vProgram);
+        glUniform1f(state->gl.editorBackProg.vOffsetUniform, offsetX);
+        glUniform1f(state->gl.editorBackProg.vPeriodUniform, period);
+        glUniform4fv(state->gl.editorBackProg.vTintUniform, 1, state->settings.colors[COL_BACK_LINES]);
+        glUniform4fv(state->gl.editorBackProg.vMajorTintUniform, 1, state->settings.colors[COL_BACK_MAJOR_LINES]);
+        glUniformMatrix4fv(state->gl.editorBackProg.vVPUniform, 1, false, (float*)state->data.editorProjection);
+        glUniform1i(state->gl.editorBackProg.vMajorIdxUniform, vMajorIdx);
 
-    glDrawArraysInstanced(GL_LINES, 2, 2, vLines);
+        glDrawArraysInstanced(GL_LINES, 2, 2, vLines);
+    }
+    else
+    {
+        const float offsetX = -state->data.viewPosition.x;
+        const float offsetY = -state->data.viewPosition.y;
+
+        const int hMajorIdx = 0;
+        const int vMajorIdx = 0;
+
+        glBindVertexArray(state->gl.editorBackProg.backVertexFormat);
+        glUseProgram(state->gl.editorBackProg.hProgram);
+        glUniform1f(state->gl.editorBackProg.hOffsetUniform, offsetY);
+        glUniform1f(state->gl.editorBackProg.hPeriodUniform, 0);
+        glUniform4fv(state->gl.editorBackProg.hTintUniform, 1, state->settings.colors[COL_BACK_LINES]);
+        glUniform4fv(state->gl.editorBackProg.hMajorTintUniform, 1, state->settings.colors[COL_BACK_MAJOR_LINES]);
+        glUniformMatrix4fv(state->gl.editorBackProg.hVPUniform, 1, false, (float*)state->data.editorProjection);
+        glUniform1i(state->gl.editorBackProg.hMajorIdxUniform, hMajorIdx);
+
+        glDrawArraysInstanced(GL_LINES, 0, 2, 1);
+
+        glUseProgram(state->gl.editorBackProg.vProgram);
+        glUniform1f(state->gl.editorBackProg.vOffsetUniform, offsetX);
+        glUniform1f(state->gl.editorBackProg.vPeriodUniform, 0);
+        glUniform4fv(state->gl.editorBackProg.vTintUniform, 1, state->settings.colors[COL_BACK_LINES]);
+        glUniform4fv(state->gl.editorBackProg.vMajorTintUniform, 1, state->settings.colors[COL_BACK_MAJOR_LINES]);
+        glUniformMatrix4fv(state->gl.editorBackProg.vVPUniform, 1, false, (float*)state->data.editorProjection);
+        glUniform1i(state->gl.editorBackProg.vMajorIdxUniform, vMajorIdx);
+
+        glDrawArraysInstanced(GL_LINES, 2, 2, 1);
+    }
 }
 
 static void RenderVertices(const struct EdState *state, const mat4 viewProjMat)
@@ -163,6 +195,7 @@ void RenderEditorView(struct EdState *state)
 {
     mat4 viewProjMat, viewMat;
     glm_translate_make(viewMat, (vec3){ -state->data.viewPosition.x, -state->data.viewPosition.y, 0 });
+    glm_scale(viewMat, (vec3){ state->data.zoomLevel, state->data.zoomLevel, 1 });
     glm_mul(state->data.editorProjection, viewMat, viewProjMat);
 
     RenderBackground(state);

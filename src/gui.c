@@ -617,7 +617,10 @@ static void EditorWindow(bool *p_open, struct EdState *state)
 
         igSameLine(0, 16);
         igPushItemWidth(80);
-        igSliderFloat("Zoom", &state->data.zoomLevel, 0.05f, 4, "%.2f", 0);
+        igSliderFloat("Zoom", &state->data.zoomLevel, MIN_ZOOM, MAX_ZOOM, "%.2f", 0);
+
+        igSameLine(0, 16);
+        if(igButton("Reset Zoom", (ImVec2){ 0, 0 })) { state->data.zoomLevel = 1; }
 
         igSameLine(0, 16);
         if(igButton("Go To Origin", (ImVec2){ 0, 0 })) 
@@ -643,10 +646,15 @@ static void EditorWindow(bool *p_open, struct EdState *state)
 
             if(hovored)
             {
-                int edX = relX, edY = relY;
-                ScreenToEditorSpaceGrid(state, &edX, &edY);
+                int edX = relX, edSX = relX, edY = relY, edSY = relY;
+                ScreenToEditorSpaceGrid(state, &edSX, &edSY);
+                ScreenToEditorSpace(state, &edX, &edY);
+#ifdef _DEBUG
                 state->data.mx = edX;
                 state->data.my = edY;
+                state->data.mtx = edSX;
+                state->data.mty = edSY;
+#endif
 
                 if(igIsMouseDragging(ImGuiMouseButton_Middle, 2))
                 {
@@ -666,7 +674,7 @@ static void EditorWindow(bool *p_open, struct EdState *state)
 
                 if(igIsMouseClicked_Bool(ImGuiMouseButton_Right, false)) 
                 {
-                    EditAddVertex(state, (struct Vertex){ edX, edY });
+                    EditAddVertex(state, (struct Vertex){ edSX, edSY });
                     igSetWindowFocus_Nil();
                 }
 
@@ -679,10 +687,16 @@ static void EditorWindow(bool *p_open, struct EdState *state)
                 if(wheelData->AnalogValue != 0)
                 {
                     state->data.zoomLevel += wheelData->AnalogValue * 0.05f;
-                    if(state->data.zoomLevel < 0.05f)
-                        state->data.zoomLevel = 0.05f;
-                    if(state->data.zoomLevel > 4)
-                        state->data.zoomLevel = 4;
+                    if(state->data.zoomLevel < MIN_ZOOM)
+                        state->data.zoomLevel = MIN_ZOOM;
+                    if(state->data.zoomLevel > MAX_ZOOM)
+                        state->data.zoomLevel = MAX_ZOOM;
+
+                    int edXAfter = relX, edYAfter = relY;
+                    ScreenToEditorSpace(state, &edXAfter, &edYAfter);
+
+                    state->data.viewPosition.x += (edX - edXAfter) * state->data.zoomLevel;
+                    state->data.viewPosition.y += (edY - edYAfter) * state->data.zoomLevel;
 
                     igSetWindowFocus_Nil();
                 }
@@ -756,7 +770,10 @@ static void StatsWindow(bool *p_open, struct EdState *state)
     {
         igSeparatorText("Editor");
         igText("Viewposition: %.2f | %.2f", state->data.viewPosition.x, state->data.viewPosition.y);
+#ifdef _DEBUG
+        igText("Mouse World Pos Snap: %d | %d", state->data.mtx, state->data.mty);
         igText("Mouse World Pos: %d | %d", state->data.mx, state->data.my);
+#endif
         igText("Zoomlevel: %.2f", state->data.zoomLevel);
     }
     igEnd();
