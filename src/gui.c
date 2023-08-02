@@ -941,9 +941,9 @@ static void FileDialog(bool *doQuit)
             char* cfilePathName = IGFD_GetFilePathName(cfileDialog, IGFD_ResultMode_AddIfNoFileExt);
             action->callback(cfilePathName, action->data);
             if (cfilePathName) free(cfilePathName);
+            *doQuit = action->quitRequest;
         }
         
-        *doQuit = action->quitRequest;
         free(action);
         IGFD_CloseDialog(cfileDialog);
     }
