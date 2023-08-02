@@ -10,6 +10,13 @@ void ScreenToEditorSpace(const struct EdState *state, int32_t *x, int32_t *y)
     *y = (int32_t)((*y + state->data.viewPosition.y) / z);
 }
 
+void ScreenToEditorSpacef(const struct EdState *state, float *x, float *y)
+{
+    const float z = state->data.zoomLevel;
+    *x = (*x + state->data.viewPosition.x) / z;
+    *y = (*y + state->data.viewPosition.y) / z;
+}
+
 void EditorToScreenSpace(const struct EdState *state, int32_t *x, int32_t *y)
 {
     const float z = state->data.zoomLevel;

@@ -10,6 +10,8 @@ void ScreenToEditorSpace(const struct EdState *state, int32_t *x, int32_t *y);
 void EditorToScreenSpace(const struct EdState *state, int32_t *x, int32_t *y);
 void ScreenToEditorSpaceGrid(const struct EdState *state, int32_t *x, int32_t *y);
 
+void ScreenToEditorSpacef(const struct EdState *state, float *x, float *y);
+
 void EditCopy(struct EdState *state);
 void EditPaste(struct EdState *state);
 void EditCut(struct EdState *state);

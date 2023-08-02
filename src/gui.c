@@ -647,8 +647,10 @@ static void EditorWindow(bool *p_open, struct EdState *state)
             if(hovored)
             {
                 int edX = relX, edSX = relX, edY = relY, edSY = relY;
+                float edXf = relX, edYf = relY;
                 ScreenToEditorSpaceGrid(state, &edSX, &edSY);
                 ScreenToEditorSpace(state, &edX, &edY);
+                ScreenToEditorSpacef(state, &edXf, &edYf);
 #ifdef _DEBUG
                 state->data.mx = edX;
                 state->data.my = edY;
@@ -692,11 +694,11 @@ static void EditorWindow(bool *p_open, struct EdState *state)
                     if(state->data.zoomLevel > MAX_ZOOM)
                         state->data.zoomLevel = MAX_ZOOM;
 
-                    int edXAfter = relX, edYAfter = relY;
-                    ScreenToEditorSpace(state, &edXAfter, &edYAfter);
+                    float edXAfter = relX, edYAfter = relY;
+                    ScreenToEditorSpacef(state, &edXAfter, &edYAfter);
 
-                    state->data.viewPosition.x += (edX - edXAfter) * state->data.zoomLevel;
-                    state->data.viewPosition.y += (edY - edYAfter) * state->data.zoomLevel;
+                    state->data.viewPosition.x += (edXf - edXAfter) * state->data.zoomLevel;
+                    state->data.viewPosition.y += (edYf - edYAfter) * state->data.zoomLevel;
 
                     igSetWindowFocus_Nil();
                 }
