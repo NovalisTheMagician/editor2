@@ -105,7 +105,7 @@ bool EditGetVertex(struct EdState *state, struct Vertex pos, size_t *ind)
 ssize_t EditAddLine(struct EdState *state, size_t v0, size_t v1)
 {
     struct Map *map = &state->map;
-    if(v0 >= map->numVertices || v1 >= map->numVertices) return -1;
+    if(v0 >= map->numVertices || v1 >= map->numVertices || v0 == v1) return -1;
 
     for(size_t i = 0; i < map->numLines; ++i)
     {
