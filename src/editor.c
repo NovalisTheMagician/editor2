@@ -56,6 +56,7 @@ bool InitEditor(struct EdState *state)
 
     state->data.gridSize = 32;
     state->data.zoomLevel = 1.0f;
+    state->data.lastVertForLine = -1;
 
     if(!LoadShaders(state))
         return false;
@@ -80,6 +81,10 @@ void DestroyEditor(struct EdState *state)
     glDeleteProgram(state->gl.editorVertex.program);
     glDeleteBuffers(1, &state->gl.editorVertex.vertBuffer);
     glDeleteVertexArrays(1, &state->gl.editorVertex.vertFormat);
+
+    glDeleteProgram(state->gl.editorLine.program);
+    glDeleteBuffers(1, &state->gl.editorLine.vertBuffer);
+    glDeleteVertexArrays(1, &state->gl.editorLine.vertFormat);
 }
 
 void ResizeEditorView(struct EdState *state, int width, int height)
@@ -191,6 +196,16 @@ static void RenderVertices(const struct EdState *state, const mat4 viewProjMat)
     glDrawArrays(GL_POINTS, 0, state->map.numVertices);
 }
 
+static void RenderLines(const struct EdState *state, const mat4 viewProjMat)
+{
+    glBindVertexArray(state->gl.editorLine.vertFormat);
+    glUseProgram(state->gl.editorLine.program);
+    glUniformMatrix4fv(state->gl.editorLine.viewProjUniform, 1, false, (float*)viewProjMat);
+    glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[COL_LINE]);
+
+    glDrawArrays(GL_LINES, 0, state->map.numLines*2);
+}
+
 void RenderEditorView(struct EdState *state)
 {
     mat4 viewProjMat, viewMat;
@@ -200,4 +215,5 @@ void RenderEditorView(struct EdState *state)
 
     RenderBackground(state);
     RenderVertices(state, viewProjMat);
+    RenderLines(state, viewProjMat);
 }

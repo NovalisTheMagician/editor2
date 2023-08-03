@@ -676,7 +676,18 @@ static void EditorWindow(bool *p_open, struct EdState *state)
 
                 if(igIsMouseClicked_Bool(ImGuiMouseButton_Right, false)) 
                 {
-                    EditAddVertex(state, (struct Vertex){ edSX, edSY });
+                    size_t newVertex;
+                    if(!EditGetVertex(state, (struct Vertex){ edSX, edSY }, &newVertex))
+                    {
+                        newVertex = EditAddVertex(state, (struct Vertex){ edSX, edSY });
+                    }
+                    if(state->data.lastVertForLine != -1)
+                    {
+                        EditAddLine(state, state->data.lastVertForLine, newVertex);
+                    }
+
+                    state->data.lastVertForLine = newVertex;
+
                     igSetWindowFocus_Nil();
                 }
 

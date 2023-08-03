@@ -131,6 +131,15 @@ struct EdState
             GLuint vertFormat;
             void *bufferMap;
         } editorVertex;
+
+        struct
+        {
+            GLuint program;
+            GLuint viewProjUniform, tintUniform;
+            GLuint vertFormat;
+            GLuint vertBuffer;
+            void *bufferMap;
+        } editorLine;
     } gl;
 
     struct
@@ -148,6 +157,8 @@ struct EdState
 
         mat4 editorProjection;
         mat4 realtimeProjection;
+
+        int lastVertForLine;
     } data;
 };
 

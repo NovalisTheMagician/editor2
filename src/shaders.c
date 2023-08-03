@@ -162,9 +162,9 @@ static bool InitVertex(struct EdState *state)
         "out vec4 fragColor;\n"
         "uniform vec4 tint;\n"
         "void main() {\n"
-        "vec2 coord = gl_PointCoord - vec2(0.5);\n"
-        "if(length(coord) > 0.5)\n"
-        "   discard;\n"
+        "   vec2 coord = gl_PointCoord - vec2(0.5);\n"
+        "   if(length(coord) > 0.5)\n"
+        "       discard;\n"
         "   fragColor = outColor * tint;\n"
         "}\n";
 
@@ -216,12 +216,85 @@ static bool InitVertex(struct EdState *state)
     return true;
 }
 
+static bool InitLines(struct EdState *state)
+{
+    const char *vertShaderSrc = 
+        "#version 460 core\n"
+        "layout(location=0) in vec2 inPosition;\n"
+        "layout(location=1) in vec4 inColor;\n"
+        "out vec4 outColor;\n"
+        "uniform mat4 viewProj;\n"
+        "void main() {\n"
+        "   gl_Position = viewProj * vec4(inPosition, 0, 1);\n"
+        "   outColor = inColor;\n"
+        "}\n";
+
+    const char *fragShaderSrc = 
+        "#version 460 core\n"
+        "in vec4 outColor;"
+        "out vec4 fragColor;\n"
+        "uniform vec4 tint;\n"
+        "void main() {\n"
+        "   fragColor = outColor * tint;\n"
+        "}\n";
+
+    GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
+    if(!CompileShader(vertShaderSrc, &vertShader))
+        return false;
+
+    GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+    if(!CompileShader(fragShaderSrc, &fragShader))
+        return false;
+
+    GLuint program = glCreateProgram();
+    if(!LinkProgram(vertShader, fragShader, &program))
+        return false;
+
+    glDeleteShader(vertShader);
+    glDeleteShader(fragShader);
+
+    state->gl.editorLine.program = program;
+    state->gl.editorLine.viewProjUniform = glGetUniformLocation(program, "viewProj");
+    state->gl.editorLine.tintUniform = glGetUniformLocation(program, "tint");
+
+    const GLbitfield 
+	mapping_flags = GL_MAP_WRITE_BIT | GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
+	storage_flags = GL_DYNAMIC_STORAGE_BIT | mapping_flags;
+
+    size_t bufferSize = BUFFER_SIZE * 2 * sizeof(struct VertexType);
+    GLuint buffer;
+    glCreateBuffers(1, &buffer);
+    glNamedBufferStorage(buffer, bufferSize, NULL, storage_flags);
+
+    state->gl.editorLine.vertBuffer = buffer;
+
+    GLuint vao;
+    glCreateVertexArrays(1, &vao);
+    glEnableVertexArrayAttrib(vao, 0);
+    glEnableVertexArrayAttrib(vao, 1);
+    glVertexArrayAttribFormat(vao, 0, 2, GL_FLOAT, GL_FALSE, offsetof(struct VertexType, position));
+    glVertexArrayAttribFormat(vao, 1, 4, GL_FLOAT, GL_FALSE, offsetof(struct VertexType, color));
+    glVertexArrayAttribBinding(vao, 0, 0);
+    glVertexArrayAttribBinding(vao, 1, 0);
+
+    glVertexArrayVertexBuffer(vao, 0, buffer, 0, sizeof(struct VertexType));
+
+    state->gl.editorLine.vertFormat = vao;
+
+    state->gl.editorLine.bufferMap = glMapNamedBufferRange(buffer, 0, bufferSize, mapping_flags);
+
+    return true;
+}
+
 bool LoadShaders(struct EdState *state)
 {
     if(!InitBackground(state))
         return false;
 
     if(!InitVertex(state))
+        return false;
+
+    if(!InitLines(state))
         return false;
 
     return true;

@@ -50,13 +50,13 @@ void EditCut(struct EdState *state)
     printf("Cut!!\n");
 }
 
-void EditAddVertex(struct EdState *state, struct Vertex pos)
+ssize_t EditAddVertex(struct EdState *state, struct Vertex pos)
 {
     struct Map *map = &state->map;
     for(size_t i = 0; i < map->numVertices; ++i)
     {
         const struct Vertex v = map->vertices[i];
-        if(v.x == pos.x && v.y == pos.y) return;
+        if(v.x == pos.x && v.y == pos.y) return i;
     }
 
     size_t idx = map->numVertices++;
@@ -67,6 +67,7 @@ void EditAddVertex(struct EdState *state, struct Vertex pos)
     ((struct VertexType*)state->gl.editorVertex.bufferMap)[idx] = (struct VertexType){ .position = { pos.x, pos.y }, .color = { 1, 1, 1, 1 } };
 
     map->dirty = true;
+    return idx;
 }
 
 void EditRemoveVertex(struct EdState *state, size_t index)
@@ -88,7 +89,51 @@ void EditRemoveVertex(struct EdState *state, size_t index)
 
 bool EditGetVertex(struct EdState *state, struct Vertex pos, size_t *ind)
 {
+    struct Map *map = &state->map;
+    for(size_t i = 0; i < map->numVertices; ++i)
+    {
+        const struct Vertex v = map->vertices[i];
+        if(v.x == pos.x && v.y == pos.y)
+        {
+            *ind = i;
+            return true;
+        }
+    }
     return false;
+}
+
+ssize_t EditAddLine(struct EdState *state, size_t v0, size_t v1)
+{
+    struct Map *map = &state->map;
+    if(v0 >= map->numVertices || v1 >= map->numVertices) return -1;
+
+    for(size_t i = 0; i < map->numLines; ++i)
+    {
+        const struct Line l = map->lines[i];
+        bool ab = l.a == v0 && l.b == v1;
+        bool ba = l.a == v1 && l.b == v0;
+        if(ab || ba) return i;
+    }
+
+    size_t idx = map->numLines++;
+    map->lines[idx] = (struct Line){ .a = v0, .b = v1, .type = ST_NORMAL };
+    if(map->numLines == map->numAllocLines)
+        IncreaseBufferSize((void**)&map->lines, &map->numAllocLines, sizeof *map->lines);
+
+    const struct Vertex vert0 = map->vertices[v0];
+    const struct Vertex vert1 = map->vertices[v1];
+    ((struct VertexType*)state->gl.editorLine.bufferMap)[idx * 2    ] = (struct VertexType){ .position = { vert0.x, vert0.y }, .color = { 1, 1, 1, 1 } };
+    ((struct VertexType*)state->gl.editorLine.bufferMap)[idx * 2 + 1] = (struct VertexType){ .position = { vert1.x, vert1.y }, .color = { 1, 1, 1, 1 } };
+
+    map->dirty = true;
+
+    return idx;
+}
+
+void EditRemoveLine(struct EdState *state, size_t index)
+{
+    struct Map *map = &state->map;
+    map->dirty = true;
 }
 
 static void IncreaseBufferSize(void **buffer, size_t *capacity, size_t elementSize)

@@ -16,9 +16,10 @@ void EditCopy(struct EdState *state);
 void EditPaste(struct EdState *state);
 void EditCut(struct EdState *state);
 
-void EditAddVertex(struct EdState *state, struct Vertex pos);
+ssize_t EditAddVertex(struct EdState *state, struct Vertex pos);
 void EditRemoveVertex(struct EdState *state, size_t index);
 bool EditGetVertex(struct EdState *state, struct Vertex pos, size_t *ind);
 
-void EditAddLine(struct EdState *state, size_t v0, size_t v1);
+ssize_t EditAddLine(struct EdState *state, size_t v0, size_t v1);
 void EditRemoveLine(struct EdState *state, size_t index);
+bool EditGetLine(struct EdState *state, struct Vertex pos, size_t *ind);
