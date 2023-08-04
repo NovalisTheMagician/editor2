@@ -52,6 +52,7 @@ bool InitEditor(struct EdState *state)
     glDebugMessageCallback(message_callback, NULL);
 
     glCreateFramebuffers(1, &state->gl.editorFramebuffer);
+    glCreateFramebuffers(1, &state->gl.editorFramebufferMS);
     glCreateFramebuffers(1, &state->gl.realtimeFramebuffer);
 
     state->data.gridSize = 32;
@@ -70,10 +71,11 @@ void DestroyEditor(struct EdState *state)
     glDeleteVertexArrays(1, &state->gl.editorBackProg.backVertexFormat);
     glDeleteProgram(state->gl.editorBackProg.hProgram);
     glDeleteProgram(state->gl.editorBackProg.vProgram);
-    glDeleteFramebuffers(2, (GLuint[]){ state->gl.editorFramebuffer, state->gl.realtimeFramebuffer });
-    glDeleteTextures(3, (GLuint[])
+    glDeleteFramebuffers(3, (GLuint[]){ state->gl.editorFramebuffer, state->gl.editorFramebufferMS, state->gl.realtimeFramebuffer });
+    glDeleteTextures(4, (GLuint[])
                                 { 
                                     state->gl.editorColorTexture,
+                                    state->gl.editorColorTextureMS,
                                     state->gl.realtimeColorTexture, 
                                     state->gl.realtimeDepthTexture
                                 });
@@ -98,6 +100,7 @@ void ResizeEditorView(struct EdState *state, int width, int height)
     if(state->gl.editorColorTexture > 0)
     {
         glDeleteTextures(1, &state->gl.editorColorTexture);
+        glDeleteTextures(1, &state->gl.editorColorTextureMS);
     }
 
     glCreateTextures(GL_TEXTURE_2D, 1, &state->gl.editorColorTexture);
@@ -105,7 +108,11 @@ void ResizeEditorView(struct EdState *state, int width, int height)
     glTextureParameteri(state->gl.editorColorTexture, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTextureParameteri(state->gl.editorColorTexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+    glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE, 1, &state->gl.editorColorTextureMS);
+    glTextureStorage2DMultisample(state->gl.editorColorTextureMS, 16, GL_RGBA8, width, height, false);
+
     glNamedFramebufferTexture(state->gl.editorFramebuffer, GL_COLOR_ATTACHMENT0, state->gl.editorColorTexture, 0);
+    glNamedFramebufferTexture(state->gl.editorFramebufferMS, GL_COLOR_ATTACHMENT0, state->gl.editorColorTextureMS, 0);
 
     state->gl.editorFramebufferWidth = width;
     state->gl.editorFramebufferHeight = height;

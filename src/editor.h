@@ -103,8 +103,8 @@ struct EdState
     {
         int editorFramebufferWidth;
         int editorFramebufferHeight;
-        GLuint editorFramebuffer;
-        GLuint editorColorTexture;
+        GLuint editorFramebuffer, editorFramebufferMS;
+        GLuint editorColorTexture, editorColorTextureMS;
 
         int realtimeFramebufferWidth;
         int realtimeFramebufferHeight;

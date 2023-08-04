@@ -77,11 +77,12 @@ int EditorMain(int argc, char *argv[])
 
         if(state.gl.editorColorTexture > 0)
         {
-            glBindFramebuffer(GL_FRAMEBUFFER, state.gl.editorFramebuffer);
+            glBindFramebuffer(GL_FRAMEBUFFER, state.gl.editorFramebufferMS);
             glViewport(0, 0, state.gl.editorFramebufferWidth, state.gl.editorFramebufferHeight);
             glClearColor(state.settings.colors[COL_BACKGROUND][0], state.settings.colors[COL_BACKGROUND][1], state.settings.colors[COL_BACKGROUND][2], state.settings.colors[COL_BACKGROUND][3]);
             glClear(GL_COLOR_BUFFER_BIT);
             RenderEditorView(&state);
+            glBlitNamedFramebuffer(state.gl.editorFramebufferMS, state.gl.editorFramebuffer, 0, 0, state.gl.editorFramebufferWidth, state.gl.editorFramebufferHeight, 0, 0, state.gl.editorFramebufferWidth, state.gl.editorFramebufferHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
         }
 
         if(state.ui.show3dView && state.gl.realtimeColorTexture > 0)
