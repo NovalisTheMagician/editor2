@@ -64,7 +64,7 @@ ssize_t EditAddVertex(struct EdState *state, struct Vertex pos)
     if(map->numVertices == map->numAllocVertices)
         IncreaseBufferSize((void**)&map->vertices, &map->numAllocVertices, sizeof *map->vertices);
 
-    ((struct VertexType*)state->gl.editorVertex.bufferMap)[idx] = (struct VertexType){ .position = { pos.x, pos.y }, .color = { 1, 1, 1, 1 } };
+    state->gl.editorVertex.bufferMap[idx] = (struct VertexType){ .position = { pos.x, pos.y }, .color = { 1, 1, 1, 1 } };
 
     map->dirty = true;
     return idx;
@@ -122,8 +122,8 @@ ssize_t EditAddLine(struct EdState *state, size_t v0, size_t v1)
 
     const struct Vertex vert0 = map->vertices[v0];
     const struct Vertex vert1 = map->vertices[v1];
-    ((struct VertexType*)state->gl.editorLine.bufferMap)[idx * 2    ] = (struct VertexType){ .position = { vert0.x, vert0.y }, .color = { 1, 1, 1, 1 } };
-    ((struct VertexType*)state->gl.editorLine.bufferMap)[idx * 2 + 1] = (struct VertexType){ .position = { vert1.x, vert1.y }, .color = { 1, 1, 1, 1 } };
+    state->gl.editorLine.bufferMap[idx * 2    ] = (struct VertexType){ .position = { vert0.x, vert0.y }, .color = { 1, 1, 1, 1 } };
+    state->gl.editorLine.bufferMap[idx * 2 + 1] = (struct VertexType){ .position = { vert1.x, vert1.y }, .color = { 1, 1, 1, 1 } };
 
     map->dirty = true;
 

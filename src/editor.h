@@ -129,7 +129,7 @@ struct EdState
             GLuint viewProjUniform, tintUniform;
             GLuint vertBuffer;
             GLuint vertFormat;
-            void *bufferMap;
+            struct VertexType *bufferMap;
         } editorVertex;
 
         struct
@@ -138,7 +138,7 @@ struct EdState
             GLuint viewProjUniform, tintUniform;
             GLuint vertFormat;
             GLuint vertBuffer;
-            void *bufferMap;
+            struct VertexType *bufferMap;
         } editorLine;
     } gl;
 
