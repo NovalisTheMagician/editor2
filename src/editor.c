@@ -109,7 +109,7 @@ void ResizeEditorView(struct EdState *state, int width, int height)
     glTextureParameteri(state->gl.editorColorTexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     glCreateTextures(GL_TEXTURE_2D_MULTISAMPLE, 1, &state->gl.editorColorTextureMS);
-    glTextureStorage2DMultisample(state->gl.editorColorTextureMS, 16, GL_RGBA8, width, height, false);
+    glTextureStorage2DMultisample(state->gl.editorColorTextureMS, 8, GL_RGBA8, width, height, false);
 
     glNamedFramebufferTexture(state->gl.editorFramebuffer, GL_COLOR_ATTACHMENT0, state->gl.editorColorTexture, 0);
     glNamedFramebufferTexture(state->gl.editorFramebufferMS, GL_COLOR_ATTACHMENT0, state->gl.editorColorTextureMS, 0);
