@@ -220,7 +220,9 @@ void RenderEditorView(struct EdState *state)
     glm_scale(viewMat, (vec3){ state->data.zoomLevel, state->data.zoomLevel, 1 });
     glm_mul(state->data.editorProjection, viewMat, viewProjMat);
 
+    glLineWidth(1);
     RenderBackground(state);
     RenderVertices(state, viewProjMat);
+    glLineWidth(2);
     RenderLines(state, viewProjMat);
 }

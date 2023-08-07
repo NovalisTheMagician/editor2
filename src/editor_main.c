@@ -221,7 +221,5 @@ static SDL_GLContext InitOpenGL(SDL_Window *window)
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_LINE_SMOOTH);
 
-    glLineWidth(2);
-
     return glContext;
 }
