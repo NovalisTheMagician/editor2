@@ -217,7 +217,11 @@ static SDL_GLContext InitOpenGL(SDL_Window *window)
 
     if(SDL_GL_SetSwapInterval(-1) == -1)
         SDL_GL_SetSwapInterval(1);
+
     glEnable(GL_MULTISAMPLE);
+    glEnable(GL_LINE_SMOOTH);
+
+    glLineWidth(2);
 
     return glContext;
 }
