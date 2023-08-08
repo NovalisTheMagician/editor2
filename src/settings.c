@@ -26,9 +26,9 @@ void ResetSettings(struct EdSettings *settings)
 
     SetColor(&settings->colors[COL_RTBACKGROUND], (Color){ 0.00f, 0.00f, 0.00f, 1.00f });
 
-    SetColor(&settings->colors[COL_VERTEX], (Color){ 0.8f, 0.8f, 0.8f, 1.00f });
+    SetColor(&settings->colors[COL_VERTEX], (Color){ 0.7f, 0.7f, 0.7f, 1.00f });
     SetColor(&settings->colors[COL_LINE], (Color){ 0.8f, 0.8f, 0.8f, 1.00f });
-    SetColor(&settings->colors[COL_SECTOR], (Color){ 0.8f, 0.8f, 0.8f, 1.00f });
+    SetColor(&settings->colors[COL_SECTOR], (Color){ 0.8f, 0.8f, 0.3f, 0.7f });
 
     pstr_free(settings->gamePath);
     pstr_free(settings->launchArguments);
@@ -36,6 +36,10 @@ void ResetSettings(struct EdSettings *settings)
     settings->launchArguments = pstr_cstr_size("-debug -map %1", MAX_GAMEPATH_LEN);
 
     settings->theme = 0;
+
+    settings->showGridLines = true;
+    settings->showMajorAxis = true;
+    settings->vertexPointSize = 7.0f;
 }
 
 bool LoadSettings(const char *settingsPath, struct EdSettings *settings)

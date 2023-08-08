@@ -63,6 +63,9 @@ struct EdSettings
     Color colors[NUM_COLORS];
     int theme;
 
+    float vertexPointSize;
+    bool showGridLines, showMajorAxis;
+
     pstring gamePath;
     pstring launchArguments;
 };
@@ -72,6 +75,15 @@ struct VertexType
     vec2 position;
     Color color;
 };
+
+struct SectorVertexType
+{
+    vec2 position;
+    Color color;
+    vec2 texCoord;
+};
+
+typedef uint32_t Index;
 
 struct EdState
 {
@@ -114,6 +126,8 @@ struct EdState
 
         GLuint backgroundLinesBuffer;
 
+        GLuint whiteTexture;
+
         struct 
         {
             GLuint hProgram, vProgram;
@@ -140,6 +154,16 @@ struct EdState
             GLuint vertBuffer;
             struct VertexType *bufferMap;
         } editorLine;
+
+        struct
+        {
+            GLuint program;
+            GLuint viewProjUniform, tintUniform, textureUniform, offsetUniform;
+            GLuint vertFormat;
+            GLuint vertBuffer, indBuffer;
+            struct SectorVertexType *bufferMap;
+            Index *indexMap;
+        } editorSector;
     } gl;
 
     struct
@@ -148,6 +172,8 @@ struct EdState
         float zoomLevel;
         ImVec2 viewPosition;
         int selectionMode;
+
+        int showSectorTextures;
 
 #ifdef _DEBUG
         int mx, my, mtx, mty;

@@ -538,6 +538,14 @@ static void SettingsWindow(bool *p_open, struct EdState *state)
                 igEndTabItem();
             }
 
+            if(igBeginTabItem("Editor", NULL, 0))
+            {
+                igDragFloat("Vertex Point Size", &state->settings.vertexPointSize, 0.1f, 0.5f, 20, "%.1f", 0);
+                igCheckbox("Show Gridlines", &state->settings.showGridLines);
+                igCheckbox("Show Major Axis", &state->settings.showMajorAxis);
+                igEndTabItem();
+            }
+
             if(igBeginTabItem("Colors", NULL, 0))
             {
                 for(int i = 0; i < NUM_COLORS; ++i)

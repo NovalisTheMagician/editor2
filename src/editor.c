@@ -55,6 +55,13 @@ bool InitEditor(struct EdState *state)
     glCreateFramebuffers(1, &state->gl.editorFramebufferMS);
     glCreateFramebuffers(1, &state->gl.realtimeFramebuffer);
 
+    static Color whiteColor = { 1, 1, 1, 1 };
+    glCreateTextures(GL_TEXTURE_2D, 1, &state->gl.whiteTexture);
+    glTextureStorage2D(state->gl.whiteTexture, 1, GL_RGBA8, 1, 1);
+    glTextureSubImage2D(state->gl.whiteTexture, 0, 0, 0, 1, 1, GL_RGBA, GL_FLOAT, whiteColor);
+    glTextureParameteri(state->gl.whiteTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTextureParameteri(state->gl.whiteTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
     state->data.gridSize = 32;
     state->data.zoomLevel = 1.0f;
     state->data.lastVertForLine = -1;
@@ -72,12 +79,13 @@ void DestroyEditor(struct EdState *state)
     glDeleteProgram(state->gl.editorBackProg.hProgram);
     glDeleteProgram(state->gl.editorBackProg.vProgram);
     glDeleteFramebuffers(3, (GLuint[]){ state->gl.editorFramebuffer, state->gl.editorFramebufferMS, state->gl.realtimeFramebuffer });
-    glDeleteTextures(4, (GLuint[])
+    glDeleteTextures(5, (GLuint[])
                                 { 
                                     state->gl.editorColorTexture,
                                     state->gl.editorColorTextureMS,
                                     state->gl.realtimeColorTexture, 
-                                    state->gl.realtimeDepthTexture
+                                    state->gl.realtimeDepthTexture,
+                                    state->gl.whiteTexture
                                 });
 
     glDeleteProgram(state->gl.editorVertex.program);
@@ -87,6 +95,10 @@ void DestroyEditor(struct EdState *state)
     glDeleteProgram(state->gl.editorLine.program);
     glDeleteBuffers(1, &state->gl.editorLine.vertBuffer);
     glDeleteVertexArrays(1, &state->gl.editorLine.vertFormat);
+
+    glDeleteProgram(state->gl.editorSector.program);
+    glDeleteBuffers(2, (GLuint[]){ state->gl.editorSector.vertBuffer, state->gl.editorSector.indBuffer });
+    glDeleteVertexArrays(1, &state->gl.editorSector.vertFormat);
 }
 
 void ResizeEditorView(struct EdState *state, int width, int height)
@@ -129,7 +141,7 @@ static void RenderBackground(const struct EdState *state)
 {
     const float period = state->data.gridSize * state->data.zoomLevel;
 
-    if(period >= 4)
+    if(period >= 4 && state->settings.showGridLines)
     {
         const float offsetX = fmod(-state->data.viewPosition.x, period);
         const float offsetY = fmod(-state->data.viewPosition.y, period);
@@ -147,7 +159,10 @@ static void RenderBackground(const struct EdState *state)
         glUniform4fv(state->gl.editorBackProg.hTintUniform, 1, state->settings.colors[COL_BACK_LINES]);
         glUniform4fv(state->gl.editorBackProg.hMajorTintUniform, 1, state->settings.colors[COL_BACK_MAJOR_LINES]);
         glUniformMatrix4fv(state->gl.editorBackProg.hVPUniform, 1, false, (float*)state->data.editorProjection);
-        glUniform1i(state->gl.editorBackProg.hMajorIdxUniform, hMajorIdx);
+        if(state->settings.showMajorAxis)
+            glUniform1i(state->gl.editorBackProg.hMajorIdxUniform, hMajorIdx);
+        else 
+            glUniform1i(state->gl.editorBackProg.hMajorIdxUniform, -1);
 
         glDrawArraysInstanced(GL_LINES, 0, 2, hLines);
 
@@ -157,11 +172,14 @@ static void RenderBackground(const struct EdState *state)
         glUniform4fv(state->gl.editorBackProg.vTintUniform, 1, state->settings.colors[COL_BACK_LINES]);
         glUniform4fv(state->gl.editorBackProg.vMajorTintUniform, 1, state->settings.colors[COL_BACK_MAJOR_LINES]);
         glUniformMatrix4fv(state->gl.editorBackProg.vVPUniform, 1, false, (float*)state->data.editorProjection);
-        glUniform1i(state->gl.editorBackProg.vMajorIdxUniform, vMajorIdx);
+        if(state->settings.showMajorAxis)
+            glUniform1i(state->gl.editorBackProg.vMajorIdxUniform, vMajorIdx);
+        else
+            glUniform1i(state->gl.editorBackProg.vMajorIdxUniform, -1);
 
         glDrawArraysInstanced(GL_LINES, 2, 2, vLines);
     }
-    else
+    else if(state->settings.showMajorAxis)
     {
         const float offsetX = -state->data.viewPosition.x;
         const float offsetY = -state->data.viewPosition.y;
@@ -194,7 +212,7 @@ static void RenderBackground(const struct EdState *state)
 
 static void RenderVertices(const struct EdState *state, const mat4 viewProjMat)
 {
-    glPointSize(8);
+    glPointSize(state->settings.vertexPointSize);
     glBindVertexArray(state->gl.editorVertex.vertFormat);
     glUseProgram(state->gl.editorVertex.program);
     glUniformMatrix4fv(state->gl.editorVertex.viewProjUniform, 1, false, (float*)viewProjMat);
@@ -213,6 +231,19 @@ static void RenderLines(const struct EdState *state, const mat4 viewProjMat)
     glDrawArrays(GL_LINES, 0, state->map.numLines*2);
 }
 
+static void RenderSectors(const struct EdState *state, const mat4 viewProjMat)
+{
+    glBindVertexArray(state->gl.editorSector.vertFormat);
+    glUseProgram(state->gl.editorSector.program);
+    glUniformMatrix4fv(state->gl.editorSector.viewProjUniform, 1, false, (float*)viewProjMat);
+    glUniform4fv(state->gl.editorSector.tintUniform, 1, state->settings.colors[COL_SECTOR]);
+    if(!state->data.showSectorTextures)
+        glUniform1i(state->gl.editorSector.textureUniform, state->gl.whiteTexture);
+    // handle real texture here
+
+    glDrawElements(GL_TRIANGLES, 0, GL_UNSIGNED_INT, NULL);
+}
+
 void RenderEditorView(struct EdState *state)
 {
     mat4 viewProjMat, viewMat;
@@ -220,9 +251,11 @@ void RenderEditorView(struct EdState *state)
     glm_scale(viewMat, (vec3){ state->data.zoomLevel, state->data.zoomLevel, 1 });
     glm_mul(state->data.editorProjection, viewMat, viewProjMat);
 
-    glLineWidth(1);
+    
     RenderBackground(state);
     RenderVertices(state, viewProjMat);
     glLineWidth(2);
     RenderLines(state, viewProjMat);
+    glLineWidth(1);
+    RenderSectors(state, viewProjMat);
 }

@@ -74,7 +74,7 @@ static bool InitBackground(struct EdState *state)
         "uniform vec4 tint;\n"
         "uniform vec4 majorTint;\n"
         "uniform int majorIndex;\n"
-        "flat in int idx;"
+        "flat in int idx;\n"
         "out vec4 fragColor;\n"
         "void main() {\n"
         "   if(idx == majorIndex)\n"
@@ -158,7 +158,7 @@ static bool InitVertex(struct EdState *state)
 
     const char *fragShaderSrc = 
         "#version 460 core\n"
-        "in vec4 outColor;"
+        "in vec4 outColor;\n"
         "out vec4 fragColor;\n"
         "uniform vec4 tint;\n"
         "void main() {\n"
@@ -231,7 +231,7 @@ static bool InitLines(struct EdState *state)
 
     const char *fragShaderSrc = 
         "#version 460 core\n"
-        "in vec4 outColor;"
+        "in vec4 outColor;\n"
         "out vec4 fragColor;\n"
         "uniform vec4 tint;\n"
         "void main() {\n"
@@ -286,6 +286,93 @@ static bool InitLines(struct EdState *state)
     return true;
 }
 
+static bool InitSectors(struct EdState *state)
+{
+    const char *vertShaderSrc = 
+        "#version 460 core\n"
+        "layout(location=0) in vec2 inPosition;\n"
+        "layout(location=1) in vec4 inColor;\n"
+        "layout(location=3) in vec2 inTexCoords;\n"
+        "out vec4 outColor;\n"
+        "out vec2 outTexCoords;\n"
+        "uniform mat4 viewProj;\n"
+        "uniform vec2 coordOffset;\n"
+        "void main() {\n"
+        "   gl_Position = viewProj * vec4(inPosition, 0, 1);\n"
+        "   outColor = inColor;\n"
+        "   outTexCoords = inTexCoords;\n"
+        "}\n";
+
+    const char *fragShaderSrc = 
+        "#version 460 core\n"
+        "in vec4 outColor;\n"
+        "in vec2 outTexCoords;\n"
+        "out vec4 fragColor;\n"
+        "uniform sampler2D tex;\n"
+        "uniform vec4 tint;\n"
+        "void main() {\n"
+        "   fragColor = outColor * texture(tex, outTexCoords) * tint;\n"
+        "}\n";
+
+    GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
+    if(!CompileShader(vertShaderSrc, &vertShader))
+        return false;
+
+    GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+    if(!CompileShader(fragShaderSrc, &fragShader))
+        return false;
+
+    GLuint program = glCreateProgram();
+    if(!LinkProgram(vertShader, fragShader, &program))
+        return false;
+
+    glDeleteShader(vertShader);
+    glDeleteShader(fragShader);
+
+    state->gl.editorSector.program = program;
+    state->gl.editorSector.viewProjUniform = glGetUniformLocation(program, "viewProj");
+    state->gl.editorSector.tintUniform = glGetUniformLocation(program, "tint");
+    state->gl.editorSector.textureUniform = glGetUniformLocation(program, "tex");
+
+    const GLbitfield 
+	mapping_flags = GL_MAP_WRITE_BIT | GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
+	storage_flags = GL_DYNAMIC_STORAGE_BIT | mapping_flags;
+
+    size_t vBufferSize = BUFFER_SIZE * 3 * sizeof(struct SectorVertexType);
+    GLuint vBuffer;
+    glCreateBuffers(1, &vBuffer);
+    glNamedBufferStorage(vBuffer, vBufferSize, NULL, storage_flags);
+    state->gl.editorSector.vertBuffer = vBufferSize;
+
+    size_t iBufferSize = BUFFER_SIZE * 3 * sizeof(Index);
+    GLuint iBuffer;
+    glCreateBuffers(1, &iBuffer);
+    glNamedBufferStorage(iBuffer, iBufferSize, NULL, storage_flags);
+    state->gl.editorSector.indBuffer = iBuffer;
+
+    GLuint vao;
+    glCreateVertexArrays(1, &vao);
+    glEnableVertexArrayAttrib(vao, 0);
+    glEnableVertexArrayAttrib(vao, 1);
+    glEnableVertexArrayAttrib(vao, 2);
+    glVertexArrayAttribFormat(vao, 0, 2, GL_FLOAT, GL_FALSE, offsetof(struct SectorVertexType, position));
+    glVertexArrayAttribFormat(vao, 1, 4, GL_FLOAT, GL_FALSE, offsetof(struct SectorVertexType, color));
+    glVertexArrayAttribFormat(vao, 2, 2, GL_FLOAT, GL_FALSE, offsetof(struct SectorVertexType, texCoord));
+    glVertexArrayAttribBinding(vao, 0, 0);
+    glVertexArrayAttribBinding(vao, 1, 0);
+    glVertexArrayAttribBinding(vao, 2, 0);
+
+    glVertexArrayVertexBuffer(vao, 0, vBuffer, 0, sizeof(struct SectorVertexType));
+    glVertexArrayElementBuffer(vao, iBuffer);
+
+    state->gl.editorSector.vertFormat = vao;
+
+    state->gl.editorSector.bufferMap = glMapNamedBufferRange(vBuffer, 0, vBufferSize, mapping_flags);
+    state->gl.editorSector.indexMap = glMapNamedBufferRange(iBuffer, 0, iBufferSize, mapping_flags);
+
+    return true;
+}
+
 bool LoadShaders(struct EdState *state)
 {
     if(!InitBackground(state))
@@ -295,6 +382,9 @@ bool LoadShaders(struct EdState *state)
         return false;
 
     if(!InitLines(state))
+        return false;
+
+    if(!InitSectors(state))
         return false;
 
     return true;
