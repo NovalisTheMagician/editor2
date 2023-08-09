@@ -12,7 +12,13 @@
 #define MAX_GAMEARGUMENTS_LEN 256
 
 #define MAX_ZOOM 10.0f
-#define MIN_ZOOM 0.15f
+#define MIN_ZOOM 0.05f
+
+#define MAX_FOV 120
+#define MIN_FOV 45
+
+#define MAX_VERTEXPOINTSIZE 20
+#define MIN_VERTEXPOINTSIZE 0.5f
 
 enum Theme
 {
@@ -65,6 +71,7 @@ struct EdSettings
 
     float vertexPointSize;
     bool showGridLines, showMajorAxis;
+    int realtimeFov;
 
     pstring gamePath;
     pstring launchArguments;

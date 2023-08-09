@@ -540,9 +540,15 @@ static void SettingsWindow(bool *p_open, struct EdState *state)
 
             if(igBeginTabItem("Editor", NULL, 0))
             {
-                igDragFloat("Vertex Point Size", &state->settings.vertexPointSize, 0.1f, 0.5f, 20, "%.1f", 0);
-                igCheckbox("Show Gridlines", &state->settings.showGridLines);
+                igDragFloat("Vertex Point Size", &state->settings.vertexPointSize, 0.1f, MIN_VERTEXPOINTSIZE, MAX_VERTEXPOINTSIZE, "%.1f", 0);
+                igCheckbox("Show Grid", &state->settings.showGridLines);
                 igCheckbox("Show Major Axis", &state->settings.showMajorAxis);
+                igEndTabItem();
+            }
+
+            if(igBeginTabItem("3D View", NULL, 0))
+            {
+                igSliderInt("Field of View", &state->settings.realtimeFov, MIN_FOV, MAX_FOV, "%d°", 0);
                 igEndTabItem();
             }
 

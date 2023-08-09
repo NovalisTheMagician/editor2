@@ -40,6 +40,8 @@ void ResetSettings(struct EdSettings *settings)
     settings->showGridLines = true;
     settings->showMajorAxis = true;
     settings->vertexPointSize = 7.0f;
+
+    settings->realtimeFov = 90;
 }
 
 bool LoadSettings(const char *settingsPath, struct EdSettings *settings)

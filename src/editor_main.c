@@ -79,8 +79,7 @@ int EditorMain(int argc, char *argv[])
         {
             glBindFramebuffer(GL_FRAMEBUFFER, state.gl.editorFramebufferMS);
             glViewport(0, 0, state.gl.editorFramebufferWidth, state.gl.editorFramebufferHeight);
-            glClearColor(state.settings.colors[COL_BACKGROUND][0], state.settings.colors[COL_BACKGROUND][1], state.settings.colors[COL_BACKGROUND][2], state.settings.colors[COL_BACKGROUND][3]);
-            glClear(GL_COLOR_BUFFER_BIT);
+            glClearNamedFramebufferfv(state.gl.editorFramebufferMS, GL_COLOR, 0, state.settings.colors[COL_BACKGROUND]);
             RenderEditorView(&state);
             glBlitNamedFramebuffer(state.gl.editorFramebufferMS, state.gl.editorFramebuffer, 0, 0, state.gl.editorFramebufferWidth, state.gl.editorFramebufferHeight, 0, 0, state.gl.editorFramebufferWidth, state.gl.editorFramebufferHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
         }
@@ -92,8 +91,9 @@ int EditorMain(int argc, char *argv[])
 
             glBindFramebuffer(GL_FRAMEBUFFER, state.gl.realtimeFramebuffer);
             glViewport(0, 0, state.gl.realtimeFramebufferWidth, state.gl.realtimeFramebufferHeight);
-            glClearColor(state.settings.colors[COL_RTBACKGROUND][0], state.settings.colors[COL_RTBACKGROUND][1], state.settings.colors[COL_RTBACKGROUND][2], state.settings.colors[COL_RTBACKGROUND][3]);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glClearNamedFramebufferfv(state.gl.realtimeFramebuffer, GL_COLOR, 0, state.settings.colors[COL_RTBACKGROUND]);
+            const float depth = 1.0f;
+            glClearNamedFramebufferfv(state.gl.realtimeFramebuffer, GL_DEPTH, 0, &depth);
             RenderRealtimeView(&state);
 
             glDisable(GL_CULL_FACE);
@@ -103,8 +103,7 @@ int EditorMain(int argc, char *argv[])
         igRender();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, (int)ioptr->DisplaySize.x, (int)ioptr->DisplaySize.y);
-        glClearColor(state.settings.colors[COL_WORKSPACE_BACK][0], state.settings.colors[COL_WORKSPACE_BACK][1], state.settings.colors[COL_WORKSPACE_BACK][2], state.settings.colors[COL_WORKSPACE_BACK][3]);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClearNamedFramebufferfv(0, GL_COLOR, 0, state.settings.colors[COL_WORKSPACE_BACK]);
         ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
 
         SDL_GL_SwapWindow(window);
