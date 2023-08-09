@@ -12,5 +12,6 @@
 #include <cglm/cglm.h>
 
 #include "pstring.h"
+#include "hash.h"
 
 #define COUNT_OF(arr) (sizeof(arr)/sizeof(0[arr]))
