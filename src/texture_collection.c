@@ -9,7 +9,7 @@
 
 void tc_init(struct TextureCollection *tc)
 {
-    tc->slots = calloc(NUM_BUCKETS, sizeof *tc->slots);
+    tc->slots = calloc(NUM_SLOTS, sizeof *tc->slots);
     tc->order = calloc(NUM_BUCKETS * NUM_SLOTS, sizeof *tc->order);
 }
 
@@ -118,6 +118,8 @@ void tc_unload(struct TextureCollection *tc, pstring name)
 
 void tc_unload_all(struct TextureCollection *tc)
 {
+    if(tc->size == 0) return;
+
     for(size_t i = 0; i < tc->size; ++i)
     {
         struct Texture *texture = tc->order[i];
