@@ -29,10 +29,10 @@ int EditorMain(int argc, char *argv[])
     atexit(SDL_Quit);
 
     struct EdState state = { 0 };
+    ResetSettings(&state.settings);
     if(!LoadSettings(SETTINGS_FILE, &state.settings))
     {
         printf("failed to load settings from %s!\nusing default values\n", SETTINGS_FILE);
-        ResetSettings(&state.settings);
     }
 
     SDL_Window *window = InitSDL();

@@ -47,6 +47,19 @@ pstring pstr_copy(pstring string)
     return copy;
 }
 
+void pstr_copy_into_str(pstring *into, pstring string)
+{
+    size_t len = into->size < string.size ? into->size : string.size;
+    memcpy(into->data, string.data, len);
+}
+
+void pstr_copy_into_cstr(pstring *into, const char *string)
+{
+    size_t slen = strlen(string);
+    size_t len = into->size < slen ? into->size : slen;
+    memcpy(into->data, string, len);
+}
+
 pstring pstr_substring(pstring string, size_t start, ssize_t end)
 {
     assert(start < string.size);
@@ -97,11 +110,13 @@ pstring pstr_tok_str(pstring *string, pstring tok)
     ssize_t idx = pstr_first_index_of_str(*string, tok);
     if(idx == -1) // no token found return the whole string
     {
-        pstring copy = pstr_copy(*string);
+        pstring copy = *string;
         string->data += string->size;
         string->size = 0;
         return copy;
     }
+
+    string->data[idx] = '\0';
 
     pstring sub = pstr_substring(*string, 0, idx);
     string->data += idx+1;
@@ -112,7 +127,7 @@ pstring pstr_tok_str(pstring *string, pstring tok)
 ssize_t pstr_first_index_of_cstr(pstring string, const char *tok)
 {
     size_t tokSize = strlen(tok);
-    for(size_t i = 0; i < string.size - tokSize; ++i)
+    for(size_t i = 0; i <= string.size - tokSize; ++i)
     {
         bool hit = true;
         for(size_t j = 0; j < tokSize; ++j)
@@ -147,10 +162,62 @@ pstring pstr_tok_cstr(pstring *string, const char *tok)
         return copy;
     }
 
+    string->data[idx] = '\0';
+
     pstring sub = pstr_substring(*string, 0, idx);
     string->data += idx+1;
     string->size -= idx+1;
     return sub;
+}
+
+int pstr_cmp_str(pstring a, pstring b)
+{
+    size_t len = a.size < b.size ? a.size : b.size;
+    for(size_t i = 0; i < len; ++i)
+    {
+        int ca = a.data[i];
+        int cb = b.data[i];
+        if (ca - cb != 0) return ca - cb;
+    }
+    return a.size - b.size;
+}
+
+int pstr_cmp_cstr(pstring a, const char *b)
+{
+    size_t blen = strlen(b);
+    size_t len = a.size < blen ? a.size : blen;
+    for(size_t i = 0; i < len; ++i)
+    {
+        int ca = a.data[i];
+        int cb = b[i];
+        if (ca - cb != 0) return ca - cb;
+    }
+    return a.size - blen;
+}
+
+int pstr_icmp_str(pstring a, pstring b)
+{
+    size_t len = a.size < b.size ? a.size : b.size;
+    for(size_t i = 0; i < len; ++i)
+    {
+        int ca = tolower(a.data[i]);
+        int cb = tolower(b.data[i]);
+        if (ca - cb != 0) return ca - cb;
+    }
+    return a.size - b.size;
+}
+
+int pstr_icmp_cstr(pstring a, const char *b)
+{
+    size_t blen = strlen(b);
+    size_t len = a.size < blen ? a.size : blen;
+    for(size_t i = 0; i < len; ++i)
+    {
+        int ca = tolower(a.data[i]);
+        int cb = tolower(b[i]);
+        if (ca - cb != 0) return ca - cb;
+    }
+    return a.size - blen;
 }
 
 #if 0

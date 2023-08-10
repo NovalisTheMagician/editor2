@@ -46,12 +46,53 @@ void ResetSettings(struct EdSettings *settings)
 
 bool LoadSettings(const char *settingsPath, struct EdSettings *settings)
 {
+    FILE *settingsFile = fopen(settingsPath, "r");
+    if(settingsFile)
+    {
+        fseek(settingsFile, 0, SEEK_END);
+        long size = ftell(settingsFile);
+        rewind(settingsFile);
+
+        pstring buffer = pstr_alloc(size);
+        fread(buffer.data, 1, size, settingsFile);
+
+        do
+        {
+            pstring line = pstr_tok(&buffer, "\n");
+
+            pstring key = pstr_tok(&line, "=");
+            pstring value = line;
+
+            if(pstr_cmp(key, "theme") == 0) settings->theme = atoi(pstr_tocstr(value));
+            else if(pstr_cmp(key, "vertex_point_size") == 0) settings->vertexPointSize = (float)atof(pstr_tocstr(value));
+            else if(pstr_cmp(key, "show_grid_lines") == 0) settings->showGridLines = atoi(pstr_tocstr(value));
+            else if(pstr_cmp(key, "show_major_axis") == 0) settings->showMajorAxis = atoi(pstr_tocstr(value));
+            else if(pstr_cmp(key, "preview_fov") == 0) settings->realtimeFov = atoi(pstr_tocstr(value));
+            else if(pstr_cmp(key, "game_path") == 0) pstr_copy_into(&settings->gamePath, value);
+            else if(pstr_cmp(key, "launch_arguments") == 0) pstr_copy_into(&settings->launchArguments, value);
+        }
+        while(buffer.size > 0);
+
+        fclose(settingsFile);
+        return true;
+    }
     return false;
 }
 
 void SaveSettings(const char *settingsPath, const struct EdSettings *settings)
 {
-
+    FILE *settingsFile = fopen(settingsPath, "w+");
+    if(settingsFile)
+    {
+        fprintf(settingsFile, "theme=%d\n", settings->theme);
+        fprintf(settingsFile, "vertex_point_size=%.2f\n", settings->vertexPointSize);
+        fprintf(settingsFile, "show_grid_lines=%d\n", settings->showGridLines);
+        fprintf(settingsFile, "show_major_axis=%d\n", settings->showMajorAxis);
+        fprintf(settingsFile, "preview_fov=%d\n", settings->realtimeFov);
+        fprintf(settingsFile, "game_path=%s\n", pstr_tocstr(settings->gamePath));
+        fprintf(settingsFile, "launch_arguments=%s\n", pstr_tocstr(settings->launchArguments));
+        fclose(settingsFile);
+    }
 }
 
 void FreeSettings(struct EdSettings *settings)

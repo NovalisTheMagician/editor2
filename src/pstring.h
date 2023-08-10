@@ -21,6 +21,9 @@ char* pstr_tocstr(pstring string);
 void pstr_free(pstring string);
 
 pstring pstr_copy(pstring string);
+void pstr_copy_into_str(pstring *into, pstring string);
+void pstr_copy_into_cstr(pstring *into, const char *string);
+
 pstring pstr_substring(pstring string, size_t start, ssize_t end);
 void pstr_upper(pstring string);
 void pstr_lower(pstring string);
@@ -31,6 +34,12 @@ pstring pstr_tok_str(pstring *string, pstring tok);
 ssize_t pstr_first_index_of_cstr(pstring string, const char *tok);
 ssize_t pstr_last_index_of_cstr(pstring string, const char *tok);
 pstring pstr_tok_cstr(pstring *string, const char *tok);
+
+int pstr_cmp_str(pstring a, pstring b);
+int pstr_cmp_cstr(pstring a, const char *b);
+
+int pstr_icmp_str(pstring a, pstring b);
+int pstr_icmp_cstr(pstring a, const char *b);
 
 #define pstr_first_index_of(string, tok) _Generic((tok), \
                                                 char*: pstr_first_index_of_cstr, \
@@ -46,6 +55,21 @@ pstring pstr_tok_cstr(pstring *string, const char *tok);
                                         char*: pstr_tok_cstr, \
                                         default: pstr_tok_str \
                                         )(string, tok)
+
+#define pstr_cmp(a, b) _Generic((b), \
+                                char*: pstr_cmp_cstr, \
+                                default: pstr_cmp_str \
+                                )(a, b)
+
+#define pstr_icmp(a, b) _Generic((b), \
+                                char*: pstr_icmp_cstr, \
+                                default: pstr_icmp_str \
+                                )(a, b)
+
+#define pstr_copy_into(into, string) _Generic((string), \
+                                    char*: pstr_copy_into_cstr, \
+                                    default: pstr_copy_into_str \
+                                    )(into, string)
 
 pstring_buf pstr_buf_alloc(size_t initialCapacity);
 void pstr_buf_free(pstring_buf string_buf);
