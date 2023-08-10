@@ -48,6 +48,8 @@ int EditorMain(int argc, char *argv[])
 
     InitGui();
 
+    tc_init(&state.textures);
+
     NewProject(&state.project);
     NewMap(&state.map);
 
@@ -112,6 +114,9 @@ int EditorMain(int argc, char *argv[])
     SaveSettings(SETTINGS_FILE, &state.settings);
 
     FreeGui();
+
+    tc_unload_all(&state.textures);
+    tc_destroy(&state.textures);
 
     FreeMap(&state.map);
     FreeProject(&state.project);

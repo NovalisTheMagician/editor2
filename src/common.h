@@ -15,3 +15,6 @@
 #include "hash.h"
 
 #define COUNT_OF(arr) (sizeof(arr)/sizeof(0[arr]))
+
+#define min(a, b) ({ __typeof__(a) a_ = (a); __typeof__(b) b_ = (b); a_ < b_ ? a_ : b_; })
+#define max(a, b) ({ __typeof__(a) a_ = (a); __typeof__(b) b_ = (b); a_ > b_ ? a_ : b_; })

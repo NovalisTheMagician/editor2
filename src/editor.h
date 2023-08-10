@@ -4,6 +4,7 @@
 #include "map.h"
 #include "project.h"
 #include "network.h"
+#include "texture_collection.h"
 
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include <cimgui.h>
@@ -98,6 +99,7 @@ struct EdState
     struct Map map;
     struct Project project;
     struct Network network;
+    struct TextureCollection textures;
 
     struct
     {

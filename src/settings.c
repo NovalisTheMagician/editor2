@@ -56,14 +56,15 @@ bool LoadSettings(const char *settingsPath, struct EdSettings *settings)
         pstring buffer = pstr_alloc(size);
         fread(buffer.data, 1, size, settingsFile);
 
+        pstring lineBuf = buffer;
         do
         {
-            pstring line = pstr_tok(&buffer, "\n");
+            pstring line = pstr_tok(&lineBuf, "\n");
 
             pstring key = pstr_tok(&line, "=");
             pstring value = line;
 
-            if(pstr_cmp(key, "theme") == 0) settings->theme = atoi(pstr_tocstr(value));
+                 if(pstr_cmp(key, "theme") == 0) settings->theme = atoi(pstr_tocstr(value));
             else if(pstr_cmp(key, "vertex_point_size") == 0) settings->vertexPointSize = (float)atof(pstr_tocstr(value));
             else if(pstr_cmp(key, "show_grid_lines") == 0) settings->showGridLines = atoi(pstr_tocstr(value));
             else if(pstr_cmp(key, "show_major_axis") == 0) settings->showMajorAxis = atoi(pstr_tocstr(value));
@@ -71,7 +72,9 @@ bool LoadSettings(const char *settingsPath, struct EdSettings *settings)
             else if(pstr_cmp(key, "game_path") == 0) pstr_copy_into(&settings->gamePath, value);
             else if(pstr_cmp(key, "launch_arguments") == 0) pstr_copy_into(&settings->launchArguments, value);
         }
-        while(buffer.size > 0);
+        while(lineBuf.size > 0);
+
+        pstr_free(buffer);
 
         fclose(settingsFile);
         return true;
