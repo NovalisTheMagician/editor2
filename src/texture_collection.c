@@ -161,6 +161,33 @@ struct Texture* tc_get(struct TextureCollection *tc, pstring name)
     return NULL;
 }
 
+bool tc_set(struct TextureCollection *tc, pstring name, struct Texture texture)
+{
+    struct Texture *existing = tc_get(tc, name);
+    if(existing)
+    {
+        size_t orderNum = existing->orderIdx;
+        *existing = texture;
+        existing->orderIdx = orderNum;
+
+        return false;
+    }
+
+    uint64_t nameHash = hash(name) % NUM_SLOTS;
+    size_t size = tc->slots[nameHash].size;
+    assert(size < NUM_BUCKETS);
+    struct Texture *tex = &tc->slots[nameHash].textures[size++];
+
+    *tex = texture;
+
+    size_t orderIdx = tc->size++;
+    tex->orderIdx = orderIdx;
+
+    tc->order[orderIdx] = tex;
+
+    return true;
+}
+
 size_t tc_size(struct TextureCollection *tc)
 {
     return tc->size;

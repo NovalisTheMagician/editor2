@@ -2,6 +2,7 @@ APPLICATION := editor2
 
 BUILD_DIR := build
 SRC_DIR := src
+SRC_SUBDIRS := windows
 
 DEFINES := 
 INC_DIRS := $(SRC_DIR)
@@ -49,13 +50,16 @@ endif
 CPPFLAGS := $(addprefix -I,$(INC_DIRS)) $(addprefix -D,$(DEFINES)) -MMD -MP
 LIB_FLAGS := $(addprefix -L,$(LIB_DIRS)) $(addprefix -l,$(LIBS))
 
-SRCS := $(wildcard $(SRC_DIR)/*.c)
+# SRCS := $(wildcard $(SRC_DIR)/*.c)
+SRCS := $(wildcard $(SRC_DIR)/*.c) $(foreach pat,$(SRC_SUBDIRS),$(wildcard $(SRC_DIR)/$(pat)/*.c))
 OBJS := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
+
+BUILD_DIRS := $(addprefix $(BUILD_DIR)/,$(SRC_SUBDIRS))
 
 all: $(BUILD_DIR) $(APPLICATION)
 
 $(BUILD_DIR):
-	@mkdir -p $(BUILD_DIR)
+	@mkdir -p $(BUILD_DIRS)
 
 $(APPLICATION): $(OBJS)
 	@echo "LD $@"
