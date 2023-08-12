@@ -6,6 +6,8 @@
 #include <assert.h>
 #include <ImGuiFileDialog.h>
 
+#include "windows.h"
+
 static void SetValveStyle(ImGuiStyle *style)
 {
     ImVec4* colors = style->Colors;
@@ -161,15 +163,7 @@ void SetStyle(enum Theme theme)
     }
 }
 
-static void AboutWindow(bool *p_open);
-static void SettingsWindow(bool *p_open, struct EdState *state);
-static void ToolbarWindow(bool *p_open, struct EdState *state);
-static void EditorWindow(bool *p_open, struct EdState *state);
-static void RealtimeWindow(bool *p_open, struct EdState *state);
-static void StatsWindow(bool *p_open, struct EdState *state);
 static void MainMenuBar(bool *doQuit, struct EdState *state);
-static void ProjectSettingsWindow(bool *p_open, struct EdState *state);
-static void MapSettingsWindow(bool *p_open, struct EdState *state);
 static void FileDialog(bool *doQuit);
 
 static void ProjectSavePopup(struct EdState *state, bool *quitRequest);
@@ -201,7 +195,7 @@ static void OpenFolderCallback(const char *path, void *data)
     memcpy(str->data, path, len < str->size ? len : str->size);
 }
 
-static void OpenFolderDialog(pstring *folderPath)
+void OpenFolderDialog(pstring *folderPath)
 {
     struct FileDialogAction *fda = calloc(1, sizeof *fda);
     fda->data = folderPath;
@@ -217,7 +211,7 @@ static void SaveMapCallback(const char *path, void *data)
     SaveMap(map);
 }
 
-static void SaveMapDialog(struct Map *map, bool quitRequest)
+void SaveMapDialog(struct Map *map, bool quitRequest)
 {
     struct FileDialogAction *fda = calloc(1, sizeof *fda);
     fda->data = map;
@@ -234,7 +228,7 @@ static void SaveProjectCallback(const char *path, void *data)
     SaveProject(project);
 }
 
-static void SaveProjectDialog(struct Project *project, bool quitRequest)
+void SaveProjectDialog(struct Project *project, bool quitRequest)
 {
     struct FileDialogAction *fda = calloc(1, sizeof *fda);
     fda->data = project;
@@ -251,7 +245,7 @@ static void OpenMapCallback(const char *path, void *data)
     LoadMap(map);
 }
 
-static void OpenMapDialog(struct Map *map)
+void OpenMapDialog(struct Map *map)
 {
     struct FileDialogAction *fda = calloc(1, sizeof *fda);
     fda->data = map;
@@ -267,7 +261,7 @@ static void OpenProjectCallback(const char *path, void *data)
     LoadProject(project);
 }
 
-static void OpenProjectDialog(struct Project *project)
+void OpenProjectDialog(struct Project *project)
 {
     struct FileDialogAction *fda = calloc(1, sizeof *fda);
     fda->data = project;
@@ -319,6 +313,9 @@ bool DoGui(struct EdState *state, bool doQuit)
 
     if(state->ui.showMapSettings)
         MapSettingsWindow(&state->ui.showMapSettings, state);
+
+    if(state->ui.showTextures)
+        TexturesWindow(&state->ui.showTextures, state, false);
 
     EditorWindow(NULL, state);
 
@@ -512,300 +509,6 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
     }
 }
 
-static void AboutWindow(bool *p_open)
-{
-    if(igBegin("About", p_open, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse))
-    {
-        igText("Editor2\nA map editor for the WeekRPG project\nMade by Novalis");
-    }
-    igEnd();
-}
-
-static void SettingsWindow(bool *p_open, struct EdState *state)
-{
-    igSetNextWindowSize((ImVec2){ 600, 300 }, ImGuiCond_FirstUseEver);
-    if(igBegin("Options", p_open, 0))
-    {
-        if(igBeginTabBar("", 0))
-        {
-            if(igBeginTabItem("General", NULL, 0))
-            {
-                igSeparatorText("Game");
-                igInputText("Gamepath", state->settings.gamePath.data, state->settings.gamePath.size, 0, NULL, NULL);
-                igInputText("Launch Arguments", state->settings.launchArguments.data, state->settings.launchArguments.size, 0, NULL, NULL);
-                igSeparatorText("Other");
-                if(igButton("Reset Settings", (ImVec2){ 0, 0 })) { ResetSettings(&state->settings); }
-                igEndTabItem();
-            }
-
-            if(igBeginTabItem("Editor", NULL, 0))
-            {
-                igDragFloat("Vertex Point Size", &state->settings.vertexPointSize, 0.1f, MIN_VERTEXPOINTSIZE, MAX_VERTEXPOINTSIZE, "%.1f", 0);
-                igCheckbox("Show Grid", &state->settings.showGridLines);
-                igCheckbox("Show Major Axis", &state->settings.showMajorAxis);
-                igEndTabItem();
-            }
-
-            if(igBeginTabItem("3D View", NULL, 0))
-            {
-                igSliderInt("Field of View", &state->settings.realtimeFov, MIN_FOV, MAX_FOV, "%d°", 0);
-                igEndTabItem();
-            }
-
-            if(igBeginTabItem("Colors", NULL, 0))
-            {
-                for(int i = 0; i < NUM_COLORS; ++i)
-                {
-                    igColorEdit4(ColorIndexToString(i), state->settings.colors[i], 0);
-                }
-                igEndTabItem();
-            }
-
-            if(igBeginTabItem("Appearance", NULL, 0))
-            {
-                static const char *themeElements[] = {"Imgui Light", "Imgui Dark", "Imgui Classic", "Valve old VGUI", "Deus Ex Human Barbecue"};
-                static const size_t count = COUNT_OF(themeElements);
-                if(igCombo_Str_arr("Theme", &state->settings.theme, themeElements, count, 5)) { SetStyle(state->settings.theme); }
-                igEndTabItem();
-            }
-
-            igEndTabBar();
-        }
-    }
-    igEnd();
-}
-
-static void ToolbarWindow(bool *p_open, struct EdState *state)
-{
-    if(igBegin("Toolbar", p_open, 0))
-    {
-        
-    }
-    igEnd();
-}
-
-static void EditorWindow(bool *p_open, struct EdState *state)
-{
-    static bool firstTime = true;
-
-    igSetNextWindowSize((ImVec2){ 800, 600 }, ImGuiCond_FirstUseEver);
-    igSetNextWindowPos((ImVec2){ 40, 40 }, ImGuiCond_FirstUseEver, (ImVec2){ 0, 0 });
-
-    igPushStyleVar_Vec2(ImGuiStyleVar_WindowMinSize, (ImVec2){ 400, 300 });
-    ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
-    if(state->map.dirty)
-        flags |= ImGuiWindowFlags_UnsavedDocument;
-
-    if(igBegin("Editor", p_open, flags))
-    {
-        if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_C, 0, 0))
-            EditCopy(state);
-        if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_V, 0, 0))
-            EditPaste(state);
-        if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_X, 0, 0))
-            EditCut(state);
-        if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_Z, 0, 0))
-            printf("Undo!\n");
-        if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_Y, 0, 0))
-            printf("Redo!\n");
-
-        if(igShortcut(ImGuiKey_V, 0, 0))
-            state->data.selectionMode = MODE_VERTEX;
-        if(igShortcut(ImGuiKey_L, 0, 0))
-            state->data.selectionMode = MODE_LINE;
-        if(igShortcut(ImGuiKey_S, 0, 0))
-            state->data.selectionMode = MODE_SECTOR;
-
-        igPushItemWidth(80);
-        static const char *modeNames[] = { "Vertex", "Line", "Sector" };
-        static const size_t numModes = COUNT_OF(modeNames);
-        igCombo_Str_arr("Mode", &state->data.selectionMode, modeNames, numModes, 3);
-
-        igSameLine(0, 16);
-        igPushItemWidth(80);
-        static const char *gridSizes[] = { "1", "2", "4", "8", "16", "32", "64", "128", "256", "512", "1024" };
-        static const size_t numGrids = COUNT_OF(gridSizes);
-        int gridSelection = log2(state->data.gridSize);
-        igCombo_Str_arr("Gridsize", &gridSelection, gridSizes, numGrids, numGrids);
-        state->data.gridSize = pow(2, gridSelection);
-
-        igSameLine(0, 16);
-        igPushItemWidth(80);
-        igSliderFloat("Zoom", &state->data.zoomLevel, MIN_ZOOM, MAX_ZOOM, "%.2f", 0);
-
-        igSameLine(0, 16);
-        if(igButton("Reset Zoom", (ImVec2){ 0, 0 })) { state->data.zoomLevel = 1; }
-
-        igSameLine(0, 16);
-        if(igButton("Go To Origin", (ImVec2){ 0, 0 })) 
-        {
-            state->data.viewPosition = (ImVec2){ -state->gl.editorFramebufferWidth / 2, -state->gl.editorFramebufferHeight / 2 };
-        }
-
-        if(igBeginChild_ID(1000, (ImVec2){ 0, 0 }, false, ImGuiWindowFlags_NoMove))
-        {
-            ImVec2 clientArea;
-            igGetContentRegionAvail(&clientArea);
-
-            ImVec2 clientPos;
-            igGetWindowPos(&clientPos);
-
-            bool hovored = igIsWindowHovered(0);
-            bool focused = igIsWindowFocused(0);
-
-            ImVec2 mpos;
-            igGetMousePos(&mpos);
-            int relX = (int)mpos.x - (int)clientPos.x;
-            int relY = (int)mpos.y - (int)clientPos.y;
-
-            if(hovored)
-            {
-                int edX = relX, edSX = relX, edY = relY, edSY = relY;
-                float edXf = relX, edYf = relY;
-                ScreenToEditorSpaceGrid(state, &edSX, &edSY);
-                ScreenToEditorSpace(state, &edX, &edY);
-                ScreenToEditorSpacef(state, &edXf, &edYf);
-#ifdef _DEBUG
-                state->data.mx = edX;
-                state->data.my = edY;
-                state->data.mtx = edSX;
-                state->data.mty = edSY;
-#endif
-
-                if(igIsMouseDragging(ImGuiMouseButton_Middle, 2))
-                {
-                    ImVec2 dragDelta;
-                    igGetMouseDragDelta(&dragDelta, ImGuiMouseButton_Middle, 2);
-                    state->data.viewPosition.x -= dragDelta.x;
-                    state->data.viewPosition.y -= dragDelta.y;
-                    igResetMouseDragDelta(ImGuiMouseButton_Middle);
-
-                    igSetWindowFocus_Nil();
-                }
-
-                if(igIsMouseClicked_Bool(ImGuiMouseButton_Left, false)) 
-                {
-                    
-                }
-
-                if(igIsMouseClicked_Bool(ImGuiMouseButton_Right, false)) 
-                {
-                    size_t newVertex;
-                    if(!EditGetVertex(state, (struct Vertex){ edSX, edSY }, &newVertex))
-                    {
-                        newVertex = EditAddVertex(state, (struct Vertex){ edSX, edSY });
-                    }
-                    if(state->data.lastVertForLine != -1)
-                    {
-                        EditAddLine(state, state->data.lastVertForLine, newVertex);
-                    }
-
-                    state->data.lastVertForLine = newVertex;
-
-                    igSetWindowFocus_Nil();
-                }
-
-                if(igIsMouseClicked_Bool(ImGuiMouseButton_Middle, false)) 
-                {
-                    igSetWindowFocus_Nil();
-                }
-
-                ImGuiKeyData *wheelData = igGetKeyData_Key(ImGuiKey_MouseWheelY);
-                if(wheelData->AnalogValue != 0)
-                {
-                    state->data.zoomLevel += wheelData->AnalogValue * 0.05f;
-                    if(state->data.zoomLevel < MIN_ZOOM)
-                        state->data.zoomLevel = MIN_ZOOM;
-                    if(state->data.zoomLevel > MAX_ZOOM)
-                        state->data.zoomLevel = MAX_ZOOM;
-
-                    float edXAfter = relX, edYAfter = relY;
-                    ScreenToEditorSpacef(state, &edXAfter, &edYAfter);
-
-                    state->data.viewPosition.x += (edXf - edXAfter) * state->data.zoomLevel;
-                    state->data.viewPosition.y += (edYf - edYAfter) * state->data.zoomLevel;
-
-                    igSetWindowFocus_Nil();
-                }
-            }
-
-            if(focused)
-            {
-                
-            }
-
-            ResizeEditorView(state, clientArea.x, clientArea.y);
-            igImage((void*)(intptr_t)state->gl.editorColorTexture, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 0 });
-
-            if(firstTime)
-            {
-                firstTime = false;
-                state->data.viewPosition = (ImVec2){ -state->gl.editorFramebufferWidth / 2, -state->gl.editorFramebufferHeight / 2 };
-            }
-        }
-        igEndChild();
-    }
-    igEnd();
-    igPopStyleVar(1);
-}
-
-static void RealtimeWindow(bool *p_open, struct EdState *state)
-{
-    igSetNextWindowSize((ImVec2){ 800, 600 }, ImGuiCond_FirstUseEver);
-
-    if(igBegin("3D View", p_open, ImGuiWindowFlags_NoScrollbar))
-    {
-        if(igBeginChild_ID(1000, (ImVec2){ 0, 0 }, false, ImGuiWindowFlags_NoMove))
-        {
-            ImVec2 clientArea;
-            igGetContentRegionAvail(&clientArea);
-
-            ImVec2 clientPos;
-            igGetWindowPos(&clientPos);
-
-            bool hovored = igIsWindowHovered(0);
-            bool focused = igIsWindowFocused(0);
-
-            ImVec2 mpos;
-            igGetMousePos(&mpos);
-            int relX = (int)mpos.x - (int)clientPos.x;
-            int relY = (int)mpos.y - (int)clientPos.y;
-            (void)relX;
-            (void)relY;
-
-            if(hovored)
-            {
-
-            }
-
-            if(focused)
-            {
-
-            }
-
-            ResizeRealtimeView(state, clientArea.x, clientArea.y);
-            igImage((void*)(intptr_t)state->gl.realtimeColorTexture, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 0 });
-        }
-        igEndChild();
-    }
-    igEnd();
-}
-
-static void StatsWindow(bool *p_open, struct EdState *state)
-{
-    if(igBegin("Debug Stats", p_open, 0))
-    {
-        igSeparatorText("Editor");
-        igText("Viewposition: %.2f | %.2f", state->data.viewPosition.x, state->data.viewPosition.y);
-#ifdef _DEBUG
-        igText("Mouse World Pos Snap: %d | %d", state->data.mtx, state->data.mty);
-        igText("Mouse World Pos: %d | %d", state->data.mx, state->data.my);
-#endif
-        igText("Zoomlevel: %.2f", state->data.zoomLevel);
-    }
-    igEnd();
-}
-
 static void ProjectSavePopup(struct EdState *state, bool *quitRequest)
 {
     if(igBeginPopupModal("Save Project?", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse))
@@ -889,63 +592,6 @@ static void MapSavePopup(struct EdState *state, bool *quitRequest)
         }
         igEndPopup();
     }
-}
-
-static void ProjectSettingsWindow(bool *p_open, struct EdState *state)
-{
-    igSetNextWindowSize((ImVec2){ 400, 290 }, ImGuiCond_FirstUseEver);
-    if(igBegin("Project Settings", p_open, 0))
-    {
-
-        igSeparatorText("Base");
-        bool isFtp = state->project.basePath.type == ASSPATH_FTP;
-        igCheckbox("FTP", &isFtp);
-        state->project.basePath.type = isFtp ? ASSPATH_FTP : ASSPATH_FS;
-        if(isFtp)
-        {
-            igSameLine(0, 8);
-            if(igButton("Check Connection", (ImVec2){ 0, 0 }))
-            {
-
-            }
-        }
-        if(igInputText("Path", state->project.basePath.fs.path.data, state->project.basePath.fs.path.size, 0, NULL, NULL)) { state->project.dirty = true; }
-        igSameLine(0, 8);
-        if(igButton("Browse", (ImVec2){ 0, 0 }))
-        {
-            if(!isFtp)
-            {
-                OpenFolderDialog(&state->project.basePath.fs.path);
-                state->project.dirty = true;
-            }
-        }
-        if(isFtp)
-        {
-            if(igInputText("URL", state->project.basePath.ftp.url.data, state->project.basePath.ftp.url.size, 0, NULL, NULL)) { state->project.dirty = true; }
-            if(igInputText("Login", state->project.basePath.ftp.login.data, state->project.basePath.ftp.login.size, 0, NULL, NULL)) { state->project.dirty = true; }
-            if(igInputText("Password", state->project.basePath.ftp.password.data, state->project.basePath.ftp.password.size, 0, NULL, NULL)) { state->project.dirty = true; }
-        }
-
-        igSeparatorText("Textures");
-        igPushID_Str("Textures");
-        if(igInputText("Subpath", state->project.texturesPath.data, state->project.texturesPath.size, 0, NULL, NULL)) { state->project.dirty = true; }
-        igPopID();
-
-        igSeparatorText("Things");
-        igPushID_Str("Things");
-        if(igInputText("Subpath", state->project.thingsFile.data, state->project.thingsFile.size, 0, NULL, NULL)) { state->project.dirty = true; }
-        igPopID();
-    }
-    igEnd();
-}
-
-static void MapSettingsWindow(bool *p_open, struct EdState *state)
-{
-    if(igBegin("Map Settings", p_open, 0))
-    {
-        igSliderInt("Texture Scale", &state->map.textureScale, 1, 10, NULL, 0);
-    }
-    igEnd();
 }
 
 static void FileDialog(bool *doQuit)

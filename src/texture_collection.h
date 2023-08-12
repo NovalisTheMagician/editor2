@@ -44,4 +44,5 @@ void tc_unload(struct TextureCollection *tc, pstring name);
 void tc_unload_all(struct TextureCollection *tc);
 bool tc_has(struct TextureCollection *tc, pstring name);
 struct Texture* tc_get(struct TextureCollection *tc, pstring name);
+bool tc_set(struct TextureCollection *tc, pstring name, struct Texture texture);
 size_t tc_size(struct TextureCollection *tc);
