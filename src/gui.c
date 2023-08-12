@@ -7,6 +7,7 @@
 #include <ImGuiFileDialog.h>
 
 #include "windows.h"
+#include "dialogs.h"
 
 static void SetValveStyle(ImGuiStyle *style)
 {
@@ -171,103 +172,7 @@ static void MapSavePopup(struct EdState *state, bool *quitRequest);
 
 static void HandleShortcuts(struct EdState *state);
 
-enum SaveModalAction
-{
-    SMA_NEW,
-    SMA_OPEN,
-    SMA_QUIT
-};
-
-struct FileDialogAction 
-{
-    void *data;
-    void (*callback)(const char *path, void *data);
-    bool quitRequest;
-};
-
-static ImGuiFileDialog *cfileDialog;
-
-static void OpenFolderCallback(const char *path, void *data)
-{
-    pstring *str = data;
-    size_t len = strlen(path);
-    memset(str->data, 0, str->size);
-    memcpy(str->data, path, len < str->size ? len : str->size);
-}
-
-void OpenFolderDialog(pstring *folderPath)
-{
-    struct FileDialogAction *fda = calloc(1, sizeof *fda);
-    fda->data = folderPath;
-    fda->callback = OpenFolderCallback;
-    IGFD_OpenDialog(cfileDialog, "filedlg", "Choose a Folder", NULL, ".", "", 1, fda, ImGuiFileDialogFlags_Modal);
-}
-
-static void SaveMapCallback(const char *path, void *data)
-{
-    struct Map *map = data;
-    pstr_free(map->file);
-    map->file = pstr_cstr(path);
-    SaveMap(map);
-}
-
-void SaveMapDialog(struct Map *map, bool quitRequest)
-{
-    struct FileDialogAction *fda = calloc(1, sizeof *fda);
-    fda->data = map;
-    fda->callback = SaveMapCallback;
-    fda->quitRequest = quitRequest;
-    IGFD_OpenDialog(cfileDialog, "filedlg", "Save Map", "Map Files(*.map){.map}", ".", "", 1, fda, ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite | ImGuiFileDialogFlags_CaseInsensitiveExtention);
-}
-
-static void SaveProjectCallback(const char *path, void *data)
-{
-    struct Project *project = data;
-    pstr_free(project->file);
-    project->file = pstr_cstr(path);
-    SaveProject(project);
-}
-
-void SaveProjectDialog(struct Project *project, bool quitRequest)
-{
-    struct FileDialogAction *fda = calloc(1, sizeof *fda);
-    fda->data = project;
-    fda->callback = SaveProjectCallback;
-    fda->quitRequest = true;
-    IGFD_OpenDialog(cfileDialog, "filedlg", "Save Project", "Project Files(*.pro){.pro}", ".", "", 1, fda, ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite | ImGuiFileDialogFlags_CaseInsensitiveExtention);
-}
-
-static void OpenMapCallback(const char *path, void *data)
-{
-    struct Map *map = data;
-    pstr_free(map->file);
-    map->file = pstr_cstr(path);
-    LoadMap(map);
-}
-
-void OpenMapDialog(struct Map *map)
-{
-    struct FileDialogAction *fda = calloc(1, sizeof *fda);
-    fda->data = map;
-    fda->callback = OpenMapCallback;
-    IGFD_OpenDialog(cfileDialog, "filedlg", "Open Map", "Map Files(*.map){.map}, All(*.*){.*}", ".", "", 1, fda, ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ReadOnlyFileNameField | ImGuiFileDialogFlags_CaseInsensitiveExtention);
-}
-
-static void OpenProjectCallback(const char *path, void *data)
-{
-    struct Project *project = data;
-    pstr_free(project->file);
-    project->file = pstr_cstr(path);
-    LoadProject(project);
-}
-
-void OpenProjectDialog(struct Project *project)
-{
-    struct FileDialogAction *fda = calloc(1, sizeof *fda);
-    fda->data = project;
-    fda->callback = OpenProjectCallback;
-    IGFD_OpenDialog(cfileDialog, "filedlg", "Open Map", "Project Files(*.pro){.pro}, All(*.*){.*}", ".", "", 1, fda, ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ReadOnlyFileNameField | ImGuiFileDialogFlags_CaseInsensitiveExtention);
-}
+ImGuiFileDialog *cfileDialog;
 
 static bool openProjectPopup = false;
 static bool openMapPopup = false;

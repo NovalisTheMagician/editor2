@@ -12,9 +12,3 @@ void StatsWindow(bool *p_open, struct EdState *state);
 void ProjectSettingsWindow(bool *p_open, struct EdState *state);
 void MapSettingsWindow(bool *p_open, struct EdState *state);
 struct Texture TexturesWindow(bool *p_open, struct EdState *state, bool popup);
-
-void OpenFolderDialog(pstring *folderPath);
-void SaveMapDialog(struct Map *map, bool quitRequest);
-void SaveProjectDialog(struct Project *project, bool quitRequest);
-void OpenMapDialog(struct Map *map);
-void OpenProjectDialog(struct Project *project);

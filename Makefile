@@ -2,7 +2,7 @@ APPLICATION := editor2
 
 BUILD_DIR := build
 SRC_DIR := src
-SRC_SUBDIRS := windows
+SRC_SUBDIRS := windows dialogs
 
 DEFINES := 
 INC_DIRS := $(SRC_DIR)
