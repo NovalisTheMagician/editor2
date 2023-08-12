@@ -1,4 +1,4 @@
-#include "../windows.h"
+#include "../gwindows.h"
 
 #include "../edit.h"
 

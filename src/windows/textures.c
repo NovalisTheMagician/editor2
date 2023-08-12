@@ -1,4 +1,4 @@
-#include "../windows.h"
+#include "../gwindows.h"
 
 static void LoadTextures(struct TextureCollection *tc, struct Project *project, bool refresh)
 {

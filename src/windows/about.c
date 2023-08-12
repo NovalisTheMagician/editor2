@@ -1,4 +1,4 @@
-#include "../windows.h"
+#include "../gwindows.h"
 
 void AboutWindow(bool *p_open)
 {

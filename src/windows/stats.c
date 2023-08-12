@@ -1,4 +1,4 @@
-#include "../windows.h"
+#include "../gwindows.h"
 
 void StatsWindow(bool *p_open, struct EdState *state)
 {

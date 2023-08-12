@@ -1,4 +1,4 @@
-#include "../windows.h"
+#include "../gwindows.h"
 #include "../dialogs.h"
 
 void ProjectSettingsWindow(bool *p_open, struct EdState *state)

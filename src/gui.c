@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <ImGuiFileDialog.h>
 
-#include "windows.h"
+#include "gwindows.h"
 #include "dialogs.h"
 
 static void SetValveStyle(ImGuiStyle *style)
