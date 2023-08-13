@@ -55,6 +55,7 @@ bool LoadSettings(const char *settingsPath, struct EdSettings *settings)
 
         pstring buffer = pstr_alloc(size);
         fread(buffer.data, 1, size, settingsFile);
+        buffer.size = size;
 
         pstring lineBuf = buffer;
         do

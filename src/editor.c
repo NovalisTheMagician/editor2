@@ -66,6 +66,8 @@ bool InitEditor(struct EdState *state)
     state->data.zoomLevel = 1.0f;
     state->data.lastVertForLine = -1;
 
+    state->data.textureFilter = pstr_alloc(TEXTURE_FILTER_LEN);
+
     if(!LoadShaders(state))
         return false;
 
@@ -99,6 +101,8 @@ void DestroyEditor(struct EdState *state)
     glDeleteProgram(state->gl.editorSector.program);
     glDeleteBuffers(2, (GLuint[]){ state->gl.editorSector.vertBuffer, state->gl.editorSector.indBuffer });
     glDeleteVertexArrays(1, &state->gl.editorSector.vertFormat);
+
+    pstr_free(state->data.textureFilter);
 }
 
 void ResizeEditorView(struct EdState *state, int width, int height)

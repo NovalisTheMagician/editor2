@@ -21,6 +21,8 @@
 #define MAX_VERTEXPOINTSIZE 20
 #define MIN_VERTEXPOINTSIZE 0.5f
 
+#define TEXTURE_FILTER_LEN 256
+
 enum Theme
 {
     THEME_IMGUI_LIGHT,
@@ -187,6 +189,8 @@ struct EdState
 #ifdef _DEBUG
         int mx, my, mtx, mty;
 #endif
+
+        pstring textureFilter;
 
         float realtimeFov;
 

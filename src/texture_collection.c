@@ -30,7 +30,7 @@ bool tc_load(struct TextureCollection *tc, pstring name, pstring path)
     size_t numMipLevels = log2(max(width, height)) + 1;
 
     GLuint texId;
-    glCreateTextures(1, GL_TEXTURE_2D, &texId);
+    glCreateTextures(GL_TEXTURE_2D, 1, &texId);
     glTextureStorage2D(texId, numMipLevels, GL_RGBA8, width, height);
     glTextureSubImage2D(texId, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
     glGenerateTextureMipmap(texId);
@@ -46,18 +46,22 @@ bool tc_load(struct TextureCollection *tc, pstring name, pstring path)
         existing->width = width;
         existing->height = height;
         existing->flags = TF_NONE;
+
+        pstr_free(existing->name);
+        existing->name = pstr_copy(name);
     }
     else
     {
         uint64_t nameHash = hash(name) % NUM_SLOTS;
-        size_t size = tc->slots[nameHash].size;
+        size_t size = tc->slots[nameHash].size++;
         assert(size < NUM_BUCKETS);
-        struct Texture *texture = &tc->slots[nameHash].textures[size++];
+        struct Texture *texture = &tc->slots[nameHash].textures[size];
 
         texture->texture1 = texId;
         texture->width = width;
         texture->height = height;
         texture->flags = TF_NONE;
+        texture->name = pstr_copy(name);
 
         size_t orderIdx = tc->size++;
         texture->orderIdx = orderIdx;
@@ -167,18 +171,21 @@ bool tc_set(struct TextureCollection *tc, pstring name, struct Texture texture)
     if(existing)
     {
         size_t orderNum = existing->orderIdx;
+        pstr_free(existing->name);
         *existing = texture;
         existing->orderIdx = orderNum;
+        existing->name = pstr_copy(name);
 
         return false;
     }
 
     uint64_t nameHash = hash(name) % NUM_SLOTS;
-    size_t size = tc->slots[nameHash].size;
+    size_t size = tc->slots[nameHash].size++;
     assert(size < NUM_BUCKETS);
-    struct Texture *tex = &tc->slots[nameHash].textures[size++];
+    struct Texture *tex = &tc->slots[nameHash].textures[size];
 
     *tex = texture;
+    existing->name = pstr_copy(name);
 
     size_t orderIdx = tc->size++;
     tex->orderIdx = orderIdx;

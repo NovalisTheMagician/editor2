@@ -12,8 +12,14 @@ void SettingsWindow(bool *p_open, struct EdState *state)
             if(igBeginTabItem("General", NULL, 0))
             {
                 igSeparatorText("Game");
-                igInputText("Gamepath", state->settings.gamePath.data, state->settings.gamePath.size, 0, NULL, NULL);
-                igInputText("Launch Arguments", state->settings.launchArguments.data, state->settings.launchArguments.size, 0, NULL, NULL);
+                if(igInputText("Gamepath", state->settings.gamePath.data, state->settings.gamePath.capacity, 0, NULL, NULL))
+                {
+                    state->settings.gamePath.size = strlen(pstr_tocstr(state->settings.gamePath));
+                }
+                if(igInputText("Launch Arguments", state->settings.launchArguments.data, state->settings.launchArguments.capacity, 0, NULL, NULL))
+                {
+                    state->settings.launchArguments.size = strlen(pstr_tocstr(state->settings.launchArguments));
+                }
                 igSeparatorText("Other");
                 if(igButton("Reset Settings", (ImVec2){ 0, 0 })) { ResetSettings(&state->settings); }
                 igEndTabItem();

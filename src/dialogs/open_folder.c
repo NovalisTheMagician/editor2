@@ -4,8 +4,10 @@ static void OpenFolderCallback(const char *path, void *data)
 {
     pstring *str = data;
     size_t len = strlen(path);
-    memset(str->data, 0, str->size);
-    memcpy(str->data, path, len < str->size ? len : str->size);
+    len = len < str->capacity ? len : str->capacity;
+    memset(str->data, 0, str->capacity);
+    memcpy(str->data, path, len);
+    str->size = len;
 }
 
 void OpenFolderDialog(pstring *folderPath)

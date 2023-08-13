@@ -19,7 +19,11 @@ void ProjectSettingsWindow(bool *p_open, struct EdState *state)
 
             }
         }
-        if(igInputText("Path", state->project.basePath.fs.path.data, state->project.basePath.fs.path.size, 0, NULL, NULL)) { state->project.dirty = true; }
+        if(igInputText("Path", state->project.basePath.fs.path.data, state->project.basePath.fs.path.capacity, 0, NULL, NULL)) 
+        { 
+            state->project.basePath.fs.path.size = strlen(pstr_tocstr(state->project.basePath.fs.path));
+            state->project.dirty = true; 
+        }
         igSameLine(0, 8);
         if(igButton("Browse", (ImVec2){ 0, 0 }))
         {
@@ -31,19 +35,39 @@ void ProjectSettingsWindow(bool *p_open, struct EdState *state)
         }
         if(isFtp)
         {
-            if(igInputText("URL", state->project.basePath.ftp.url.data, state->project.basePath.ftp.url.size, 0, NULL, NULL)) { state->project.dirty = true; }
-            if(igInputText("Login", state->project.basePath.ftp.login.data, state->project.basePath.ftp.login.size, 0, NULL, NULL)) { state->project.dirty = true; }
-            if(igInputText("Password", state->project.basePath.ftp.password.data, state->project.basePath.ftp.password.size, 0, NULL, NULL)) { state->project.dirty = true; }
+            if(igInputText("URL", state->project.basePath.ftp.url.data, state->project.basePath.ftp.url.capacity, 0, NULL, NULL)) 
+            { 
+                state->project.basePath.ftp.url.size = strlen(pstr_tocstr(state->project.basePath.ftp.url));
+                state->project.dirty = true; 
+            }
+            if(igInputText("Login", state->project.basePath.ftp.login.data, state->project.basePath.ftp.login.capacity, 0, NULL, NULL)) 
+            { 
+                state->project.basePath.ftp.login.size = strlen(pstr_tocstr(state->project.basePath.ftp.login));
+                state->project.dirty = true; 
+            }
+            if(igInputText("Password", state->project.basePath.ftp.password.data, state->project.basePath.ftp.password.capacity, 0, NULL, NULL)) 
+            { 
+                state->project.basePath.ftp.password.size = strlen(pstr_tocstr(state->project.basePath.ftp.password));
+                state->project.dirty = true; 
+            }
         }
 
         igSeparatorText("Textures");
         igPushID_Str("Textures");
-        if(igInputText("Subpath", state->project.texturesPath.data, state->project.texturesPath.size, 0, NULL, NULL)) { state->project.dirty = true; }
+        if(igInputText("Subpath", state->project.texturesPath.data, state->project.texturesPath.capacity, 0, NULL, NULL)) 
+        {
+            state->project.texturesPath.size = strlen(pstr_tocstr(state->project.texturesPath));
+            state->project.dirty = true;
+        }
         igPopID();
 
         igSeparatorText("Things");
         igPushID_Str("Things");
-        if(igInputText("Subpath", state->project.thingsFile.data, state->project.thingsFile.size, 0, NULL, NULL)) { state->project.dirty = true; }
+        if(igInputText("Subpath", state->project.thingsFile.data, state->project.thingsFile.capacity, 0, NULL, NULL)) 
+        {
+            state->project.thingsFile.size = strlen(pstr_tocstr(state->project.thingsFile));
+            state->project.dirty = true;
+        }
         igPopID();
     }
     igEnd();

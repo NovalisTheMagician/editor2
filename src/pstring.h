@@ -5,7 +5,7 @@
 typedef struct pstring
 {
     char *data;
-    size_t size;
+    size_t size, capacity;
 } pstring;
 
 typedef struct pstring_buf
@@ -24,7 +24,7 @@ pstring pstr_copy(pstring string);
 void pstr_copy_into_str(pstring *into, pstring string);
 void pstr_copy_into_cstr(pstring *into, const char *string);
 
-void pstr_format(pstring into, const char *format, ...);
+size_t pstr_format(pstring *into, const char *format, ...);
 
 pstring pstr_substring(pstring string, size_t start, ssize_t end);
 void pstr_upper(pstring string);

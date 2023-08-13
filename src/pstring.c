@@ -9,7 +9,7 @@
 
 pstring pstr_alloc(size_t len)
 {
-    return (pstring){ .data = calloc(len+1, 1), .size = len };
+    return (pstring){ .data = calloc(len+1, 1), .size = 0, .capacity = len };
 }
 
 pstring pstr_cstr(const char *cstr)
@@ -17,7 +17,7 @@ pstring pstr_cstr(const char *cstr)
     if(!cstr) return pstr_alloc(0);
 
     size_t len = strlen(cstr);
-    pstring string = { .data = calloc(len+1, 1), .size = len };
+    pstring string = { .data = calloc(len+1, 1), .size = len, .capacity = len };
     memcpy(string.data, cstr, len);
     return string;
 }
@@ -29,6 +29,7 @@ pstring pstr_cstr_size(const char *cstr, size_t size)
     pstring string = pstr_alloc(s);
     if(cstr)
         memcpy(string.data, cstr, len);
+    string.size = len;
     return string;
 }
 
@@ -42,9 +43,9 @@ void pstr_free(pstring string)
     free(string.data);
 }
 
-void pstr_format(pstring into, const char *format, ...)
+size_t pstr_format(pstring *into, const char *format, ...)
 {
-    assert(into.size > 0);
+    assert(into->capacity > 0);
 
     va_list args;
     va_start(args, format);
@@ -65,8 +66,8 @@ void pstr_format(pstring into, const char *format, ...)
                 float f = (float)va_arg(args, double);
                 char buffer[128];
                 int numChars = snprintf(buffer, sizeof buffer, "%f", f);
-                assert(pos + numChars < into.size);
-                memmove(into.data + pos, buffer, numChars);
+                assert(pos + numChars < into->capacity);
+                memmove(into->data + pos, buffer, numChars);
                 pos += numChars;
                 handled = true;
             }
@@ -77,8 +78,8 @@ void pstr_format(pstring into, const char *format, ...)
                 int d = va_arg(args, int);
                 char buffer[128];
                 int numChars = snprintf(buffer, sizeof buffer, "%d", d);
-                assert(pos + numChars < into.size);
-                memmove(into.data + pos, buffer, numChars);
+                assert(pos + numChars < into->capacity);
+                memmove(into->data + pos, buffer, numChars);
                 pos += numChars;
                 handled = true;
             }
@@ -87,8 +88,8 @@ void pstr_format(pstring into, const char *format, ...)
             if(inVarDec)
             {
                 pstring str = va_arg(args, pstring);
-                assert(pos + str.size < into.size);
-                memcpy(into.data + pos, str.data, str.size);
+                assert(pos + str.size < into->capacity);
+                memcpy(into->data + pos, str.data, str.size);
                 pos += str.size;
                 handled = true;
             }
@@ -98,8 +99,8 @@ void pstr_format(pstring into, const char *format, ...)
             {
                 const char *str = va_arg(args, char*);
                 size_t len = strlen(str);
-                assert(pos + len < into.size);
-                memcpy(into.data + pos, str, len);
+                assert(pos + len < into->capacity);
+                memcpy(into->data + pos, str, len);
                 pos += len;
                 handled = true;
             }
@@ -108,20 +109,23 @@ void pstr_format(pstring into, const char *format, ...)
 
         if(!handled)
         {
-            into.data[pos] = *format;
+            into->data[pos] = *format;
             ++pos;
         }
 
         ++format;
-        if(pos == into.size) break;
+        if(pos == into->capacity) break;
     }
 
+    into->size = pos;
     va_end(args);
+
+    return pos;
 }
 
 pstring pstr_copy(pstring string)
 {
-    pstring copy = { .data = calloc(string.size+1, 1), .size = string.size };
+    pstring copy = { .data = calloc(string.size+1, 1), .size = string.size, .capacity = string.capacity };
     memcpy(copy.data, string.data, copy.size);
     return copy;
 }
@@ -130,6 +134,7 @@ void pstr_copy_into_str(pstring *into, pstring string)
 {
     size_t len = into->size < string.size ? into->size : string.size;
     memcpy(into->data, string.data, len);
+    into->size = len;
 }
 
 void pstr_copy_into_cstr(pstring *into, const char *string)
@@ -137,6 +142,7 @@ void pstr_copy_into_cstr(pstring *into, const char *string)
     size_t slen = strlen(string);
     size_t len = into->size < slen ? into->size : slen;
     memcpy(into->data, string, len);
+    into->size = len;
 }
 
 pstring pstr_substring(pstring string, size_t start, ssize_t end)
@@ -144,7 +150,7 @@ pstring pstr_substring(pstring string, size_t start, ssize_t end)
     assert(start < string.size);
     size_t e = end < 0 ? string.size : (size_t)end;
     assert(start < e);
-    return (pstring){ .data = string.data + start, .size = e - start };
+    return (pstring){ .data = string.data + start, .size = e - start, .capacity = string.size - start };
 }
 
 void pstr_upper(pstring string)
@@ -173,7 +179,7 @@ ssize_t pstr_first_index_of_str(pstring string, pstring tok)
 
 ssize_t pstr_last_index_of_str(pstring string, pstring tok)
 {
-    size_t hitIdx = -1;
+    ssize_t hitIdx = -1;
     for(size_t i = 0; i < string.size - tok.size; ++i)
     {
         bool hit = true;
@@ -192,10 +198,11 @@ pstring pstr_tok_str(pstring *string, pstring tok)
         pstring copy = *string;
         string->data += string->size;
         string->size = 0;
+        string->capacity = 0;
         return copy;
     }
 
-    string->data[idx] = '\0';
+    //string->data[idx] = '\0';
 
     pstring sub = pstr_substring(*string, 0, idx);
     string->data += idx+1;
@@ -219,7 +226,7 @@ ssize_t pstr_first_index_of_cstr(pstring string, const char *tok)
 ssize_t pstr_last_index_of_cstr(pstring string, const char *tok)
 {
     size_t tokSize = strlen(tok);
-    size_t hitIdx = -1;
+    ssize_t hitIdx = -1;
     for(size_t i = 0; i < string.size - tokSize; ++i)
     {
         bool hit = true;
@@ -238,10 +245,11 @@ pstring pstr_tok_cstr(pstring *string, const char *tok)
         pstring copy = *string;
         string->data += string->size;
         string->size = 0;
+        string->capacity = 0;
         return copy;
     }
 
-    string->data[idx] = '\0';
+    //string->data[idx] = '\0';
 
     pstring sub = pstr_substring(*string, 0, idx);
     string->data += idx+1;
