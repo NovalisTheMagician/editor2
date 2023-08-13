@@ -4,6 +4,8 @@
 #include <ctype.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <stdarg.h>
+#include <stdio.h>
 
 pstring pstr_alloc(size_t len)
 {
@@ -38,6 +40,83 @@ char* pstr_tocstr(pstring string)
 void pstr_free(pstring string)
 {
     free(string.data);
+}
+
+void pstr_format(pstring into, const char *format, ...)
+{
+    assert(into.size > 0);
+
+    va_list args;
+    va_start(args, format);
+
+    bool inVarDec = false;
+    size_t pos = 0;
+
+    while (*format != '\0') 
+    {
+        bool handled = false;
+        switch(*format)
+        {
+        case '{': assert(!inVarDec); inVarDec = true; handled = true; break;
+        case '}': assert(inVarDec); inVarDec = false; handled = true; break;
+        case 'f': 
+            if(inVarDec)
+            {
+                float f = (float)va_arg(args, double);
+                char buffer[128];
+                int numChars = snprintf(buffer, sizeof buffer, "%f", f);
+                assert(pos + numChars < into.size);
+                memmove(into.data + pos, buffer, numChars);
+                pos += numChars;
+                handled = true;
+            }
+            break;
+        case 'd': 
+            if(inVarDec)
+            {
+                int d = va_arg(args, int);
+                char buffer[128];
+                int numChars = snprintf(buffer, sizeof buffer, "%d", d);
+                assert(pos + numChars < into.size);
+                memmove(into.data + pos, buffer, numChars);
+                pos += numChars;
+                handled = true;
+            }
+            break;
+        case 's':
+            if(inVarDec)
+            {
+                pstring str = va_arg(args, pstring);
+                assert(pos + str.size < into.size);
+                memcpy(into.data + pos, str.data, str.size);
+                pos += str.size;
+                handled = true;
+            }
+            break;
+        case 'c':
+            if(inVarDec)
+            {
+                const char *str = va_arg(args, char*);
+                size_t len = strlen(str);
+                assert(pos + len < into.size);
+                memcpy(into.data + pos, str, len);
+                pos += len;
+                handled = true;
+            }
+            break;
+        }
+
+        if(!handled)
+        {
+            into.data[pos] = *format;
+            ++pos;
+        }
+
+        ++format;
+        if(pos == into.size) break;
+    }
+
+    va_end(args);
 }
 
 pstring pstr_copy(pstring string)
