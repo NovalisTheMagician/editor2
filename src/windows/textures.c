@@ -10,12 +10,11 @@ struct IterateData
 
 static void TextureIteration(struct Texture *texture, size_t idx, void *user)
 {
-    (void)idx;
     struct IterateData *data = user;
 
     ImVec2 size = { .x = texture->width, .y = texture->height };
 
-    if(data->occupiedX + size.x + 8 < data->clientArea.x)
+    if(idx > 0 && data->occupiedX + size.x + 8 < data->clientArea.x)
         igSameLine(0, 2);
     else
         data->occupiedX = 0;
@@ -27,7 +26,7 @@ static void TextureIteration(struct Texture *texture, size_t idx, void *user)
 
     if (igIsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
     {
-        igSetTooltip(pstr_tocstr(texture->name));
+        igSetTooltip("Name: %s\nSize: %dx%d", pstr_tocstr(texture->name), (int)size.x, (int)size.y);
     }
 
     data->occupiedX += size.x + 10;
