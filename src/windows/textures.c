@@ -1,93 +1,47 @@
 #include "../gwindows.h"
 
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <dirent.h>
-
-static void LoadFolder(struct TextureCollection *tc, pstring folder, pstring baseFolder)
+struct IterateData
 {
-    DIR *dp = opendir(pstr_tocstr(folder));
-    if(!dp)
-    {
-        perror("opendir");
-        return;
-    }
+    struct EdState *state;
+    struct Texture *selected;
+    ImVec2 clientArea;
+    int occupiedX;
+};
 
-    struct dirent *entry;
-    while((entry = readdir(dp)))
-    {
-        pstring fileName = pstr_cstr(entry->d_name);
-        if(pstr_cmp(fileName, ".") == 0 || pstr_cmp(fileName, "..") == 0) continue;
-
-        pstring filePath = pstr_alloc(256);
-        pstr_format(&filePath, "{s}/{s}", folder, fileName);
-
-        struct stat buf;
-        int r = stat(pstr_tocstr(filePath), &buf);
-        if(r == -1)
-        {
-            perror("stat");
-            return;
-        }
-
-        if(S_ISDIR(buf.st_mode))
-        {
-            LoadFolder(tc, filePath, baseFolder);
-        }
-        else if(S_ISREG(buf.st_mode))
-        {
-            ssize_t extIdx = pstr_last_index_of(filePath, ".");
-            if(extIdx != -1)
-            {
-                pstring name = pstr_substring(filePath, baseFolder.size+1, extIdx);
-                if(!tc_load(tc, name, filePath, buf.st_mtime))
-                {
-                    printf("failed to load texture: %s\n", pstr_tocstr(fileName));
-                }
-            }
-        }
-
-        pstr_free(fileName);
-        pstr_free(filePath);
-    }
-
-    closedir(dp);
-}
-
-static void LoadTextures(struct TextureCollection *tc, struct Project *project, bool refresh)
+static void TextureIteration(struct Texture *texture, size_t idx, void *user)
 {
-    if(project->basePath.type != ASSPATH_FS) return;
+    (void)idx;
+    struct IterateData *data = user;
 
-    if(!refresh)
-        tc_unload_all(tc);
-
-    pstring textureFolder = pstr_alloc(256);
-
-    if(project->basePath.fs.path.data[0] == '\0')
-        pstr_format(&textureFolder, "{s}", project->texturesPath);
-    else
-        pstr_format(&textureFolder, "{s}/{s}", project->basePath.fs.path, project->texturesPath);
-
-    LoadFolder(tc, textureFolder, textureFolder);
-    pstr_free(textureFolder);
-}
-
-static void TextureIteration(struct Texture *texture, void *user)
-{
     ImVec2 size = { .x = texture->width, .y = texture->height };
-    igImageButton(pstr_tocstr(texture->name), (void*)(intptr_t)texture->texture1, size, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 1 });
+
+    if(data->occupiedX + size.x + 8 < data->clientArea.x)
+        igSameLine(0, 2);
+    else
+        data->occupiedX = 0;
+
+    if(igImageButton(pstr_tocstr(texture->name), (void*)(intptr_t)texture->texture1, size, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 1 }))
+    {
+        data->selected = texture;
+    }
+
     if (igIsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
     {
         igSetTooltip(pstr_tocstr(texture->name));
     }
+
+    data->occupiedX += size.x + 10;
 }
 
 struct Texture TexturesWindow(bool *p_open, struct EdState *state, bool popup)
 {
     igSetNextWindowSize((ImVec2){ 800, 600 }, ImGuiCond_FirstUseEver);
 
-    bool open = popup ? igBeginPopup("textures_popup", ImGuiWindowFlags_MenuBar) : igBegin("Texture Browser", p_open, ImGuiWindowFlags_MenuBar);
+    struct Texture selectedTexture = { 0 };
+
+    ImGuiWindowFlags flags = ImGuiWindowFlags_MenuBar;
+
+    bool open = popup ? igBeginPopup("textures_popup", flags) : igBegin("Texture Browser", p_open, flags);
     if(open)
     {
         if(igBeginMenuBar())
@@ -108,20 +62,25 @@ struct Texture TexturesWindow(bool *p_open, struct EdState *state, bool popup)
             state->data.textureFilter.size = strlen(pstr_tocstr(state->data.textureFilter));
         }
 
-        if(igBeginChild_ID(2002, (ImVec2){ 0, 0 }, true, 0))
+        if(igBeginChild_ID(2002, (ImVec2){ 0, 0 }, true, ImGuiWindowFlags_AlwaysVerticalScrollbar))
         {
             ImVec2 clientArea;
             igGetContentRegionAvail(&clientArea);
 
+            struct IterateData data = { .state = state, .clientArea = clientArea };
+
             if(state->data.textureFilter.data[0] == '\0')
-                tc_iterate(&state->textures, TextureIteration, state);
+                tc_iterate(&state->textures, TextureIteration, &data);
             else
-                tc_iterate_filter(&state->textures, TextureIteration, state->data.textureFilter, state);
+                tc_iterate_filter(&state->textures, TextureIteration, state->data.textureFilter, &data);
+
+            if(data.selected)
+                selectedTexture = *data.selected;
 
             igEndChild();
         }
     }
     popup ? igEndPopup() : igEnd();
 
-    return (struct Texture) { 0 };
+    return selectedTexture;
 }

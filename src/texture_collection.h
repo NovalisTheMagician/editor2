@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common.h"
+#include "project.h"
 
 enum TextureFlags
 {
@@ -34,7 +35,9 @@ struct TextureCollection
     size_t size;
 };
 
-typedef void (*tc_itearte_cb)(struct Texture *texture, void *user);
+void LoadTextures(struct TextureCollection *tc, struct Project *project, bool refresh);
+
+typedef void (*tc_itearte_cb)(struct Texture *texture, size_t idx, void *user);
 
 void tc_init(struct TextureCollection *tc);
 void tc_destroy(struct TextureCollection *tc);

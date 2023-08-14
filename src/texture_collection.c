@@ -7,6 +7,81 @@
 
 #include <tgmath.h>
 
+#include "editor.h"
+
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
+
+static void LoadFolder(struct TextureCollection *tc, pstring folder, pstring baseFolder)
+{
+    DIR *dp = opendir(pstr_tocstr(folder));
+    if(!dp)
+    {
+        perror("opendir");
+        return;
+    }
+
+    struct dirent *entry;
+    while((entry = readdir(dp)))
+    {
+        pstring fileName = pstr_cstr(entry->d_name);
+        if(pstr_cmp(fileName, ".") == 0 || pstr_cmp(fileName, "..") == 0) continue;
+
+        pstring filePath = pstr_alloc(256);
+        pstr_format(&filePath, "{s}/{s}", folder, fileName);
+
+        struct stat buf;
+        int r = stat(pstr_tocstr(filePath), &buf);
+        if(r == -1)
+        {
+            perror("stat");
+            return;
+        }
+
+        if(S_ISDIR(buf.st_mode))
+        {
+            LoadFolder(tc, filePath, baseFolder);
+        }
+        else if(S_ISREG(buf.st_mode))
+        {
+            ssize_t extIdx = pstr_last_index_of(filePath, ".");
+            if(extIdx != -1)
+            {
+                pstring name = pstr_substring(filePath, baseFolder.size+1, extIdx);
+                if(!tc_load(tc, name, filePath, buf.st_mtime))
+                {
+                    printf("failed to load texture: %s\n", pstr_tocstr(fileName));
+                }
+            }
+        }
+
+        pstr_free(fileName);
+        pstr_free(filePath);
+    }
+
+    closedir(dp);
+}
+
+void LoadTextures(struct TextureCollection *tc, struct Project *project, bool refresh)
+{
+    if(project->basePath.type != ASSPATH_FS) return;
+
+    if(!refresh)
+        tc_unload_all(tc);
+
+    pstring textureFolder = pstr_alloc(256);
+
+    if(project->basePath.fs.path.size == 0)
+        pstr_format(&textureFolder, "{s}", project->texturesPath);
+    else
+        pstr_format(&textureFolder, "{s}/{s}", project->basePath.fs.path, project->texturesPath);
+
+    LoadFolder(tc, textureFolder, textureFolder);
+    pstr_free(textureFolder);
+}
+
 void tc_init(struct TextureCollection *tc)
 {
     tc->slots = calloc(NUM_SLOTS, sizeof *tc->slots);
@@ -81,7 +156,7 @@ void tc_iterate(struct TextureCollection *tc, tc_itearte_cb cb, void *user)
     for(size_t i = 0; i < tc->size; ++i)
     {
         struct Texture *texture = tc->order[i];
-        cb(texture, user);
+        cb(texture, i, user);
     }
 }
 
@@ -89,13 +164,13 @@ void tc_iterate_filter(struct TextureCollection *tc, tc_itearte_cb cb, pstring f
 {
     struct regex_t *regex = re_compile(pstr_tocstr(filter));
 
-    for(size_t i = 0; i < tc->size; ++i)
+    for(size_t i = 0, j = 0; i < tc->size; ++i)
     {
         struct Texture *texture = tc->order[i];
         int matchLen;
         int match = re_matchp(regex, pstr_tocstr(texture->name), &matchLen);
         if(match != -1)
-            cb(texture, user);
+            cb(texture, j++, user);
     }
 }
 
