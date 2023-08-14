@@ -1,5 +1,10 @@
 #pragma once
 
+#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#include <cimgui.h>
+
+#include "imgui_extensions.h"
+
 #include "editor.h"
 #include "common.h"
 

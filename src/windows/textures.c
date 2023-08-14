@@ -57,10 +57,7 @@ struct Texture TexturesWindow(bool *p_open, struct EdState *state, bool popup)
             igEndMenuBar();
         }
 
-        if(igInputText("Filter", state->data.textureFilter.data, state->data.textureFilter.capacity, 0, NULL, NULL))
-        {
-            state->data.textureFilter.size = strlen(pstr_tocstr(state->data.textureFilter));
-        }
+        igInputText_pstr("Filter", &state->data.textureFilter, 0, NULL, NULL);
 
         if(igBeginChild_ID(2002, (ImVec2){ 0, 0 }, true, ImGuiWindowFlags_AlwaysVerticalScrollbar))
         {
