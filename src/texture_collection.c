@@ -106,6 +106,7 @@ void tc_unload(struct TextureCollection *tc, pstring name)
         if(pstr_cmp(name, texture->name) == 0)
         {
             glDeleteTextures(1, &texture->texture1);
+            pstr_free(texture->name);
 
             if(i < NUM_BUCKETS - 1)
                 memmove(tc->slots[nameHash].textures + i, tc->slots[nameHash].textures + i + 1, size - 1 - i);
@@ -128,6 +129,7 @@ void tc_unload_all(struct TextureCollection *tc)
     {
         struct Texture *texture = tc->order[i];
         glDeleteTextures(1, &texture->texture1);
+        pstr_free(texture->name);
     }
 
     for(size_t i = 0; i < NUM_SLOTS; ++i)
