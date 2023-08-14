@@ -19,9 +19,11 @@ void tc_destroy(struct TextureCollection *tc)
     free(tc->order);
 }
 
-bool tc_load(struct TextureCollection *tc, pstring name, pstring path)
+bool tc_load(struct TextureCollection *tc, pstring name, pstring path, time_t mtime)
 {
     struct Texture *existing = tc_get(tc, name);
+
+    if(existing && existing->modTime >= mtime) return true;
 
     int width, height, comp;
     uint8_t *pixels = stbi_load(pstr_tocstr(path), &width, &height, &comp, 4);
@@ -46,6 +48,7 @@ bool tc_load(struct TextureCollection *tc, pstring name, pstring path)
         existing->width = width;
         existing->height = height;
         existing->flags = TF_NONE;
+        existing->modTime = mtime;
 
         pstr_free(existing->name);
         existing->name = pstr_copy(name);
@@ -62,6 +65,7 @@ bool tc_load(struct TextureCollection *tc, pstring name, pstring path)
         texture->height = height;
         texture->flags = TF_NONE;
         texture->name = pstr_copy(name);
+        texture->modTime = mtime;
 
         size_t orderIdx = tc->size++;
         texture->orderIdx = orderIdx;

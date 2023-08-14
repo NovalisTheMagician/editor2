@@ -16,6 +16,7 @@ struct Texture
     enum TextureFlags flags;
     GLuint texture1, texture2;
     size_t orderIdx;
+    time_t modTime;
 };
 
 #define NUM_BUCKETS 128
@@ -37,7 +38,7 @@ typedef void (*tc_itearte_cb)(struct Texture *texture, void *user);
 
 void tc_init(struct TextureCollection *tc);
 void tc_destroy(struct TextureCollection *tc);
-bool tc_load(struct TextureCollection *tc, pstring name, pstring path);
+bool tc_load(struct TextureCollection *tc, pstring name, pstring path, time_t mtime);
 void tc_iterate(struct TextureCollection *tc, tc_itearte_cb cb, void *user);
 void tc_iterate_filter(struct TextureCollection *tc, tc_itearte_cb cb, pstring filter, void *user);
 void tc_unload(struct TextureCollection *tc, pstring name);

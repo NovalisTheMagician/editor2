@@ -41,7 +41,7 @@ static void LoadFolder(struct TextureCollection *tc, pstring folder, pstring bas
             if(extIdx != -1)
             {
                 pstring name = pstr_substring(filePath, baseFolder.size+1, extIdx);
-                if(!tc_load(tc, name, filePath))
+                if(!tc_load(tc, name, filePath, buf.st_mtime))
                 {
                     printf("failed to load texture: %s\n", pstr_tocstr(fileName));
                 }
@@ -75,7 +75,12 @@ static void LoadTextures(struct TextureCollection *tc, struct Project *project, 
 
 static void TextureIteration(struct Texture *texture, void *user)
 {
-
+    ImVec2 size = { .x = texture->width, .y = texture->height };
+    igImageButton(pstr_tocstr(texture->name), (void*)(intptr_t)texture->texture1, size, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 1 });
+    if (igIsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
+    {
+        igSetTooltip(pstr_tocstr(texture->name));
+    }
 }
 
 struct Texture TexturesWindow(bool *p_open, struct EdState *state, bool popup)
@@ -98,9 +103,9 @@ struct Texture TexturesWindow(bool *p_open, struct EdState *state, bool popup)
             igEndMenuBar();
         }
 
-        if(igInputText("Filter", state->data.textureFilter.data, state->data.textureFilter.size, 0, NULL, NULL))
+        if(igInputText("Filter", state->data.textureFilter.data, state->data.textureFilter.capacity, 0, NULL, NULL))
         {
-
+            state->data.textureFilter.size = strlen(pstr_tocstr(state->data.textureFilter));
         }
 
         if(igBeginChild_ID(2002, (ImVec2){ 0, 0 }, true, 0))
