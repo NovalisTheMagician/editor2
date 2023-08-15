@@ -52,7 +52,7 @@ static void LoadFolder(struct TextureCollection *tc, pstring folder, pstring bas
                 pstring name = pstr_substring(filePath, baseFolder.size+1, extIdx);
                 if(!tc_load(tc, name, filePath, buf.st_mtime))
                 {
-                    printf("failed to load texture: %s\n", pstr_tocstr(fileName));
+                    printf("failed to load texture: %s\n", pstr_tocstr(filePath));
                 }
             }
         }
