@@ -128,7 +128,7 @@ static void LoadFtpFolder(struct TextureCollection *tc, netbuf *ftpHandle, pstri
                 continue;
             }
 
-            struct tm tm;
+            struct tm tm = { .tm_isdst = -1 };
             // 'YYYYMMDDHHMMSS'
             strptime(timeBuffer, "%Y%m%d%H%M%S", &tm);
             time_t timestamp = mktime(&tm);
