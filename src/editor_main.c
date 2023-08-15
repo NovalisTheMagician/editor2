@@ -9,6 +9,8 @@
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 
+#include <ftplib.h>
+
 #include "editor.h"
 #include "map.h"
 #include "gui.h"
@@ -27,6 +29,8 @@ static SDL_GLContext InitOpenGL(SDL_Window *window);
 int EditorMain(int argc, char *argv[])
 {
     atexit(SDL_Quit);
+
+    FtpInit();
 
     struct EdState state = { 0 };
     ResetSettings(&state.settings);

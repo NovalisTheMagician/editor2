@@ -4,10 +4,10 @@ BUILD_DIR := build
 SRC_DIR := src
 SRC_SUBDIRS := windows dialogs
 
-DEFINES := 
+DEFINES := __USE_XOPEN _GNU_SOURCE
 INC_DIRS := $(SRC_DIR)
 
-LIBS := m cimgui_sdl SDL2 glad2 igfd re stdc++
+LIBS := m cimgui_sdl SDL2 glad2 igfd re ftp stdc++
 LIB_DIRS := 
 
 CC := gcc
