@@ -50,3 +50,4 @@ bool tc_has(struct TextureCollection *tc, pstring name);
 struct Texture* tc_get(struct TextureCollection *tc, pstring name);
 bool tc_set(struct TextureCollection *tc, pstring name, struct Texture texture);
 size_t tc_size(struct TextureCollection *tc);
+void tc_sort(struct TextureCollection *tc);

@@ -79,7 +79,42 @@ void LoadTextures(struct TextureCollection *tc, struct Project *project, bool re
         pstr_format(&textureFolder, "{s}/{s}", project->basePath.fs.path, project->texturesPath);
 
     LoadFolder(tc, textureFolder, textureFolder);
+
+    tc_sort(tc);
     pstr_free(textureFolder);
+}
+
+static size_t Partition(struct Texture **arr, size_t lo, size_t hi)
+{
+    size_t pivIdx = floor((hi - lo) / 2) + lo;
+    struct Texture *pivot = arr[pivIdx];
+    size_t i = lo - 1;
+    size_t j = hi + 1;
+
+    while(true)
+    {
+        do { i++; } while(pstr_cmp(arr[i]->name, pivot->name) < 0);
+        do { j--; } while(pstr_cmp(arr[j]->name, pivot->name) > 0);
+
+        if(i >= j) return j;
+
+        struct Texture *a = arr[i];
+        struct Texture *b = arr[j];
+        a->orderIdx = j;
+        b->orderIdx = i;
+        arr[j] = a;
+        arr[i] = b;
+    }
+}
+
+static void Quicksort(struct Texture **arr, size_t lo, size_t hi)
+{
+    if(lo >= 0 && hi >= 0 && lo < hi)
+    {
+        size_t p = Partition(arr, lo, hi);
+        Quicksort(arr, lo, p);
+        Quicksort(arr, p+1, hi);
+    }
 }
 
 void tc_init(struct TextureCollection *tc)
@@ -279,4 +314,9 @@ bool tc_set(struct TextureCollection *tc, pstring name, struct Texture texture)
 size_t tc_size(struct TextureCollection *tc)
 {
     return tc->size;
+}
+
+void tc_sort(struct TextureCollection *tc)
+{
+    Quicksort(tc->order, 0, tc->size-1);
 }
