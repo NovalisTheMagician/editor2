@@ -14,6 +14,8 @@
 #include <sys/types.h>
 #include <dirent.h>
 
+#include <ftplib.h>
+
 static void LoadFolder(struct TextureCollection *tc, pstring folder, pstring baseFolder)
 {
     DIR *dp = opendir(pstr_tocstr(folder));
@@ -64,10 +66,58 @@ static void LoadFolder(struct TextureCollection *tc, pstring folder, pstring bas
     closedir(dp);
 }
 
+static void LoadFtpFolder(struct TextureCollection *tc, netbuf *ftpHandle, pstring folder, pstring baseFolder)
+{
+    netbuf *dirHandle;
+    if(!FtpAccess(".", FTPLIB_DIR_VERBOSE, FTPLIB_ASCII, ftpHandle, &dirHandle))
+    {
+        printf("%s:\n", FtpLastResponse(ftpHandle));
+        printf("failed to get dir listing: %s\n", pstr_tocstr(folder));
+        return;
+    }
+
+    char buffer[1024];
+    int i = 0;
+    while(FtpRead(buffer, sizeof buffer, dirHandle) > 0)
+    {
+        printf("%d: %s", i++, buffer);
+    }
+
+    FtpClose(dirHandle);
+}
+
+static void LoadFtp(struct TextureCollection *tc, pstring folder, pstring url, pstring user, pstring pass)
+{
+    netbuf *handle;
+    if(!FtpConnect(pstr_tocstr(url), &handle))
+    {
+        printf("%s:\n", FtpLastResponse(handle));
+        printf("failed to connect to ftp server: %s\n", pstr_tocstr(url));
+        return;
+    }
+
+    if(!FtpLogin(pstr_tocstr(user), pstr_tocstr(pass), handle))
+    {
+        printf("%s:\n", FtpLastResponse(handle));
+        printf("failed to login to ftp server: %s\n", pstr_tocstr(user));
+        goto close_session;
+    }
+
+    if(!FtpChdir(pstr_tocstr(folder), handle))
+    {
+        printf("%s:\n", FtpLastResponse(handle));
+        printf("failed to change directory: %s\n", pstr_tocstr(folder));
+        goto close_session;
+    }
+
+    LoadFtpFolder(tc, handle, folder, folder);
+
+close_session:
+    FtpQuit(handle);
+}
+
 void LoadTextures(struct TextureCollection *tc, struct Project *project, bool refresh)
 {
-    if(project->basePath.type != ASSPATH_FS) return;
-
     if(!refresh)
         tc_unload_all(tc);
 
@@ -78,7 +128,10 @@ void LoadTextures(struct TextureCollection *tc, struct Project *project, bool re
     else
         pstr_format(&textureFolder, "{s}/{s}", project->basePath.fs.path, project->texturesPath);
 
-    LoadFolder(tc, textureFolder, textureFolder);
+    if(project->basePath.type == ASSPATH_FTP)
+        LoadFtp(tc, textureFolder, project->basePath.ftp.url, project->basePath.ftp.login, project->basePath.ftp.password);
+    else
+        LoadFolder(tc, textureFolder, textureFolder);
 
     tc_sort(tc);
     pstr_free(textureFolder);
@@ -318,5 +371,6 @@ size_t tc_size(struct TextureCollection *tc)
 
 void tc_sort(struct TextureCollection *tc)
 {
-    Quicksort(tc->order, 0, tc->size-1);
+    if(tc->size > 0)
+        Quicksort(tc->order, 0, tc->size-1);
 }

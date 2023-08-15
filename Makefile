@@ -7,7 +7,7 @@ SRC_SUBDIRS := windows dialogs
 DEFINES := 
 INC_DIRS := $(SRC_DIR)
 
-LIBS := m cimgui_sdl SDL2 glad2 igfd re stdc++
+LIBS := m cimgui_sdl SDL2 glad2 igfd re ftp stdc++
 LIB_DIRS := 
 
 CC := gcc
