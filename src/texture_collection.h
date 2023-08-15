@@ -21,7 +21,7 @@ struct Texture
 };
 
 #define NUM_BUCKETS 128
-#define NUM_SLOTS 2048
+#define NUM_SLOTS 4096
 
 struct TextureCollection
 {
