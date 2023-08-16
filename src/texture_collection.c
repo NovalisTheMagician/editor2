@@ -309,8 +309,7 @@ bool tc_load(struct TextureCollection *tc, pstring name, pstring path, time_t mt
         existing->flags = TF_NONE;
         existing->modTime = mtime;
 
-        pstr_free(existing->name);
-        existing->name = pstr_copy(name);
+        existing->name = pstr_replace(existing->name, name);
     }
     else
     {
@@ -366,8 +365,7 @@ bool tc_load_mem(struct TextureCollection *tc, pstring name, uint8_t *data, size
         existing->flags = TF_NONE;
         existing->modTime = mtime;
 
-        pstr_free(existing->name);
-        existing->name = pstr_copy(name);
+        existing->name = pstr_replace(existing->name, name);
     }
     else
     {

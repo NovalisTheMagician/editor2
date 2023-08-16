@@ -19,6 +19,7 @@ pstring pstr_cstr(const char *cstr);
 pstring pstr_cstr_size(const char *cstr, size_t size);
 char* pstr_tocstr(pstring string);
 void pstr_free(pstring string);
+pstring pstr_replace(pstring old, pstring new);
 
 pstring pstr_copy(pstring string);
 void pstr_copy_into_str(pstring *into, pstring string);

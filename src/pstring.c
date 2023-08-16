@@ -43,6 +43,12 @@ void pstr_free(pstring string)
     free(string.data);
 }
 
+pstring pstr_replace(pstring old, pstring new)
+{
+    pstr_free(old);
+    return pstr_copy(new);
+}
+
 size_t pstr_format(pstring *into, const char *format, ...)
 {
     assert(into->capacity > 0);
