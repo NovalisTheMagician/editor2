@@ -130,7 +130,11 @@ static void LoadFtpFolder(struct TextureCollection *tc, netbuf *ftpHandle, pstri
 
             struct tm tm = { .tm_isdst = -1 };
             // 'YYYYMMDDHHMMSS'
+#if defined(_WIN32)
+            sscanf(timeBuffer, "%4d%2d%2d%2d%2d%2d", &tm.tm_year, &tm.tm_mon, &tm.tm_mday, &tm.tm_hour, &tm.tm_min, &tm.tm_sec);
+#else
             strptime(timeBuffer, "%Y%m%d%H%M%S", &tm);
+#endif
             time_t timestamp = mktime(&tm);
 
             if(!tc_is_newer(tc, name, timestamp)) continue;
