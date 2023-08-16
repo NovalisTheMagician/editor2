@@ -6,14 +6,15 @@ static pthread_mutex_t stopMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static bool LoadFromFs(pstring path, uint8_t **buffer, size_t *size)
 {
-    FILE *file = fopen(pstr_tocstr(path), "r");
+    FILE *file = fopen(pstr_tocstr(path), "rb");
     if(!file) return false;
 
     fseek(file, 0, SEEK_END);
     *size = ftell(file);
-    rewind(file);
+    //rewind(file);
+    fseek(file, 0, SEEK_SET);
 
-    *buffer = malloc(*size);
+    *buffer = calloc(*size, sizeof **buffer);
     size_t readTotal = 0, readCurrent;
     while((readCurrent = fread((*buffer) + readTotal, 1, (*size) - readTotal, file)) > 0)
     {
@@ -42,7 +43,7 @@ static bool LoadFromFtp(pstring path, uint8_t **buffer, size_t *size, void *ftpH
         return false;
     }
 
-    *buffer = malloc(*size);
+    *buffer = calloc(*size, sizeof **buffer);
     size_t readTotal = 0, readCurrent;
     while((readCurrent = FtpRead((*buffer) + readTotal, (*size) - readTotal, fileHandle)) > 0)
     {
@@ -59,10 +60,10 @@ static void* ThreadFunction(void *data)
 
     size_t locIdx = job->currentBatch * BATCH_SIZE, i = 0;
     bool run = true;
-    while(run || i < BATCH_SIZE)
+    while(run && i < BATCH_SIZE && locIdx < job->numInfos)
     {
         pthread_mutex_lock(&stopMutex);
-        run = job->stopRequest;
+        run = !job->stopRequest;
         pthread_mutex_unlock(&stopMutex);
 
         size_t idx = job->batch.numBuffers++;
@@ -104,7 +105,7 @@ bool Async_StartJobFs(struct AsyncJob *job, struct FetchLocation *fetchList, siz
 
     job->currentBatch = 0;
     job->totalBatches = (size_t)ceil((float)len / BATCH_SIZE);
-    job->batch.numBuffers = false;
+    job->batch.numBuffers = 0;
 
     job->user = user;
 
@@ -129,7 +130,7 @@ bool Async_StartJobFtp(struct AsyncJob *job, struct FetchLocation *fetchList, si
 
     job->currentBatch = 0;
     job->totalBatches = (size_t)ceil((float)len / BATCH_SIZE);
-    job->batch.numBuffers = false;
+    job->batch.numBuffers = 0;
 
     job->handle = ftpHandle;
 
@@ -199,4 +200,9 @@ void Async_AbortJob(struct AsyncJob *job)
     pthread_mutex_lock(&stopMutex);
     job->stopRequest = true;
     pthread_mutex_unlock(&stopMutex);
+}
+
+bool Async_IsRunningJob(struct AsyncJob *job)
+{
+    return job->running;
 }

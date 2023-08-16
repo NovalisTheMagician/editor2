@@ -85,7 +85,12 @@ static size_t CollectTexturesFtp(struct TextureCollection *tc, struct FetchLocat
     {
         if(files[i].isDir)
         {
-            size += CollectTexturesFtp(tc, locations, size, capacity, files[i].filePath, baseFolder, ftpHandle);
+            size = CollectTexturesFtp(tc, locations, size, capacity, files[i].filePath, baseFolder, ftpHandle);
+            if(size >= *capacity) 
+            {
+                *capacity = (*capacity) * 2;
+                *locations = realloc(*locations, (*capacity) * sizeof **locations);
+            }
         }
         else
         {
@@ -162,7 +167,12 @@ static size_t CollectTexturesFs(struct TextureCollection *tc, struct FetchLocati
 
         if(S_ISDIR(buf.st_mode))
         {
-            size += CollectTexturesFs(tc, locations, size, capacity, filePath, baseFolder);
+            size = CollectTexturesFs(tc, locations, size, capacity, filePath, baseFolder);
+            if(size >= *capacity) 
+            {
+                *capacity = (*capacity) * 2;
+                *locations = realloc(*locations, (*capacity) * sizeof **locations);
+            }
         }
         else if(S_ISREG(buf.st_mode))
         {
@@ -199,7 +209,10 @@ static void BatchCallback(struct Batch batch, bool lastBatch, int type, void *ha
 
     for(size_t i = 0; i < batch.numBuffers; ++i)
     {
-        tc_load_mem(tc, batch.names[i], batch.buffers[i], batch.bufferSizes[i], batch.mtimes[i]);
+        if(!tc_load_mem(tc, batch.names[i], batch.buffers[i], batch.bufferSizes[i], batch.mtimes[i]))
+        {
+            printf("failed to load %s\n", pstr_tocstr(batch.names[i]));
+        }
     }
 
     tc_sort(tc);

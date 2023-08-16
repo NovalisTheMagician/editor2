@@ -4,7 +4,7 @@
 
 #include <pthread.h>
 
-#define BATCH_SIZE 20
+#define BATCH_SIZE 10
 
 enum 
 {
@@ -57,3 +57,4 @@ bool Async_StartJobFs(struct AsyncJob *job, struct FetchLocation *fetchList, siz
 bool Async_StartJobFtp(struct AsyncJob *job, struct FetchLocation *fetchList, size_t len, batch_finish_cb finishCb, void *ftpHandle, void *user);
 void Async_UpdateJob(struct AsyncJob *job);
 void Async_AbortJob(struct AsyncJob *job);
+bool Async_IsRunningJob(struct AsyncJob *job);

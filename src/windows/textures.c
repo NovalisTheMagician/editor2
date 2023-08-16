@@ -53,10 +53,16 @@ struct Texture TexturesWindow(bool *p_open, struct EdState *state, bool popup)
             {
                 LoadTextures(&state->textures, &state->project, &state->async, false);
             }
+            if(igMenuItem_Bool("Cancel Fetch", "", false, Async_IsRunningJob(&state->async)))
+            {
+                Async_AbortJob(&state->async);
+            }
             igEndMenuBar();
         }
 
         igInputText_pstr("Filter", &state->data.textureFilter, 0, NULL, NULL);
+        igSameLine(0, 16);
+        igText("%d Textures Found", tc_size(&state->textures));
 
         if(igBeginChild_ID(2002, (ImVec2){ 0, 0 }, true, ImGuiWindowFlags_AlwaysVerticalScrollbar))
         {
