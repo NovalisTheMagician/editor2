@@ -2,6 +2,7 @@
 
 #include "common.h"
 #include "project.h"
+#include "async_load.h"
 
 enum TextureFlags
 {
@@ -11,7 +12,6 @@ enum TextureFlags
 
 struct Texture
 {
-    bool loading;
     pstring name;
     int width, height;
     enum TextureFlags flags;
@@ -35,7 +35,7 @@ struct TextureCollection
     size_t size;
 };
 
-void LoadTextures(struct TextureCollection *tc, struct Project *project, bool refresh);
+void LoadTextures(struct TextureCollection *tc, struct Project *project, struct AsyncJob *async, bool refresh);
 
 typedef void (*tc_itearte_cb)(struct Texture *texture, size_t idx, void *user);
 

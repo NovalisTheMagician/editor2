@@ -47,11 +47,11 @@ struct Texture TexturesWindow(bool *p_open, struct EdState *state, bool popup)
         {
             if(igMenuItem_Bool("Refresh", "", false, true)) 
             {
-                LoadTextures(&state->textures, &state->project, true);
+                LoadTextures(&state->textures, &state->project, &state->async, true);
             }
             if(igMenuItem_Bool("Invalidate", "", false, true))
             {
-                LoadTextures(&state->textures, &state->project, false);
+                LoadTextures(&state->textures, &state->project, &state->async, false);
             }
             igEndMenuBar();
         }
@@ -71,7 +71,10 @@ struct Texture TexturesWindow(bool *p_open, struct EdState *state, bool popup)
                 tc_iterate_filter(&state->textures, TextureIteration, state->data.textureFilter, &data);
 
             if(data.selected)
+            {
                 selectedTexture = *data.selected;
+                if(popup) igCloseCurrentPopup();
+            }
 
             igEndChild();
         }

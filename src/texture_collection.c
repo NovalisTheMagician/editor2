@@ -16,64 +16,36 @@
 
 #include <ftplib.h>
 
-static void LoadFolder(struct TextureCollection *tc, pstring folder, pstring baseFolder)
+#include "async_load.h"
+
+
+static netbuf* ConnectToFtp(pstring url, pstring user, pstring pass)
 {
-    DIR *dp = opendir(pstr_tocstr(folder));
-    if(!dp)
+    netbuf *handle;
+    if(!FtpConnect(pstr_tocstr(url), &handle))
     {
-        perror("opendir");
-        return;
+        printf("failed to connect to ftp server: %s\n", pstr_tocstr(url));
+        return NULL;
     }
 
-    struct dirent *entry;
-    while((entry = readdir(dp)))
+    if(!FtpLogin(pstr_tocstr(user), pstr_tocstr(pass), handle))
     {
-        pstring fileName = pstr_cstr(entry->d_name);
-        if(pstr_cmp(fileName, ".") == 0 || pstr_cmp(fileName, "..") == 0) continue;
-
-        pstring filePath = pstr_alloc(256);
-        pstr_format(&filePath, "{s}/{s}", folder, fileName);
-
-        struct stat buf;
-        int r = stat(pstr_tocstr(filePath), &buf);
-        if(r == -1)
-        {
-            perror("stat");
-            return;
-        }
-
-        if(S_ISDIR(buf.st_mode))
-        {
-            LoadFolder(tc, filePath, baseFolder);
-        }
-        else if(S_ISREG(buf.st_mode))
-        {
-            ssize_t extIdx = pstr_last_index_of(filePath, ".");
-            if(extIdx != -1)
-            {
-                pstring name = pstr_substring(filePath, baseFolder.size+1, extIdx);
-                if(!tc_load(tc, name, filePath, buf.st_mtime))
-                {
-                    printf("failed to load texture: %s\n", pstr_tocstr(filePath));
-                }
-            }
-        }
-
-        pstr_free(fileName);
-        pstr_free(filePath);
+        printf("failed to login to ftp server: %s\n", pstr_tocstr(user));
+        FtpQuit(handle);
+        return NULL;
     }
-
-    closedir(dp);
+    
+    return handle;
 }
 
-static void LoadFtpFolder(struct TextureCollection *tc, netbuf *ftpHandle, pstring folder, pstring baseFolder)
+static size_t CollectTexturesFtp(struct TextureCollection *tc, struct FetchLocation **locations, size_t size, size_t *capacity, pstring folder, pstring baseFolder, netbuf *ftpHandle)
 {
     netbuf *dirHandle;
     if(!FtpAccess(pstr_tocstr(folder), FTPLIB_DIR_VERBOSE, FTPLIB_ASCII, ftpHandle, &dirHandle))
     {
         printf("%s:", FtpLastResponse(ftpHandle));
         printf("failed to get dir listing: %s\n", pstr_tocstr(folder));
-        return;
+        return 0;
     }
 
     struct 
@@ -113,7 +85,7 @@ static void LoadFtpFolder(struct TextureCollection *tc, netbuf *ftpHandle, pstri
     {
         if(files[i].isDir)
         {
-            LoadFtpFolder(tc, ftpHandle, files[i].filePath, baseFolder);
+            size += CollectTexturesFtp(tc, locations, size, capacity, files[i].filePath, baseFolder, ftpHandle);
         }
         else
         {
@@ -137,85 +109,111 @@ static void LoadFtpFolder(struct TextureCollection *tc, netbuf *ftpHandle, pstri
 #endif
             time_t timestamp = mktime(&tm);
 
-            if(!tc_is_newer(tc, name, timestamp)) continue;
-
-            uint32_t fileSize = 0;
-            if(!FtpSize(pstr_tocstr(files[i].filePath), &fileSize, FTPLIB_BINARY, ftpHandle))
+            if(!tc_is_newer(tc, name, timestamp)) 
             {
-                printf("%s", FtpLastResponse(ftpHandle));
+                pstr_free(files[i].filePath);
                 continue;
             }
 
-            netbuf *fileHandle;
-            if(!FtpAccess(pstr_tocstr(files[i].filePath), FTPLIB_FILE_READ, FTPLIB_BINARY, ftpHandle, &fileHandle))
-            {
-                printf("%s", FtpLastResponse(ftpHandle));
-                continue;
-            }
+            size_t idx = size++;
+            (*locations)[idx] = (struct FetchLocation){ .name = pstr_copy(name), .path = pstr_copy(files[i].filePath), .mtime = timestamp };
 
-            uint8_t *fileBuffer = calloc(fileSize, sizeof *fileBuffer);
-            size_t readTotal = 0, readCurrent;
-            while((readCurrent = FtpRead(fileBuffer + readTotal, fileSize - readTotal, fileHandle)) > 0)
+            if(size >= *capacity) 
             {
-                if(readCurrent == -1)
-                {
-                    printf("%s", FtpLastResponse(ftpHandle));
-                    goto cleanup;
-                }
-                readTotal += readCurrent;
-                //if(readTotal >= fileSize) break;
+                *capacity = (*capacity) * 2;
+                *locations = realloc(*locations, (*capacity) * sizeof **locations);
             }
-
-            if(!tc_load_mem(tc, name, fileBuffer, fileSize, timestamp))
-            {
-                printf("failed to load texture: %s\n", pstr_tocstr(files[i].filePath));
-            }
-
-cleanup:
-            free(fileBuffer);
-            FtpClose(fileHandle);
+            pstr_free(files[i].filePath);
         }
     }
 
     pstr_free(buffer);
-    for(size_t i = 0; i < numFiles; ++i) pstr_free(files[i].filePath);
     free(files);
+    return size;
 }
 
-static void LoadFtp(struct TextureCollection *tc, pstring folder, pstring url, pstring user, pstring pass)
+static size_t CollectTexturesFs(struct TextureCollection *tc, struct FetchLocation **locations, size_t size, size_t *capacity, pstring folder, pstring baseFolder)
 {
-    netbuf *handle;
-    if(!FtpConnect(pstr_tocstr(url), &handle))
+    DIR *dp = opendir(pstr_tocstr(folder));
+    if(!dp)
     {
-        printf("failed to connect to ftp server: %s\n", pstr_tocstr(url));
-        return;
+        perror("opendir");
+        return 0;
     }
 
-    if(!FtpLogin(pstr_tocstr(user), pstr_tocstr(pass), handle))
+    struct dirent *entry;
+    while((entry = readdir(dp)))
     {
-        printf("failed to login to ftp server: %s\n", pstr_tocstr(user));
-        goto close_session;
+        pstring fileName = pstr_cstr(entry->d_name);
+        if(pstr_cmp(fileName, ".") == 0 || pstr_cmp(fileName, "..") == 0) continue;
+
+        pstring filePath = pstr_alloc(256);
+        pstr_format(&filePath, "{s}/{s}", folder, fileName);
+
+        struct stat buf;
+        int r = stat(pstr_tocstr(filePath), &buf);
+        if(r == -1)
+        {
+            perror("stat");
+            pstr_free(fileName);
+            pstr_free(filePath);
+            continue;
+        }
+
+        if(S_ISDIR(buf.st_mode))
+        {
+            size += CollectTexturesFs(tc, locations, size, capacity, filePath, baseFolder);
+        }
+        else if(S_ISREG(buf.st_mode))
+        {
+            time_t timestamp = buf.st_mtime;
+            ssize_t extIdx = pstr_last_index_of(filePath, ".");
+            if(extIdx != -1)
+            {
+                pstring name = pstr_substring(filePath, baseFolder.size+1, extIdx);
+                if(!tc_is_newer(tc, name, timestamp)) continue;
+
+                size_t idx = size++;
+                (*locations)[idx] = (struct FetchLocation){ .name = pstr_copy(name), .path = pstr_copy(filePath), .mtime = timestamp };
+
+                if(size >= *capacity) 
+                {
+                    *capacity = (*capacity) * 2;
+                    *locations = realloc(*locations, (*capacity) * sizeof **locations);
+                }
+            }
+        }
+
+        pstr_free(fileName);
+        pstr_free(filePath);
     }
 
-    /*
-    if(!FtpChdir(pstr_tocstr(folder), handle))
-    {
-        printf("%s", FtpLastResponse(handle));
-        printf("failed to change directory: %s\n", pstr_tocstr(folder));
-        goto close_session;
-    }
-    */
+    closedir(dp);
 
-    LoadFtpFolder(tc, handle, folder, folder);
-
-close_session:
-    FtpQuit(handle);
+    return size;
 }
 
-void LoadTextures(struct TextureCollection *tc, struct Project *project, bool refresh)
+static void BatchCallback(struct Batch batch, bool lastBatch, int type, void *handle, void *user)
+{
+    struct TextureCollection *tc = user;
+
+    for(size_t i = 0; i < batch.numBuffers; ++i)
+    {
+        tc_load_mem(tc, batch.names[i], batch.buffers[i], batch.bufferSizes[i], batch.mtimes[i]);
+    }
+
+    tc_sort(tc);
+
+    if(lastBatch && type == LOCATION_FTP)
+        FtpQuit(handle);
+}
+
+void LoadTextures(struct TextureCollection *tc, struct Project *project, struct AsyncJob *async, bool refresh)
 {
     if(!refresh)
         tc_unload_all(tc);
+
+    Async_AbortJob(async);
 
     pstring textureFolder = pstr_alloc(256);
 
@@ -224,12 +222,25 @@ void LoadTextures(struct TextureCollection *tc, struct Project *project, bool re
     else
         pstr_format(&textureFolder, "{s}/{s}", project->basePath.fs.path, project->texturesPath);
 
-    if(project->basePath.type == ASSPATH_FTP)
-        LoadFtp(tc, textureFolder, project->basePath.ftp.url, project->basePath.ftp.login, project->basePath.ftp.password);
-    else
-        LoadFolder(tc, textureFolder, textureFolder);
+    size_t capacity = 1024;
+    struct FetchLocation *locations = calloc(1024, sizeof *locations);
 
-    tc_sort(tc);
+    if(project->basePath.type == ASSPATH_FTP)
+    {
+        netbuf *handle = ConnectToFtp(project->basePath.ftp.url, project->basePath.ftp.login, project->basePath.ftp.password);
+        if(handle)
+        {
+            size_t num = CollectTexturesFtp(tc, &locations, 0, &capacity, textureFolder, textureFolder, handle);
+            Async_StartJobFtp(async, locations, num, BatchCallback, handle, tc);
+        }
+    }
+    else
+    {
+        size_t num = CollectTexturesFs(tc, &locations, 0, &capacity, textureFolder, textureFolder);
+        Async_StartJobFs(async, locations, num, BatchCallback, tc);
+    }
+
+    //tc_sort(tc);
     pstr_free(textureFolder);
 }
 

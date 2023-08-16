@@ -5,6 +5,7 @@
 #include "project.h"
 #include "network.h"
 #include "texture_collection.h"
+#include "async_load.h"
 
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include <cimgui.h>
@@ -102,6 +103,7 @@ struct EdState
     struct Project project;
     struct Network network;
     struct TextureCollection textures;
+    struct AsyncJob async;
 
     struct
     {
@@ -199,6 +201,11 @@ struct EdState
 
         int lastVertForLine;
     } data;
+
+    struct
+    {
+        GLuint missing;
+    } default_textures;
 };
 
 const char* ColorIndexToString(enum Colors color);

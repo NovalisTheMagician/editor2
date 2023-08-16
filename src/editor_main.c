@@ -14,6 +14,7 @@
 #include "editor.h"
 #include "map.h"
 #include "gui.h"
+#include "async_load.h"
 
 #include <incbin.h>
 INCBIN_EXTERN(Font);
@@ -74,6 +75,8 @@ int EditorMain(int argc, char *argv[])
                 break;
             }
         }
+
+        Async_UpdateJob(&state.async);
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame();
