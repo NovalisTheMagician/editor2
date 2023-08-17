@@ -2,7 +2,9 @@
 
 #include <ftplib.h>
 
-static pthread_mutex_t stopMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t threadMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t batchMutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t batchSignal = PTHREAD_COND_INITIALIZER;
 
 static bool LoadFromFs(pstring path, uint8_t **buffer, size_t *size)
 {
@@ -57,33 +59,43 @@ static void* ThreadFunction(void *data)
 {
     struct AsyncJob *job = data;
 
-    size_t locIdx = job->currentBatch * BATCH_SIZE, i = 0;
     bool run = true;
-    while(run && i < BATCH_SIZE && locIdx < job->numInfos)
+    while(true)
     {
-        pthread_mutex_lock(&stopMutex);
-        run = !job->stopRequest;
-        pthread_mutex_unlock(&stopMutex);
-
-        size_t idx = job->batch.numBuffers++;
-        job->batch.names[idx] = job->infos[locIdx].name;
-        job->batch.mtimes[idx] = job->infos[locIdx].mtime;
-        if(job->locationType == LOCATION_FS) // fs
+        size_t locIdx = job->currentBatch * BATCH_SIZE, i = 0;
+        while(run && i < BATCH_SIZE && locIdx < job->numInfos)
         {
-            if(!LoadFromFs(job->infos[locIdx].path, &job->batch.buffers[idx], &job->batch.bufferSizes[idx]))
-                job->batch.numBuffers--;
-        }
-        else if(job->locationType == LOCATION_FTP) // ftp
-        {
-            if(!LoadFromFtp(job->infos[locIdx].path, &job->batch.buffers[idx], &job->batch.bufferSizes[idx], job->handle))
-                job->batch.numBuffers--;
-        }
+            pthread_mutex_lock(&threadMutex);
+            run = !job->stopRequest;
+            pthread_mutex_unlock(&threadMutex);
 
-        locIdx++;
-        i++;
+            size_t idx = job->batch.numBuffers++;
+            job->batch.names[idx] = job->infos[locIdx].name;
+            job->batch.mtimes[idx] = job->infos[locIdx].mtime;
+            if(job->locationType == LOCATION_FS) // fs
+            {
+                if(!LoadFromFs(job->infos[locIdx].path, &job->batch.buffers[idx], &job->batch.bufferSizes[idx]))
+                    job->batch.numBuffers--;
+            }
+            else if(job->locationType == LOCATION_FTP) // ftp
+            {
+                if(!LoadFromFtp(job->infos[locIdx].path, &job->batch.buffers[idx], &job->batch.bufferSizes[idx], job->handle))
+                    job->batch.numBuffers--;
+            }
+
+            locIdx++;
+            i++;
+        }
+        job->currentBatch++;
+        pthread_mutex_lock(&threadMutex);
+        job->batchDone = true;
+        job->done = (job->currentBatch == job->totalBatches) || job->stopRequest;
+        pthread_mutex_unlock(&threadMutex);
+
+        if(job->done) break;
+
+        pthread_cond_wait(&batchSignal, &batchMutex);
     }
-    job->currentBatch++;
-    job->done = true;
 
     return NULL;
 }
@@ -94,6 +106,7 @@ bool Async_StartJobFs(struct AsyncJob *job, struct FetchLocation *fetchList, siz
 
     job->running = true;
     job->done = false;
+    job->batchDone = false;
     job->stopRequest = false;
 
     job->finishCb = finishCb;
@@ -119,6 +132,7 @@ bool Async_StartJobFtp(struct AsyncJob *job, struct FetchLocation *fetchList, si
 
     job->running = true;
     job->done = false;
+    job->batchDone = false;
     job->stopRequest = false;
 
     job->finishCb = finishCb;
@@ -157,28 +171,18 @@ static void freeFetches(struct FetchLocation *locations, size_t num)
 
 void Async_UpdateJob(struct AsyncJob *job)
 {
-    if(job->stopRequest)
+    pthread_mutex_lock(&threadMutex);
+    bool batchDone = job->batchDone;
+    pthread_mutex_unlock(&threadMutex);
+    if(batchDone)
     {
-        pthread_join(job->threadObj, NULL);
-        job->finishCb(job->batch, true, job->locationType, job->handle, job->user);
-        
-        freeBatch(job->batch);
-        freeFetches(job->infos, job->numInfos);
-        free(job->infos);
-
-        job->running = false;
-        job->stopRequest = false;
-        job->done = false;
-    }
-    else if(job->done)
-    {
-        pthread_join(job->threadObj, NULL);
-        job->finishCb(job->batch, job->currentBatch == job->totalBatches, job->locationType, job->handle, job->user);
+        job->finishCb(job->batch, job->done, job->locationType, job->handle, job->user);
         freeBatch(job->batch);
         job->batch.numBuffers = 0;
 
-        if(job->currentBatch == job->totalBatches)
+        if(job->done)
         {
+            pthread_join(job->threadObj, NULL);
             freeFetches(job->infos, job->numInfos);
             free(job->infos);
             job->running = false;
@@ -187,8 +191,8 @@ void Async_UpdateJob(struct AsyncJob *job)
         }
         else
         {
-            job->done = false;
-            pthread_create(&job->threadObj, NULL, ThreadFunction, job);
+            job->batchDone = false;
+            pthread_cond_signal(&batchSignal);
         }
     }
 }
@@ -196,9 +200,9 @@ void Async_UpdateJob(struct AsyncJob *job)
 void Async_AbortJob(struct AsyncJob *job)
 {
     if(!job->running) return;
-    pthread_mutex_lock(&stopMutex);
+    pthread_mutex_lock(&threadMutex);
     job->stopRequest = true;
-    pthread_mutex_unlock(&stopMutex);
+    pthread_mutex_unlock(&threadMutex);
 }
 
 bool Async_IsRunningJob(struct AsyncJob *job)

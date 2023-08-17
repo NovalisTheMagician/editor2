@@ -76,7 +76,8 @@ skip:
 void ProjectSettingsWindow(bool *p_open, struct EdState *state)
 {
     igSetNextWindowSize((ImVec2){ 400, 290 }, ImGuiCond_FirstUseEver);
-    if(igBegin("Project Settings", p_open, 0))
+    ImGuiWindowFlags flags = state->project.dirty ? ImGuiWindowFlags_UnsavedDocument : 0;
+    if(igBegin("Project Settings", p_open, flags))
     {
         igSeparatorText("Base");
         bool isFtp = state->project.basePath.type == ASSPATH_FTP;

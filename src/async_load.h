@@ -34,7 +34,7 @@ struct AsyncJob
 {
     bool running;
     bool stopRequest;
-    bool done;
+    bool done, batchDone;
 
     struct FetchLocation *infos;
     size_t numInfos;
