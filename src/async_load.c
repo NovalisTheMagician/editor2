@@ -11,8 +11,7 @@ static bool LoadFromFs(pstring path, uint8_t **buffer, size_t *size)
 
     fseek(file, 0, SEEK_END);
     *size = ftell(file);
-    //rewind(file);
-    fseek(file, 0, SEEK_SET);
+    rewind(file);
 
     *buffer = calloc(*size, sizeof **buffer);
     size_t readTotal = 0, readCurrent;

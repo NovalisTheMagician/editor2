@@ -4,6 +4,7 @@
 *.dll
 *.so
 *.ini
+*.pro
 
 editor2
 
