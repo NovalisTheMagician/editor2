@@ -31,7 +31,6 @@ bool LoadProject(struct Project *project)
     json_object *root = json_object_from_file(pstr_tocstr(project->file));
     if(!root)
     {
-        printf("failed to load project file %s\n", pstr_tocstr(project->file));
         return false;
     }
 

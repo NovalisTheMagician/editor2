@@ -142,7 +142,6 @@ static size_t CollectTexturesFs(struct TextureCollection *tc, struct FetchLocati
     DIR *dp = opendir(pstr_tocstr(folder));
     if(!dp)
     {
-        perror("opendir");
         return 0;
     }
 
@@ -244,13 +243,13 @@ void LoadTextures(struct TextureCollection *tc, struct Project *project, struct 
         if(handle)
         {
             size_t num = CollectTexturesFtp(tc, &locations, 0, &capacity, textureFolder, textureFolder, handle);
-            Async_StartJobFtp(async, locations, num, BatchCallback, handle, tc);
+            if(num > 0) Async_StartJobFtp(async, locations, num, BatchCallback, handle, tc);
         }
     }
     else
     {
         size_t num = CollectTexturesFs(tc, &locations, 0, &capacity, textureFolder, textureFolder);
-        Async_StartJobFs(async, locations, num, BatchCallback, tc);
+        if(num > 0) Async_StartJobFs(async, locations, num, BatchCallback, tc);
     }
 
     //tc_sort(tc);
