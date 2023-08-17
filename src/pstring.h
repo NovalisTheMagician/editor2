@@ -46,31 +46,37 @@ int pstr_icmp_cstr(pstring a, const char *b);
 
 #define pstr_first_index_of(string, tok) _Generic((tok), \
                                                 char*: pstr_first_index_of_cstr, \
+                                                const char*: pstr_first_index_of_cstr, \
                                                 default: pstr_first_index_of_str \
                                                 )(string, tok)
 
 #define pstr_last_index_of(string, tok) _Generic((tok), \
                                                 char*: pstr_last_index_of_cstr, \
+                                                const char*: pstr_last_index_of_cstr, \
                                                 default: pstr_last_index_of_str \
                                                 )(string, tok)
 
 #define pstr_tok(string, tok) _Generic((tok), \
                                         char*: pstr_tok_cstr, \
+                                        const char*: pstr_tok_cstr, \
                                         default: pstr_tok_str \
                                         )(string, tok)
 
 #define pstr_cmp(a, b) _Generic((b), \
                                 char*: pstr_cmp_cstr, \
+                                const char*: pstr_cmp_cstr, \
                                 default: pstr_cmp_str \
                                 )(a, b)
 
 #define pstr_icmp(a, b) _Generic((b), \
                                 char*: pstr_icmp_cstr, \
+                                const char*: pstr_icmp_cstr, \
                                 default: pstr_icmp_str \
                                 )(a, b)
 
 #define pstr_copy_into(into, string) _Generic((string), \
                                     char*: pstr_copy_into_cstr, \
+                                    const char*: pstr_copy_into_cstr, \
                                     default: pstr_copy_into_str \
                                     )(into, string)
 

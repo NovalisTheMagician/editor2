@@ -138,7 +138,8 @@ pstring pstr_copy(pstring string)
 
 void pstr_copy_into_str(pstring *into, pstring string)
 {
-    size_t len = into->size < string.size ? into->size : string.size;
+    size_t len = into->capacity < string.size ? into->capacity : string.size;
+    memset(into->data, 0, into->capacity);
     memcpy(into->data, string.data, len);
     into->size = len;
 }
@@ -146,7 +147,8 @@ void pstr_copy_into_str(pstring *into, pstring string)
 void pstr_copy_into_cstr(pstring *into, const char *string)
 {
     size_t slen = strlen(string);
-    size_t len = into->size < slen ? into->size : slen;
+    size_t len = into->capacity < slen ? into->capacity : slen;
+    memset(into->data, 0, into->capacity);
     memcpy(into->data, string, len);
     into->size = len;
 }
