@@ -44,6 +44,7 @@ static void HandleArguments(int argc, char *argv[], struct EdState *state)
             if(!LoadProject(&state->project))
             {
                 printf("failed to load project %s\n", optarg);
+                NewProject(&state->project);
             }
             break;
         case 'm':
@@ -51,6 +52,7 @@ static void HandleArguments(int argc, char *argv[], struct EdState *state)
             if(!LoadMap(&state->map))
             {
                 printf("failed to load map %s\n", optarg);
+                NewMap(&state->map);
             }
             break;
         }
