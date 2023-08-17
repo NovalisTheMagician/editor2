@@ -159,6 +159,8 @@ int EditorMain(int argc, char *argv[])
 
     FreeGui();
 
+    Async_AbortJob(&state.async);
+
     tc_unload_all(&state.textures);
     tc_destroy(&state.textures);
 
