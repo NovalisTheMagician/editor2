@@ -10,6 +10,7 @@
 #include <SDL2/SDL.h>
 
 #include <ftplib.h>
+#include <unistd.h>
 
 #include "editor.h"
 #include "map.h"
@@ -27,24 +28,57 @@ static SDL_Window* InitSDL(void);
 static bool InitImgui(SDL_Window *window, SDL_GLContext context);
 static SDL_GLContext InitOpenGL(SDL_Window *window);
 
+static void HandleArguments(int argc, char *argv[], struct EdState *state)
+{
+    int c;
+    const char *settingsPath = SETTINGS_FILE;
+    while((c = getopt(argc, argv, "s:p:m:")) != -1)
+    {
+        switch(c)
+        {
+        case 's':
+            settingsPath = optarg;
+            break;
+        case 'p':
+            state->project.file = pstr_cstr(optarg);
+            if(!LoadProject(&state->project))
+            {
+                printf("failed to load project %s\n", optarg);
+            }
+            break;
+        case 'm':
+            state->map.file = pstr_cstr(optarg);
+            if(!LoadMap(&state->map))
+            {
+                printf("failed to load map %s\n", optarg);
+            }
+            break;
+        }
+    }
+
+    if(!LoadSettings(settingsPath, &state->settings))
+    {
+        printf("failed to load settings from %s!\nusing default values\n", settingsPath);
+    }
+}
+
 int EditorMain(int argc, char *argv[])
 {
     atexit(SDL_Quit);
 
     FtpInit();
 
-    struct EdState state = { 0 };
-    ResetSettings(&state.settings);
-    if(!LoadSettings(SETTINGS_FILE, &state.settings))
-    {
-        printf("failed to load settings from %s!\nusing default values\n", SETTINGS_FILE);
-    }
-
     SDL_Window *window = InitSDL();
     if(!window) return EXIT_FAILURE;
 
     SDL_GLContext glContext = InitOpenGL(window);
     if(!glContext) return EXIT_FAILURE;
+
+    struct EdState state = { 0 };
+    ResetSettings(&state.settings);
+    NewProject(&state.project);
+    NewMap(&state.map);
+    HandleArguments(argc, argv, &state);
 
     if(!InitImgui(window, glContext)) return EXIT_FAILURE;
     SetStyle(state.settings.theme);
@@ -54,9 +88,10 @@ int EditorMain(int argc, char *argv[])
     InitGui();
 
     tc_init(&state.textures);
-
-    NewProject(&state.project);
-    NewMap(&state.map);
+    if(state.project.file.size > 0)
+    {
+        LoadTextures(&state.textures, &state.project, &state.async, true);
+    }
 
     ImGuiIO *ioptr = igGetIO();
 

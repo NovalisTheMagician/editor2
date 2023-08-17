@@ -9,7 +9,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/editor2",
-            "args": [],
+            "args": ["-p", "debugProject.pro"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
