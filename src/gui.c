@@ -410,6 +410,15 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
         igSameLine(igGetWindowWidth() - textSize.x - 4, 0);
         igTextColored((ImVec4){ 0, 0.8f, 0.09f, 1 }, buffer);
 
+        if(state->data.fetchingTextures)
+        {
+            const char fetchText[] = "Fetching Textures...";
+            float prevSize = textSize.x;
+            igCalcTextSize(&textSize, fetchText, NULL, false, 0);
+            igSameLine(igGetWindowWidth() - (prevSize + textSize.x + 16), 0);
+            igTextColored((ImVec4){ 226 / 255.0f, 99 / 255.0f, 16 / 255.0f, 1 }, fetchText);
+        }
+
         igEndMainMenuBar();
     }
 }

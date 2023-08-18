@@ -17,6 +17,8 @@
 #include "gui.h"
 #include "async_load.h"
 
+#include "texture_load.h"
+
 #include <incbin.h>
 INCBIN_EXTERN(Font);
 
@@ -92,7 +94,7 @@ int EditorMain(int argc, char *argv[])
     tc_init(&state.textures);
     if(state.project.file.size > 0)
     {
-        LoadTextures(&state.textures, &state.project, &state.async, true);
+        LoadTextures(&state, true);
     }
 
     ImGuiIO *ioptr = igGetIO();

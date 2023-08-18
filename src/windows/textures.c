@@ -1,5 +1,7 @@
 #include "../gwindows.h"
 
+#include "texture_load.h"
+
 struct IterateData
 {
     struct EdState *state;
@@ -47,11 +49,11 @@ struct Texture TexturesWindow(bool *p_open, struct EdState *state, bool popup)
         {
             if(igMenuItem_Bool("Refresh", "", false, true)) 
             {
-                LoadTextures(&state->textures, &state->project, &state->async, true);
+                LoadTextures(state, true);
             }
             if(igMenuItem_Bool("Invalidate", "", false, true))
             {
-                LoadTextures(&state->textures, &state->project, &state->async, false);
+                LoadTextures(state, false);
             }
             if(igMenuItem_Bool("Cancel Fetch", "", false, Async_IsRunningJob(&state->async)))
             {

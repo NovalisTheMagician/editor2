@@ -181,6 +181,8 @@ struct EdState
 
     struct
     {
+        bool fetchingTextures;
+
         int gridSize;
         float zoomLevel;
         ImVec2 viewPosition;

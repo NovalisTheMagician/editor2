@@ -35,8 +35,6 @@ struct TextureCollection
     size_t size;
 };
 
-void LoadTextures(struct TextureCollection *tc, struct Project *project, struct AsyncJob *async, bool refresh);
-
 typedef void (*tc_itearte_cb)(struct Texture *texture, size_t idx, void *user);
 
 void tc_init(struct TextureCollection *tc);
