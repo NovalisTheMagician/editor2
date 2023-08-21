@@ -29,6 +29,31 @@ static netbuf* ConnectToFtp(pstring url, pstring user, pstring pass)
     return handle;
 }
 
+struct Files
+{
+    pstring filePath;
+    pstring fileName;
+    bool isDir;
+};
+
+struct CleanupCollectFtpData
+{
+    pstring buffer;
+    struct Files *files;
+    size_t capacity;
+};
+
+static void CleanupCollectFtp(void *arg)
+{
+    struct CleanupCollectFtpData *data = arg;
+    pstr_free(data->buffer);
+
+    for(size_t i = 0; i < data->capacity; ++i)
+        pstr_free(data->files[i].filePath);
+
+    free(data->files);
+}
+
 static size_t CollectTexturesFtp(struct TextureCollection *tc, struct FetchLocation **locations, size_t size, size_t *capacity, pstring folder, pstring baseFolder, netbuf *ftpHandle)
 {
     netbuf *dirHandle;
@@ -39,12 +64,8 @@ static size_t CollectTexturesFtp(struct TextureCollection *tc, struct FetchLocat
         return 0;
     }
 
-    struct 
-    {
-        pstring filePath;
-        pstring fileName;
-        bool isDir;
-    } *files = calloc(4096, sizeof *files);
+    size_t cap = 4096;
+    struct Files *files = calloc(cap, sizeof *files);
 
     pstring buffer = pstr_alloc(1024);
     size_t numFiles = 0;
@@ -72,8 +93,13 @@ static size_t CollectTexturesFtp(struct TextureCollection *tc, struct FetchLocat
     }
     FtpClose(dirHandle);
 
+    struct CleanupCollectFtpData cd = { .buffer = buffer, .files = files, .capacity = cap };
+    pthread_cleanup_push(CleanupCollectFtp, &cd);
+
     for(size_t i = 0; i < numFiles; ++i)
     {
+        pthread_testcancel();
+
         if(files[i].isDir)
         {
             size = CollectTexturesFtp(tc, locations, size, capacity, files[i].filePath, baseFolder, ftpHandle);
@@ -105,9 +131,11 @@ static size_t CollectTexturesFtp(struct TextureCollection *tc, struct FetchLocat
 #endif
             time_t timestamp = mktime(&tm);
 
+            pthread_testcancel();
             if(!tc_is_newer(tc, name, timestamp)) 
             {
                 pstr_free(files[i].filePath);
+                files[i].filePath.data = NULL;
                 continue;
             }
 
@@ -120,12 +148,28 @@ static size_t CollectTexturesFtp(struct TextureCollection *tc, struct FetchLocat
                 *locations = realloc(*locations, (*capacity) * sizeof **locations);
             }
             pstr_free(files[i].filePath);
+            files[i].filePath.data = NULL;
         }
     }
+
+    pthread_cleanup_pop(false);
 
     pstr_free(buffer);
     free(files);
     return size;
+}
+
+struct CleanupCollectFsData
+{
+    pstring name;
+    pstring path;
+};
+
+static void CleanupCollectFs(void *arg)
+{
+    struct CleanupCollectFsData *data = arg;
+    pstr_free(data->name);
+    pstr_free(data->path);
 }
 
 static size_t CollectTexturesFs(struct TextureCollection *tc, struct FetchLocation **locations, size_t size, size_t *capacity, pstring folder, pstring baseFolder)
@@ -136,9 +180,14 @@ static size_t CollectTexturesFs(struct TextureCollection *tc, struct FetchLocati
         return 0;
     }
 
+    struct CleanupCollectFsData cd;
+    pthread_cleanup_push(CleanupCollectFs, &cd);
+
     struct dirent *entry;
     while((entry = readdir(dp)))
     {
+        pthread_testcancel();
+
         pstring fileName = pstr_cstr(entry->d_name);
         if(pstr_cmp(fileName, ".") == 0 || pstr_cmp(fileName, "..") == 0) continue;
 
@@ -154,6 +203,9 @@ static size_t CollectTexturesFs(struct TextureCollection *tc, struct FetchLocati
             pstr_free(filePath);
             continue;
         }
+
+        cd.name = fileName;
+        cd.path = filePath;
 
         if(S_ISDIR(buf.st_mode))
         {
@@ -171,6 +223,7 @@ static size_t CollectTexturesFs(struct TextureCollection *tc, struct FetchLocati
             if(extIdx != -1)
             {
                 pstring name = pstr_substring(filePath, baseFolder.size+1, extIdx);
+                pthread_testcancel();
                 if(!tc_is_newer(tc, name, timestamp)) continue;
 
                 size_t idx = size++;
@@ -187,6 +240,8 @@ static size_t CollectTexturesFs(struct TextureCollection *tc, struct FetchLocati
         pstr_free(fileName);
         pstr_free(filePath);
     }
+
+    pthread_cleanup_pop(false);
 
     closedir(dp);
 
@@ -221,20 +276,58 @@ struct ThreadData
     pstring folder;
 };
 
+struct CleanupData
+{
+    void *threadData;
+    struct FetchLocation *locations;
+    size_t capacity;
+    pstring folder;
+    netbuf *handle;
+};
+
+static void freeFetches(struct FetchLocation *locations, size_t num)
+{
+    for(size_t i = 0; i < num; ++i)
+    {
+        pstr_free(locations[i].name);
+        pstr_free(locations[i].path);
+    }
+}
+
+static void ThreadCleanup(void *arg)
+{
+    struct CleanupData *data = arg;
+    free(data->threadData);
+    freeFetches(data->locations, data->capacity);
+    free(data->locations);
+    pstr_free(data->folder);
+    if(data->handle)
+        FtpQuit(data->handle);
+}
+
 void* LoadThread(void *user)
 {
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+
     struct ThreadData *data = user;
     struct Project *project = &data->state->project;
     struct TextureCollection *tc = &data->state->textures;
     struct AsyncJob *async = &data->state->async;
     pstring textureFolder = data->folder;
 
+    struct CleanupData cd = { .threadData = data, .folder = textureFolder };
+    pthread_cleanup_push(ThreadCleanup, &cd);
+
     size_t capacity = 1024;
     struct FetchLocation *locations = calloc(1024, sizeof *locations);
+
+    cd.locations = locations;
+    cd.capacity = capacity;
 
     if(project->basePath.type == ASSPATH_FTP)
     {
         netbuf *handle = ConnectToFtp(project->basePath.ftp.url, project->basePath.ftp.login, project->basePath.ftp.password);
+        cd.handle = handle;
         if(handle)
         {
             size_t num = CollectTexturesFtp(tc, &locations, 0, &capacity, textureFolder, textureFolder, handle);
@@ -249,14 +342,19 @@ void* LoadThread(void *user)
         else data->state->data.fetchingTextures = false;
     }
 
+    pthread_cleanup_pop(false);
     pstr_free(textureFolder);
     free(data);
 
     return NULL;
 }
 
+static pthread_t fetchThread;
+
 void LoadTextures(struct EdState *state, bool refresh)
 {
+    CancelFetch();
+
     struct Project *project = &state->project;
     struct AsyncJob *async = &state->async;
     struct TextureCollection *tc = &state->textures;
@@ -278,7 +376,11 @@ void LoadTextures(struct EdState *state, bool refresh)
     
     state->data.fetchingTextures = true;
 
-    pthread_t thread;
-    pthread_create(&thread, NULL, LoadThread, data);
-    pthread_detach(thread);
+    pthread_create(&fetchThread, NULL, LoadThread, data);
+}
+
+void CancelFetch(void)
+{
+    pthread_cancel(fetchThread);
+    pthread_join(fetchThread, NULL);
 }

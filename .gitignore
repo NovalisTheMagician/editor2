@@ -6,6 +6,8 @@
 *.ini
 *.pro
 
+memory_logs.txt
+
 editor2
 
 build/

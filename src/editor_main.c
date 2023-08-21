@@ -68,6 +68,10 @@ static void HandleArguments(int argc, char *argv[], struct EdState *state)
 
 int EditorMain(int argc, char *argv[])
 {
+#if defined(_DEBUG)
+    debug_init("memory_logs.txt");
+#endif
+
     atexit(SDL_Quit);
 
     FtpInit();
@@ -161,7 +165,8 @@ int EditorMain(int argc, char *argv[])
 
     FreeGui();
 
-    Async_AbortJob(&state.async);
+    CancelFetch();
+    Async_AbortJobAndWait(&state.async);
 
     tc_unload_all(&state.textures);
     tc_destroy(&state.textures);
@@ -176,6 +181,10 @@ int EditorMain(int argc, char *argv[])
 
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(window);
+
+#if defined(_DEBUG)
+    debug_finish();
+#endif
 
     return EXIT_SUCCESS;
 }

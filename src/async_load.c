@@ -205,6 +205,19 @@ void Async_AbortJob(struct AsyncJob *job)
     pthread_mutex_unlock(&threadMutex);
 }
 
+void Async_AbortJobAndWait(struct AsyncJob *job)
+{
+    if(!job->running) return;
+
+    pthread_mutex_lock(&threadMutex);
+    job->stopRequest = true;
+    pthread_mutex_unlock(&threadMutex);
+    pthread_join(job->threadObj, NULL);
+    freeFetches(job->infos, job->numInfos);
+    freeBatch(job->batch);
+    free(job->infos);
+}
+
 bool Async_IsRunningJob(struct AsyncJob *job)
 {
     return job->running;

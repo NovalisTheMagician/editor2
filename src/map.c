@@ -39,6 +39,9 @@ void SaveMap(struct Map *map)
 }
 void FreeMap(struct Map *map)
 {
+    free(map->vertices);
+    free(map->lines);
+    free(map->sectors);
     pstr_free(map->file);
 }
 

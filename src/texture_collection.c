@@ -2,8 +2,23 @@
 
 #include <re.h>
 
+#if defined(_DEBUG)
+#pragma push_macro("malloc")
+#undef malloc
+#pragma push_macro("calloc")
+#undef calloc
+#pragma push_macro("free")
+#undef free
+#endif
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
+
+#if defined(_DEBUG)
+#pragma pop_macro("malloc")
+#pragma pop_macro("calloc")
+#pragma pop_macro("free")
+#endif
 
 #include <tgmath.h>
 
