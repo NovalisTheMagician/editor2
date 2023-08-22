@@ -7,8 +7,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include "debug.h"
-
 pstring pstr_alloc(size_t len)
 {
     return (pstring){ .data = calloc(len+1, 1), .size = 0, .capacity = len };

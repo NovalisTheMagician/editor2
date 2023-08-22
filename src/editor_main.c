@@ -173,6 +173,7 @@ int EditorMain(int argc, char *argv[])
 
     FreeMap(&state.map);
     FreeProject(&state.project);
+    FreeSettings(&state.settings);
     DestroyEditor(&state);
 
     ImGui_ImplOpenGL3_Shutdown();
@@ -183,7 +184,7 @@ int EditorMain(int argc, char *argv[])
     SDL_DestroyWindow(window);
 
 #if defined(_DEBUG)
-    debug_finish();
+    debug_finish(-1);
 #endif
 
     return EXIT_SUCCESS;

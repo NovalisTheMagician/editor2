@@ -525,7 +525,13 @@ static void FileDialog(bool *doQuit)
         {
             char* cfilePathName = IGFD_GetFilePathName(cfileDialog, IGFD_ResultMode_AddIfNoFileExt);
             action->callback(cfilePathName, action->data);
-            if (cfilePathName) free(cfilePathName);
+            if (cfilePathName) 
+            {
+                free(cfilePathName);
+#if defined(_DEBUG)
+                debug_adjust(1);
+#endif
+            }
             *doQuit = action->quitRequest;
         }
         
