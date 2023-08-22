@@ -20,15 +20,4 @@
 #define min(a, b) ({ __typeof__(a) a_ = (a); __typeof__(b) b_ = (b); a_ < b_ ? a_ : b_; })
 #define max(a, b) ({ __typeof__(a) a_ = (a); __typeof__(b) b_ = (b); a_ > b_ ? a_ : b_; })
 
-#if defined(_DEBUG)
-
-void debug_init(const char *file);
-void debug_finish(void);
-void* debug_malloc(size_t size, const char *file, int line);
-void* debug_calloc(size_t num, size_t size, const char *file, int line);
-void debug_free(void *ptr, const char *file, int line);
-
-#define malloc(size) debug_malloc(size, __FILE__, __LINE__)
-#define free(ptr) debug_free(ptr, __FILE__, __LINE__)
-#define calloc(num, size) debug_calloc(num, size, __FILE__, __LINE__)
-#endif
+#include "debug.h"

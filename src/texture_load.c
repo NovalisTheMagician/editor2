@@ -144,8 +144,10 @@ static size_t CollectTexturesFtp(struct TextureCollection *tc, struct FetchLocat
 
             if(size >= *capacity) 
             {
+                size_t oldCapacity = *capacity;
                 *capacity = (*capacity) * 2;
                 *locations = realloc(*locations, (*capacity) * sizeof **locations);
+                memset((*locations) + oldCapacity, 0, (*capacity) - oldCapacity);
             }
             pstr_free(files[i].filePath);
             files[i].filePath.data = NULL;
@@ -231,8 +233,10 @@ static size_t CollectTexturesFs(struct TextureCollection *tc, struct FetchLocati
 
                 if(size >= *capacity) 
                 {
+                    size_t oldCapacity = *capacity;
                     *capacity = (*capacity) * 2;
                     *locations = realloc(*locations, (*capacity) * sizeof **locations);
+                    memset((*locations) + oldCapacity, 0, (*capacity) - oldCapacity);
                 }
             }
         }

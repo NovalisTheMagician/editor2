@@ -1,4 +1,7 @@
-#include "common.h"
+#include "debug.h"
+
+#include <malloc.h>
+#include <stdio.h>
 
 #undef malloc
 #undef calloc
@@ -37,6 +40,7 @@ void* debug_calloc(size_t num, size_t size, const char *file, int line)
 
 void debug_free(void *ptr, const char *file, int line)
 {
+    if(!ptr) return;
     fprintf(debugLogFile, "-f| %s: %d\n", file, line);
     free(ptr);
     debug_malloc_count--;
