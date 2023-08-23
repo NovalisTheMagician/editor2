@@ -1,6 +1,8 @@
 #include "edit.h"
 #include "map.h"
 
+#include <triangulate.h>
+
 static void IncreaseBufferSize(void **buffer, size_t *capacity, size_t elementSize);
 
 void ScreenToEditorSpace(const struct EdState *state, int32_t *x, int32_t *y)
@@ -126,7 +128,6 @@ ssize_t EditAddLine(struct EdState *state, size_t v0, size_t v1)
     state->gl.editorLine.bufferMap[idx * 2 + 1] = (struct VertexType){ .position = { vert1.x, vert1.y }, .color = { 1, 1, 1, 1 } };
 
     map->dirty = true;
-
     return idx;
 }
 
@@ -134,6 +135,74 @@ void EditRemoveLine(struct EdState *state, size_t index)
 {
     struct Map *map = &state->map;
     map->dirty = true;
+}
+
+bool EditGetLine(struct EdState *state, struct Vertex pos, size_t *ind)
+{
+    return false;
+}
+
+ssize_t EditAddSector(struct EdState *state, size_t *lineIndices, size_t numLines)
+{
+    struct Map *map = &state->map;
+
+    for(size_t i = 0; i < map->numSectors; ++i)
+    {
+        struct Sector s = map->sectors[i];
+        if(s.numLines != numLines) continue;
+        for(size_t j = 0; j < s.numLines; ++j)
+        {
+            //
+        }
+    }
+
+    size_t idx = map->numSectors++;
+    struct Sector *s = &map->sectors[idx];
+    s->lines = calloc(numLines, sizeof *s->lines);
+    s->numLines = numLines;
+    for(size_t i = 0; i < numLines; ++i)
+        s->lines[i] = lineIndices[i];
+
+    if(map->numSectors == map->numAllocSectors)
+        IncreaseBufferSize((void**)&map->sectors, &map->numAllocSectors, sizeof *map->sectors);
+
+    size_t baseVertexIndex = state->gl.editorSector.highestVertIndex;
+    size_t baseIndexIndex = state->gl.editorSector.highestIndIndex;
+
+    ivec2 *outerPolygon = calloc(numLines, sizeof *outerPolygon);
+    for(size_t i = 0; i < numLines; ++i)
+    {
+        int32_t x = map->vertices[map->lines[lineIndices[i]].a].x;
+        int32_t y = map->vertices[map->lines[lineIndices[i]].a].y;
+        state->gl.editorSector.bufferMap[baseVertexIndex++] = (struct SectorVertexType){ .position = { x, y }, .color = { 1, 1, 1, 1 }, .texCoord = { 0, 0 } };
+        outerPolygon[i][0] = x;
+        outerPolygon[i][1] = y;
+    }
+    short *indices = NULL;
+    int numIndices = triangulate(outerPolygon, numLines, NULL, NULL, 0, &indices);
+
+    for(size_t i = 0; i < numIndices; ++i)
+        state->gl.editorSector.indexMap[baseIndexIndex++] = indices[i];
+
+    free(outerPolygon);
+    free(indices);
+
+    state->gl.editorSector.highestVertIndex += numLines;
+    state->gl.editorSector.highestIndIndex += numIndices;
+
+    map->dirty = true;
+    return idx;
+}
+
+void EditRemoveSector(struct EdState *state, size_t index)
+{
+    struct Map *map = &state->map;
+    map->dirty = true;
+}
+
+bool EditGetSector(struct EdState *state, struct Vertex pos, size_t *ind)
+{
+    return false;
 }
 
 static void IncreaseBufferSize(void **buffer, size_t *capacity, size_t elementSize)

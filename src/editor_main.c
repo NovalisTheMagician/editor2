@@ -82,23 +82,23 @@ int EditorMain(int argc, char *argv[])
     SDL_GLContext glContext = InitOpenGL(window);
     if(!glContext) return EXIT_FAILURE;
 
-    struct EdState state = { 0 };
-    ResetSettings(&state.settings);
-    NewProject(&state.project);
-    NewMap(&state.map);
-    HandleArguments(argc, argv, &state);
+    struct EdState *state = calloc(1, sizeof *state);
+    ResetSettings(&state->settings);
+    NewProject(&state->project);
+    NewMap(&state->map);
+    HandleArguments(argc, argv, state);
 
     if(!InitImgui(window, glContext)) return EXIT_FAILURE;
-    SetStyle(state.settings.theme);
+    SetStyle(state->settings.theme);
 
-    if(!InitEditor(&state)) return EXIT_FAILURE;
+    if(!InitEditor(state)) return EXIT_FAILURE;
 
     InitGui();
 
-    tc_init(&state.textures);
-    if(state.project.file.size > 0)
+    tc_init(&state->textures);
+    if(state->project.file.size > 0)
     {
-        LoadTextures(&state, true);
+        LoadTextures(state, true);
     }
 
     ImGuiIO *ioptr = igGetIO();
@@ -119,34 +119,34 @@ int EditorMain(int argc, char *argv[])
             }
         }
 
-        Async_UpdateJob(&state.async);
+        Async_UpdateJob(&state->async);
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplSDL2_NewFrame();
         igNewFrame();
 
-        quit = DoGui(&state, quit);
+        quit = DoGui(state, quit);
 
-        if(state.gl.editorColorTexture > 0)
+        if(state->gl.editorColorTexture > 0)
         {
-            glBindFramebuffer(GL_FRAMEBUFFER, state.gl.editorFramebufferMS);
-            glViewport(0, 0, state.gl.editorFramebufferWidth, state.gl.editorFramebufferHeight);
-            glClearNamedFramebufferfv(state.gl.editorFramebufferMS, GL_COLOR, 0, state.settings.colors[COL_BACKGROUND]);
-            RenderEditorView(&state);
-            glBlitNamedFramebuffer(state.gl.editorFramebufferMS, state.gl.editorFramebuffer, 0, 0, state.gl.editorFramebufferWidth, state.gl.editorFramebufferHeight, 0, 0, state.gl.editorFramebufferWidth, state.gl.editorFramebufferHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+            glBindFramebuffer(GL_FRAMEBUFFER, state->gl.editorFramebufferMS);
+            glViewport(0, 0, state->gl.editorFramebufferWidth, state->gl.editorFramebufferHeight);
+            glClearNamedFramebufferfv(state->gl.editorFramebufferMS, GL_COLOR, 0, state->settings.colors[COL_BACKGROUND]);
+            RenderEditorView(state);
+            glBlitNamedFramebuffer(state->gl.editorFramebufferMS, state->gl.editorFramebuffer, 0, 0, state->gl.editorFramebufferWidth, state->gl.editorFramebufferHeight, 0, 0, state->gl.editorFramebufferWidth, state->gl.editorFramebufferHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
         }
 
-        if(state.ui.show3dView && state.gl.realtimeColorTexture > 0)
+        if(state->ui.show3dView && state->gl.realtimeColorTexture > 0)
         {
             glEnable(GL_DEPTH_TEST);
             glEnable(GL_CULL_FACE);
 
-            glBindFramebuffer(GL_FRAMEBUFFER, state.gl.realtimeFramebuffer);
-            glViewport(0, 0, state.gl.realtimeFramebufferWidth, state.gl.realtimeFramebufferHeight);
-            glClearNamedFramebufferfv(state.gl.realtimeFramebuffer, GL_COLOR, 0, state.settings.colors[COL_RTBACKGROUND]);
+            glBindFramebuffer(GL_FRAMEBUFFER, state->gl.realtimeFramebuffer);
+            glViewport(0, 0, state->gl.realtimeFramebufferWidth, state->gl.realtimeFramebufferHeight);
+            glClearNamedFramebufferfv(state->gl.realtimeFramebuffer, GL_COLOR, 0, state->settings.colors[COL_RTBACKGROUND]);
             const float depth = 1.0f;
-            glClearNamedFramebufferfv(state.gl.realtimeFramebuffer, GL_DEPTH, 0, &depth);
-            RenderRealtimeView(&state);
+            glClearNamedFramebufferfv(state->gl.realtimeFramebuffer, GL_DEPTH, 0, &depth);
+            RenderRealtimeView(state);
 
             glDisable(GL_CULL_FACE);
             glDisable(GL_DEPTH_TEST);
@@ -155,26 +155,28 @@ int EditorMain(int argc, char *argv[])
         igRender();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, (int)ioptr->DisplaySize.x, (int)ioptr->DisplaySize.y);
-        glClearNamedFramebufferfv(0, GL_COLOR, 0, state.settings.colors[COL_WORKSPACE_BACK]);
+        glClearNamedFramebufferfv(0, GL_COLOR, 0, state->settings.colors[COL_WORKSPACE_BACK]);
         ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
 
         SDL_GL_SwapWindow(window);
     }
 
-    SaveSettings(SETTINGS_FILE, &state.settings);
+    SaveSettings(SETTINGS_FILE, &state->settings);
 
     FreeGui();
 
     CancelFetch();
-    Async_AbortJobAndWait(&state.async);
+    Async_AbortJobAndWait(&state->async);
 
-    tc_unload_all(&state.textures);
-    tc_destroy(&state.textures);
+    tc_unload_all(&state->textures);
+    tc_destroy(&state->textures);
 
-    FreeMap(&state.map);
-    FreeProject(&state.project);
-    FreeSettings(&state.settings);
-    DestroyEditor(&state);
+    FreeMap(&state->map);
+    FreeProject(&state->project);
+    FreeSettings(&state->settings);
+    DestroyEditor(state);
+
+    free(state);
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL2_Shutdown();

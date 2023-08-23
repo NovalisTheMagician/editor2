@@ -7,7 +7,7 @@ SRC_SUBDIRS := windows dialogs
 DEFINES := __USE_XOPEN _GNU_SOURCE
 INC_DIRS := $(SRC_DIR)
 
-LIBS := m cimgui_sdl SDL2 glad2 igfd re ftp json-c stdc++
+LIBS := m cimgui_sdl SDL2 glad2 igfd re ftp json-c triangulate stdc++
 LIB_DIRS := 
 
 CC := gcc

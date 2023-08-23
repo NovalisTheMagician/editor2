@@ -24,6 +24,8 @@
 
 #define TEXTURE_FILTER_LEN 256
 
+#define LINE_BUFFER_CAP 256
+
 enum Theme
 {
     THEME_IMGUI_LIGHT,
@@ -94,7 +96,7 @@ struct SectorVertexType
     vec2 texCoord;
 };
 
-typedef uint32_t Index;
+typedef uint32_t Index_t;
 
 struct EdState
 {
@@ -175,7 +177,8 @@ struct EdState
             GLuint vertFormat;
             GLuint vertBuffer, indBuffer;
             struct SectorVertexType *bufferMap;
-            Index *indexMap;
+            Index_t *indexMap;
+            size_t highestVertIndex, highestIndIndex;
         } editorSector;
     } gl;
 
@@ -201,13 +204,17 @@ struct EdState
         mat4 editorProjection;
         mat4 realtimeProjection;
 
+        int startVertex;
         int lastVertForLine;
+        size_t lineBuffer[LINE_BUFFER_CAP];
+        size_t numLinesInBuffer;
     } data;
 
     struct
     {
-        GLuint missing;
-    } default_textures;
+        GLuint missingIcon;
+        GLuint missingTexture;
+    } defaultTextures;
 };
 
 const char* ColorIndexToString(enum Colors color);

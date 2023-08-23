@@ -1,5 +1,7 @@
 #include "../gwindows.h"
 
+#include <assert.h>
+
 #include "../edit.h"
 
 void EditorWindow(bool *p_open, struct EdState *state)
@@ -115,10 +117,26 @@ void EditorWindow(bool *p_open, struct EdState *state)
                     }
                     if(state->data.lastVertForLine != -1)
                     {
-                        EditAddLine(state, state->data.lastVertForLine, newVertex);
+                        ssize_t lIdx = EditAddLine(state, state->data.lastVertForLine, newVertex);
+                        assert(lIdx >= 0);
+                        size_t bufferIdx = state->data.numLinesInBuffer++;
+                        state->data.lineBuffer[bufferIdx] = lIdx;
+                    }
+                    else
+                    {
+                        state->data.startVertex = newVertex;
                     }
 
-                    state->data.lastVertForLine = newVertex;
+                    if(newVertex == state->data.startVertex && state->data.numLinesInBuffer >= 3)
+                    {
+                        ssize_t sIdx = EditAddSector(state, state->data.lineBuffer, state->data.numLinesInBuffer);
+                        state->data.numLinesInBuffer = 0;
+                        state->data.lastVertForLine = -1;
+                    }
+                    else
+                    {
+                        state->data.lastVertForLine = newVertex;
+                    }
 
                     igSetWindowFocus_Nil();
                 }

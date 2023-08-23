@@ -23,3 +23,7 @@ bool EditGetVertex(struct EdState *state, struct Vertex pos, size_t *ind);
 ssize_t EditAddLine(struct EdState *state, size_t v0, size_t v1);
 void EditRemoveLine(struct EdState *state, size_t index);
 bool EditGetLine(struct EdState *state, struct Vertex pos, size_t *ind);
+
+ssize_t EditAddSector(struct EdState *state, size_t *lineIndices, size_t numLines);
+void EditRemoveSector(struct EdState *state, size_t index);
+bool EditGetSector(struct EdState *state, struct Vertex pos, size_t *ind);

@@ -344,7 +344,7 @@ static bool InitSectors(struct EdState *state)
     glNamedBufferStorage(vBuffer, vBufferSize, NULL, storage_flags);
     state->gl.editorSector.vertBuffer = vBufferSize;
 
-    size_t iBufferSize = BUFFER_SIZE * 3 * sizeof(Index);
+    size_t iBufferSize = BUFFER_SIZE * 3 * sizeof(Index_t);
     GLuint iBuffer;
     glCreateBuffers(1, &iBuffer);
     glNamedBufferStorage(iBuffer, iBufferSize, NULL, storage_flags);
