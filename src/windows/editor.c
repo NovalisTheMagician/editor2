@@ -115,14 +115,14 @@ void EditorWindow(bool *p_open, struct EdState *state)
                     {
                         newVertex = EditAddVertex(state, (struct Vertex){ edSX, edSY });
                     }
-                    if(state->data.lastVertForLine != -1)
+                    if(state->data.lastVertForLine != -1 && newVertex != state->data.lastVertForLine)
                     {
                         ssize_t lIdx = EditAddLine(state, state->data.lastVertForLine, newVertex);
                         assert(lIdx >= 0);
                         size_t bufferIdx = state->data.numLinesInBuffer++;
                         state->data.lineBuffer[bufferIdx] = lIdx;
                     }
-                    else
+                    else if(newVertex != state->data.lastVertForLine)
                     {
                         state->data.startVertex = newVertex;
                     }
@@ -130,6 +130,7 @@ void EditorWindow(bool *p_open, struct EdState *state)
                     if(newVertex == state->data.startVertex && state->data.numLinesInBuffer >= 3)
                     {
                         ssize_t sIdx = EditAddSector(state, state->data.lineBuffer, state->data.numLinesInBuffer);
+                        assert(sIdx >= 0);
                         state->data.numLinesInBuffer = 0;
                         state->data.lastVertForLine = -1;
                     }

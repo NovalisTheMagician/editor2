@@ -169,20 +169,22 @@ ssize_t EditAddSector(struct EdState *state, size_t *lineIndices, size_t numLine
     size_t baseVertexIndex = state->gl.editorSector.highestVertIndex;
     size_t baseIndexIndex = state->gl.editorSector.highestIndIndex;
 
+    size_t index = baseVertexIndex;
     ivec2 *outerPolygon = calloc(numLines, sizeof *outerPolygon);
     for(size_t i = 0; i < numLines; ++i)
     {
         int32_t x = map->vertices[map->lines[lineIndices[i]].a].x;
         int32_t y = map->vertices[map->lines[lineIndices[i]].a].y;
-        state->gl.editorSector.bufferMap[baseVertexIndex++] = (struct SectorVertexType){ .position = { x, y }, .color = { 1, 1, 1, 1 }, .texCoord = { 0, 0 } };
+        state->gl.editorSector.bufferMap[index++] = (struct SectorVertexType){ .position = { x, y }, .color = { 1, 1, 1, 1 }, .texCoord = { 0, 0 } };
         outerPolygon[i][0] = x;
         outerPolygon[i][1] = y;
     }
     short *indices = NULL;
     int numIndices = triangulate(outerPolygon, numLines, NULL, NULL, 0, &indices);
 
+    index = baseIndexIndex;
     for(size_t i = 0; i < numIndices; ++i)
-        state->gl.editorSector.indexMap[baseIndexIndex++] = indices[i];
+        state->gl.editorSector.indexMap[index++] = indices[i] + baseVertexIndex;
 
     free(outerPolygon);
     free(indices);

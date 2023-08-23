@@ -172,6 +172,9 @@ static void MapSavePopup(struct EdState *state, bool *quitRequest);
 
 static void HandleShortcuts(struct EdState *state);
 
+static void DoNewMap(struct EdState *state);
+static void DoLoadMap(struct EdState *state);
+
 ImGuiFileDialog *cfileDialog;
 
 static bool openProjectPopup = false;
@@ -277,8 +280,8 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
                     SaveProject(&state->project);
             }
             igSeparator();
-            if(igMenuItem_Bool("New Map", "Ctrl+N", false, allowFileOps)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_NEW; } else NewMap(&state->map); }
-            if(igMenuItem_Bool("Open Map", "Ctrl+O", false, allowFileOps)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_OPEN; } else OpenMapDialog(&state->map); }
+            if(igMenuItem_Bool("New Map", "Ctrl+N", false, allowFileOps)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_NEW; } else DoNewMap(state); }
+            if(igMenuItem_Bool("Open Map", "Ctrl+O", false, allowFileOps)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_OPEN; } else DoLoadMap(state); }
             if(igMenuItem_Bool("Save Map", "Ctrl+S", false, state->map.dirty && allowFileOps)) 
             { 
                 if(state->map.file.size == 0)
@@ -477,8 +480,8 @@ static void MapSavePopup(struct EdState *state, bool *quitRequest)
 
             switch(modalAction)
             {
-            case SMA_NEW: NewMap(&state->map); break;
-            case SMA_OPEN: OpenMapDialog(&state->map); break;
+            case SMA_NEW: DoNewMap(state); break;
+            case SMA_OPEN: DoLoadMap(state); break;
             case SMA_QUIT: 
             {
                 SaveMapDialog(&state->map, true);
@@ -492,8 +495,8 @@ static void MapSavePopup(struct EdState *state, bool *quitRequest)
         {
             switch(modalAction)
             {
-            case SMA_NEW: NewMap(&state->map); break;
-            case SMA_OPEN: OpenMapDialog(&state->map); break;
+            case SMA_NEW: DoNewMap(state); break;
+            case SMA_OPEN: DoLoadMap(state); break;
             case SMA_QUIT: *quitRequest = true; break;
             }
             igCloseCurrentPopup();
@@ -545,13 +548,13 @@ static void HandleShortcuts(struct EdState *state)
     if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_N, 0, ImGuiInputFlags_RouteGlobalLow))
     {
         if(state->map.dirty) { openMapPopup = true; modalAction = SMA_NEW; }
-        else NewMap(&state->map);
+        else DoNewMap(state);
     }
 
     if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_O, 0, ImGuiInputFlags_RouteGlobalLow))
     {
         if(state->map.dirty) { openMapPopup = true; modalAction = SMA_OPEN; }
-        else OpenMapDialog(&state->map);
+        else DoLoadMap(state);
     }
 
     if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_S, 0, ImGuiInputFlags_RouteGlobalLow))
@@ -584,4 +587,18 @@ static void HandleShortcuts(struct EdState *state)
     {
         state->ui.showLogs = !state->ui.showLogs;
     }
+}
+
+static void DoNewMap(struct EdState *state)
+{
+    state->gl.editorSector.highestIndIndex = 0;
+    state->gl.editorSector.highestVertIndex = 0;
+    NewMap(&state->map);
+}
+
+static void DoLoadMap(struct EdState *state)
+{
+    state->gl.editorSector.highestIndIndex = 0;
+    state->gl.editorSector.highestVertIndex = 0;
+    OpenMapDialog(&state->map);
 }

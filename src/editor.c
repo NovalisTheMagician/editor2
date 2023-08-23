@@ -61,6 +61,8 @@ bool InitEditor(struct EdState *state)
     glTextureSubImage2D(state->gl.whiteTexture, 0, 0, 0, 1, 1, GL_RGBA, GL_FLOAT, whiteColor);
     glTextureParameteri(state->gl.whiteTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTextureParameteri(state->gl.whiteTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTextureParameteri(state->gl.whiteTexture, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTextureParameteri(state->gl.whiteTexture, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
     state->data.gridSize = 32;
     state->data.zoomLevel = 1.0f;
@@ -241,11 +243,12 @@ static void RenderSectors(const struct EdState *state, const mat4 viewProjMat)
     glUseProgram(state->gl.editorSector.program);
     glUniformMatrix4fv(state->gl.editorSector.viewProjUniform, 1, false, (float*)viewProjMat);
     glUniform4fv(state->gl.editorSector.tintUniform, 1, state->settings.colors[COL_SECTOR]);
+    glUniform1i(state->gl.editorSector.textureUniform, 0);
     if(!state->data.showSectorTextures)
-        glUniform1i(state->gl.editorSector.textureUniform, state->gl.whiteTexture);
+        glBindTextureUnit(0, state->gl.whiteTexture);
     // handle real texture here
 
-    glDrawElements(GL_TRIANGLES, 0, GL_UNSIGNED_INT, NULL);
+    glDrawElements(GL_TRIANGLES, state->gl.editorSector.highestIndIndex, GL_UNSIGNED_INT, NULL);
 }
 
 void RenderEditorView(struct EdState *state)
@@ -255,11 +258,10 @@ void RenderEditorView(struct EdState *state)
     glm_scale(viewMat, (vec3){ state->data.zoomLevel, state->data.zoomLevel, 1 });
     glm_mul(state->data.editorProjection, viewMat, viewProjMat);
 
-    
     RenderBackground(state);
-    RenderVertices(state, viewProjMat);
+    RenderSectors(state, viewProjMat);
     glLineWidth(2);
     RenderLines(state, viewProjMat);
     glLineWidth(1);
-    RenderSectors(state, viewProjMat);
+    RenderVertices(state, viewProjMat);
 }
