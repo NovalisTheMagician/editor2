@@ -23,6 +23,7 @@ struct Line
 {
     uint32_t a, b;
     uint32_t type;
+    int32_t normal;
 };
 
 struct Sector

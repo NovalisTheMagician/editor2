@@ -5,6 +5,10 @@
 
 static void IncreaseBufferSize(void **buffer, size_t *capacity, size_t elementSize);
 
+static int32_t sign(int32_t x) {
+    return (x > 0) - (x < 0);
+}
+
 void ScreenToEditorSpace(const struct EdState *state, int32_t *x, int32_t *y)
 {
     const float z = state->data.zoomLevel;
@@ -97,7 +101,7 @@ bool EditGetVertex(struct EdState *state, struct Vertex pos, size_t *ind)
         const struct Vertex v = map->vertices[i];
         if(v.x == pos.x && v.y == pos.y)
         {
-            *ind = i;
+            if(ind) *ind = i;
             return true;
         }
     }
@@ -117,13 +121,15 @@ ssize_t EditAddLine(struct EdState *state, size_t v0, size_t v1)
         if(ab || ba) return i;
     }
 
+    const struct Vertex vert0 = map->vertices[v0];
+    const struct Vertex vert1 = map->vertices[v1];
+    int32_t normal = sign((vert0.x*vert1.y) - (vert0.y*vert1.x));
+
     size_t idx = map->numLines++;
-    map->lines[idx] = (struct Line){ .a = v0, .b = v1, .type = ST_NORMAL };
+    map->lines[idx] = (struct Line){ .a = v0, .b = v1, .type = ST_NORMAL, .normal = normal };
     if(map->numLines == map->numAllocLines)
         IncreaseBufferSize((void**)&map->lines, &map->numAllocLines, sizeof *map->lines);
 
-    const struct Vertex vert0 = map->vertices[v0];
-    const struct Vertex vert1 = map->vertices[v1];
     state->gl.editorLine.bufferMap[idx * 2    ] = (struct VertexType){ .position = { vert0.x, vert0.y }, .color = { 1, 1, 1, 1 } };
     state->gl.editorLine.bufferMap[idx * 2 + 1] = (struct VertexType){ .position = { vert1.x, vert1.y }, .color = { 1, 1, 1, 1 } };
 
@@ -170,11 +176,25 @@ ssize_t EditAddSector(struct EdState *state, size_t *lineIndices, size_t numLine
     size_t baseIndexIndex = state->gl.editorSector.highestIndIndex;
 
     size_t index = baseVertexIndex;
-    ivec2 *outerPolygon = calloc(numLines, sizeof *outerPolygon);
+    struct Line lastLine;
+    size_t lastIndex;
+    ivec2 *outerPolygon = malloc(numLines * sizeof *outerPolygon);
     for(size_t i = 0; i < numLines; ++i)
     {
-        int32_t x = map->vertices[map->lines[lineIndices[i]].a].x;
-        int32_t y = map->vertices[map->lines[lineIndices[i]].a].y;
+        struct Line line = map->lines[lineIndices[i]];
+        size_t vertIdx;
+        if(i == 0)
+            vertIdx = line.a;
+        else 
+        {
+            size_t lastEnd = lastLine.a == lastIndex ? lastLine.b : lastLine.a;
+            vertIdx = line.a == lastEnd ? line.a : line.b;
+        }
+        lastLine = line;
+        lastIndex = vertIdx;
+
+        int32_t x = map->vertices[vertIdx].x;
+        int32_t y = map->vertices[vertIdx].y;
         state->gl.editorSector.bufferMap[index++] = (struct SectorVertexType){ .position = { x, y }, .color = { 1, 1, 1, 1 }, .texCoord = { 0, 0 } };
         outerPolygon[i][0] = x;
         outerPolygon[i][1] = y;
