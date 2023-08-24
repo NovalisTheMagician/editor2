@@ -130,8 +130,23 @@ ssize_t EditAddLine(struct EdState *state, size_t v0, size_t v1)
     if(map->numLines == map->numAllocLines)
         IncreaseBufferSize((void**)&map->lines, &map->numAllocLines, sizeof *map->lines);
 
-    state->gl.editorLine.bufferMap[idx * 2    ] = (struct VertexType){ .position = { vert0.x, vert0.y }, .color = { 1, 1, 1, 1 } };
-    state->gl.editorLine.bufferMap[idx * 2 + 1] = (struct VertexType){ .position = { vert1.x, vert1.y }, .color = { 1, 1, 1, 1 } };
+    vec2 line;
+    glm_vec2_sub((vec2){ vert1.x, vert1.y }, (vec2){ vert0.x, vert0.y }, line);
+    vec2 n = { -line[1], line[0] };
+    glm_vec2_normalize(n);
+
+    vec2 middle;
+    glm_vec2_scale(line, 0.5f, middle);
+    glm_vec2_add((vec2){ vert0.x, vert0.y }, middle, middle);
+
+    vec2 middleNormal;
+    glm_vec2_scale(n, 10.0f, middleNormal);
+    glm_vec2_add(middle, middleNormal, middleNormal);
+
+    state->gl.editorLine.bufferMap[idx * 4    ] = (struct VertexType){ .position = { vert0.x, vert0.y }, .color = { 1, 1, 1, 1 } };
+    state->gl.editorLine.bufferMap[idx * 4 + 1] = (struct VertexType){ .position = { vert1.x, vert1.y }, .color = { 1, 1, 1, 1 } };
+    state->gl.editorLine.bufferMap[idx * 4 + 2] = (struct VertexType){ .position = { middle[0], middle[1] }, .color = { 1, 1, 1, 1 } };
+    state->gl.editorLine.bufferMap[idx * 4 + 3] = (struct VertexType){ .position = { middleNormal[0], middleNormal[1] }, .color = { 1, 1, 1, 1 } };
 
     map->dirty = true;
     return idx;

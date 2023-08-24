@@ -234,7 +234,7 @@ static void RenderLines(const struct EdState *state, const mat4 viewProjMat)
     glUniformMatrix4fv(state->gl.editorLine.viewProjUniform, 1, false, (float*)viewProjMat);
     glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[COL_LINE]);
 
-    glDrawArrays(GL_LINES, 0, state->map.numLines*2);
+    glDrawArrays(GL_LINES, 0, state->map.numLines*4);
 }
 
 static void RenderSectors(const struct EdState *state, const mat4 viewProjMat)

@@ -82,18 +82,17 @@ int EditorMain(int argc, char *argv[])
     SDL_GLContext glContext = InitOpenGL(window);
     if(!glContext) return EXIT_FAILURE;
 
+    if(!InitImgui(window, glContext)) return EXIT_FAILURE;
+
+    InitGui();
+
     struct EdState *state = calloc(1, sizeof *state);
     ResetSettings(&state->settings);
     NewProject(&state->project);
     NewMap(&state->map);
     HandleArguments(argc, argv, state);
 
-    if(!InitImgui(window, glContext)) return EXIT_FAILURE;
-    SetStyle(state->settings.theme);
-
     if(!InitEditor(state)) return EXIT_FAILURE;
-
-    InitGui();
 
     tc_init(&state->textures);
     if(state->project.file.size > 0)
@@ -101,6 +100,7 @@ int EditorMain(int argc, char *argv[])
         LoadTextures(state, true);
     }
 
+    SetStyle(state->settings.theme);
     ImGuiIO *ioptr = igGetIO();
 
     SDL_Event e;
@@ -129,11 +129,14 @@ int EditorMain(int argc, char *argv[])
 
         if(state->gl.editorColorTexture > 0)
         {
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glBindFramebuffer(GL_FRAMEBUFFER, state->gl.editorFramebufferMS);
             glViewport(0, 0, state->gl.editorFramebufferWidth, state->gl.editorFramebufferHeight);
             glClearNamedFramebufferfv(state->gl.editorFramebufferMS, GL_COLOR, 0, state->settings.colors[COL_BACKGROUND]);
             RenderEditorView(state);
             glBlitNamedFramebuffer(state->gl.editorFramebufferMS, state->gl.editorFramebuffer, 0, 0, state->gl.editorFramebufferWidth, state->gl.editorFramebufferHeight, 0, 0, state->gl.editorFramebufferWidth, state->gl.editorFramebufferHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+            glDisable(GL_BLEND);
         }
 
         if(state->ui.show3dView && state->gl.realtimeColorTexture > 0)

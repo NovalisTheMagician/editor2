@@ -208,9 +208,6 @@ struct EdState
         int lastVertForLine;
         size_t lineBuffer[LINE_BUFFER_CAP];
         size_t numLinesInBuffer;
-
-        size_t numTotalSectorVertices;
-        size_t numTotalSectorIndices;
     } data;
 
     struct

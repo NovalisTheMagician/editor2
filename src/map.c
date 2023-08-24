@@ -39,9 +39,28 @@ void SaveMap(struct Map *map)
 }
 void FreeMap(struct Map *map)
 {
+    for(size_t i = 0; i < map->numLines; ++i)
+    {
+        struct Line line = map->lines[i];
+        pstr_free(line.front.upperTex);
+        pstr_free(line.front.middleTex);
+        pstr_free(line.front.lowerTex);
+        pstr_free(line.back.upperTex);
+        pstr_free(line.back.middleTex);
+        pstr_free(line.back.lowerTex);
+    }
+
+    for(size_t i = 0; i < map->numSectors; ++i)
+    {
+        struct Sector sector = map->sectors[i];
+        pstr_free(sector.floorTex);
+        pstr_free(sector.ceilTex);
+    }
+
     free(map->vertices);
     free(map->lines);
     free(map->sectors);
+
     pstr_free(map->file);
 }
 
