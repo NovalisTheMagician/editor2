@@ -168,11 +168,14 @@ void EditorWindow(bool *p_open, struct EdState *state)
 
             if(focused)
             {
-                
+                if (igIsKeyPressed_Bool(ImGuiKey_Space, false))
+                {
+                    
+                }
             }
 
             ResizeEditorView(state, clientArea.x, clientArea.y);
-            igImage((void*)(intptr_t)state->gl.editorColorTexture, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 0 });
+            igImage((ImTextureID)(intptr_t)state->gl.editorColorTexture, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 0 });
 
             if(firstTime)
             {

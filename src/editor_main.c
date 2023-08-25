@@ -19,8 +19,7 @@
 
 #include "texture_load.h"
 
-#include <incbin.h>
-INCBIN_EXTERN(Font);
+#include "resources.h"
 
 #define SETTINGS_FILE "./settings.ini"
 #define DEFAULT_WINDOW_WIDTH 1600

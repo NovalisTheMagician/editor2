@@ -1,3 +1,3 @@
-#include <incbin.h>
+#include "resources.h"
 
 INCBIN(Font, "UbuntuMono-Regular.ttf");
