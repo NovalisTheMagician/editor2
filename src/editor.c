@@ -70,6 +70,8 @@ bool InitEditor(struct EdState *state)
 
     state->data.textureFilter = pstr_alloc(TEXTURE_FILTER_LEN);
 
+    state->sectorToPolygon = malloc(state->map.numAllocSectors * sizeof *state->sectorToPolygon);
+
     if(!LoadShaders(state))
         return false;
 
@@ -103,6 +105,8 @@ void DestroyEditor(struct EdState *state)
     glDeleteProgram(state->gl.editorSector.program);
     glDeleteBuffers(2, (GLuint[]){ state->gl.editorSector.vertBuffer, state->gl.editorSector.indBuffer });
     glDeleteVertexArrays(1, &state->gl.editorSector.vertFormat);
+
+    free(state->sectorToPolygon);
 
     pstr_free(state->data.textureFilter);
 }

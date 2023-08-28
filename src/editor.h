@@ -212,6 +212,12 @@ struct EdState
 
     struct
     {
+        size_t indexStart, indexLength;
+        size_t vertexStart, vertexLength;
+    } *sectorToPolygon;
+
+    struct
+    {
         GLuint missingIcon;
         GLuint missingTexture;
     } defaultTextures;

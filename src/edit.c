@@ -185,7 +185,10 @@ ssize_t EditAddSector(struct EdState *state, size_t *lineIndices, size_t numLine
         s->lines[i] = lineIndices[i];
 
     if(map->numSectors == map->numAllocSectors)
+    {
         IncreaseBufferSize((void**)&map->sectors, &map->numAllocSectors, sizeof *map->sectors);
+        state->sectorToPolygon = realloc(state->sectorToPolygon, map->numAllocSectors * sizeof *state->sectorToPolygon);
+    }
 
     size_t baseVertexIndex = state->gl.editorSector.highestVertIndex;
     size_t baseIndexIndex = state->gl.editorSector.highestIndIndex;
@@ -223,6 +226,8 @@ ssize_t EditAddSector(struct EdState *state, size_t *lineIndices, size_t numLine
 
     free(outerPolygon);
     free(indices);
+
+    state->sectorToPolygon[idx] = (__typeof__(*state->sectorToPolygon)){ .indexStart = baseIndexIndex, .indexLength = numIndices, .vertexStart = baseVertexIndex, .vertexLength = numLines };
 
     state->gl.editorSector.highestVertIndex += numLines;
     state->gl.editorSector.highestIndIndex += numIndices;
