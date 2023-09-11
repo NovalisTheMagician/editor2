@@ -151,10 +151,7 @@ void EditorWindow(bool *p_open, struct EdState *state)
                 if(wheelData->AnalogValue != 0)
                 {
                     state->data.zoomLevel += wheelData->AnalogValue * 0.05f;
-                    if(state->data.zoomLevel < MIN_ZOOM)
-                        state->data.zoomLevel = MIN_ZOOM;
-                    if(state->data.zoomLevel > MAX_ZOOM)
-                        state->data.zoomLevel = MAX_ZOOM;
+                    state->data.zoomLevel = clamp(MIN_ZOOM, MAX_ZOOM, state->data.zoomLevel);
 
                     float edXAfter = relX, edYAfter = relY;
                     ScreenToEditorSpacef(state, &edXAfter, &edYAfter);
