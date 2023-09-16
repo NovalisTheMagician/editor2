@@ -10,10 +10,15 @@ INC_DIRS := $(SRC_DIR)
 LIBS := m cimgui_sdl SDL2 glad2 igfd re ftp json-c triangulate stdc++
 LIB_DIRS := 
 
+ifdef CC
+CC := $(CC)
+else
 CC := gcc
+endif
+
 CCFLAGS := -Wall -std=gnu17 -Wstrict-prototypes
 
-LD := gcc
+LD := $(CC)
 LDFLAGS := -pthread
 
 ifeq ($(CONFIG),release)
@@ -38,7 +43,9 @@ ifeq ($(OS),Windows_NT)
 else
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
-        LIBS += asound gtk-3 gdk-3 gdk_pixbuf-2.0 pangocairo-1.0 pango-1.0 cairo gobject-2.0 gmodule-2.0 glib-2.0 Xext X11 GL
+        LIBS += GL dl
+        CCFLAGS += $(shell pkg-config --cflags sdl2)
+        LDFLAGS += $(shell pkg-config --libs sdl2)
         DEFINES += 
     endif
     ifeq ($(UNAME_S),Darwin)
@@ -81,6 +88,8 @@ clean:
 echo:
 	@echo "LIBS= $(LIBS)"
 	@echo "INC_DIRS= $(INC_DIRS)"
+	@echo "CCFLAGS= $(CCFLAGS)"
+	@echo "LDFLAGS= $(LDFLAGS)"
 
 -include $(OBJS:.o=.d)
 

@@ -406,7 +406,8 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
         }
 
         char buffer[64];
-        snprintf(buffer, sizeof buffer, "%d FPS (%.4f ms)", (int)round(igGetIO()->Framerate), 1.0f / igGetIO()->Framerate);
+        float framerate = igGetIO()->Framerate;
+        snprintf(buffer, sizeof buffer, "%d FPS (%.4f ms)", (int)round(framerate), 1.0f / framerate);
         ImVec2 textSize;
         igCalcTextSize(&textSize, buffer, buffer + strlen(buffer) + 1, false, 0);
 

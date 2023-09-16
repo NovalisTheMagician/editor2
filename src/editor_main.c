@@ -209,7 +209,7 @@ static SDL_Window* InitSDL(void)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
 
-    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
+    //SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
@@ -287,6 +287,13 @@ static SDL_GLContext InitOpenGL(SDL_Window *window)
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_LINE_SMOOTH);
     glEnable(GL_BLEND);
+
+#if defined(_DEBUG)
+    printf("Version: %s\n", glGetString(GL_VERSION));
+    printf("Renderer: %s\n", glGetString(GL_RENDERER));
+    printf("Vendor: %s\n", glGetString(GL_VENDOR));
+    printf("GLSL Version: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
+#endif
 
     return glContext;
 }
