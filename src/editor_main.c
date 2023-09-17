@@ -207,7 +207,7 @@ static SDL_Window* InitSDL(void)
 #endif
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
 
     //SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -252,7 +252,7 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
 
     if(!ImGui_ImplSDL2_InitForOpenGL(window, context))
         return false;
-    if(!ImGui_ImplOpenGL3_Init("#version 460"))
+    if(!ImGui_ImplOpenGL3_Init(SHADER_VERSION))
         return false;
 
     return true;

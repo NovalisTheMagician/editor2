@@ -42,7 +42,7 @@ static bool LinkProgram(GLuint vertexShader, GLuint fragmentShader, GLuint *prog
 static bool InitBackground(struct EdState *state)
 {
     const char *hVertShaderSrc = 
-        "#version 460 core\n"
+        SHADER_VERSION
         "layout(location=0) in vec2 inPosition;\n"
         "uniform mat4 viewProj;\n"
         "uniform float offset;\n"
@@ -56,7 +56,7 @@ static bool InitBackground(struct EdState *state)
         "}\n";
 
     const char *vVertShaderSrc = 
-        "#version 460 core\n"
+        SHADER_VERSION
         "layout(location=0) in vec2 inPosition;\n"
         "uniform mat4 viewProj;\n"
         "uniform float offset;\n"
@@ -70,7 +70,7 @@ static bool InitBackground(struct EdState *state)
         "}\n";
 
     const char *fragShaderSrc = 
-        "#version 460 core\n"
+        SHADER_VERSION
         "uniform vec4 tint;\n"
         "uniform vec4 majorTint;\n"
         "uniform int majorIndex;\n"
@@ -146,7 +146,7 @@ static bool InitBackground(struct EdState *state)
 static bool InitVertex(struct EdState *state)
 {
     const char *vertShaderSrc = 
-        "#version 460 core\n"
+        SHADER_VERSION
         "layout(location=0) in vec2 inPosition;\n"
         "layout(location=1) in vec4 inColor;\n"
         "out vec4 outColor;\n"
@@ -157,7 +157,7 @@ static bool InitVertex(struct EdState *state)
         "}\n";
 
     const char *fragShaderSrc = 
-        "#version 460 core\n"
+        SHADER_VERSION
         "in vec4 outColor;\n"
         "out vec4 fragColor;\n"
         "uniform vec4 tint;\n"
@@ -219,7 +219,7 @@ static bool InitVertex(struct EdState *state)
 static bool InitLines(struct EdState *state)
 {
     const char *vertShaderSrc = 
-        "#version 460 core\n"
+        SHADER_VERSION
         "layout(location=0) in vec2 inPosition;\n"
         "layout(location=1) in vec4 inColor;\n"
         "out vec4 outColor;\n"
@@ -230,7 +230,7 @@ static bool InitLines(struct EdState *state)
         "}\n";
 
     const char *fragShaderSrc = 
-        "#version 460 core\n"
+        SHADER_VERSION
         "in vec4 outColor;\n"
         "out vec4 fragColor;\n"
         "uniform vec4 tint;\n"
@@ -289,7 +289,7 @@ static bool InitLines(struct EdState *state)
 static bool InitSectors(struct EdState *state)
 {
     const char *vertShaderSrc = 
-        "#version 460 core\n"
+        SHADER_VERSION
         "layout(location=0) in vec2 inPosition;\n"
         "layout(location=1) in vec4 inColor;\n"
         "layout(location=3) in vec2 inTexCoords;\n"
@@ -304,7 +304,7 @@ static bool InitSectors(struct EdState *state)
         "}\n";
 
     const char *fragShaderSrc = 
-        "#version 460 core\n"
+        SHADER_VERSION
         "in vec4 outColor;\n"
         "in vec2 outTexCoords;\n"
         "out vec4 fragColor;\n"
