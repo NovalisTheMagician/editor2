@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdlib.h>
+#include <stdarg.h>
 
 typedef struct pstring
 {
@@ -26,6 +27,7 @@ void pstr_copy_into_str(pstring *into, pstring string);
 void pstr_copy_into_cstr(pstring *into, const char *string);
 
 size_t pstr_format(pstring *into, const char *format, ...);
+size_t pstr_vformat(pstring *into, const char *format, va_list args);
 
 pstring pstr_substring(pstring string, size_t start, ssize_t end);
 void pstr_upper(pstring string);

@@ -44,7 +44,7 @@ static void HandleArguments(int argc, char *argv[], struct EdState *state)
             state->project.file = pstr_cstr(optarg);
             if(!LoadProject(&state->project))
             {
-                printf("failed to load project %s\n", optarg);
+                LogFormat(&state->log, LOG_WARN, "failed to load project {c}", optarg);
                 NewProject(&state->project);
             }
             break;
@@ -52,7 +52,7 @@ static void HandleArguments(int argc, char *argv[], struct EdState *state)
             state->map.file = pstr_cstr(optarg);
             if(!LoadMap(&state->map))
             {
-                printf("failed to load map %s\n", optarg);
+                LogFormat(&state->log, LOG_WARN, "failed to load map {c}", optarg);
                 NewMap(&state->map);
             }
             break;
@@ -61,7 +61,7 @@ static void HandleArguments(int argc, char *argv[], struct EdState *state)
 
     if(!LoadSettings(settingsPath, &state->settings))
     {
-        printf("failed to load settings from %s!\nusing default values\n", settingsPath);
+        LogFormat(&state->log, LOG_WARN, "failed to load settings from {c}! using default values", settingsPath);
     }
 }
 
@@ -86,6 +86,15 @@ int EditorMain(int argc, char *argv[])
     InitGui();
 
     struct EdState *state = calloc(1, sizeof *state);
+    LogInit(&state->log);
+
+#if defined(_DEBUG)
+    LogFormat(&state->log, LOG_INFO, "OpenGL Version {c}", glGetString(GL_VERSION));
+    LogFormat(&state->log, LOG_INFO, "OpenGL Renderer {c}", glGetString(GL_RENDERER));
+    LogFormat(&state->log, LOG_INFO, "OpenGL Vendor {c}", glGetString(GL_VENDOR));
+    LogFormat(&state->log, LOG_INFO, "OpenGL GLSL {c}", glGetString(GL_SHADING_LANGUAGE_VERSION));
+#endif
+
     ResetSettings(&state->settings);
     NewProject(&state->project);
     NewMap(&state->map);
@@ -177,6 +186,8 @@ int EditorMain(int argc, char *argv[])
     FreeProject(&state->project);
     FreeSettings(&state->settings);
     DestroyEditor(state);
+
+    LogDestroy(&state->log);
 
     free(state);
 
@@ -287,13 +298,6 @@ static SDL_GLContext InitOpenGL(SDL_Window *window)
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_LINE_SMOOTH);
     glEnable(GL_BLEND);
-
-#if defined(_DEBUG)
-    printf("Version: %s\n", glGetString(GL_VERSION));
-    printf("Renderer: %s\n", glGetString(GL_RENDERER));
-    printf("Vendor: %s\n", glGetString(GL_VENDOR));
-    printf("GLSL Version: %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
-#endif
 
     return glContext;
 }

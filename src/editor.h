@@ -6,6 +6,7 @@
 #include "network.h"
 #include "texture_collection.h"
 #include "async_load.h"
+#include "logging.h"
 
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include <cimgui.h>
@@ -106,6 +107,7 @@ struct EdState
     struct Network network;
     struct TextureCollection textures;
     struct AsyncJob async;
+    struct LogBuffer log;
 
     struct
     {

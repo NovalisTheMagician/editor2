@@ -56,6 +56,15 @@ size_t pstr_format(pstring *into, const char *format, ...)
     va_list args;
     va_start(args, format);
 
+    size_t pos = pstr_vformat(into, format, args);
+    
+    va_end(args);
+
+    return pos;
+}
+
+size_t pstr_vformat(pstring *into, const char *format, va_list args)
+{
     bool inVarDec = false;
     size_t pos = 0;
 
@@ -124,8 +133,6 @@ size_t pstr_format(pstring *into, const char *format, ...)
     }
 
     into->size = pos;
-    va_end(args);
-
     return pos;
 }
 

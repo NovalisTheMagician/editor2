@@ -225,6 +225,9 @@ bool DoGui(struct EdState *state, bool doQuit)
     if(state->ui.showTextures)
         TexturesWindow(&state->ui.showTextures, state, false);
 
+    if(state->ui.showLogs)
+        LogsWindow(&state->ui.showLogs, state);
+
     EditorWindow(NULL, state);
 
     if(doQuit)
