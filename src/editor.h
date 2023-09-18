@@ -187,6 +187,7 @@ struct EdState
     struct
     {
         bool fetchingTextures;
+        bool autoScrollLogs;
 
         int gridSize;
         float zoomLevel;

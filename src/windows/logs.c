@@ -10,6 +10,8 @@ void LogsWindow(bool *p_open, struct EdState *state)
     if(igBegin("Logs", p_open, 0))
     {
         if(igButton("Clear", (ImVec2){ 0, 0 })) LogClear(log);
+        igSameLine(0, 4);
+        igCheckbox("Autoscroll", &state->data.autoScrollLogs);
         if(igBeginChild_Str("logWindow", (ImVec2){ 0, 0 }, true, 0))
         {
             size_t numLogs = LogLength(log);
@@ -20,6 +22,9 @@ void LogsWindow(bool *p_open, struct EdState *state)
                 const char *end = str.data + str.size;
                 igTextUnformatted(start, end);
             }
+
+            if(state->data.autoScrollLogs && igGetScrollY() >= igGetScrollMaxY())
+                igSetScrollHereY(1.0f);
 
             igEnd();
         }

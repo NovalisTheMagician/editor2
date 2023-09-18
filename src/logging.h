@@ -6,8 +6,6 @@ struct LogBuffer
 {
     pstring *lines;
     size_t start, length;
-
-    size_t currentLine;
 };
 
 enum LogSeverity
