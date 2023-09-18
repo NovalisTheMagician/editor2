@@ -26,7 +26,7 @@ void LogsWindow(bool *p_open, struct EdState *state)
             if(state->data.autoScrollLogs && igGetScrollY() >= igGetScrollMaxY())
                 igSetScrollHereY(1.0f);
 
-            igEnd();
+            igEndChild();
         }
     }
     igEnd();

@@ -38,7 +38,6 @@ void LogInit(struct LogBuffer *logBuffer)
     logBuffer->lines = calloc(LOGBUFFER_CAPACITY, sizeof *logBuffer->lines);
     logBuffer->start = 0;
     logBuffer->length = 0;
-    logBuffer->currentLine = 0;
 }
 
 void LogDestroy(struct LogBuffer *logBuffer)
