@@ -43,17 +43,17 @@ void ScreenToEditorSpaceGrid(const struct EdState *state, int32_t *x, int32_t *y
 
 void EditCopy(struct EdState *state)
 {
-    printf("Copy!!\n");
+    LogInfo("Copy!!\n");
 }
 
 void EditPaste(struct EdState *state)
 {
-    printf("Paste!!\n");
+    LogInfo("Paste!!\n");
 }
 
 void EditCut(struct EdState *state)
 {
-    printf("Cut!!\n");
+    LogInfo("Cut!!\n");
 }
 
 ssize_t EditAddVertex(struct EdState *state, struct Vertex pos)

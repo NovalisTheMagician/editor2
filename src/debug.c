@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 
+#include "logging.h"
+
 #undef malloc
 #undef calloc
 #undef free
@@ -20,7 +22,7 @@ void debug_init(const char *file)
 {
     debugLogFile = fopen(file, "w");
     if(!debugLogFile)
-        printf("failed to create debug log file\n");
+        LogError("failed to create debug log file\n");
 }
 
 void debug_finish(int mallocOffset)

@@ -23,3 +23,7 @@ pstring LogGet(struct LogBuffer *logBuffer, size_t idx);
 void LogClear(struct LogBuffer *logBuffer);
 void LogString(struct LogBuffer *logBuffer, enum LogSeverity severity, pstring str);
 void LogFormat(struct LogBuffer *logBuffer, enum LogSeverity severity, const char *format, ...);
+
+void LogInfo(const char *format, ...);
+void LogWarning(const char *format, ...);
+void LogError(const char *format, ...);

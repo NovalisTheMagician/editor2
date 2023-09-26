@@ -14,6 +14,7 @@
 
 #include "pstring.h"
 #include "hash.h"
+#include "logging.h"
 
 #define COUNT_OF(arr) (sizeof(arr)/sizeof(0[arr]))
 

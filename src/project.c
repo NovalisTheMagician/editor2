@@ -40,35 +40,35 @@ bool LoadProject(struct Project *project)
     if(!json_object_object_get_ex(root, "version", &versionObj))
     {
         success = false;
-        printf("unknown json format\n");
+        LogError("unknown json format");
         goto cleanup;
     }
 
     if(!json_object_object_get_ex(root, "type", &typeObj))
     {
         success = false;
-        printf("unknown json format\n");
+        LogError("unknown json format");
         goto cleanup;
     }
 
     if(!json_object_object_get_ex(root, "textures", &texturesPathObj))
     {
         success = false;
-        printf("unknown json format\n");
+        LogError("unknown json format");
         goto cleanup;
     }
 
     if(!json_object_object_get_ex(root, "things", &thingsObj))
     {
         success = false;
-        printf("unknown json format\n");
+        LogError("unknown json format");
         goto cleanup;
     }
 
     if(!json_object_object_get_ex(root, "base", &baseObj))
     {
         success = false;
-        printf("unknown json format\n");
+        LogError("unknown json format");
         goto cleanup;
     }
 
@@ -76,7 +76,7 @@ bool LoadProject(struct Project *project)
     if(version != PROJECT_VERSION)
     {
         success = false;
-        printf("project version mismatch\n");
+        LogError("project version mismatch");
         goto cleanup;
     }
 
@@ -84,7 +84,7 @@ bool LoadProject(struct Project *project)
     if(project->basePath.type != ASSPATH_FS && project->basePath.type != ASSPATH_FTP)
     {
         success = false;
-        printf("invalid base type\n");
+        LogError("invalid base type");
         goto cleanup;
     }
 
@@ -97,7 +97,7 @@ bool LoadProject(struct Project *project)
         if(!json_object_object_get_ex(baseObj, "path", &pathObj))
         {
             success = false;
-            printf("unknown json format\n");
+            LogError("unknown json format");
             goto cleanup;
         }
 
@@ -109,28 +109,28 @@ bool LoadProject(struct Project *project)
         if(!json_object_object_get_ex(baseObj, "path", &pathObj))
         {
             success = false;
-            printf("unknown json format\n");
+            LogError("unknown json format");
             goto cleanup;
         }
 
         if(!json_object_object_get_ex(baseObj, "url", &urlObj))
         {
             success = false;
-            printf("unknown json format\n");
+            LogError("unknown json format");
             goto cleanup;
         }
 
         if(!json_object_object_get_ex(baseObj, "login", &loginObj))
         {
             success = false;
-            printf("unknown json format\n");
+            LogError("unknown json format");
             goto cleanup;
         }
 
         if(!json_object_object_get_ex(baseObj, "password", &passObj))
         {
             success = false;
-            printf("unknown json format\n");
+            LogError("unknown json format");
             goto cleanup;
         }
 

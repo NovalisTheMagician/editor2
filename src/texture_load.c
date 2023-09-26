@@ -15,13 +15,13 @@ static netbuf* ConnectToFtp(pstring url, pstring user, pstring pass)
     netbuf *handle;
     if(!FtpConnect(pstr_tocstr(url), &handle))
     {
-        printf("failed to connect to ftp server: %s\n", pstr_tocstr(url));
+        LogError("failed to connect to ftp server: {c}", pstr_tocstr(url));
         return NULL;
     }
 
     if(!FtpLogin(pstr_tocstr(user), pstr_tocstr(pass), handle))
     {
-        printf("failed to login to ftp server: %s\n", pstr_tocstr(user));
+        LogError("failed to login to ftp server: {c}", pstr_tocstr(user));
         FtpQuit(handle);
         return NULL;
     }
@@ -37,8 +37,8 @@ static size_t CollectTexturesFtp(struct TextureCollection *tc, struct FetchLocat
     netbuf *dirHandle;
     if(!FtpAccess(pstr_tocstr(folder), FTPLIB_DIR_VERBOSE, FTPLIB_ASCII, ftpHandle, &dirHandle))
     {
-        printf("%s:", FtpLastResponse(ftpHandle));
-        printf("failed to get dir listing: %s\n", pstr_tocstr(folder));
+        LogError("{c}:", FtpLastResponse(ftpHandle));
+        LogError("failed to get dir listing: {s}", pstr_tocstr(folder));
         return 0;
     }
 
@@ -109,7 +109,7 @@ static size_t CollectTexturesFtp(struct TextureCollection *tc, struct FetchLocat
             char timeBuffer[128] = { 0 };
             if(!FtpModDate(pstr_tocstr(files[i].filePath), timeBuffer, sizeof timeBuffer, ftpHandle))
             {
-                printf("%s", FtpLastResponse(ftpHandle));
+                LogError("{c}", FtpLastResponse(ftpHandle));
                 continue;
             }
 
@@ -231,7 +231,7 @@ static void BatchCallback(struct Batch batch, bool lastBatch, int type, void *ha
     {
         if(!tc_load_mem(tc, batch.names[i], batch.buffers[i], batch.bufferSizes[i], batch.mtimes[i]))
         {
-            printf("failed to load %s\n", pstr_tocstr(batch.names[i]));
+            LogError("failed to load {c}\n", pstr_tocstr(batch.names[i]));
         }
     }
 

@@ -32,7 +32,7 @@ static bool LoadFromFtp(pstring path, uint8_t **buffer, size_t *size, void *ftpH
     uint32_t fileSize = 0;
     if(!FtpSize(pstr_tocstr(path), &fileSize, FTPLIB_BINARY, ftpHandle))
     {
-        printf("%s", FtpLastResponse(ftpHandle));
+        LogError("{c}", FtpLastResponse(ftpHandle));
         return false;
     }
     *size = fileSize;
@@ -40,7 +40,7 @@ static bool LoadFromFtp(pstring path, uint8_t **buffer, size_t *size, void *ftpH
     netbuf *fileHandle;
     if(!FtpAccess(pstr_tocstr(path), FTPLIB_FILE_READ, FTPLIB_BINARY, ftpHandle, &fileHandle))
     {
-        printf("%s", FtpLastResponse(ftpHandle));
+        LogError("{c}", FtpLastResponse(ftpHandle));
         return false;
     }
 
