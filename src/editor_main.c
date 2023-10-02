@@ -217,8 +217,8 @@ static SDL_Window* InitSDL(void)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, GL_MAJOR);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, GL_MINOR);
 
     //SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -257,7 +257,7 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
 
     uint8_t *font = malloc(gFontSize); // imgui needs ownership of the font and the embedded data cant be free'd at imgui destruction time. should probably free it at the end but eh
     memcpy(font, gFontData, gFontSize);
-    ImFontAtlas_AddFontFromMemoryTTF(ioptr->Fonts, font, gFontSize, 15, NULL, NULL); // why does imgui take ownership of the font ??? or does it??
+    ImFontAtlas_AddFontFromMemoryTTF(ioptr->Fonts, font, gFontSize, 15.5f, NULL, NULL); // why does imgui take ownership of the font ??? or does it??
 
     ioptr->IniFilename = NULL;
 

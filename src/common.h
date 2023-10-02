@@ -23,5 +23,7 @@
 #define clamp(mi, ma, v) ({ __typeof__(mi) mi_ = (mi); __typeof__(ma) ma_ = (ma); __typeof__(v) v_ = (v); max(mi_, min(ma_, v_)); })
 
 #define SHADER_VERSION "#version 450 core\n"
+#define GL_MAJOR 4
+#define GL_MINOR 5
 
 #include "debug.h"
