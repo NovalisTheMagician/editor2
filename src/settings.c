@@ -12,6 +12,7 @@ const char* ColorIndexToString(enum Colors color)
     case COL_LINE: return "Lines";
     case COL_SECTOR: return "Sectors";
     case COL_BACK_MAJOR_LINES: return "Editor Background Major Axis";
+    case COL_ACTIVE_EDIT: return "Active Edit Data";
     default: return "Unkown";
     }
 }
@@ -28,7 +29,9 @@ void ResetSettings(struct EdSettings *settings)
 
     SetColor(&settings->colors[COL_VERTEX], (Color){ 0.7f, 0.7f, 0.7f, 1.00f });
     SetColor(&settings->colors[COL_LINE], (Color){ 0.8f, 0.8f, 0.8f, 1.00f });
-    SetColor(&settings->colors[COL_SECTOR], (Color){ 0.8f, 0.8f, 0.3f, 0.7f });
+    SetColor(&settings->colors[COL_SECTOR], (Color){ 0.3f, 0.8f, 0.3f, 0.7f });
+
+    SetColor(&settings->colors[COL_ACTIVE_EDIT], (Color){ 0.8f, 0.8f, 0.3f, 1.0f });
 
     pstr_free(settings->gamePath);
     pstr_free(settings->launchArguments);

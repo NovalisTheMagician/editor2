@@ -66,11 +66,18 @@ bool InitEditor(struct EdState *state)
 
     state->data.gridSize = 32;
     state->data.zoomLevel = 1.0f;
-    state->data.lastVertForLine = -1;
 
     state->data.textureFilter = pstr_alloc(TEXTURE_FILTER_LEN);
 
     state->sectorToPolygon = malloc(state->map.numAllocSectors * sizeof *state->sectorToPolygon);
+
+    const GLbitfield 
+	mapping_flags = GL_MAP_WRITE_BIT | GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
+	storage_flags = GL_DYNAMIC_STORAGE_BIT | mapping_flags;
+    size_t bufferSize = EDIT_VERTEXBUFFER_CAP * sizeof(struct VertexType);
+    glCreateBuffers(1, &state->gl.editorEdit.buffer);
+    glNamedBufferStorage(state->gl.editorEdit.buffer, bufferSize, NULL, storage_flags);
+    state->gl.editorEdit.bufferMap = glMapNamedBufferRange(state->gl.editorEdit.buffer, 0, bufferSize, mapping_flags);
 
     if(!LoadShaders(state))
         return false;
@@ -105,6 +112,8 @@ void DestroyEditor(struct EdState *state)
     glDeleteProgram(state->gl.editorSector.program);
     glDeleteBuffers(2, (GLuint[]){ state->gl.editorSector.vertBuffer, state->gl.editorSector.indBuffer });
     glDeleteVertexArrays(1, &state->gl.editorSector.vertFormat);
+
+    glDeleteBuffers(1, &state->gl.editorEdit.buffer);
 
     free(state->sectorToPolygon);
 
@@ -233,12 +242,14 @@ static void RenderVertices(const struct EdState *state, const mat4 viewProjMat)
 
 static void RenderLines(const struct EdState *state, const mat4 viewProjMat)
 {
+    glLineWidth(2);
     glBindVertexArray(state->gl.editorLine.vertFormat);
     glUseProgram(state->gl.editorLine.program);
     glUniformMatrix4fv(state->gl.editorLine.viewProjUniform, 1, false, (float*)viewProjMat);
     glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[COL_LINE]);
 
     glDrawArrays(GL_LINES, 0, state->map.numLines*4);
+    glLineWidth(1);
 }
 
 static void RenderSectors(const struct EdState *state, const mat4 viewProjMat)
@@ -255,6 +266,30 @@ static void RenderSectors(const struct EdState *state, const mat4 viewProjMat)
     glDrawElements(GL_TRIANGLES, state->gl.editorSector.highestIndIndex, GL_UNSIGNED_INT, NULL);
 }
 
+static void RenderEditData(const struct EdState *state, const mat4 viewProjMat)
+{
+    glPointSize(state->settings.vertexPointSize);
+    glVertexArrayVertexBuffer(state->gl.editorVertex.vertFormat, 0, state->gl.editorEdit.buffer, 0, sizeof(struct VertexType));
+    glBindVertexArray(state->gl.editorVertex.vertFormat);
+    glUseProgram(state->gl.editorVertex.program);
+    glUniformMatrix4fv(state->gl.editorVertex.viewProjUniform, 1, false, (float*)viewProjMat);
+    glUniform4fv(state->gl.editorVertex.tintUniform, 1, state->settings.colors[COL_ACTIVE_EDIT]);
+
+    glDrawArrays(GL_POINTS, 0, state->data.editVertexBufferSize + 1);
+    glVertexArrayVertexBuffer(state->gl.editorVertex.vertFormat, 0, state->gl.editorVertex.vertBuffer, 0, sizeof(struct VertexType));
+
+    glLineWidth(2);
+    glVertexArrayVertexBuffer(state->gl.editorLine.vertFormat, 0, state->gl.editorEdit.buffer, 0, sizeof(struct VertexType));
+    glBindVertexArray(state->gl.editorLine.vertFormat);
+    glUseProgram(state->gl.editorLine.program);
+    glUniformMatrix4fv(state->gl.editorLine.viewProjUniform, 1, false, (float*)viewProjMat);
+    glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[COL_ACTIVE_EDIT]);
+
+    glDrawArrays(GL_LINE_STRIP, 0, state->data.editVertexBufferSize + 1);
+    glLineWidth(1);
+    glVertexArrayVertexBuffer(state->gl.editorLine.vertFormat, 0, state->gl.editorLine.vertBuffer, 0, sizeof(struct VertexType));
+}
+
 void RenderEditorView(struct EdState *state)
 {
     mat4 viewProjMat, viewMat;
@@ -264,8 +299,8 @@ void RenderEditorView(struct EdState *state)
 
     RenderBackground(state);
     RenderSectors(state, viewProjMat);
-    glLineWidth(2);
     RenderLines(state, viewProjMat);
-    glLineWidth(1);
     RenderVertices(state, viewProjMat);
+    if(state->data.editState == ESTATE_ADDVERTEX)
+        RenderEditData(state, viewProjMat);
 }

@@ -300,8 +300,8 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
 
         if(igBeginMenu("Edit", true))
         {
-            if(igMenuItem_Bool("Undo", "Ctrl+Z", false, true)) { printf("Undo!\n"); }
-            if(igMenuItem_Bool("Redo", "Ctrl+Y", false, true)) { printf("Redo!\n"); }
+            if(igMenuItem_Bool("Undo", "Ctrl+Z", false, true)) { LogInfo("Undo!"); }
+            if(igMenuItem_Bool("Redo", "Ctrl+Y", false, true)) { LogInfo("Redo!"); }
             igSeparator();
             if(igMenuItem_Bool("Copy", "Ctrl+C", false, true)) { EditCopy(state); }
             if(igMenuItem_Bool("Paste", "Ctrl+V", false, true)) { EditPaste(state); }
@@ -597,8 +597,7 @@ static void DoNewMap(struct EdState *state)
 {
     state->gl.editorSector.highestIndIndex = 0;
     state->gl.editorSector.highestVertIndex = 0;
-    state->data.numLinesInBuffer = 0;
-    state->data.lastVertForLine = -1;
+    state->data.editVertexBufferSize = 0;
     NewMap(&state->map);
 }
 
@@ -606,7 +605,6 @@ static void DoLoadMap(struct EdState *state)
 {
     state->gl.editorSector.highestIndIndex = 0;
     state->gl.editorSector.highestVertIndex = 0;
-    state->data.numLinesInBuffer = 0;
-    state->data.lastVertForLine = -1;
+    state->data.editVertexBufferSize = 0;
     OpenMapDialog(&state->map);
 }

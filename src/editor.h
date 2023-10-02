@@ -25,6 +25,7 @@
 
 #define TEXTURE_FILTER_LEN 256
 
+#define EDIT_VERTEXBUFFER_CAP 4096
 #define LINE_BUFFER_CAP 256
 
 enum Theme
@@ -52,6 +53,8 @@ enum Colors
     COL_LINE,
     COL_SECTOR,
 
+    COL_ACTIVE_EDIT,
+
     NUM_COLORS
 };
 
@@ -60,6 +63,12 @@ enum SelectionMode
     MODE_VERTEX,
     MODE_LINE,
     MODE_SECTOR
+};
+
+enum EditState
+{
+    ESTATE_NORMAL,
+    ESTATE_ADDVERTEX
 };
 
 typedef float Color[4];
@@ -182,6 +191,12 @@ struct EdState
             Index_t *indexMap;
             size_t highestVertIndex, highestIndIndex;
         } editorSector;
+
+        struct
+        {
+            GLuint buffer;
+            struct VertexType *bufferMap;
+        } editorEdit;
     } gl;
 
     struct
@@ -207,10 +222,10 @@ struct EdState
         mat4 editorProjection;
         mat4 realtimeProjection;
 
-        int startVertex;
-        int lastVertForLine;
-        size_t lineBuffer[LINE_BUFFER_CAP];
-        size_t numLinesInBuffer;
+        struct Vertex editVertexBuffer[EDIT_VERTEXBUFFER_CAP];
+        size_t editVertexBufferSize;
+
+        enum EditState editState;
     } data;
 
     struct

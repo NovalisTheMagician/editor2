@@ -4,6 +4,22 @@
 
 #include "../edit.h"
 
+#define DEFAULT_WHITE { 1, 1, 1, 1 }
+
+static void SubmitEditData(struct EdState *state)
+{
+    LogInfo("Edit Done with {d} vertices", state->data.editVertexBufferSize);
+    state->data.editVertexBufferSize = 0;
+}
+
+static void AddEditVertex(struct EdState *state, struct Vertex v)
+{
+    size_t idx = state->data.editVertexBufferSize++;
+    state->data.editVertexBuffer[idx] = v;
+    state->gl.editorEdit.bufferMap[idx] = (struct VertexType) { .position = { v.x, v.y }, .color = DEFAULT_WHITE };
+    state->gl.editorEdit.bufferMap[idx+1] = (struct VertexType) { .position = { v.x, v.y }, .color = DEFAULT_WHITE }; // set the next vertex to the same to remove line jerkiness
+}
+
 void EditorWindow(bool *p_open, struct EdState *state)
 {
     static bool firstTime = true;
@@ -25,9 +41,9 @@ void EditorWindow(bool *p_open, struct EdState *state)
         if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_X, 0, 0))
             EditCut(state);
         if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_Z, 0, 0))
-            printf("Undo!\n");
+            LogInfo("Undo!");
         if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_Y, 0, 0))
-            printf("Redo!\n");
+            LogInfo("Redo!");
 
         if(igShortcut(ImGuiKey_V, 0, 0))
             state->data.selectionMode = MODE_VERTEX;
@@ -78,65 +94,66 @@ void EditorWindow(bool *p_open, struct EdState *state)
             int relX = (int)mpos.x - (int)clientPos.x;
             int relY = (int)mpos.y - (int)clientPos.y;
 
+            int edX = relX, edSX = relX, edY = relY, edSY = relY;
+            float edXf = relX, edYf = relY;
+            ScreenToEditorSpaceGrid(state, &edSX, &edSY);
+            ScreenToEditorSpace(state, &edX, &edY);
+            ScreenToEditorSpacef(state, &edXf, &edYf);
+
             if(hovored)
             {
-                int edX = relX, edSX = relX, edY = relY, edSY = relY;
-                float edXf = relX, edYf = relY;
-                ScreenToEditorSpaceGrid(state, &edSX, &edSY);
-                ScreenToEditorSpace(state, &edX, &edY);
-                ScreenToEditorSpacef(state, &edXf, &edYf);
 #ifdef _DEBUG
                 state->data.mx = edX;
                 state->data.my = edY;
                 state->data.mtx = edSX;
                 state->data.mty = edSY;
 #endif
+                
+                if(state->data.editState == ESTATE_ADDVERTEX)
+                {
+                    state->gl.editorEdit.bufferMap[state->data.editVertexBufferSize] = (struct VertexType) { .position = { edSX, edSY }, .color = DEFAULT_WHITE };
+                }
 
-                if(igIsMouseDragging(ImGuiMouseButton_Middle, 2))
+                if(igIsMouseDragging(ImGuiMouseButton_Right, 2))
                 {
                     ImVec2 dragDelta;
-                    igGetMouseDragDelta(&dragDelta, ImGuiMouseButton_Middle, 2);
+                    igGetMouseDragDelta(&dragDelta, ImGuiMouseButton_Right, 2);
                     state->data.viewPosition.x -= dragDelta.x;
                     state->data.viewPosition.y -= dragDelta.y;
-                    igResetMouseDragDelta(ImGuiMouseButton_Middle);
+                    igResetMouseDragDelta(ImGuiMouseButton_Right);
 
                     igSetWindowFocus_Nil();
                 }
 
                 if(igIsMouseClicked_Bool(ImGuiMouseButton_Left, false)) 
                 {
-                    
-                }
+                    struct Vertex mouseVertex = { edSX, edSY };
+                    if(state->data.editState == ESTATE_ADDVERTEX)
+                    {
+                        if(state->data.editVertexBufferSize == 0)
+                        {
+                            AddEditVertex(state, mouseVertex);
+                        }
+                        else
+                        {
+                            struct Vertex first = state->data.editVertexBuffer[0];
+                            if(mouseVertex.x == first.x && mouseVertex.y == first.y && state->data.editVertexBufferSize >= 3)
+                            {
+                                // submit to edit
+                                SubmitEditData(state);
 
-                if(igIsMouseClicked_Bool(ImGuiMouseButton_Right, false)) 
-                {
-                    size_t newVertex;
-                    if(!EditGetVertex(state, (struct Vertex){ edSX, edSY }, &newVertex))
-                    {
-                        newVertex = EditAddVertex(state, (struct Vertex){ edSX, edSY });
-                    }
-                    if(state->data.lastVertForLine != -1 && newVertex != state->data.lastVertForLine)
-                    {
-                        ssize_t lIdx = EditAddLine(state, state->data.lastVertForLine, newVertex);
-                        assert(lIdx >= 0);
-                        size_t bufferIdx = state->data.numLinesInBuffer++;
-                        state->data.lineBuffer[bufferIdx] = lIdx;
-                    }
-                    else if(newVertex != state->data.lastVertForLine)
-                    {
-                        state->data.startVertex = newVertex;
-                    }
-
-                    if(newVertex == state->data.startVertex && state->data.numLinesInBuffer >= 3)
-                    {
-                        ssize_t sIdx = EditAddSector(state, state->data.lineBuffer, state->data.numLinesInBuffer);
-                        assert(sIdx >= 0);
-                        state->data.numLinesInBuffer = 0;
-                        state->data.lastVertForLine = -1;
-                    }
-                    else
-                    {
-                        state->data.lastVertForLine = newVertex;
+                                state->data.editState = ESTATE_NORMAL;
+                            }
+                            else
+                            {
+                                struct Vertex last = state->data.editVertexBuffer[state->data.editVertexBufferSize-1];
+                                if(!(mouseVertex.x == last.x && mouseVertex.y == last.y)) 
+                                {
+                                    AddEditVertex(state, mouseVertex);
+                                }
+                            }
+                        }
+                        assert(state->data.editVertexBufferSize != EDIT_VERTEXBUFFER_CAP);
                     }
 
                     igSetWindowFocus_Nil();
@@ -161,14 +178,43 @@ void EditorWindow(bool *p_open, struct EdState *state)
 
                     igSetWindowFocus_Nil();
                 }
+
+                if(igIsKeyPressed_Bool(ImGuiKey_Space, false))
+                {
+                    switch(state->data.editState)
+                    {
+                    case ESTATE_NORMAL:
+                    {
+                        state->data.editState = ESTATE_ADDVERTEX;
+                        state->gl.editorEdit.bufferMap[0] = (struct VertexType) { .position = { edSX, edSY }, .color = DEFAULT_WHITE }; // set first vertex to mouse position to remove vertex jump
+                    }
+                    break;
+                    case ESTATE_ADDVERTEX:
+                    {
+                        if(state->data.editVertexBufferSize >= 2)
+                        {
+                            // submit edit data
+                            SubmitEditData(state);
+                            state->data.editState = ESTATE_NORMAL;
+                        }
+                    }
+                    break;
+                    }
+                }
+
+                if(igIsKeyPressed_Bool(ImGuiKey_Escape, false))
+                {
+                    if(state->data.editState != ESTATE_NORMAL)
+                    {
+                        state->data.editVertexBufferSize = 0;
+                        state->data.editState = ESTATE_NORMAL;
+                    }
+                }
             }
 
             if(focused)
             {
-                if (igIsKeyPressed_Bool(ImGuiKey_Space, false))
-                {
-                    
-                }
+                
             }
 
             ResizeEditorView(state, clientArea.x, clientArea.y);
