@@ -125,7 +125,7 @@ void EditorWindow(bool *p_open, struct EdState *state)
                     igSetWindowFocus_Nil();
                 }
 
-                if(igIsMouseClicked_Bool(ImGuiMouseButton_Left, false)) 
+                if(igIsMouseClicked_Bool(ImGuiMouseButton_Left, false))
                 {
                     struct Vertex mouseVertex = { edSX, edSY };
                     if(state->data.editState == ESTATE_ADDVERTEX)
@@ -147,7 +147,7 @@ void EditorWindow(bool *p_open, struct EdState *state)
                             else
                             {
                                 struct Vertex last = state->data.editVertexBuffer[state->data.editVertexBufferSize-1];
-                                if(!(mouseVertex.x == last.x && mouseVertex.y == last.y)) 
+                                if(!(mouseVertex.x == last.x && mouseVertex.y == last.y))
                                 {
                                     AddEditVertex(state, mouseVertex);
                                 }
@@ -159,7 +159,7 @@ void EditorWindow(bool *p_open, struct EdState *state)
                     igSetWindowFocus_Nil();
                 }
 
-                if(igIsMouseClicked_Bool(ImGuiMouseButton_Middle, false)) 
+                if(igIsMouseClicked_Bool(ImGuiMouseButton_Middle, false))
                 {
                     igSetWindowFocus_Nil();
                 }
@@ -199,6 +199,17 @@ void EditorWindow(bool *p_open, struct EdState *state)
                         }
                     }
                     break;
+                    }
+                }
+
+                if(igIsKeyPressed_Bool(ImGuiKey_Backspace, false))
+                {
+                    if(state->data.editState == ESTATE_ADDVERTEX)
+                    {
+                        if(state->data.editVertexBufferSize > 0)
+                        {
+                            state->data.editVertexBufferSize--;
+                        }
                     }
                 }
 
