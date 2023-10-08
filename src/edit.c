@@ -196,7 +196,8 @@ ssize_t EditAddSector(struct EdState *state, size_t *lineIndices, size_t numLine
     size_t index = baseVertexIndex;
     struct Line lastLine;
     size_t lastIndex;
-    ivec2 *outerPolygon = malloc(numLines * sizeof *outerPolygon);
+    struct Polygon *outerPolygon = calloc(1, sizeof *outerPolygon + numLines * sizeof *outerPolygon->vertices);
+    outerPolygon->length = numLines;
     for(size_t i = 0; i < numLines; ++i)
     {
         struct Line line = map->lines[lineIndices[i]];
@@ -214,11 +215,11 @@ ssize_t EditAddSector(struct EdState *state, size_t *lineIndices, size_t numLine
         int32_t x = map->vertices[vertIdx].x;
         int32_t y = map->vertices[vertIdx].y;
         state->gl.editorSector.bufferMap[index++] = (struct SectorVertexType){ .position = { x, y }, .color = { 1, 1, 1, 1 }, .texCoord = { 0, 0 } };
-        outerPolygon[i][0] = x;
-        outerPolygon[i][1] = y;
+        outerPolygon->vertices[i][0] = x;
+        outerPolygon->vertices[i][1] = y;
     }
-    short *indices = NULL;
-    int numIndices = triangulate(outerPolygon, numLines, NULL, NULL, 0, &indices);
+    unsigned int *indices = NULL;
+    unsigned long numIndices = triangulate(outerPolygon, NULL, 0, &indices);
 
     index = baseIndexIndex;
     for(size_t i = 0; i < numIndices; ++i)
@@ -245,6 +246,42 @@ void EditRemoveSector(struct EdState *state, size_t index)
 bool EditGetSector(struct EdState *state, struct Vertex pos, size_t *ind)
 {
     return false;
+}
+
+ssize_t EditApplyLines(struct EdState *state, struct Vertex *points, size_t num)
+{
+
+}
+
+ssize_t EditApplySector(struct EdState *state, struct Vertex *points, size_t num)
+{
+    struct Polygon *sourcePoly = malloc(sizeof *sourcePoly + num * sizeof *sourcePoly->vertices);
+    sourcePoly->length = num;
+    for(size_t i = 0; i < num; ++i)
+    {
+        sourcePoly->vertices[i][0] = points[i].x;
+        sourcePoly->vertices[i][1] = points[i].y;
+    }
+
+    struct Polygon **sourceSimples;
+    size_t numSimples = makeSimple(sourcePoly, &sourceSimples);
+
+    LogInfo("Make simple: {d}", numSimples);
+
+    if(state->map.numSectors == 0)
+    {
+
+    }
+    else
+    {
+
+    }
+
+    free(sourcePoly);
+    freePolygons(sourceSimples, numSimples);
+    free(sourceSimples);
+
+    return -1;
 }
 
 static void IncreaseBufferSize(void **buffer, size_t *capacity, size_t elementSize)

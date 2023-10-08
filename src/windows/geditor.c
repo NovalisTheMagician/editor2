@@ -9,6 +9,9 @@
 static void SubmitEditData(struct EdState *state)
 {
     LogInfo("Edit Done with {d} vertices", state->data.editVertexBufferSize);
+
+    EditApplySector(state, state->data.editVertexBuffer, state->data.editVertexBufferSize);
+
     state->data.editVertexBufferSize = 0;
 }
 
