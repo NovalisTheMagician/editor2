@@ -157,6 +157,15 @@ void EditorWindow(bool *p_open, struct EdState *state)
                             }
                         }
                         assert(state->data.editVertexBufferSize != EDIT_VERTEXBUFFER_CAP);
+                    } 
+                    else
+                    {
+                        size_t selectedSector;
+                        if(EditGetSector(state, mouseVertex, &selectedSector))
+                        {
+                            LogInfo("Clicked on sector {d}", selectedSector);
+                            EditRemoveSector(state, selectedSector);
+                        }
                     }
 
                     igSetWindowFocus_Nil();
