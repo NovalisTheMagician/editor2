@@ -160,7 +160,7 @@ void EditorWindow(bool *p_open, struct EdState *state)
                     } 
                     else
                     {
-                        struct MapSector *selectedSector = EditGetSector(state, mouseVertex);
+                        struct MapSector *selectedSector = EditGetSector(state, (struct Vertex){ .x = edX, .y = edY });
                         if(selectedSector)
                         {
                             LogInfo("Clicked on sector {d}", selectedSector->idx);
