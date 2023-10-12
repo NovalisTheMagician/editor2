@@ -16,17 +16,17 @@ void EditCopy(struct EdState *state);
 void EditPaste(struct EdState *state);
 void EditCut(struct EdState *state);
 
-ssize_t EditAddVertex(struct EdState *state, struct Vertex pos);
-void EditRemoveVertex(struct EdState *state, size_t index);
-bool EditGetVertex(struct EdState *state, struct Vertex pos, size_t *ind);
+struct MapVertex* EditAddVertex(struct EdState *state, struct Vertex pos);
+void EditRemoveVertex(struct EdState *state, struct MapVertex *vertex);
+struct MapVertex* EditGetVertex(struct EdState *state, struct Vertex pos);
 
-ssize_t EditAddLine(struct EdState *state, size_t v0, size_t v1);
-void EditRemoveLine(struct EdState *state, size_t index);
-bool EditGetLine(struct EdState *state, struct Vertex pos, size_t *ind);
+struct MapLine* EditAddLine(struct EdState *state, struct MapVertex *v0, struct MapVertex *v1);
+void EditRemoveLine(struct EdState *state, struct MapLine *index);
+struct MapLine* EditGetLine(struct EdState *state, struct Vertex pos);
 
-ssize_t EditAddSector(struct EdState *state, size_t *lineIndices, size_t numLines);
-void EditRemoveSector(struct EdState *state, size_t index);
-bool EditGetSector(struct EdState *state, struct Vertex pos, size_t *ind);
+// struct MapSector* EditAddSector(struct EdState *state, size_t *lineIndices, size_t numLines);
+void EditRemoveSector(struct EdState *state, struct MapSector *sector);
+struct MapSector* EditGetSector(struct EdState *state, struct Vertex pos);
 
-ssize_t EditApplyLines(struct EdState *state, struct Vertex *points, size_t num);
-ssize_t EditApplySector(struct EdState *state, struct Vertex *points, size_t num);
+struct MapLine* EditApplyLines(struct EdState *state, struct Vertex *points, size_t num);
+struct MapSector* EditApplySector(struct EdState *state, struct Vertex *points, size_t num);

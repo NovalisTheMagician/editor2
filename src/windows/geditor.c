@@ -160,10 +160,10 @@ void EditorWindow(bool *p_open, struct EdState *state)
                     } 
                     else
                     {
-                        size_t selectedSector;
-                        if(EditGetSector(state, mouseVertex, &selectedSector))
+                        struct MapSector *selectedSector = EditGetSector(state, mouseVertex);
+                        if(selectedSector)
                         {
-                            LogInfo("Clicked on sector {d}", selectedSector);
+                            LogInfo("Clicked on sector {d}", selectedSector->idx);
                             EditRemoveSector(state, selectedSector);
                         }
                     }

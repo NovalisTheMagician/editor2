@@ -19,6 +19,15 @@ struct Vertex
     int32_t x, y;
 };
 
+struct MapVertex
+{
+    struct Vertex pos;
+
+    size_t idx;
+    int refCount;
+    struct MapVertex *next, *prev;
+};
+
 struct Side
 {
     pstring upperTex;
@@ -26,40 +35,55 @@ struct Side
     pstring lowerTex;
 };
 
-struct Line
+struct MapLine
 {
-    uint32_t a, b;
+    struct MapVertex *a, *b;
     uint32_t type;
     
     int32_t normal;
 
     struct Side front;
     struct Side back;
+
+    size_t idx;
+    int refCount;
+    struct MapLine *next, *prev;
 };
 
-struct Sector
+struct MapSector
 {
-    uint32_t *lines;
-    uint32_t numLines;
+    struct MapLine **outerLines;
+    size_t numOuterLines;
     uint32_t type;
+
+    struct MapLine ***innerLines;
+    size_t *numInnerLinesNum;
+    size_t numInnerLines;
+
+    struct MapSector *containedBy;
+    struct MapSector **contains;
+    size_t numContains;
 
     int32_t floorHeight;
     int32_t ceilHeight;
 
     pstring floorTex;
     pstring ceilTex;
+
+    size_t idx;
+    struct MapSector *next, *prev;
 };
 
 struct Map
 {
-    struct Vertex *vertices;
-    size_t numVertices, numAllocVertices;
+    struct MapVertex *headVertex, *tailVertex;
+    size_t numVertices;
 
-    struct Line *lines;
-    size_t numLines, numAllocLines;
+    struct MapLine *headLine, *tailLine;
+    size_t numLines;
 
-    struct Sector *sectors;
-    size_t numSectors, numAllocSectors;
+    struct MapSector *headSector, *tailSector;
+    size_t numSectors;
 
     bool dirty;
     pstring file;

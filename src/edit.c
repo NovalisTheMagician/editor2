@@ -5,8 +5,6 @@
 
 #include <triangulate.h>
 
-static void IncreaseBufferSize(void **buffer, size_t *capacity, size_t elementSize);
-
 static int32_t sign(int32_t x) {
     return (x > 0) - (x < 0);
 }
@@ -58,111 +56,243 @@ void EditCut(struct EdState *state)
     LogInfo("Cut!!\n");
 }
 
-ssize_t EditAddVertex(struct EdState *state, struct Vertex pos)
+struct MapVertex* EditAddVertex(struct EdState *state, struct Vertex pos)
 {
     struct Map *map = &state->map;
-    for(size_t i = 0; i < map->numVertices; ++i)
+    for(struct MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
     {
-        const struct Vertex v = map->vertices[i];
-        if(v.x == pos.x && v.y == pos.y) return i;
+        if(vertex->pos.x == pos.x && vertex->pos.y == pos.y) 
+        {
+            vertex->refCount++;
+            return vertex;
+        }
     }
 
-    size_t idx = map->numVertices++;
-    map->vertices[idx] = pos;
-    if(map->numVertices == map->numAllocVertices)
-        IncreaseBufferSize((void**)&map->vertices, &map->numAllocVertices, sizeof *map->vertices);
+    struct MapVertex *vertex = calloc(1, sizeof *vertex);
+    vertex->pos = pos;
+    vertex->refCount = 1;
+    vertex->idx = map->numVertices++;
+    vertex->prev = map->tailVertex;
 
-    state->gl.editorVertex.bufferMap[idx] = (struct VertexType){ .position = { pos.x, pos.y }, .color = { 1, 1, 1, 1 } };
+    if(map->headVertex == NULL)
+    {
+        map->headVertex = vertex;
+        map->tailVertex = vertex;
+    }
+    else if(map->tailVertex->prev == NULL)
+    {
+        map->headVertex->next = vertex;
+    }
+    else
+    {
+        map->tailVertex->next = vertex;
+    }
+    map->tailVertex = vertex;
+
+    state->gl.editorVertex.bufferMap[vertex->idx] = (struct VertexType){ .position = { pos.x, pos.y }, .color = { 1, 1, 1, 1 } };
 
     map->dirty = true;
-    return idx;
+    return vertex;
 }
 
-void EditRemoveVertex(struct EdState *state, size_t index)
+void EditRemoveVertex(struct EdState *state, struct MapVertex *vertex)
 {
     struct Map *map = &state->map;
-    if(index >= map->numVertices) return;
-
-    // shift everything above index down
-    for(size_t i = index + 1; i < map->numVertices; ++i)
-    {
-        map->vertices[i-1] = map->vertices[i];
-    }
-    map->numVertices--;
-
+    assert(vertex);
     // remove lines affected by vertex
 
     map->dirty = true;
 }
 
-bool EditGetVertex(struct EdState *state, struct Vertex pos, size_t *ind)
+static void RemoveVertex(struct EdState *state, struct MapVertex *vertex)
 {
     struct Map *map = &state->map;
-    for(size_t i = 0; i < map->numVertices; ++i)
+    assert(vertex);
+    assert(vertex->refCount > 0);
+
+    vertex->refCount--;
+    if(vertex->refCount == 0)
     {
-        const struct Vertex v = map->vertices[i];
-        if(v.x == pos.x && v.y == pos.y)
+        struct MapVertex *prev = vertex->prev;
+        struct MapVertex *next = vertex->next;
+
+        if(prev == NULL && next == NULL)
         {
-            if(ind) *ind = i;
-            return true;
+            map->headVertex = map->tailVertex = NULL;
         }
+        else if(vertex == map->headVertex)
+        {
+            next->prev = NULL;
+            map->headVertex = next;
+        }
+        else if(vertex == map->tailVertex)
+        {
+            prev->next = NULL;
+            map->tailVertex = prev;
+        }
+        else
+        {
+            prev->next = next;
+            next->prev = prev;
+        }
+
+        for(struct MapVertex *v = next; v; v = v->next)
+        {
+            v->idx--;
+        }
+
+        memmove(state->gl.editorVertex.bufferMap + vertex->idx, state->gl.editorVertex.bufferMap + vertex->idx + 1, (map->numVertices - (vertex->idx+1)) * sizeof *state->gl.editorVertex.bufferMap);
+
+        free(vertex);
+
+        map->numVertices--;
+        map->dirty = true;
     }
-    return false;
 }
 
-ssize_t EditAddLine(struct EdState *state, size_t v0, size_t v1)
+struct MapVertex* EditGetVertex(struct EdState *state, struct Vertex pos)
 {
     struct Map *map = &state->map;
-    if(v0 >= map->numVertices || v1 >= map->numVertices || v0 == v1) return -1;
-
-    for(size_t i = 0; i < map->numLines; ++i)
+    for(struct MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
     {
-        const struct Line l = map->lines[i];
-        bool ab = l.a == v0 && l.b == v1;
-        bool ba = l.a == v1 && l.b == v0;
-        if(ab || ba) return i;
+        if(vertex->pos.x == pos.x && vertex->pos.y == pos.y)
+        {
+            return vertex;
+        }
+    }
+    return NULL;
+}
+
+struct MapLine* EditAddLine(struct EdState *state, struct MapVertex *v0, struct MapVertex *v1)
+{
+    struct Map *map = &state->map;
+    assert(v0);
+    assert(v1);
+
+    for(struct MapLine *line = map->headLine; line; line = line->next)
+    {
+        bool ab = line->a == v0 && line->b == v1;
+        bool ba = line->a == v1 && line->b == v0;
+        if(ab || ba) 
+        {
+            line->refCount++;
+            return line;
+        }
     }
 
-    const struct Vertex vert0 = map->vertices[v0];
-    const struct Vertex vert1 = map->vertices[v1];
+    const struct Vertex vert0 = v0->pos;
+    const struct Vertex vert1 = v1->pos;
     int32_t normal = sign((vert0.x*vert1.y) - (vert0.y*vert1.x));
 
-    size_t idx = map->numLines++;
-    map->lines[idx] = (struct Line){ .a = v0, .b = v1, .type = ST_NORMAL, .normal = normal };
-    if(map->numLines == map->numAllocLines)
-        IncreaseBufferSize((void**)&map->lines, &map->numAllocLines, sizeof *map->lines);
+    struct MapLine *line = calloc(1, sizeof *line);
+    line->a = v0;
+    line->b = v1;
+    line->normal = normal;
+    line->idx = map->numLines++;
+    line->refCount = 1;
+    line->prev = map->tailLine;
 
-    vec2 line;
-    glm_vec2_sub((vec2){ vert1.x, vert1.y }, (vec2){ vert0.x, vert0.y }, line);
-    vec2 n = { -line[1], line[0] };
+    if(map->headLine == NULL)
+    {
+        map->headLine = line;
+        map->tailLine = line;
+    }
+    else if(map->tailLine->prev == NULL)
+    {
+        map->headLine->next = line;
+    }
+    else
+    {
+        map->tailLine->next = line;
+    }
+    map->tailLine = line;
+
+    vec2 l;
+    glm_vec2_sub((vec2){ vert1.x, vert1.y }, (vec2){ vert0.x, vert0.y }, l);
+    vec2 n = { -l[1], l[0] };
     glm_vec2_normalize(n);
 
     vec2 middle;
-    glm_vec2_scale(line, 0.5f, middle);
+    glm_vec2_scale(l, 0.5f, middle);
     glm_vec2_add((vec2){ vert0.x, vert0.y }, middle, middle);
 
     vec2 middleNormal;
     glm_vec2_scale(n, 10.0f, middleNormal);
     glm_vec2_add(middle, middleNormal, middleNormal);
 
-    state->gl.editorLine.bufferMap[idx * 4    ] = (struct VertexType){ .position = { vert0.x, vert0.y }, .color = { 1, 1, 1, 1 } };
-    state->gl.editorLine.bufferMap[idx * 4 + 1] = (struct VertexType){ .position = { vert1.x, vert1.y }, .color = { 1, 1, 1, 1 } };
-    state->gl.editorLine.bufferMap[idx * 4 + 2] = (struct VertexType){ .position = { middle[0], middle[1] }, .color = { 1, 1, 1, 1 } };
-    state->gl.editorLine.bufferMap[idx * 4 + 3] = (struct VertexType){ .position = { middleNormal[0], middleNormal[1] }, .color = { 1, 1, 1, 1 } };
+    state->gl.editorLine.bufferMap[line->idx * 4    ] = (struct VertexType){ .position = { vert0.x, vert0.y }, .color = { 1, 1, 1, 1 } };
+    state->gl.editorLine.bufferMap[line->idx * 4 + 1] = (struct VertexType){ .position = { vert1.x, vert1.y }, .color = { 1, 1, 1, 1 } };
+    state->gl.editorLine.bufferMap[line->idx * 4 + 2] = (struct VertexType){ .position = { middle[0], middle[1] }, .color = { 1, 1, 1, 1 } };
+    state->gl.editorLine.bufferMap[line->idx * 4 + 3] = (struct VertexType){ .position = { middleNormal[0], middleNormal[1] }, .color = { 1, 1, 1, 1 } };
 
     map->dirty = true;
-    return idx;
+    return line;
 }
 
-void EditRemoveLine(struct EdState *state, size_t index)
+void EditRemoveLine(struct EdState *state, struct MapLine *line)
 {
     struct Map *map = &state->map;
     map->dirty = true;
 }
 
-bool EditGetLine(struct EdState *state, struct Vertex pos, size_t *ind)
+static void RemoveLine(struct EdState *state, struct MapLine *line)
 {
-    return false;
+    struct Map *map = &state->map;
+    assert(line);
+    assert(line->refCount > 0);
+
+    line->refCount--;
+    if(line->refCount == 0)
+    {
+        struct MapLine *prev = line->prev;
+        struct MapLine *next = line->next;
+
+        if(prev == NULL && next == NULL)
+        {
+            map->headLine = map->tailLine = NULL;
+        }
+        else if(line == map->headLine)
+        {
+            next->prev = NULL;
+            map->headLine = next;
+        }
+        else if(line == map->tailLine)
+        {
+            prev->next = NULL;
+            map->tailLine = prev;
+        }
+        else
+        {
+            prev->next = next;
+            next->prev = prev;
+        }
+
+        for(struct MapLine *l = next; l; l = l->next)
+        {
+            l->idx--;
+        }
+
+        RemoveVertex(state, line->a);
+        RemoveVertex(state, line->b);
+
+        memmove(state->gl.editorLine.bufferMap + line->idx * 4, state->gl.editorLine.bufferMap + (line->idx + 1) * 4, (map->numLines - (line->idx+1)) * 4 * sizeof *state->gl.editorLine.bufferMap);
+
+        pstr_free(line->front.lowerTex);
+        pstr_free(line->front.middleTex);
+        pstr_free(line->front.upperTex);
+        pstr_free(line->back.lowerTex);
+        pstr_free(line->back.middleTex);
+        pstr_free(line->back.upperTex);
+        free(line);
+
+        map->numLines--;
+        map->dirty = true;
+    }
+}
+
+struct MapLine* EditGetLine(struct EdState *state, struct Vertex pos)
+{
+    return NULL;
 }
 
 static inline bool VertexCmp(struct Vertex a, struct Vertex b)
@@ -170,30 +300,21 @@ static inline bool VertexCmp(struct Vertex a, struct Vertex b)
     return a.x == b.x && a.y == b.x;
 }
 
-static ssize_t FindLine(struct EdState *state, struct Vertex a, struct Vertex b)
-{
-    for(size_t i = 0; i < state->map.numLines; ++i)
-    {
-        struct Line line = state->map.lines[i];
-        struct Vertex la = state->map.vertices[line.a], lb = state->map.vertices[line.b];
-        if((VertexCmp(la, a) && VertexCmp(lb, b)) || (VertexCmp(la, b) && VertexCmp(lb, a))) return i;
-    }
-    return -1;
-}
-
-ssize_t EditAddSector(struct EdState *state, size_t *lineIndices, size_t numLines)
+static struct MapLine* FindLine(struct EdState *state, struct Vertex a, struct Vertex b)
 {
     struct Map *map = &state->map;
-
-    for(size_t i = 0; i < map->numSectors; ++i)
+    for(struct MapLine *line = map->headLine; line; line = line->next)
     {
-        struct Sector s = map->sectors[i];
-        if(s.numLines != numLines) continue;
-        for(size_t j = 0; j < s.numLines; ++j)
-        {
-            //
-        }
+        struct Vertex la = line->a->pos, lb = line->b->pos;
+        if((VertexCmp(la, a) && VertexCmp(lb, b)) || (VertexCmp(la, b) && VertexCmp(lb, a))) return line;
     }
+    return NULL;
+}
+
+/*
+struct MapSector* EditAddSector(struct EdState *state, struct MapLine *lines, size_t numLines)
+{
+    struct Map *map = &state->map;
 
     size_t idx = map->numSectors++;
     struct Sector *s = &map->sectors[idx];
@@ -254,26 +375,75 @@ ssize_t EditAddSector(struct EdState *state, size_t *lineIndices, size_t numLine
     map->dirty = true;
     return idx;
 }
+*/
 
-void EditRemoveSector(struct EdState *state, size_t index)
+void EditRemoveSector(struct EdState *state, struct MapSector *sector)
 {
     struct Map *map = &state->map;
-    assert(index < map->numSectors);
+    assert(sector);
 
-    __typeof__(*state->sectorToPolygon) secPoly = state->sectorToPolygon[index];
-    for(size_t i = index+1; i < map->numSectors; ++i)
+    struct MapSector *prev = sector->prev;
+    struct MapSector *next = sector->next;
+
+    for(struct MapSector *s = next; s; s = s->next)
+    {
+        s->idx--;
+    }
+
+    if(prev == NULL && next == NULL)
+    {
+        map->headSector = map->tailSector = NULL;
+    }
+    else if(sector == map->headSector)
+    {
+        next->prev = NULL;
+        map->headSector = next;
+    }
+    else if(sector == map->tailSector)
+    {
+        prev->next = NULL;
+        map->tailSector = prev;
+    }
+    else
+    {
+        prev->next = next;
+        next->prev = prev;
+    }
+
+    for(size_t i = 0; i < sector->numOuterLines; ++i)
+    {
+        RemoveLine(state, sector->outerLines[i]);
+    }
+
+    for(size_t i = 0; i < sector->numInnerLines; ++i)
+    {
+        for(size_t j = 0; j < sector->numInnerLinesNum[i]; ++j)
+        {
+            RemoveLine(state, sector->innerLines[i][j]);
+        }
+    }
+
+    __typeof__(*state->sectorToPolygon) secPoly = state->sectorToPolygon[sector->idx];
+    for(size_t i = sector->idx+1; i < map->numSectors; ++i)
     {
         state->sectorToPolygon[i].indexStart -= secPoly.indexLength;
         state->sectorToPolygon[i].vertexStart -= secPoly.vertexLength;
     }
 
-    memmove(map->sectors + index, map->sectors + index + 1, (map->numSectors - (index+1)) * sizeof *map->sectors);
-    memmove(state->sectorToPolygon + index, state->sectorToPolygon + index + 1, (map->numSectors - (index+1)) * sizeof *state->sectorToPolygon);
-    memmove(state->gl.editorSector.bufferMap + secPoly.vertexStart, state->gl.editorSector.bufferMap + secPoly.vertexStart + secPoly.vertexLength, (state->gl.editorSector.highestVertIndex - (secPoly.vertexStart + secPoly.vertexLength)) * sizeof *state->gl.editorSector.bufferMap);
-    memmove(state->gl.editorSector.indexMap + secPoly.indexStart, state->gl.editorSector.indexMap + secPoly.indexStart + secPoly.indexLength, (state->gl.editorSector.highestIndIndex - (secPoly.indexStart + secPoly.indexLength)) * sizeof *state->gl.editorSector.indexMap);
+    memmove(state->sectorToPolygon + sector->idx, state->sectorToPolygon + sector->idx + 1, (map->numSectors - (sector->idx+1)) * sizeof *state->sectorToPolygon);
+    memmove(state->gl.editorSector.bufferMap + secPoly.vertexStart, state->gl.editorSector.bufferMap + secPoly.vertexStart + secPoly.vertexLength, (state->gl.editorSector.highestVertIndex - (secPoly.vertexStart + secPoly.vertexLength - 1)) * sizeof *state->gl.editorSector.bufferMap);
+    memmove(state->gl.editorSector.indexMap + secPoly.indexStart, state->gl.editorSector.indexMap + secPoly.indexStart + secPoly.indexLength, (state->gl.editorSector.highestIndIndex - (secPoly.indexStart + secPoly.indexLength - 1)) * sizeof *state->gl.editorSector.indexMap);
 
     state->gl.editorSector.highestIndIndex -= secPoly.indexLength;
     state->gl.editorSector.highestVertIndex -= secPoly.vertexLength;
+
+    pstr_free(sector->ceilTex);
+    pstr_free(sector->floorTex);
+    free(sector->outerLines);
+    for(size_t i = 0; i < sector->numInnerLines; ++i)
+        free(sector->innerLines[i]);
+    free(sector->innerLines);
+    free(sector);
 
     map->numSectors--;
 
@@ -282,18 +452,17 @@ void EditRemoveSector(struct EdState *state, size_t index)
 
 #define between(p, a, b) (((p) >= (a) && (p) <= (b)) || ((p) <= (a) && (p) >= (b)))
 
-bool EditGetSector(struct EdState *state, struct Vertex pos, size_t *ind)
+struct MapSector* EditGetSector(struct EdState *state, struct Vertex pos)
 {
     struct Map *map = &state->map;
 
-    for(size_t s = 0; s < map->numSectors; ++s)
+    for(struct MapSector *sector = map->headSector; sector; sector = sector->next)
     {
-        struct Sector *sector = &map->sectors[s];
         bool inside = false;
-        for(size_t i = 0; i < sector->numLines; ++i)
+        for(size_t i = 0; i < sector->numOuterLines; ++i)
         {
-            struct Vertex A = map->vertices[map->lines[sector->lines[i]].a];
-            struct Vertex B = map->vertices[map->lines[sector->lines[i]].b];
+            struct Vertex A = sector->outerLines[i]->a->pos; // map->vertices[map->lines[sector->lines[i]].a];
+            struct Vertex B = sector->outerLines[i]->b->pos; // map->vertices[map->lines[sector->lines[i]].b];
 
             if ((pos.x == A.x && pos.y == A.y) || (pos.x == B.x && pos.y == B.y)) break;
             if (A.y == B.y && pos.y == A.y && between(pos.x, A.x, B.x)) break;
@@ -310,48 +479,58 @@ bool EditGetSector(struct EdState *state, struct Vertex pos, size_t *ind)
         }
         if(inside)
         {
-            *ind = s;
-            return true;
+            return sector;
         }
     }
 
-    return false;
+    return NULL;
 }
 
-ssize_t EditApplyLines(struct EdState *state, struct Vertex *points, size_t num)
+struct MapLine* EditApplyLines(struct EdState *state, struct Vertex *points, size_t num)
 {
-    return -1;
+    return NULL;
 }
 
-static size_t AddPolygon(struct EdState *state, struct Polygon *polygon)
+static struct MapSector* AddPolygon(struct EdState *state, struct Polygon *polygon)
 {
     struct Map *map = &state->map;
+    assert(polygon);
 
-    size_t idx = map->numSectors++;
-    struct Sector *s = &map->sectors[idx];
+    struct MapSector *sector = calloc(1, sizeof *sector);
+    sector->numOuterLines = polygon->length;
+    sector->outerLines = malloc(sector->numOuterLines * sizeof *sector->outerLines);
+    sector->idx = map->numSectors++;
+    sector->prev = map->tailSector;
 
-    s->lines = calloc(polygon->length, sizeof *s->lines);
-    s->numLines = polygon->length;
+    if(map->headSector == NULL)
+    {
+        map->headSector = sector;
+        map->tailSector = sector;
+    }
+    else if(map->tailSector->prev == NULL)
+    {
+        map->headSector->next = sector;
+    }
+    else
+    {
+        map->tailSector->next = sector;
+    }
+    map->tailSector = sector;
+
     for(size_t i = 0; i < polygon->length; ++i)
     {
         size_t inext = (i + 1) % polygon->length;
         struct Vertex a = { .x = polygon->vertices[i][0], .y = polygon->vertices[i][1] };
         struct Vertex b = { .x = polygon->vertices[inext][0], .y = polygon->vertices[inext][1] };
-        ssize_t lIdx = FindLine(state, a, b);
-        if(lIdx == -1)
+        struct MapLine *line = FindLine(state, a, b);
+        if(line == NULL)
         {
-            size_t aIdx = EditAddVertex(state, a);
-            size_t bIdx = EditAddVertex(state, b);
-            lIdx = EditAddLine(state, aIdx, bIdx);
+            struct MapVertex *va = EditAddVertex(state, a);
+            struct MapVertex *vb = EditAddVertex(state, b);
+            line = EditAddLine(state, va, vb);
         }
 
-        s->lines[i] = lIdx;
-    }
-
-    if(map->numSectors == map->numAllocSectors)
-    {
-        IncreaseBufferSize((void**)&map->sectors, &map->numAllocSectors, sizeof *map->sectors);
-        state->sectorToPolygon = realloc(state->sectorToPolygon, map->numAllocSectors * sizeof *state->sectorToPolygon);
+        sector->outerLines[i] = line;
     }
 
     size_t baseVertexIndex = state->gl.editorSector.highestVertIndex;
@@ -373,30 +552,35 @@ static size_t AddPolygon(struct EdState *state, struct Polygon *polygon)
 
     free(indices);
 
-    state->sectorToPolygon[idx] = (__typeof__(*state->sectorToPolygon)){ .indexStart = baseIndexIndex, .indexLength = numIndices, .vertexStart = baseVertexIndex, .vertexLength = polygon->length };
+    state->sectorToPolygon[sector->idx] = (__typeof__(*state->sectorToPolygon)){ .indexStart = baseIndexIndex, .indexLength = numIndices, .vertexStart = baseVertexIndex, .vertexLength = polygon->length };
+
+    if(state->sectorToPolygonAlloc == map->numSectors)
+    {
+        state->sectorToPolygonAlloc *= 2;
+        state->sectorToPolygon = realloc(state->sectorToPolygon, state->sectorToPolygonAlloc * sizeof *state->sectorToPolygon);
+    }
 
     state->gl.editorSector.highestVertIndex += polygon->length;
     state->gl.editorSector.highestIndIndex += numIndices;
 
     map->dirty = true;
-    return idx;
+    return sector;
 }
 
-static struct Polygon* PolygonFromSector(struct Map *map, size_t sectorIdx)
+static struct Polygon* PolygonFromSector(struct Map *map, struct MapSector *sector)
 {
-    struct Sector *sector = &map->sectors[sectorIdx];
-    struct Polygon *polygon = calloc(1, sizeof *polygon + sector->numLines * sizeof *polygon->vertices);
-    polygon->length = sector->numLines;
-    for(size_t i = 0; i < sector->numLines; ++i)
+    struct Polygon *polygon = calloc(1, sizeof *polygon + sector->numOuterLines * sizeof *polygon->vertices);
+    polygon->length = sector->numOuterLines;
+    for(size_t i = 0; i < sector->numOuterLines; ++i)
     {
-        struct Vertex v = map->vertices[map->lines[sector->lines[i]].a];
+        struct Vertex v = sector->outerLines[i]->a->pos;
         polygon->vertices[i][0] = v.x;
         polygon->vertices[i][1] = v.y;
     }
     return polygon;
 }
 
-ssize_t EditApplySector(struct EdState *state, struct Vertex *points, size_t num)
+struct MapSector* EditApplySector(struct EdState *state, struct Vertex *points, size_t num)
 {
     struct Polygon *sourcePoly = malloc(sizeof *sourcePoly + num * sizeof *sourcePoly->vertices);
     sourcePoly->length = num;
@@ -406,9 +590,10 @@ ssize_t EditApplySector(struct EdState *state, struct Vertex *points, size_t num
         sourcePoly->vertices[i][1] = points[i].y;
     }
 
+    struct Map *map = &state->map;
     struct Polygon **sourceSimples;
     size_t numSimples = makeSimple(sourcePoly, &sourceSimples);
-    size_t lastPolygonId;
+    struct MapSector *lastSectorAdded = NULL;
 
     LogInfo("Make simple: {d}", numSimples);
 
@@ -416,7 +601,7 @@ ssize_t EditApplySector(struct EdState *state, struct Vertex *points, size_t num
     {
         for(size_t i = 0; i < numSimples; ++i)
         {
-            lastPolygonId = AddPolygon(state, sourceSimples[i]);
+            lastSectorAdded = AddPolygon(state, sourceSimples[i]);
         }
     }
     else
@@ -428,11 +613,11 @@ ssize_t EditApplySector(struct EdState *state, struct Vertex *points, size_t num
             struct 
             {
                 struct ClipResult res;
-                size_t secIdx;
+                struct MapSector *sector;
             } results[1024];
-            for(size_t sectorId = 0; sectorId < state->map.numSectors; ++sectorId)
+            for(struct MapSector *sector = map->headSector; sector; sector = sector->next)
             {
-                struct Polygon *sectorPolygon = PolygonFromSector(&state->map, sectorId);
+                struct Polygon *sectorPolygon = PolygonFromSector(&state->map, sector);
                 struct ClipResult res = clip(sectorPolygon, simple);
 
                 LogInfo("A Clipped: {d}", res.numAClipped);
@@ -446,7 +631,7 @@ ssize_t EditApplySector(struct EdState *state, struct Vertex *points, size_t num
                 if(clipped)
                 {
                     results[numClipped-1].res = res;
-                    results[numClipped-1].secIdx = sectorId;
+                    results[numClipped-1].sector = sector;
                 }
                 else
                 {
@@ -456,33 +641,33 @@ ssize_t EditApplySector(struct EdState *state, struct Vertex *points, size_t num
 
             if(numClipped == 0)
             {
-                lastPolygonId = AddPolygon(state, simple);
+                lastSectorAdded = AddPolygon(state, simple);
             }
             else
             {
                 for(size_t j = 0; j < numClipped; ++j)
                 {
                     struct ClipResult res = results[j].res;
-                    size_t secIdx = results[j].secIdx;
+                    struct MapSector *sector = results[j].sector;
 
                     if(res.numAClipped > 0)
                     {
-                        EditRemoveSector(state, secIdx);
+                        EditRemoveSector(state, sector);
                     }
 
                     for(size_t secPolyIdx = 0; secPolyIdx < res.numAClipped; ++secPolyIdx)
                     {
-                        lastPolygonId = AddPolygon(state, res.aClipped[secPolyIdx]);
+                        lastSectorAdded = AddPolygon(state, res.aClipped[secPolyIdx]);
                     }
 
                     for(size_t editPolyIdx = 0; editPolyIdx < res.numBClipped; ++editPolyIdx)
                     {
-                        lastPolygonId = AddPolygon(state, res.bClipped[editPolyIdx]);
+                        lastSectorAdded = AddPolygon(state, res.bClipped[editPolyIdx]);
                     }
 
                     for(size_t newPolyIdx = 0; newPolyIdx < res.numNewPolygons; ++newPolyIdx)
                     {
-                        lastPolygonId = AddPolygon(state, res.newPolygons[newPolyIdx]);
+                        lastSectorAdded = AddPolygon(state, res.newPolygons[newPolyIdx]);
                     }
 
                     freeClipResults(res);
@@ -495,11 +680,5 @@ ssize_t EditApplySector(struct EdState *state, struct Vertex *points, size_t num
     freePolygons(sourceSimples, numSimples);
     free(sourceSimples);
 
-    return lastPolygonId;
-}
-
-static void IncreaseBufferSize(void **buffer, size_t *capacity, size_t elementSize)
-{
-    *capacity = (*capacity) * 2;
-    *buffer = realloc(*buffer, (*capacity) * elementSize);
+    return lastSectorAdded;
 }

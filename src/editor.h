@@ -233,6 +233,7 @@ struct EdState
         size_t indexStart, indexLength;
         size_t vertexStart, vertexLength;
     } *sectorToPolygon;
+    size_t sectorToPolygonAlloc;
 
     struct
     {

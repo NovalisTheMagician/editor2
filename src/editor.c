@@ -69,7 +69,8 @@ bool InitEditor(struct EdState *state)
 
     state->data.textureFilter = pstr_alloc(TEXTURE_FILTER_LEN);
 
-    state->sectorToPolygon = malloc(state->map.numAllocSectors * sizeof *state->sectorToPolygon);
+    state->sectorToPolygonAlloc = 1024;
+    state->sectorToPolygon = malloc(state->sectorToPolygonAlloc * sizeof *state->sectorToPolygon);
 
     const GLbitfield 
 	mapping_flags = GL_MAP_WRITE_BIT | GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
@@ -78,6 +79,8 @@ bool InitEditor(struct EdState *state)
     glCreateBuffers(1, &state->gl.editorEdit.buffer);
     glNamedBufferStorage(state->gl.editorEdit.buffer, bufferSize, NULL, storage_flags);
     state->gl.editorEdit.bufferMap = glMapNamedBufferRange(state->gl.editorEdit.buffer, 0, bufferSize, mapping_flags);
+
+    state->data.autoScrollLogs = true;
 
     if(!LoadShaders(state))
         return false;
