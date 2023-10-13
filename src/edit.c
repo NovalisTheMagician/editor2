@@ -2,8 +2,12 @@
 #include "map.h"
 
 #include <assert.h>
+#include <tgmath.h>
 
 #include <triangulate.h>
+
+#define dot(a, b) ({ struct Vertex a_ = (a); struct Vertex b_ = (b); a_.x * b_.x + a_.y * b_.y; })
+#define dist2(a, b) ({ struct Vertex a_ = (a); struct Vertex b_ = (b); float dx = a_.x - b_.x; float dy = a_.y - b_.y; dx*dx + dy*dy; })
 
 static int32_t sign(int32_t x) {
     return (x > 0) - (x < 0);
@@ -160,6 +164,27 @@ struct MapVertex* EditGetVertex(struct EdState *state, struct Vertex pos)
     return NULL;
 }
 
+struct MapVertex* EditGetClosestVertex(struct EdState *state, struct Vertex pos, float maxDist)
+{
+    struct Map *map = &state->map;
+    struct MapVertex *closestVertex = NULL;
+    float closestDist = 100000;
+    for(struct MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
+    {
+        float dist2 = dist2(vertex->pos, pos);
+        if(dist2 <= maxDist*maxDist)
+        {
+            float dist = sqrt(dist2);
+            if(dist < closestDist)
+            {
+                closestDist = dist;
+                closestVertex = vertex;
+            }
+        }
+    }
+    return closestVertex;
+}
+
 struct MapLine* EditAddLine(struct EdState *state, struct MapVertex *v0, struct MapVertex *v1)
 {
     struct Map *map = &state->map;
@@ -284,9 +309,38 @@ static void RemoveLine(struct EdState *state, struct MapLine *line)
     }
 }
 
+/*
 struct MapLine* EditGetLine(struct EdState *state, struct Vertex pos)
 {
     return NULL;
+}
+*/
+
+static float MinDistToLine(struct Vertex v, struct Vertex w, struct Vertex p)
+{
+    float l2 = dist2(v, w);
+    if (l2 == 0) return dist2(p, v);
+    float t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+    t = max(0, min(1, t));
+    struct Vertex tmp = { .x = v.x + t * (w.x - v.x), .y = v.y + t * (w.y - v.y) };
+    return sqrt(dist2(p, tmp));
+}
+
+struct MapLine* EditGetClosestLine(struct EdState *state, struct Vertex pos, float maxDist)
+{
+    struct Map *map = &state->map;
+    struct MapLine *closestLine = NULL;
+    float closestDist = 10000;
+    for(struct MapLine *line = map->headLine; line; line = line->next)
+    {
+        float dist = MinDistToLine(line->a->pos, line->b->pos, pos);
+        if(dist <= maxDist && dist < closestDist)
+        {
+            closestDist = dist;
+            closestLine = line;
+        }
+    }
+    return closestLine;
 }
 
 static inline bool VertexCmp(struct Vertex a, struct Vertex b)

@@ -309,9 +309,9 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
             igSeparator();
             if(igBeginMenu("Modes", true))
             {
-                if(igMenuItem_Bool("Vertex", "V", state->data.selectionMode == MODE_VERTEX, true)) { state->data.selectionMode = MODE_VERTEX; }
-                if(igMenuItem_Bool("Line", "L", state->data.selectionMode == MODE_LINE, true)) { state->data.selectionMode = MODE_LINE; }
-                if(igMenuItem_Bool("Sector", "S", state->data.selectionMode == MODE_SECTOR, true)) { state->data.selectionMode = MODE_SECTOR; }
+                if(igMenuItem_Bool("Vertex", "V", state->data.selectionMode == MODE_VERTEX, true)) { ChangeMode(state, MODE_VERTEX); }
+                if(igMenuItem_Bool("Line", "L", state->data.selectionMode == MODE_LINE, true)) { ChangeMode(state, MODE_LINE); }
+                if(igMenuItem_Bool("Sector", "S", state->data.selectionMode == MODE_SECTOR, true)) { ChangeMode(state, MODE_SECTOR); }
                 igEndMenu();
             }
             igSeparator();

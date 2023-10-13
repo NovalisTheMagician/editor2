@@ -234,16 +234,9 @@ struct EdState
 
         enum EditState editState;
 
-        struct MapVertex **selectedVertices;
-        size_t numSelectedVertices;
-        struct MapLine **selectedLines;
-        size_t numSelectedLines;
-        struct MapSector **selectedSectors;
-        size_t numSelectedSectors;
-
-        struct MapVertex *hoveredVertex;
-        struct MapLine *hoveredLine;
-        struct MapSector *hoveredSector;
+        void **selectedElements;
+        size_t numSelectedElements;
+        void *hoveredElement;
     } data;
 
     struct
@@ -261,6 +254,8 @@ void SaveSettings(const char *settingsPath, const struct EdSettings *settings);
 void FreeSettings(struct EdSettings *settings);
 
 bool LoadShaders(struct EdState *state);
+
+void ChangeMode(struct EdState *state, enum SelectionMode mode);
 
 bool InitEditor(struct EdState *state);
 void DestroyEditor(struct EdState *state);

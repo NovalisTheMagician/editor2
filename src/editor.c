@@ -81,9 +81,7 @@ bool InitEditor(struct EdState *state)
 
     state->data.autoScrollLogs = true;
 
-    state->data.selectedVertices = calloc(SELECTION_CAPACITY, sizeof *state->data.selectedVertices);
-    state->data.selectedLines = calloc(SELECTION_CAPACITY, sizeof *state->data.selectedLines);
-    state->data.selectedSectors = calloc(SELECTION_CAPACITY, sizeof *state->data.selectedSectors);
+    state->data.selectedElements = calloc(SELECTION_CAPACITY, sizeof *state->data.selectedElements);
 
     if(!LoadShaders(state))
         return false;
@@ -121,9 +119,7 @@ void DestroyEditor(struct EdState *state)
 
     glDeleteBuffers(1, &state->gl.editorEdit.buffer);
 
-    free(state->data.selectedVertices);
-    free(state->data.selectedLines);
-    free(state->data.selectedSectors);
+    free(state->data.selectedElements);
 
     pstr_free(state->data.textureFilter);
 }
@@ -162,6 +158,15 @@ void ResizeEditorView(struct EdState *state, int width, int height)
     glNamedBufferSubData(state->gl.backgroundLinesBuffer, 2 * sizeof(vec2), 2 * sizeof(vec2), verLine);
 
     glm_ortho(0, width, 0, height, -1, 1, state->data.editorProjection);
+}
+
+void ChangeMode(struct EdState *state, enum SelectionMode mode)
+{
+    if(state->data.selectionMode != mode)
+    {
+        state->data.selectionMode = mode;
+        state->data.numSelectedElements = 0;
+    }
 }
 
 static void RenderBackground(const struct EdState *state)
@@ -243,10 +248,22 @@ static void RenderVertices(const struct EdState *state, const mat4 viewProjMat)
     glBindVertexArray(state->gl.editorVertex.vertFormat);
     glUseProgram(state->gl.editorVertex.program);
     glUniformMatrix4fv(state->gl.editorVertex.viewProjUniform, 1, false, (float*)viewProjMat);
-    glUniform4fv(state->gl.editorVertex.tintUniform, 1, state->settings.colors[COL_VERTEX]);
+    //glUniform4fv(state->gl.editorVertex.tintUniform, 1, state->settings.colors[COL_VERTEX]);
 
     for(const struct MapVertex *vertex = state->map.headVertex; vertex; vertex = vertex->next)
     {
+        if(state->data.numSelectedElements > 0 && vertex == state->data.selectedElements[0])
+        {
+            glUniform4fv(state->gl.editorVertex.tintUniform, 1, state->settings.colors[COL_VERTEX_SELECT]);
+        }
+        else if(vertex == state->data.hoveredElement)
+        {
+            glUniform4fv(state->gl.editorVertex.tintUniform, 1, state->settings.colors[COL_VERTEX_HOVER]);
+        }
+        else
+        {
+            glUniform4fv(state->gl.editorVertex.tintUniform, 1, state->settings.colors[COL_VERTEX]);
+        }
         glDrawArrays(GL_POINTS, vertex->idx, 1);
     }
 }
@@ -257,10 +274,22 @@ static void RenderLines(const struct EdState *state, const mat4 viewProjMat)
     glBindVertexArray(state->gl.editorLine.vertFormat);
     glUseProgram(state->gl.editorLine.program);
     glUniformMatrix4fv(state->gl.editorLine.viewProjUniform, 1, false, (float*)viewProjMat);
-    glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[COL_LINE]);
+    //glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[COL_LINE]);
 
     for(const struct MapLine *line = state->map.headLine; line; line = line->next)
     {
+        if(state->data.numSelectedElements > 0 && line == state->data.selectedElements[0])
+        {
+            glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[COL_LINE_SELECT]);
+        }
+        else if(line == state->data.hoveredElement)
+        {
+            glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[COL_LINE_HOVER]);
+        }
+        else
+        {
+            glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[COL_LINE]);
+        }
         glDrawArrays(GL_LINES, line->idx * 4, 4);
     }
     glLineWidth(1);
@@ -279,11 +308,11 @@ static void RenderSectors(const struct EdState *state, const mat4 viewProjMat)
 
     for(const struct MapSector *sector = state->map.headSector; sector; sector = sector->next)
     {
-        if(state->data.numSelectedSectors > 0 && sector == state->data.selectedSectors[0])
+        if(state->data.numSelectedElements > 0 && sector == state->data.selectedElements[0])
         {
             glUniform4fv(state->gl.editorSector.tintUniform, 1, state->settings.colors[COL_SECTOR_SELECT]);
         }
-        else if(sector == state->data.hoveredSector)
+        else if(sector == state->data.hoveredElement)
         {
             glUniform4fv(state->gl.editorSector.tintUniform, 1, state->settings.colors[COL_SECTOR_HOVER]);
         }

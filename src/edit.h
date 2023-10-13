@@ -19,10 +19,12 @@ void EditCut(struct EdState *state);
 struct MapVertex* EditAddVertex(struct EdState *state, struct Vertex pos);
 void EditRemoveVertex(struct EdState *state, struct MapVertex *vertex);
 struct MapVertex* EditGetVertex(struct EdState *state, struct Vertex pos);
+struct MapVertex* EditGetClosestVertex(struct EdState *state, struct Vertex pos, float maxDist);
 
 struct MapLine* EditAddLine(struct EdState *state, struct MapVertex *v0, struct MapVertex *v1);
 void EditRemoveLine(struct EdState *state, struct MapLine *index);
-struct MapLine* EditGetLine(struct EdState *state, struct Vertex pos);
+// struct MapLine* EditGetLine(struct EdState *state, struct Vertex pos);
+struct MapLine* EditGetClosestLine(struct EdState *state, struct Vertex pos, float maxDist);
 
 // struct MapSector* EditAddSector(struct EdState *state, size_t *lineIndices, size_t numLines);
 void EditRemoveSector(struct EdState *state, struct MapSector *sector);

@@ -49,16 +49,20 @@ void EditorWindow(bool *p_open, struct EdState *state)
             LogInfo("Redo!");
 
         if(igShortcut(ImGuiKey_V, 0, 0))
-            state->data.selectionMode = MODE_VERTEX;
+            ChangeMode(state, MODE_VERTEX);
         if(igShortcut(ImGuiKey_L, 0, 0))
-            state->data.selectionMode = MODE_LINE;
+            ChangeMode(state, MODE_LINE);
         if(igShortcut(ImGuiKey_S, 0, 0))
-            state->data.selectionMode = MODE_SECTOR;
+            ChangeMode(state, MODE_SECTOR);
 
         igPushItemWidth(80);
         static const char *modeNames[] = { "Vertex", "Line", "Sector" };
         static const size_t numModes = COUNT_OF(modeNames);
-        igCombo_Str_arr("Mode", &state->data.selectionMode, modeNames, numModes, 3);
+        int selectionMode = state->data.selectionMode;
+        if(igCombo_Str_arr("Mode", &selectionMode, modeNames, numModes, 3))
+        {
+            ChangeMode(state, selectionMode);
+        }
 
         igSameLine(0, 16);
         igPushItemWidth(80);
@@ -120,13 +124,9 @@ void EditorWindow(bool *p_open, struct EdState *state)
                 {
                     switch(state->data.selectionMode)
                     {
-                    case MODE_VERTEX: break;
-                    case MODE_LINE: break;
-                    case MODE_SECTOR: 
-                        {
-                            state->data.hoveredSector = EditGetSector(state, (struct Vertex){ .x = edX, .y = edY });
-                        }
-                        break;
+                    case MODE_VERTEX: state->data.hoveredElement = EditGetClosestVertex(state, (struct Vertex){ .x = edX, .y = edY }, 5); break;
+                    case MODE_LINE: state->data.hoveredElement = EditGetClosestLine(state, (struct Vertex){ .x = edX, .y = edY }, 5); break;
+                    case MODE_SECTOR: state->data.hoveredElement = EditGetSector(state, (struct Vertex){ .x = edX, .y = edY }); break;
                     }
                 }
 
@@ -173,13 +173,18 @@ void EditorWindow(bool *p_open, struct EdState *state)
                     } 
                     else
                     {
-                        struct MapSector *selectedSector = EditGetSector(state, (struct Vertex){ .x = edX, .y = edY });
-                        if(selectedSector)
+                        void *selectedElement;
+                        switch(state->data.selectionMode)
                         {
-                            LogInfo("Clicked on sector {d}", selectedSector->idx);
-                            state->data.numSelectedSectors = 1;
-                            state->data.selectedSectors[0] = selectedSector;
-                            //EditRemoveSector(state, selectedSector);
+                        case MODE_VERTEX: selectedElement = EditGetClosestVertex(state, (struct Vertex){ .x = edX, .y = edY }, 5); break;
+                        case MODE_LINE: selectedElement = EditGetClosestLine(state, (struct Vertex){ .x = edX, .y = edY }, 5); break;
+                        case MODE_SECTOR: selectedElement = EditGetSector(state, (struct Vertex){ .x = edX, .y = edY }); break;
+                        }
+
+                        if(selectedElement)
+                        {
+                            state->data.numSelectedElements = 1;
+                            state->data.selectedElements[0] = selectedElement;
                         }
                     }
 
@@ -244,19 +249,29 @@ void EditorWindow(bool *p_open, struct EdState *state)
                 {
                     if(state->data.editState == ESTATE_NORMAL)
                     {
-                        if(state->data.numSelectedSectors > 0)
+                        for(size_t i = 0; i < state->data.numSelectedElements; ++i)
                         {
-                            EditRemoveSector(state, state->data.selectedSectors[0]);
+                            switch(state->data.selectionMode)
+                            {
+                            case MODE_VERTEX: EditRemoveVertex(state, state->data.selectedElements[i]); break;
+                            case MODE_LINE: EditRemoveLine(state, state->data.selectedElements[i]); break;
+                            case MODE_SECTOR: EditRemoveSector(state, state->data.selectedElements[i]); break;
+                            }
                         }
                     }
                 }
 
                 if(igIsKeyPressed_Bool(ImGuiKey_Escape, false))
                 {
-                    if(state->data.editState != ESTATE_NORMAL)
+                    if(state->data.editState == ESTATE_ADDVERTEX)
                     {
                         state->data.editVertexBufferSize = 0;
                         state->data.editState = ESTATE_NORMAL;
+                    }
+                    else if(state->data.editState == ESTATE_NORMAL)
+                    {
+                        if(state->data.numSelectedElements > 0)
+                            state->data.numSelectedElements = 0;
                     }
                 }
             }
