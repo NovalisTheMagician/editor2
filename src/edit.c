@@ -68,10 +68,12 @@ struct MapVertex* EditAddVertex(struct EdState *state, struct Vertex pos)
         }
     }
 
+    static size_t vertexIndex = 0;
+
     struct MapVertex *vertex = calloc(1, sizeof *vertex);
     vertex->pos = pos;
     vertex->refCount = 1;
-    vertex->idx = map->numVertices++;
+    vertex->idx = vertexIndex++;
     vertex->prev = map->tailVertex;
 
     if(map->headVertex == NULL)
@@ -136,12 +138,7 @@ static void RemoveVertex(struct EdState *state, struct MapVertex *vertex)
             next->prev = prev;
         }
 
-        for(struct MapVertex *v = next; v; v = v->next)
-        {
-            v->idx--;
-        }
-
-        memmove(state->gl.editorVertex.bufferMap + vertex->idx, state->gl.editorVertex.bufferMap + vertex->idx + 1, (map->numVertices - (vertex->idx+1)) * sizeof *state->gl.editorVertex.bufferMap);
+        //memmove(state->gl.editorVertex.bufferMap + vertex->idx, state->gl.editorVertex.bufferMap + vertex->idx + 1, (map->numVertices - (vertex->idx+1)) * sizeof *state->gl.editorVertex.bufferMap);
 
         free(vertex);
 
@@ -184,11 +181,13 @@ struct MapLine* EditAddLine(struct EdState *state, struct MapVertex *v0, struct 
     const struct Vertex vert1 = v1->pos;
     int32_t normal = sign((vert0.x*vert1.y) - (vert0.y*vert1.x));
 
+    static size_t lineIndex = 0;
+
     struct MapLine *line = calloc(1, sizeof *line);
     line->a = v0;
     line->b = v1;
     line->normal = normal;
-    line->idx = map->numLines++;
+    line->idx = lineIndex++;
     line->refCount = 1;
     line->prev = map->tailLine;
 
@@ -267,15 +266,10 @@ static void RemoveLine(struct EdState *state, struct MapLine *line)
             next->prev = prev;
         }
 
-        for(struct MapLine *l = next; l; l = l->next)
-        {
-            l->idx--;
-        }
-
         RemoveVertex(state, line->a);
         RemoveVertex(state, line->b);
 
-        memmove(state->gl.editorLine.bufferMap + line->idx * 4, state->gl.editorLine.bufferMap + (line->idx + 1) * 4, (map->numLines - (line->idx+1)) * 4 * sizeof *state->gl.editorLine.bufferMap);
+        //memmove(state->gl.editorLine.bufferMap + line->idx * 4, state->gl.editorLine.bufferMap + (line->idx + 1) * 4, (map->numLines - (line->idx+1)) * 4 * sizeof *state->gl.editorLine.bufferMap);
 
         pstr_free(line->front.lowerTex);
         pstr_free(line->front.middleTex);
@@ -423,19 +417,8 @@ void EditRemoveSector(struct EdState *state, struct MapSector *sector)
         }
     }
 
-    __typeof__(*state->sectorToPolygon) secPoly = state->sectorToPolygon[sector->idx];
-    for(size_t i = sector->idx+1; i < map->numSectors; ++i)
-    {
-        state->sectorToPolygon[i].indexStart -= secPoly.indexLength;
-        state->sectorToPolygon[i].vertexStart -= secPoly.vertexLength;
-    }
-
-    memmove(state->sectorToPolygon + sector->idx, state->sectorToPolygon + sector->idx + 1, (map->numSectors - (sector->idx+1)) * sizeof *state->sectorToPolygon);
-    memmove(state->gl.editorSector.bufferMap + secPoly.vertexStart, state->gl.editorSector.bufferMap + secPoly.vertexStart + secPoly.vertexLength, (state->gl.editorSector.highestVertIndex - (secPoly.vertexStart + secPoly.vertexLength - 1)) * sizeof *state->gl.editorSector.bufferMap);
-    memmove(state->gl.editorSector.indexMap + secPoly.indexStart, state->gl.editorSector.indexMap + secPoly.indexStart + secPoly.indexLength, (state->gl.editorSector.highestIndIndex - (secPoly.indexStart + secPoly.indexLength - 1)) * sizeof *state->gl.editorSector.indexMap);
-
-    state->gl.editorSector.highestIndIndex -= secPoly.indexLength;
-    state->gl.editorSector.highestVertIndex -= secPoly.vertexLength;
+    //state->gl.editorSector.highestIndIndex -= secPoly.indexLength;
+    //state->gl.editorSector.highestVertIndex -= secPoly.vertexLength;
 
     pstr_free(sector->ceilTex);
     pstr_free(sector->floorTex);
@@ -496,10 +479,12 @@ static struct MapSector* AddPolygon(struct EdState *state, struct Polygon *polyg
     struct Map *map = &state->map;
     assert(polygon);
 
+    static size_t sectorIndex = 0;
+
     struct MapSector *sector = calloc(1, sizeof *sector);
     sector->numOuterLines = polygon->length;
     sector->outerLines = malloc(sector->numOuterLines * sizeof *sector->outerLines);
-    sector->idx = map->numSectors++;
+    sector->idx = sectorIndex++;
     sector->prev = map->tailSector;
 
     if(map->headSector == NULL)
@@ -552,13 +537,7 @@ static struct MapSector* AddPolygon(struct EdState *state, struct Polygon *polyg
 
     free(indices);
 
-    state->sectorToPolygon[sector->idx] = (__typeof__(*state->sectorToPolygon)){ .indexStart = baseIndexIndex, .indexLength = numIndices, .vertexStart = baseVertexIndex, .vertexLength = polygon->length };
-
-    if(state->sectorToPolygonAlloc == map->numSectors)
-    {
-        state->sectorToPolygonAlloc *= 2;
-        state->sectorToPolygon = realloc(state->sectorToPolygon, state->sectorToPolygonAlloc * sizeof *state->sectorToPolygon);
-    }
+    sector->edData = (struct TriangleData){ .indexStart = baseIndexIndex, .indexLength = numIndices, .vertexStart = baseVertexIndex, .vertexLength = polygon->length };
 
     state->gl.editorSector.highestVertIndex += polygon->length;
     state->gl.editorSector.highestIndIndex += numIndices;
@@ -597,81 +576,71 @@ struct MapSector* EditApplySector(struct EdState *state, struct Vertex *points, 
 
     LogInfo("Make simple: {d}", numSimples);
 
-    if(state->map.numSectors == 0)
+    for(size_t i = 0; i < numSimples; ++i)
     {
-        for(size_t i = 0; i < numSimples; ++i)
+        struct Polygon *simple = sourceSimples[i];
+        size_t numClipped = 0;
+        struct 
         {
-            lastSectorAdded = AddPolygon(state, sourceSimples[i]);
-        }
-    }
-    else
-    {
-        for(size_t i = 0; i < numSimples; ++i)
+            struct ClipResult res;
+            struct MapSector *sector;
+        } results[128];
+        for(struct MapSector *sector = map->headSector; sector; sector = sector->next)
         {
-            struct Polygon *simple = sourceSimples[i];
-            size_t numClipped = 0;
-            struct 
-            {
-                struct ClipResult res;
-                struct MapSector *sector;
-            } results[1024];
-            for(struct MapSector *sector = map->headSector; sector; sector = sector->next)
-            {
-                struct Polygon *sectorPolygon = PolygonFromSector(&state->map, sector);
-                struct ClipResult res = clip(sectorPolygon, simple);
+            struct Polygon *sectorPolygon = PolygonFromSector(&state->map, sector);
+            struct ClipResult res = clip(sectorPolygon, simple);
 
-                LogInfo("A Clipped: {d}", res.numAClipped);
-                LogInfo("B Clipped: {d}", res.numBClipped);
-                LogInfo("C Clipped: {d}", res.numNewPolygons);
+            LogInfo("A Clipped: {d}", res.numAClipped);
+            LogInfo("B Clipped: {d}", res.numBClipped);
+            LogInfo("C Clipped: {d}", res.numNewPolygons);
 
-                bool clipped = res.numAClipped > 0 || res.numBClipped > 0 || res.numNewPolygons > 0;
-                numClipped += clipped;
-                
-                free(sectorPolygon);
-                if(clipped)
-                {
-                    results[numClipped-1].res = res;
-                    results[numClipped-1].sector = sector;
-                }
-                else
-                {
-                    freeClipResults(res);
-                }
-            }
-
-            if(numClipped == 0)
+            bool clipped = res.numAClipped > 0 || res.numBClipped > 0 || res.numNewPolygons > 0;
+            numClipped += clipped;
+            
+            free(sectorPolygon);
+            if(clipped)
             {
-                lastSectorAdded = AddPolygon(state, simple);
+                results[numClipped-1].res = res;
+                results[numClipped-1].sector = sector;
             }
             else
             {
-                for(size_t j = 0; j < numClipped; ++j)
+                freeClipResults(res);
+            }
+        }
+
+        if(numClipped == 0)
+        {
+            lastSectorAdded = AddPolygon(state, simple);
+        }
+        else
+        {
+            for(size_t j = 0; j < numClipped; ++j)
+            {
+                struct ClipResult res = results[j].res;
+                struct MapSector *sector = results[j].sector;
+
+                if(res.numAClipped > 0)
                 {
-                    struct ClipResult res = results[j].res;
-                    struct MapSector *sector = results[j].sector;
-
-                    if(res.numAClipped > 0)
-                    {
-                        EditRemoveSector(state, sector);
-                    }
-
-                    for(size_t secPolyIdx = 0; secPolyIdx < res.numAClipped; ++secPolyIdx)
-                    {
-                        lastSectorAdded = AddPolygon(state, res.aClipped[secPolyIdx]);
-                    }
-
-                    for(size_t editPolyIdx = 0; editPolyIdx < res.numBClipped; ++editPolyIdx)
-                    {
-                        lastSectorAdded = AddPolygon(state, res.bClipped[editPolyIdx]);
-                    }
-
-                    for(size_t newPolyIdx = 0; newPolyIdx < res.numNewPolygons; ++newPolyIdx)
-                    {
-                        lastSectorAdded = AddPolygon(state, res.newPolygons[newPolyIdx]);
-                    }
-
-                    freeClipResults(res);
+                    EditRemoveSector(state, sector);
                 }
+
+                for(size_t secPolyIdx = 0; secPolyIdx < res.numAClipped; ++secPolyIdx)
+                {
+                    lastSectorAdded = AddPolygon(state, res.aClipped[secPolyIdx]);
+                }
+
+                for(size_t editPolyIdx = 0; editPolyIdx < res.numBClipped; ++editPolyIdx)
+                {
+                    lastSectorAdded = AddPolygon(state, res.bClipped[editPolyIdx]);
+                }
+
+                for(size_t newPolyIdx = 0; newPolyIdx < res.numNewPolygons; ++newPolyIdx)
+                {
+                    lastSectorAdded = AddPolygon(state, res.newPolygons[newPolyIdx]);
+                }
+
+                freeClipResults(res);
             }
         }
     }

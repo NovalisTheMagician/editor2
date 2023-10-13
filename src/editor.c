@@ -69,9 +69,6 @@ bool InitEditor(struct EdState *state)
 
     state->data.textureFilter = pstr_alloc(TEXTURE_FILTER_LEN);
 
-    state->sectorToPolygonAlloc = 1024;
-    state->sectorToPolygon = malloc(state->sectorToPolygonAlloc * sizeof *state->sectorToPolygon);
-
     const GLbitfield 
 	mapping_flags = GL_MAP_WRITE_BIT | GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
 	storage_flags = GL_DYNAMIC_STORAGE_BIT | mapping_flags;
@@ -117,8 +114,6 @@ void DestroyEditor(struct EdState *state)
     glDeleteVertexArrays(1, &state->gl.editorSector.vertFormat);
 
     glDeleteBuffers(1, &state->gl.editorEdit.buffer);
-
-    free(state->sectorToPolygon);
 
     pstr_free(state->data.textureFilter);
 }
@@ -240,7 +235,10 @@ static void RenderVertices(const struct EdState *state, const mat4 viewProjMat)
     glUniformMatrix4fv(state->gl.editorVertex.viewProjUniform, 1, false, (float*)viewProjMat);
     glUniform4fv(state->gl.editorVertex.tintUniform, 1, state->settings.colors[COL_VERTEX]);
 
-    glDrawArrays(GL_POINTS, 0, state->map.numVertices);
+    for(const struct MapVertex *vertex = state->map.headVertex; vertex; vertex = vertex->next)
+    {
+        glDrawArrays(GL_POINTS, vertex->idx, 1);
+    }
 }
 
 static void RenderLines(const struct EdState *state, const mat4 viewProjMat)
@@ -251,7 +249,10 @@ static void RenderLines(const struct EdState *state, const mat4 viewProjMat)
     glUniformMatrix4fv(state->gl.editorLine.viewProjUniform, 1, false, (float*)viewProjMat);
     glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[COL_LINE]);
 
-    glDrawArrays(GL_LINES, 0, state->map.numLines*4);
+    for(const struct MapLine *line = state->map.headLine; line; line = line->next)
+    {
+        glDrawArrays(GL_LINES, line->idx * 4, 4);
+    }
     glLineWidth(1);
 }
 
@@ -266,7 +267,12 @@ static void RenderSectors(const struct EdState *state, const mat4 viewProjMat)
         glBindTextureUnit(0, state->gl.whiteTexture);
     // handle real texture here
 
-    glDrawElements(GL_TRIANGLES, state->gl.editorSector.highestIndIndex, GL_UNSIGNED_INT, NULL);
+    for(const struct MapSector *sector = state->map.headSector; sector; sector = sector->next)
+    {
+        const struct TriangleData data = sector->edData;
+        //glDrawElementsBaseVertex(GL_TRIANGLES, data.indexLength, GL_UNSIGNED_INT, (void*)data.indexStart, data.vertexStart);
+        glDrawElements(GL_TRIANGLES, data.indexLength, GL_UNSIGNED_INT, (void*)(data.indexStart * sizeof(Index_t)));
+    }
 }
 
 static void RenderEditData(const struct EdState *state, const mat4 viewProjMat)

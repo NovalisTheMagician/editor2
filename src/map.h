@@ -2,8 +2,6 @@
 
 #include "common.h"
 
-#define DEFAULT_CAPACITY 256
-
 enum LineType
 {
     LT_NORMAL
@@ -17,6 +15,12 @@ enum SectorType
 struct Vertex
 {
     int32_t x, y;
+};
+
+struct TriangleData
+{
+    size_t indexStart, indexLength;
+    size_t vertexStart, vertexLength;
 };
 
 struct MapVertex
@@ -72,6 +76,7 @@ struct MapSector
 
     size_t idx;
     struct MapSector *next, *prev;
+    struct TriangleData edData;
 };
 
 struct Map
