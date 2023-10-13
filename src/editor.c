@@ -2,6 +2,8 @@
 
 #include <tgmath.h>
 
+#define SELECTION_CAPACITY 10000
+
 static void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
 {
     const char *src_str = ({
@@ -79,6 +81,10 @@ bool InitEditor(struct EdState *state)
 
     state->data.autoScrollLogs = true;
 
+    state->data.selectedVertices = calloc(SELECTION_CAPACITY, sizeof *state->data.selectedVertices);
+    state->data.selectedLines = calloc(SELECTION_CAPACITY, sizeof *state->data.selectedLines);
+    state->data.selectedSectors = calloc(SELECTION_CAPACITY, sizeof *state->data.selectedSectors);
+
     if(!LoadShaders(state))
         return false;
 
@@ -114,6 +120,10 @@ void DestroyEditor(struct EdState *state)
     glDeleteVertexArrays(1, &state->gl.editorSector.vertFormat);
 
     glDeleteBuffers(1, &state->gl.editorEdit.buffer);
+
+    free(state->data.selectedVertices);
+    free(state->data.selectedLines);
+    free(state->data.selectedSectors);
 
     pstr_free(state->data.textureFilter);
 }
@@ -261,7 +271,7 @@ static void RenderSectors(const struct EdState *state, const mat4 viewProjMat)
     glBindVertexArray(state->gl.editorSector.vertFormat);
     glUseProgram(state->gl.editorSector.program);
     glUniformMatrix4fv(state->gl.editorSector.viewProjUniform, 1, false, (float*)viewProjMat);
-    glUniform4fv(state->gl.editorSector.tintUniform, 1, state->settings.colors[COL_SECTOR]);
+    //glUniform4fv(state->gl.editorSector.tintUniform, 1, state->settings.colors[COL_SECTOR]);
     glUniform1i(state->gl.editorSector.textureUniform, 0);
     if(!state->data.showSectorTextures)
         glBindTextureUnit(0, state->gl.whiteTexture);
@@ -269,6 +279,18 @@ static void RenderSectors(const struct EdState *state, const mat4 viewProjMat)
 
     for(const struct MapSector *sector = state->map.headSector; sector; sector = sector->next)
     {
+        if(state->data.numSelectedSectors > 0 && sector == state->data.selectedSectors[0])
+        {
+            glUniform4fv(state->gl.editorSector.tintUniform, 1, state->settings.colors[COL_SECTOR_SELECT]);
+        }
+        else if(sector == state->data.hoveredSector)
+        {
+            glUniform4fv(state->gl.editorSector.tintUniform, 1, state->settings.colors[COL_SECTOR_HOVER]);
+        }
+        else
+        {
+            glUniform4fv(state->gl.editorSector.tintUniform, 1, state->settings.colors[COL_SECTOR]);
+        }
         const struct TriangleData data = sector->edData;
         //glDrawElementsBaseVertex(GL_TRIANGLES, data.indexLength, GL_UNSIGNED_INT, (void*)data.indexStart, data.vertexStart);
         glDrawElements(GL_TRIANGLES, data.indexLength, GL_UNSIGNED_INT, (void*)(data.indexStart * sizeof(Index_t)));

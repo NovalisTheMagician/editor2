@@ -55,6 +55,13 @@ enum Colors
 
     COL_ACTIVE_EDIT,
 
+    COL_VERTEX_HOVER,
+    COL_VERTEX_SELECT,
+    COL_LINE_HOVER,
+    COL_LINE_SELECT,
+    COL_SECTOR_HOVER,
+    COL_SECTOR_SELECT,
+
     NUM_COLORS
 };
 
@@ -226,6 +233,17 @@ struct EdState
         size_t editVertexBufferSize;
 
         enum EditState editState;
+
+        struct MapVertex **selectedVertices;
+        size_t numSelectedVertices;
+        struct MapLine **selectedLines;
+        size_t numSelectedLines;
+        struct MapSector **selectedSectors;
+        size_t numSelectedSectors;
+
+        struct MapVertex *hoveredVertex;
+        struct MapLine *hoveredLine;
+        struct MapSector *hoveredSector;
     } data;
 
     struct

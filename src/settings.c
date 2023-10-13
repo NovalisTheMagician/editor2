@@ -13,6 +13,12 @@ const char* ColorIndexToString(enum Colors color)
     case COL_SECTOR: return "Sectors";
     case COL_BACK_MAJOR_LINES: return "Editor Background Major Axis";
     case COL_ACTIVE_EDIT: return "Active Edit Data";
+    case COL_VERTEX_HOVER: return "Hovered Vertex";
+    case COL_VERTEX_SELECT: return "Selected Vertex";
+    case COL_LINE_HOVER: return "Hovered Line";
+    case COL_LINE_SELECT: return "Selected Line";
+    case COL_SECTOR_HOVER: return "Hovered Sector";
+    case COL_SECTOR_SELECT: return "Selected Sector";
     default: return "Unkown";
     }
 }
@@ -32,6 +38,15 @@ void ResetSettings(struct EdSettings *settings)
     SetColor(&settings->colors[COL_SECTOR], (Color){ 0.3f, 0.8f, 0.3f, 0.7f });
 
     SetColor(&settings->colors[COL_ACTIVE_EDIT], (Color){ 0.8f, 0.8f, 0.3f, 1.0f });
+
+    SetColor(&settings->colors[COL_VERTEX_HOVER], (Color){ 1.0f, 1.0f, 1.0f, 1.00f });
+    SetColor(&settings->colors[COL_VERTEX_SELECT], (Color){ 1.0f, 1.0f, 0.0f, 1.00f });
+
+    SetColor(&settings->colors[COL_LINE_HOVER], (Color){ 1.0f, 1.0f, 1.0f, 1.00f });
+    SetColor(&settings->colors[COL_LINE_SELECT], (Color){ 1.0f, 1.0f, 0.0f, 1.00f });
+
+    SetColor(&settings->colors[COL_SECTOR_HOVER], (Color){ 0.4f, 0.9f, 0.4f, 1.00f });
+    SetColor(&settings->colors[COL_SECTOR_SELECT], (Color){ 1.0f, 1.0f, 0.0f, 1.00f });
 
     pstr_free(settings->gamePath);
     pstr_free(settings->launchArguments);

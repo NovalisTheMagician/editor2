@@ -116,6 +116,19 @@ void EditorWindow(bool *p_open, struct EdState *state)
                 {
                     state->gl.editorEdit.bufferMap[state->data.editVertexBufferSize] = (struct VertexType) { .position = { edSX, edSY }, .color = DEFAULT_WHITE };
                 }
+                else if(state->data.editState == ESTATE_NORMAL)
+                {
+                    switch(state->data.selectionMode)
+                    {
+                    case MODE_VERTEX: break;
+                    case MODE_LINE: break;
+                    case MODE_SECTOR: 
+                        {
+                            state->data.hoveredSector = EditGetSector(state, (struct Vertex){ .x = edX, .y = edY });
+                        }
+                        break;
+                    }
+                }
 
                 if(igIsMouseDragging(ImGuiMouseButton_Right, 2))
                 {
@@ -164,7 +177,9 @@ void EditorWindow(bool *p_open, struct EdState *state)
                         if(selectedSector)
                         {
                             LogInfo("Clicked on sector {d}", selectedSector->idx);
-                            EditRemoveSector(state, selectedSector);
+                            state->data.numSelectedSectors = 1;
+                            state->data.selectedSectors[0] = selectedSector;
+                            //EditRemoveSector(state, selectedSector);
                         }
                     }
 
@@ -221,6 +236,17 @@ void EditorWindow(bool *p_open, struct EdState *state)
                         if(state->data.editVertexBufferSize > 0)
                         {
                             state->data.editVertexBufferSize--;
+                        }
+                    }
+                }
+
+                if(igIsKeyPressed_Bool(ImGuiKey_Delete, false))
+                {
+                    if(state->data.editState == ESTATE_NORMAL)
+                    {
+                        if(state->data.numSelectedSectors > 0)
+                        {
+                            EditRemoveSector(state, state->data.selectedSectors[0]);
                         }
                     }
                 }
