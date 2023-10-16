@@ -346,21 +346,24 @@ static void RenderEditData(const struct EdState *state, const mat4 viewProjMat)
         glVertexArrayVertexBuffer(state->gl.editorVertex.vertFormat, 0, state->gl.editorVertex.vertBuffer, 0, sizeof(struct VertexType));
     }
 
-    glLineWidth(2);
-    glVertexArrayVertexBuffer(state->gl.editorLine.vertFormat, 0, state->gl.editorEdit.buffer, 0, sizeof(struct VertexType));
-    glBindVertexArray(state->gl.editorLine.vertFormat);
-    glUseProgram(state->gl.editorLine.program);
-    glUniformMatrix4fv(state->gl.editorLine.viewProjUniform, 1, false, (float*)viewProjMat);
-    glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[COL_ACTIVE_EDIT]);
+    if(state->data.editState == ESTATE_ADDVERTEX || state->data.isDragging)
+    {
+        glLineWidth(2);
+        glVertexArrayVertexBuffer(state->gl.editorLine.vertFormat, 0, state->gl.editorEdit.buffer, 0, sizeof(struct VertexType));
+        glBindVertexArray(state->gl.editorLine.vertFormat);
+        glUseProgram(state->gl.editorLine.program);
+        glUniformMatrix4fv(state->gl.editorLine.viewProjUniform, 1, false, (float*)viewProjMat);
+        glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[COL_ACTIVE_EDIT]);
 
-    if(state->data.editState == ESTATE_ADDVERTEX)
-        glDrawArrays(GL_LINE_STRIP, 4, state->data.editVertexBufferSize + 1);
+        if(state->data.editState == ESTATE_ADDVERTEX)
+            glDrawArrays(GL_LINE_STRIP, 4, state->data.editVertexBufferSize + 1);
 
-    if(state->data.isDragging)
-        glDrawArrays(GL_LINE_LOOP, 0, 4);
+        if(state->data.isDragging)
+            glDrawArrays(GL_LINE_LOOP, 0, 4);
 
-    glLineWidth(1);
-    glVertexArrayVertexBuffer(state->gl.editorLine.vertFormat, 0, state->gl.editorLine.vertBuffer, 0, sizeof(struct VertexType));
+        glLineWidth(1);
+        glVertexArrayVertexBuffer(state->gl.editorLine.vertFormat, 0, state->gl.editorLine.vertBuffer, 0, sizeof(struct VertexType));
+    }
 }
 
 void RenderEditorView(struct EdState *state)
