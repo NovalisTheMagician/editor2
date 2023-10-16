@@ -242,17 +242,25 @@ static void RenderBackground(const struct EdState *state)
     }
 }
 
+static inline bool includes(void * const *list, size_t size, const void *element)
+{
+    for(size_t i = 0; i < size; ++i)
+    {
+        if(list[i] == element) return true;
+    }
+    return false;
+}
+
 static void RenderVertices(const struct EdState *state, const mat4 viewProjMat)
 {
     glPointSize(state->settings.vertexPointSize);
     glBindVertexArray(state->gl.editorVertex.vertFormat);
     glUseProgram(state->gl.editorVertex.program);
     glUniformMatrix4fv(state->gl.editorVertex.viewProjUniform, 1, false, (float*)viewProjMat);
-    //glUniform4fv(state->gl.editorVertex.tintUniform, 1, state->settings.colors[COL_VERTEX]);
 
     for(const struct MapVertex *vertex = state->map.headVertex; vertex; vertex = vertex->next)
     {
-        if(state->data.numSelectedElements > 0 && vertex == state->data.selectedElements[0])
+        if(state->data.numSelectedElements > 0 && includes(state->data.selectedElements, state->data.numSelectedElements, vertex))
         {
             glUniform4fv(state->gl.editorVertex.tintUniform, 1, state->settings.colors[COL_VERTEX_SELECT]);
         }
@@ -274,11 +282,10 @@ static void RenderLines(const struct EdState *state, const mat4 viewProjMat)
     glBindVertexArray(state->gl.editorLine.vertFormat);
     glUseProgram(state->gl.editorLine.program);
     glUniformMatrix4fv(state->gl.editorLine.viewProjUniform, 1, false, (float*)viewProjMat);
-    //glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[COL_LINE]);
 
     for(const struct MapLine *line = state->map.headLine; line; line = line->next)
     {
-        if(state->data.numSelectedElements > 0 && line == state->data.selectedElements[0])
+        if(state->data.numSelectedElements > 0 && includes(state->data.selectedElements, state->data.numSelectedElements, line))
         {
             glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[COL_LINE_SELECT]);
         }
@@ -290,7 +297,7 @@ static void RenderLines(const struct EdState *state, const mat4 viewProjMat)
         {
             glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[COL_LINE]);
         }
-        glDrawArrays(GL_LINES, line->idx * 4, 4);
+        glDrawArrays(GL_LINES, line->idx * 4, 4); // 2 verts per line segment | 2 for wall and 2 for wall normal
     }
     glLineWidth(1);
 }
@@ -300,7 +307,6 @@ static void RenderSectors(const struct EdState *state, const mat4 viewProjMat)
     glBindVertexArray(state->gl.editorSector.vertFormat);
     glUseProgram(state->gl.editorSector.program);
     glUniformMatrix4fv(state->gl.editorSector.viewProjUniform, 1, false, (float*)viewProjMat);
-    //glUniform4fv(state->gl.editorSector.tintUniform, 1, state->settings.colors[COL_SECTOR]);
     glUniform1i(state->gl.editorSector.textureUniform, 0);
     if(!state->data.showSectorTextures)
         glBindTextureUnit(0, state->gl.whiteTexture);
@@ -308,7 +314,7 @@ static void RenderSectors(const struct EdState *state, const mat4 viewProjMat)
 
     for(const struct MapSector *sector = state->map.headSector; sector; sector = sector->next)
     {
-        if(state->data.numSelectedElements > 0 && sector == state->data.selectedElements[0])
+        if(state->data.numSelectedElements > 0 && includes(state->data.selectedElements, state->data.numSelectedElements, sector))
         {
             glUniform4fv(state->gl.editorSector.tintUniform, 1, state->settings.colors[COL_SECTOR_SELECT]);
         }

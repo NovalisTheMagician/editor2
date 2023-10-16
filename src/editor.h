@@ -229,6 +229,9 @@ struct EdState
         mat4 editorProjection;
         mat4 realtimeProjection;
 
+        bool isDragging;
+        struct Vertex startDrag, endDrag;
+
         struct Vertex editVertexBuffer[EDIT_VERTEXBUFFER_CAP];
         size_t editVertexBufferSize;
 

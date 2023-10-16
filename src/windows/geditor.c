@@ -5,6 +5,8 @@
 #include "../edit.h"
 
 #define DEFAULT_WHITE { 1, 1, 1, 1 }
+#define LINE_DIST 10
+#define VERTEX_DIST 5
 
 static void SubmitEditData(struct EdState *state)
 {
@@ -13,6 +15,63 @@ static void SubmitEditData(struct EdState *state)
     EditApplySector(state, state->data.editVertexBuffer, state->data.editVertexBufferSize);
 
     state->data.editVertexBufferSize = 0;
+}
+
+static bool within(struct Vertex min, struct Vertex max, struct Vertex v)
+{
+    return v.x >= min.x && v.y >= min.y && v.x <= max.x && v.y <= max.y;
+}
+
+static void RectSelect(struct EdState *state, bool add)
+{
+    struct Vertex min = { .x = min(state->data.startDrag.x, state->data.endDrag.x), .y = min(state->data.startDrag.y, state->data.endDrag.y) };
+    struct Vertex max = { .x = max(state->data.startDrag.x, state->data.endDrag.x), .y = max(state->data.startDrag.y, state->data.endDrag.y) };
+
+    if(!add)
+        state->data.numSelectedElements = 0;
+
+    switch(state->data.selectionMode)
+    {
+    case MODE_VERTEX:
+        {
+            for(struct MapVertex *vertex = state->map.headVertex; vertex; vertex = vertex->next)
+            {
+                if(within(min, max, vertex->pos))
+                {
+                    state->data.selectedElements[state->data.numSelectedElements++] = vertex;
+                }
+            }
+        }
+        break;
+    case MODE_LINE:
+        {
+            for(struct MapLine *line = state->map.headLine; line; line = line->next)
+            {
+                if(within(min, max, line->a->pos) && within(min, max, line->b->pos))
+                {
+                    state->data.selectedElements[state->data.numSelectedElements++] = line;
+                }
+            }
+        }
+        break;
+    case MODE_SECTOR:
+        {
+            for(struct MapSector *sector = state->map.headSector; sector; sector = sector->next)
+            {
+                bool allPointsIn = true;
+                for(size_t i = 0; i < sector->numOuterLines; ++i)
+                {
+                    allPointsIn &= within(min, max, sector->outerLines[i]->a->pos);
+                }
+
+                if(allPointsIn)
+                {
+                    state->data.selectedElements[state->data.numSelectedElements++] = sector;
+                }
+            }
+        }
+        break;
+    }
 }
 
 static void AddEditVertex(struct EdState *state, struct Vertex v)
@@ -56,10 +115,10 @@ void EditorWindow(bool *p_open, struct EdState *state)
             ChangeMode(state, MODE_SECTOR);
 
         igPushItemWidth(80);
-        static const char *modeNames[] = { "Vertex", "Line", "Sector" };
+        static const char *modeNames[] = { "Vertex", "Line", "Sector", "Things" };
         static const size_t numModes = COUNT_OF(modeNames);
         int selectionMode = state->data.selectionMode;
-        if(igCombo_Str_arr("Mode", &selectionMode, modeNames, numModes, 3))
+        if(igCombo_Str_arr("Mode", &selectionMode, modeNames, numModes, numModes))
         {
             ChangeMode(state, selectionMode);
         }
@@ -116,6 +175,9 @@ void EditorWindow(bool *p_open, struct EdState *state)
                 state->data.mty = edSY;
 #endif
                 
+                bool shiftDown = igGetIO()->KeyShift;
+
+                struct Vertex mouseVertex = { edX, edY };
                 if(state->data.editState == ESTATE_ADDVERTEX)
                 {
                     state->gl.editorEdit.bufferMap[state->data.editVertexBufferSize] = (struct VertexType) { .position = { edSX, edSY }, .color = DEFAULT_WHITE };
@@ -124,9 +186,9 @@ void EditorWindow(bool *p_open, struct EdState *state)
                 {
                     switch(state->data.selectionMode)
                     {
-                    case MODE_VERTEX: state->data.hoveredElement = EditGetClosestVertex(state, (struct Vertex){ .x = edX, .y = edY }, 5); break;
-                    case MODE_LINE: state->data.hoveredElement = EditGetClosestLine(state, (struct Vertex){ .x = edX, .y = edY }, 5); break;
-                    case MODE_SECTOR: state->data.hoveredElement = EditGetSector(state, (struct Vertex){ .x = edX, .y = edY }); break;
+                    case MODE_VERTEX: state->data.hoveredElement = EditGetClosestVertex(state, mouseVertex, VERTEX_DIST); break;
+                    case MODE_LINE: state->data.hoveredElement = EditGetClosestLine(state, mouseVertex, LINE_DIST); break;
+                    case MODE_SECTOR: state->data.hoveredElement = EditGetSector(state, mouseVertex); break;
                     }
                 }
 
@@ -141,19 +203,37 @@ void EditorWindow(bool *p_open, struct EdState *state)
                     igSetWindowFocus_Nil();
                 }
 
-                if(igIsMouseClicked_Bool(ImGuiMouseButton_Left, false))
+                if(igIsMouseDragPastThreshold(ImGuiMouseButton_Left, 2) && state->data.editState != ESTATE_ADDVERTEX)
                 {
-                    struct Vertex mouseVertex = { edSX, edSY };
+                    ImVec2 dragDelta;
+                    igGetMouseDragDelta(&dragDelta, ImGuiMouseButton_Right, 2);
+                    igResetMouseDragDelta(ImGuiMouseButton_Left);
+
+                    if(!state->data.isDragging)
+                    {
+                        state->data.isDragging = true;
+                        state->data.startDrag = mouseVertex;
+                        state->data.endDrag = mouseVertex;
+                    }
+                    else
+                    {
+                        state->data.endDrag.x += dragDelta.x;
+                        state->data.endDrag.y += dragDelta.y;
+                    }
+                }
+                else if(igIsMouseClicked_Bool(ImGuiMouseButton_Left, false))
+                {
+                    struct Vertex mouseVertexSnap = { edSX, edSY };
                     if(state->data.editState == ESTATE_ADDVERTEX)
                     {
                         if(state->data.editVertexBufferSize == 0)
                         {
-                            AddEditVertex(state, mouseVertex);
+                            AddEditVertex(state, mouseVertexSnap);
                         }
                         else
                         {
                             struct Vertex first = state->data.editVertexBuffer[0];
-                            if(mouseVertex.x == first.x && mouseVertex.y == first.y && state->data.editVertexBufferSize >= 3)
+                            if(mouseVertexSnap.x == first.x && mouseVertexSnap.y == first.y && state->data.editVertexBufferSize >= 3)
                             {
                                 // submit to edit
                                 SubmitEditData(state);
@@ -163,32 +243,61 @@ void EditorWindow(bool *p_open, struct EdState *state)
                             else
                             {
                                 struct Vertex last = state->data.editVertexBuffer[state->data.editVertexBufferSize-1];
-                                if(!(mouseVertex.x == last.x && mouseVertex.y == last.y))
+                                if(!(mouseVertexSnap.x == last.x && mouseVertexSnap.y == last.y))
                                 {
-                                    AddEditVertex(state, mouseVertex);
+                                    AddEditVertex(state, mouseVertexSnap);
                                 }
                             }
                         }
                         assert(state->data.editVertexBufferSize != EDIT_VERTEXBUFFER_CAP);
                     } 
-                    else
+                    else if(state->data.editState == ESTATE_NORMAL)
                     {
                         void *selectedElement;
                         switch(state->data.selectionMode)
                         {
-                        case MODE_VERTEX: selectedElement = EditGetClosestVertex(state, (struct Vertex){ .x = edX, .y = edY }, 5); break;
-                        case MODE_LINE: selectedElement = EditGetClosestLine(state, (struct Vertex){ .x = edX, .y = edY }, 5); break;
-                        case MODE_SECTOR: selectedElement = EditGetSector(state, (struct Vertex){ .x = edX, .y = edY }); break;
+                        case MODE_VERTEX: selectedElement = EditGetClosestVertex(state, mouseVertex, VERTEX_DIST); break;
+                        case MODE_LINE: selectedElement = EditGetClosestLine(state, mouseVertex, LINE_DIST); break;
+                        case MODE_SECTOR: selectedElement = EditGetSector(state, mouseVertex); break;
                         }
 
                         if(selectedElement)
                         {
-                            state->data.numSelectedElements = 1;
-                            state->data.selectedElements[0] = selectedElement;
+                            if(shiftDown)
+                            {
+                                bool removed = false;
+                                for(size_t i = 0; i < state->data.numSelectedElements; ++i)
+                                {
+                                    if(state->data.selectedElements[i] == selectedElement)
+                                    {
+                                        memmove(state->data.selectedElements + i, state->data.selectedElements + i + 1, (state->data.numSelectedElements - (i+1)) * sizeof *state->data.selectedElements);
+                                        state->data.numSelectedElements--;
+                                        removed = true;
+                                        break;
+                                    }
+                                }
+                                if(!removed)
+                                {
+                                    state->data.selectedElements[state->data.numSelectedElements++] = selectedElement;
+                                }
+                            }
+                            else
+                            {
+                                state->data.numSelectedElements = 1;
+                                state->data.selectedElements[0] = selectedElement;
+                            }
                         }
                     }
 
                     igSetWindowFocus_Nil();
+                }
+                else if(igIsMouseReleased_Nil(ImGuiMouseButton_Left))
+                {
+                    if(state->data.isDragging)
+                    {
+                        state->data.isDragging = false;
+                        RectSelect(state, shiftDown);
+                    }
                 }
 
                 if(igIsMouseClicked_Bool(ImGuiMouseButton_Middle, false))
@@ -218,6 +327,8 @@ void EditorWindow(bool *p_open, struct EdState *state)
                     case ESTATE_NORMAL:
                     {
                         state->data.editState = ESTATE_ADDVERTEX;
+                        state->data.numSelectedElements = 0;
+                        state->data.hoveredElement = NULL;
                         state->gl.editorEdit.bufferMap[0] = (struct VertexType) { .position = { edSX, edSY }, .color = DEFAULT_WHITE }; // set first vertex to mouse position to remove vertex jump
                     }
                     break;
@@ -258,6 +369,7 @@ void EditorWindow(bool *p_open, struct EdState *state)
                             case MODE_SECTOR: EditRemoveSector(state, state->data.selectedElements[i]); break;
                             }
                         }
+                        state->data.numSelectedElements = 0;
                     }
                 }
 
