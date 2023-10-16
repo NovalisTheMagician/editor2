@@ -142,8 +142,6 @@ static void RemoveVertex(struct EdState *state, struct MapVertex *vertex)
             next->prev = prev;
         }
 
-        //memmove(state->gl.editorVertex.bufferMap + vertex->idx, state->gl.editorVertex.bufferMap + vertex->idx + 1, (map->numVertices - (vertex->idx+1)) * sizeof *state->gl.editorVertex.bufferMap);
-
         free(vertex);
 
         map->numVertices--;
@@ -256,6 +254,7 @@ struct MapLine* EditAddLine(struct EdState *state, struct MapVertex *v0, struct 
 void EditRemoveLine(struct EdState *state, struct MapLine *line)
 {
     struct Map *map = &state->map;
+
     map->dirty = true;
 }
 
@@ -294,8 +293,6 @@ static void RemoveLine(struct EdState *state, struct MapLine *line)
         RemoveVertex(state, line->a);
         RemoveVertex(state, line->b);
 
-        //memmove(state->gl.editorLine.bufferMap + line->idx * 4, state->gl.editorLine.bufferMap + (line->idx + 1) * 4, (map->numLines - (line->idx+1)) * 4 * sizeof *state->gl.editorLine.bufferMap);
-
         pstr_free(line->front.lowerTex);
         pstr_free(line->front.middleTex);
         pstr_free(line->front.upperTex);
@@ -309,14 +306,7 @@ static void RemoveLine(struct EdState *state, struct MapLine *line)
     }
 }
 
-/*
-struct MapLine* EditGetLine(struct EdState *state, struct Vertex pos)
-{
-    return NULL;
-}
-*/
-
-static float MinDistToLine(struct Vertex v, struct Vertex w, struct Vertex p)
+static inline float MinDistToLine(struct Vertex v, struct Vertex w, struct Vertex p)
 {
     float l2 = dist2(v, w);
     if (l2 == 0) return dist2(p, v);
@@ -358,72 +348,6 @@ static struct MapLine* FindLine(struct EdState *state, struct Vertex a, struct V
     }
     return NULL;
 }
-
-/*
-struct MapSector* EditAddSector(struct EdState *state, struct MapLine *lines, size_t numLines)
-{
-    struct Map *map = &state->map;
-
-    size_t idx = map->numSectors++;
-    struct Sector *s = &map->sectors[idx];
-    s->lines = calloc(numLines, sizeof *s->lines);
-    s->numLines = numLines;
-    for(size_t i = 0; i < numLines; ++i)
-        s->lines[i] = lineIndices[i];
-
-    if(map->numSectors == map->numAllocSectors)
-    {
-        IncreaseBufferSize((void**)&map->sectors, &map->numAllocSectors, sizeof *map->sectors);
-        state->sectorToPolygon = realloc(state->sectorToPolygon, map->numAllocSectors * sizeof *state->sectorToPolygon);
-    }
-
-    size_t baseVertexIndex = state->gl.editorSector.highestVertIndex;
-    size_t baseIndexIndex = state->gl.editorSector.highestIndIndex;
-
-    size_t index = baseVertexIndex;
-    struct Line lastLine;
-    size_t lastIndex;
-    struct Polygon *outerPolygon = calloc(1, sizeof *outerPolygon + numLines * sizeof *outerPolygon->vertices);
-    outerPolygon->length = numLines;
-    for(size_t i = 0; i < numLines; ++i)
-    {
-        struct Line line = map->lines[lineIndices[i]];
-        size_t vertIdx;
-        if(i == 0)
-            vertIdx = line.a;
-        else 
-        {
-            size_t lastEnd = lastLine.a == lastIndex ? lastLine.b : lastLine.a;
-            vertIdx = line.a == lastEnd ? line.a : line.b;
-        }
-        lastLine = line;
-        lastIndex = vertIdx;
-
-        int32_t x = map->vertices[vertIdx].x;
-        int32_t y = map->vertices[vertIdx].y;
-        state->gl.editorSector.bufferMap[index++] = (struct SectorVertexType){ .position = { x, y }, .color = { 1, 1, 1, 1 }, .texCoord = { 0, 0 } };
-        outerPolygon->vertices[i][0] = x;
-        outerPolygon->vertices[i][1] = y;
-    }
-    unsigned int *indices = NULL;
-    unsigned long numIndices = triangulate(outerPolygon, NULL, 0, &indices);
-
-    index = baseIndexIndex;
-    for(size_t i = 0; i < numIndices; ++i)
-        state->gl.editorSector.indexMap[index++] = indices[i] + baseVertexIndex;
-
-    free(outerPolygon);
-    free(indices);
-
-    state->sectorToPolygon[idx] = (__typeof__(*state->sectorToPolygon)){ .indexStart = baseIndexIndex, .indexLength = numIndices, .vertexStart = baseVertexIndex, .vertexLength = numLines };
-
-    state->gl.editorSector.highestVertIndex += numLines;
-    state->gl.editorSector.highestIndIndex += numIndices;
-
-    map->dirty = true;
-    return idx;
-}
-*/
 
 void EditRemoveSector(struct EdState *state, struct MapSector *sector)
 {
@@ -471,9 +395,6 @@ void EditRemoveSector(struct EdState *state, struct MapSector *sector)
         }
     }
 
-    //state->gl.editorSector.highestIndIndex -= secPoly.indexLength;
-    //state->gl.editorSector.highestVertIndex -= secPoly.vertexLength;
-
     pstr_free(sector->ceilTex);
     pstr_free(sector->floorTex);
     free(sector->outerLines);
@@ -498,8 +419,8 @@ struct MapSector* EditGetSector(struct EdState *state, struct Vertex pos)
         bool inside = false;
         for(size_t i = 0; i < sector->numOuterLines; ++i)
         {
-            struct Vertex A = sector->outerLines[i]->a->pos; // map->vertices[map->lines[sector->lines[i]].a];
-            struct Vertex B = sector->outerLines[i]->b->pos; // map->vertices[map->lines[sector->lines[i]].b];
+            struct Vertex A = sector->outerLines[i]->a->pos;
+            struct Vertex B = sector->outerLines[i]->b->pos;
 
             if ((pos.x == A.x && pos.y == A.y) || (pos.x == B.x && pos.y == B.y)) break;
             if (A.y == B.y && pos.y == A.y && between(pos.x, A.x, B.x)) break;
