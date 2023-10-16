@@ -334,15 +334,17 @@ static void RenderSectors(const struct EdState *state, const mat4 viewProjMat)
 
 static void RenderEditData(const struct EdState *state, const mat4 viewProjMat)
 {
-    glPointSize(state->settings.vertexPointSize);
-    glVertexArrayVertexBuffer(state->gl.editorVertex.vertFormat, 0, state->gl.editorEdit.buffer, 0, sizeof(struct VertexType));
-    glBindVertexArray(state->gl.editorVertex.vertFormat);
-    glUseProgram(state->gl.editorVertex.program);
-    glUniformMatrix4fv(state->gl.editorVertex.viewProjUniform, 1, false, (float*)viewProjMat);
-    glUniform4fv(state->gl.editorVertex.tintUniform, 1, state->settings.colors[COL_ACTIVE_EDIT]);
-
-    glDrawArrays(GL_POINTS, 0, state->data.editVertexBufferSize + 1);
-    glVertexArrayVertexBuffer(state->gl.editorVertex.vertFormat, 0, state->gl.editorVertex.vertBuffer, 0, sizeof(struct VertexType));
+    if(state->data.editState == ESTATE_ADDVERTEX)
+    {
+        glPointSize(state->settings.vertexPointSize);
+        glVertexArrayVertexBuffer(state->gl.editorVertex.vertFormat, 0, state->gl.editorEdit.buffer, 0, sizeof(struct VertexType));
+        glBindVertexArray(state->gl.editorVertex.vertFormat);
+        glUseProgram(state->gl.editorVertex.program);
+        glUniformMatrix4fv(state->gl.editorVertex.viewProjUniform, 1, false, (float*)viewProjMat);
+        glUniform4fv(state->gl.editorVertex.tintUniform, 1, state->settings.colors[COL_ACTIVE_EDIT]);
+        glDrawArrays(GL_POINTS, 4, state->data.editVertexBufferSize + 1);
+        glVertexArrayVertexBuffer(state->gl.editorVertex.vertFormat, 0, state->gl.editorVertex.vertBuffer, 0, sizeof(struct VertexType));
+    }
 
     glLineWidth(2);
     glVertexArrayVertexBuffer(state->gl.editorLine.vertFormat, 0, state->gl.editorEdit.buffer, 0, sizeof(struct VertexType));
@@ -351,7 +353,12 @@ static void RenderEditData(const struct EdState *state, const mat4 viewProjMat)
     glUniformMatrix4fv(state->gl.editorLine.viewProjUniform, 1, false, (float*)viewProjMat);
     glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[COL_ACTIVE_EDIT]);
 
-    glDrawArrays(GL_LINE_STRIP, 0, state->data.editVertexBufferSize + 1);
+    if(state->data.editState == ESTATE_ADDVERTEX)
+        glDrawArrays(GL_LINE_STRIP, 4, state->data.editVertexBufferSize + 1);
+
+    if(state->data.isDragging)
+        glDrawArrays(GL_LINE_LOOP, 0, 4);
+
     glLineWidth(1);
     glVertexArrayVertexBuffer(state->gl.editorLine.vertFormat, 0, state->gl.editorLine.vertBuffer, 0, sizeof(struct VertexType));
 }
@@ -367,6 +374,5 @@ void RenderEditorView(struct EdState *state)
     RenderSectors(state, viewProjMat);
     RenderLines(state, viewProjMat);
     RenderVertices(state, viewProjMat);
-    if(state->data.editState == ESTATE_ADDVERTEX)
-        RenderEditData(state, viewProjMat);
+    RenderEditData(state, viewProjMat);
 }
