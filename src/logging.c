@@ -28,6 +28,7 @@ static const char* severityToString(enum LogSeverity severity)
 {
     switch(severity)
     {
+    case LOG_DEBUG: return "DEBUG";
     case LOG_INFO: return "INFO ";
     case LOG_WARN: return "WARN ";
     case LOG_ERROR: return "ERROR";
@@ -59,8 +60,6 @@ size_t LogLength(struct LogBuffer *logBuffer)
 
 pstring LogGet(struct LogBuffer *logBuffer, size_t idx)
 {
-    size_t num = LogLength(logBuffer);
-    assert(idx < num);
     idx += logBuffer->start;
 
     return logBuffer->lines[idx % LOGBUFFER_CAPACITY];
@@ -152,3 +151,16 @@ void LogError(const char *format, ...)
 
     va_end(args);
 }
+
+#ifdef _DEBUG
+void LogDebug(const char *format, ...)
+{
+    assert(logBuffer_);
+    va_list args;
+    va_start(args, format);
+
+    LogFormatV(logBuffer_, LOG_DEBUG, format, args);
+
+    va_end(args);
+}
+#endif

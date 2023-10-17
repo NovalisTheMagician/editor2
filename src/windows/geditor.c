@@ -10,7 +10,7 @@
 
 static void SubmitEditData(struct EdState *state)
 {
-    LogInfo("Edit Done with {d} vertices", state->data.editVertexBufferSize);
+    LogDebug("Edit Done with {d} vertices", state->data.editVertexBufferSize);
 
     EditApplySector(state, state->data.editVertexBuffer, state->data.editVertexBufferSize);
 
@@ -27,8 +27,8 @@ static void RectSelect(struct EdState *state, bool add)
     struct Vertex min = { .x = min(state->data.startDrag.x, state->data.endDrag.x), .y = min(state->data.startDrag.y, state->data.endDrag.y) };
     struct Vertex max = { .x = max(state->data.startDrag.x, state->data.endDrag.x), .y = max(state->data.startDrag.y, state->data.endDrag.y) };
 
-    LogInfo("min: {d} {d}", min.x, min.y);
-    LogInfo("max: {d} {d}", max.x, max.y);
+    LogDebug("min: {d} {d}", min.x, min.y);
+    LogDebug("max: {d} {d}", max.x, max.y);
 
     if(!add)
         state->data.numSelectedElements = 0;
@@ -106,9 +106,9 @@ void EditorWindow(bool *p_open, struct EdState *state)
         if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_X, 0, 0))
             EditCut(state);
         if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_Z, 0, 0))
-            LogInfo("Undo!");
+            LogDebug("Undo!");
         if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_Y, 0, 0))
-            LogInfo("Redo!");
+            LogDebug("Redo!");
 
         if(igShortcut(ImGuiKey_V, 0, 0))
             ChangeMode(state, MODE_VERTEX);
@@ -222,7 +222,7 @@ void EditorWindow(bool *p_open, struct EdState *state)
 
                     if(!state->data.isDragging)
                     {
-                        LogInfo("Start Drag");
+                        LogDebug("Start Drag");
                         state->data.isDragging = true;
                         state->data.startDrag = mouseVertex;
                         state->data.endDrag = mouseVertex;
@@ -237,7 +237,7 @@ void EditorWindow(bool *p_open, struct EdState *state)
                 {
                     if(state->data.isDragging)
                     {
-                        LogInfo("End Drag");
+                        LogDebug("End Drag");
                         state->data.isDragging = false;
                         RectSelect(state, shiftDown);
                     }
@@ -275,7 +275,7 @@ void EditorWindow(bool *p_open, struct EdState *state)
                     } 
                     else if(state->data.editState == ESTATE_NORMAL)
                     {
-                        void *selectedElement;
+                        void *selectedElement = NULL;
                         switch(state->data.selectionMode)
                         {
                         case MODE_VERTEX: selectedElement = EditGetClosestVertex(state, mouseVertex, VERTEX_DIST); break;

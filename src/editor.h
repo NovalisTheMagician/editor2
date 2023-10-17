@@ -62,6 +62,8 @@ enum Colors
     COL_SECTOR_HOVER,
     COL_SECTOR_SELECT,
 
+    COL_LINE_INNER,
+
     NUM_COLORS
 };
 

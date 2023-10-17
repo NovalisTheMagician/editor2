@@ -8,9 +8,270 @@
 
 #define dot(a, b) ({ struct Vertex a_ = (a); struct Vertex b_ = (b); a_.x * b_.x + a_.y * b_.y; })
 #define dist2(a, b) ({ struct Vertex a_ = (a); struct Vertex b_ = (b); float dx = a_.x - b_.x; float dy = a_.y - b_.y; dx*dx + dy*dy; })
+#define between(p, a, b) ({ __typeof__(p) p_ = (p); __typeof__(a) a_ = (a); __typeof__(b) b_ = (b); (p_ >= a_ && p_ <= b_) || (p_ <= a_ && p_ >= b_);})
 
 static int32_t sign(int32_t x) {
     return (x > 0) - (x < 0);
+}
+
+static void RemoveVertex(struct EdState *state, struct MapVertex *vertex)
+{
+    struct Map *map = &state->map;
+    assert(vertex);
+    assert(vertex->refCount > 0);
+
+    vertex->refCount--;
+    if(vertex->refCount == 0)
+    {
+        struct MapVertex *prev = vertex->prev;
+        struct MapVertex *next = vertex->next;
+
+        if(prev == NULL && next == NULL)
+        {
+            map->headVertex = map->tailVertex = NULL;
+        }
+        else if(vertex == map->headVertex)
+        {
+            next->prev = NULL;
+            map->headVertex = next;
+        }
+        else if(vertex == map->tailVertex)
+        {
+            prev->next = NULL;
+            map->tailVertex = prev;
+        }
+        else
+        {
+            prev->next = next;
+            next->prev = prev;
+        }
+
+        free(vertex);
+
+        map->numVertices--;
+        map->dirty = true;
+    }
+}
+
+static void RemoveLine(struct EdState *state, struct MapLine *line)
+{
+    struct Map *map = &state->map;
+    assert(line);
+    assert(line->refCount > 0);
+
+    line->refCount--;
+    if(line->refCount == 0)
+    {
+        struct MapLine *prev = line->prev;
+        struct MapLine *next = line->next;
+
+        if(prev == NULL && next == NULL)
+        {
+            map->headLine = map->tailLine = NULL;
+        }
+        else if(line == map->headLine)
+        {
+            next->prev = NULL;
+            map->headLine = next;
+        }
+        else if(line == map->tailLine)
+        {
+            prev->next = NULL;
+            map->tailLine = prev;
+        }
+        else
+        {
+            prev->next = next;
+            next->prev = prev;
+        }
+
+        RemoveVertex(state, line->a);
+        RemoveVertex(state, line->b);
+
+        pstr_free(line->front.lowerTex);
+        pstr_free(line->front.middleTex);
+        pstr_free(line->front.upperTex);
+        pstr_free(line->back.lowerTex);
+        pstr_free(line->back.middleTex);
+        pstr_free(line->back.upperTex);
+        free(line);
+
+        map->numLines--;
+        map->dirty = true;
+    }
+}
+
+static inline bool VertexCmp(struct Vertex a, struct Vertex b)
+{
+    return a.x == b.x && a.y == b.x;
+}
+
+static struct MapLine* FindLine(struct EdState *state, struct Vertex a, struct Vertex b)
+{
+    struct Map *map = &state->map;
+    for(struct MapLine *line = map->headLine; line; line = line->next)
+    {
+        struct Vertex la = line->a->pos, lb = line->b->pos;
+        if((VertexCmp(la, a) && VertexCmp(lb, b)) || (VertexCmp(la, b) && VertexCmp(lb, a))) return line;
+    }
+    return NULL;
+}
+
+static inline float MinDistToLine(struct Vertex v, struct Vertex w, struct Vertex p)
+{
+    float l2 = dist2(v, w);
+    if (l2 == 0) return dist2(p, v);
+    float t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+    t = max(0, min(1, t));
+    struct Vertex tmp = { .x = v.x + t * (w.x - v.x), .y = v.y + t * (w.y - v.y) };
+    return sqrt(dist2(p, tmp));
+}
+
+static struct MapSector* AddPolygon(struct EdState *state, struct Polygon *polygon)
+{
+    struct Map *map = &state->map;
+    assert(polygon);
+
+    static size_t sectorIndex = 0;
+
+    struct MapSector *sector = calloc(1, sizeof *sector);
+    sector->numOuterLines = polygon->length;
+    sector->outerLines = malloc(sector->numOuterLines * sizeof *sector->outerLines);
+    sector->idx = sectorIndex++;
+    sector->prev = map->tailSector;
+
+    if(map->headSector == NULL)
+    {
+        map->headSector = sector;
+        map->tailSector = sector;
+    }
+    else if(map->tailSector->prev == NULL)
+    {
+        map->headSector->next = sector;
+    }
+    else
+    {
+        map->tailSector->next = sector;
+    }
+    map->tailSector = sector;
+
+    for(size_t i = 0; i < polygon->length; ++i)
+    {
+        size_t inext = (i + 1) % polygon->length;
+        struct Vertex a = { .x = polygon->vertices[i][0], .y = polygon->vertices[i][1] };
+        struct Vertex b = { .x = polygon->vertices[inext][0], .y = polygon->vertices[inext][1] };
+        struct MapLine *line = FindLine(state, a, b);
+        if(line == NULL)
+        {
+            struct MapVertex *va = EditAddVertex(state, a);
+            struct MapVertex *vb = EditAddVertex(state, b);
+            line = EditAddLine(state, va, vb);
+        }
+
+        sector->outerLines[i] = line;
+    }
+
+    size_t baseVertexIndex = state->gl.editorSector.highestVertIndex;
+    size_t baseIndexIndex = state->gl.editorSector.highestIndIndex;
+
+    size_t index = baseVertexIndex;
+    for(size_t i = 0; i < polygon->length; ++i)
+    {
+        int32_t x = polygon->vertices[i][0];
+        int32_t y = polygon->vertices[i][1];
+        state->gl.editorSector.bufferMap[index++] = (struct SectorVertexType){ .position = { x, y }, .color = { 1, 1, 1, 1 }, .texCoord = { 0, 0 } };
+    }
+    unsigned int *indices = NULL;
+    unsigned long numIndices = triangulate(polygon, NULL, 0, &indices);
+
+    index = baseIndexIndex;
+    for(size_t i = 0; i < numIndices; ++i)
+        state->gl.editorSector.indexMap[index++] = indices[i] + baseVertexIndex;
+
+    free(indices);
+
+    sector->edData = (struct TriangleData){ .indexStart = baseIndexIndex, .indexLength = numIndices, .vertexStart = baseVertexIndex, .vertexLength = polygon->length };
+
+    state->gl.editorSector.highestVertIndex += polygon->length;
+    state->gl.editorSector.highestIndIndex += numIndices;
+
+    map->dirty = true;
+    return sector;
+}
+
+static struct Polygon* PolygonFromSector(struct Map *map, struct MapSector *sector)
+{
+    struct Polygon *polygon = calloc(1, sizeof *polygon + sector->numOuterLines * sizeof *polygon->vertices);
+    polygon->length = sector->numOuterLines;
+    for(size_t i = 0; i < sector->numOuterLines; ++i)
+    {
+        struct Vertex v = sector->outerLines[i]->a->pos;
+        polygon->vertices[i][0] = v.x;
+        polygon->vertices[i][1] = v.y;
+    }
+    return polygon;
+}
+
+static void RemoveSector(struct EdState *state, struct MapSector *sector)
+{
+    struct Map *map = &state->map;
+    assert(sector);
+
+    struct MapSector *prev = sector->prev;
+    struct MapSector *next = sector->next;
+
+    for(struct MapSector *s = next; s; s = s->next)
+    {
+        s->idx--;
+    }
+
+    if(prev == NULL && next == NULL)
+    {
+        map->headSector = map->tailSector = NULL;
+    }
+    else if(sector == map->headSector)
+    {
+        next->prev = NULL;
+        map->headSector = next;
+    }
+    else if(sector == map->tailSector)
+    {
+        prev->next = NULL;
+        map->tailSector = prev;
+    }
+    else
+    {
+        prev->next = next;
+        next->prev = prev;
+    }
+
+    /* dont remove outer lines, only the sector
+    for(size_t i = 0; i < sector->numOuterLines; ++i)
+    {
+        RemoveLine(state, sector->outerLines[i]);
+    }
+    */
+
+    // do decrement the ref count for inner lines
+    for(size_t i = 0; i < sector->numInnerLines; ++i)
+    {
+        for(size_t j = 0; j < sector->numInnerLinesNum[i]; ++j)
+        {
+            RemoveLine(state, sector->innerLines[i][j]);
+        }
+    }
+
+    pstr_free(sector->ceilTex);
+    pstr_free(sector->floorTex);
+    free(sector->outerLines);
+    for(size_t i = 0; i < sector->numInnerLines; ++i)
+        free(sector->innerLines[i]);
+    free(sector->innerLines);
+    free(sector);
+
+    map->numSectors--;
+
+    map->dirty = true;
 }
 
 void ScreenToEditorSpace(const struct EdState *state, int32_t *x, int32_t *y)
@@ -47,17 +308,17 @@ void ScreenToEditorSpaceGrid(const struct EdState *state, int32_t *x, int32_t *y
 
 void EditCopy(struct EdState *state)
 {
-    LogInfo("Copy!!\n");
+    LogDebug("Copy!!\n");
 }
 
 void EditPaste(struct EdState *state)
 {
-    LogInfo("Paste!!\n");
+    LogDebug("Paste!!\n");
 }
 
 void EditCut(struct EdState *state)
 {
-    LogInfo("Cut!!\n");
+    LogDebug("Cut!!\n");
 }
 
 struct MapVertex* EditAddVertex(struct EdState *state, struct Vertex pos)
@@ -103,50 +364,21 @@ struct MapVertex* EditAddVertex(struct EdState *state, struct Vertex pos)
 
 void EditRemoveVertex(struct EdState *state, struct MapVertex *vertex)
 {
-    struct Map *map = &state->map;
     assert(vertex);
-    // remove lines affected by vertex
+    struct Map *map = &state->map;
+    
+    for(struct MapLine *line = map->headLine; line; line = line->next)
+    {
+        if(line->a == vertex || line->b == vertex)
+        {
+            LogWarning("Can't delete vertex! Part of line.");
+            return;
+        }
+    }
+
+    RemoveVertex(state, vertex);
 
     map->dirty = true;
-}
-
-static void RemoveVertex(struct EdState *state, struct MapVertex *vertex)
-{
-    struct Map *map = &state->map;
-    assert(vertex);
-    assert(vertex->refCount > 0);
-
-    vertex->refCount--;
-    if(vertex->refCount == 0)
-    {
-        struct MapVertex *prev = vertex->prev;
-        struct MapVertex *next = vertex->next;
-
-        if(prev == NULL && next == NULL)
-        {
-            map->headVertex = map->tailVertex = NULL;
-        }
-        else if(vertex == map->headVertex)
-        {
-            next->prev = NULL;
-            map->headVertex = next;
-        }
-        else if(vertex == map->tailVertex)
-        {
-            prev->next = NULL;
-            map->tailVertex = prev;
-        }
-        else
-        {
-            prev->next = next;
-            next->prev = prev;
-        }
-
-        free(vertex);
-
-        map->numVertices--;
-        map->dirty = true;
-    }
 }
 
 struct MapVertex* EditGetVertex(struct EdState *state, struct Vertex pos)
@@ -253,67 +485,24 @@ struct MapLine* EditAddLine(struct EdState *state, struct MapVertex *v0, struct 
 
 void EditRemoveLine(struct EdState *state, struct MapLine *line)
 {
+    assert(line);
     struct Map *map = &state->map;
+
+    for(struct MapSector *sector = map->headSector; sector; sector = sector->next)
+    {
+        for(size_t i = 0; i < sector->numOuterLines; ++i)
+        {
+            if(sector->outerLines[i] == line)
+            {
+                LogWarning("Can't remove line! Part of sector");
+                return;
+            }
+        }
+    }
+
+    RemoveLine(state, line);
 
     map->dirty = true;
-}
-
-static void RemoveLine(struct EdState *state, struct MapLine *line)
-{
-    struct Map *map = &state->map;
-    assert(line);
-    assert(line->refCount > 0);
-
-    line->refCount--;
-    if(line->refCount == 0)
-    {
-        struct MapLine *prev = line->prev;
-        struct MapLine *next = line->next;
-
-        if(prev == NULL && next == NULL)
-        {
-            map->headLine = map->tailLine = NULL;
-        }
-        else if(line == map->headLine)
-        {
-            next->prev = NULL;
-            map->headLine = next;
-        }
-        else if(line == map->tailLine)
-        {
-            prev->next = NULL;
-            map->tailLine = prev;
-        }
-        else
-        {
-            prev->next = next;
-            next->prev = prev;
-        }
-
-        RemoveVertex(state, line->a);
-        RemoveVertex(state, line->b);
-
-        pstr_free(line->front.lowerTex);
-        pstr_free(line->front.middleTex);
-        pstr_free(line->front.upperTex);
-        pstr_free(line->back.lowerTex);
-        pstr_free(line->back.middleTex);
-        pstr_free(line->back.upperTex);
-        free(line);
-
-        map->numLines--;
-        map->dirty = true;
-    }
-}
-
-static inline float MinDistToLine(struct Vertex v, struct Vertex w, struct Vertex p)
-{
-    float l2 = dist2(v, w);
-    if (l2 == 0) return dist2(p, v);
-    float t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
-    t = max(0, min(1, t));
-    struct Vertex tmp = { .x = v.x + t * (w.x - v.x), .y = v.y + t * (w.y - v.y) };
-    return sqrt(dist2(p, tmp));
 }
 
 struct MapLine* EditGetClosestLine(struct EdState *state, struct Vertex pos, float maxDist)
@@ -331,22 +520,6 @@ struct MapLine* EditGetClosestLine(struct EdState *state, struct Vertex pos, flo
         }
     }
     return closestLine;
-}
-
-static inline bool VertexCmp(struct Vertex a, struct Vertex b)
-{
-    return a.x == b.x && a.y == b.x;
-}
-
-static struct MapLine* FindLine(struct EdState *state, struct Vertex a, struct Vertex b)
-{
-    struct Map *map = &state->map;
-    for(struct MapLine *line = map->headLine; line; line = line->next)
-    {
-        struct Vertex la = line->a->pos, lb = line->b->pos;
-        if((VertexCmp(la, a) && VertexCmp(lb, b)) || (VertexCmp(la, b) && VertexCmp(lb, a))) return line;
-    }
-    return NULL;
 }
 
 void EditRemoveSector(struct EdState *state, struct MapSector *sector)
@@ -408,8 +581,6 @@ void EditRemoveSector(struct EdState *state, struct MapSector *sector)
     map->dirty = true;
 }
 
-#define between(p, a, b) (((p) >= (a) && (p) <= (b)) || ((p) <= (a) && (p) >= (b)))
-
 struct MapSector* EditGetSector(struct EdState *state, struct Vertex pos)
 {
     struct Map *map = &state->map;
@@ -449,91 +620,6 @@ struct MapLine* EditApplyLines(struct EdState *state, struct Vertex *points, siz
     return NULL;
 }
 
-static struct MapSector* AddPolygon(struct EdState *state, struct Polygon *polygon)
-{
-    struct Map *map = &state->map;
-    assert(polygon);
-
-    static size_t sectorIndex = 0;
-
-    struct MapSector *sector = calloc(1, sizeof *sector);
-    sector->numOuterLines = polygon->length;
-    sector->outerLines = malloc(sector->numOuterLines * sizeof *sector->outerLines);
-    sector->idx = sectorIndex++;
-    sector->prev = map->tailSector;
-
-    if(map->headSector == NULL)
-    {
-        map->headSector = sector;
-        map->tailSector = sector;
-    }
-    else if(map->tailSector->prev == NULL)
-    {
-        map->headSector->next = sector;
-    }
-    else
-    {
-        map->tailSector->next = sector;
-    }
-    map->tailSector = sector;
-
-    for(size_t i = 0; i < polygon->length; ++i)
-    {
-        size_t inext = (i + 1) % polygon->length;
-        struct Vertex a = { .x = polygon->vertices[i][0], .y = polygon->vertices[i][1] };
-        struct Vertex b = { .x = polygon->vertices[inext][0], .y = polygon->vertices[inext][1] };
-        struct MapLine *line = FindLine(state, a, b);
-        if(line == NULL)
-        {
-            struct MapVertex *va = EditAddVertex(state, a);
-            struct MapVertex *vb = EditAddVertex(state, b);
-            line = EditAddLine(state, va, vb);
-        }
-
-        sector->outerLines[i] = line;
-    }
-
-    size_t baseVertexIndex = state->gl.editorSector.highestVertIndex;
-    size_t baseIndexIndex = state->gl.editorSector.highestIndIndex;
-
-    size_t index = baseVertexIndex;
-    for(size_t i = 0; i < polygon->length; ++i)
-    {
-        int32_t x = polygon->vertices[i][0];
-        int32_t y = polygon->vertices[i][1];
-        state->gl.editorSector.bufferMap[index++] = (struct SectorVertexType){ .position = { x, y }, .color = { 1, 1, 1, 1 }, .texCoord = { 0, 0 } };
-    }
-    unsigned int *indices = NULL;
-    unsigned long numIndices = triangulate(polygon, NULL, 0, &indices);
-
-    index = baseIndexIndex;
-    for(size_t i = 0; i < numIndices; ++i)
-        state->gl.editorSector.indexMap[index++] = indices[i] + baseVertexIndex;
-
-    free(indices);
-
-    sector->edData = (struct TriangleData){ .indexStart = baseIndexIndex, .indexLength = numIndices, .vertexStart = baseVertexIndex, .vertexLength = polygon->length };
-
-    state->gl.editorSector.highestVertIndex += polygon->length;
-    state->gl.editorSector.highestIndIndex += numIndices;
-
-    map->dirty = true;
-    return sector;
-}
-
-static struct Polygon* PolygonFromSector(struct Map *map, struct MapSector *sector)
-{
-    struct Polygon *polygon = calloc(1, sizeof *polygon + sector->numOuterLines * sizeof *polygon->vertices);
-    polygon->length = sector->numOuterLines;
-    for(size_t i = 0; i < sector->numOuterLines; ++i)
-    {
-        struct Vertex v = sector->outerLines[i]->a->pos;
-        polygon->vertices[i][0] = v.x;
-        polygon->vertices[i][1] = v.y;
-    }
-    return polygon;
-}
-
 struct MapSector* EditApplySector(struct EdState *state, struct Vertex *points, size_t num)
 {
     struct Polygon *sourcePoly = malloc(sizeof *sourcePoly + num * sizeof *sourcePoly->vertices);
@@ -549,7 +635,7 @@ struct MapSector* EditApplySector(struct EdState *state, struct Vertex *points, 
     size_t numSimples = makeSimple(sourcePoly, &sourceSimples);
     struct MapSector *lastSectorAdded = NULL;
 
-    LogInfo("Make simple: {d}", numSimples);
+    LogDebug("Make simple: {d}", numSimples);
 
     for(size_t i = 0; i < numSimples; ++i)
     {
@@ -565,9 +651,9 @@ struct MapSector* EditApplySector(struct EdState *state, struct Vertex *points, 
             struct Polygon *sectorPolygon = PolygonFromSector(&state->map, sector);
             struct ClipResult res = clip(sectorPolygon, simple);
 
-            LogInfo("A Clipped: {d}", res.numAClipped);
-            LogInfo("B Clipped: {d}", res.numBClipped);
-            LogInfo("C Clipped: {d}", res.numNewPolygons);
+            LogDebug("A Clipped: {d}", res.numAClipped);
+            LogDebug("B Clipped: {d}", res.numBClipped);
+            LogDebug("C Clipped: {d}", res.numNewPolygons);
 
             bool clipped = res.numAClipped > 0 || res.numBClipped > 0 || res.numNewPolygons > 0;
             numClipped += clipped;

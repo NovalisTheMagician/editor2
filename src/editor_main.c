@@ -88,12 +88,10 @@ int EditorMain(int argc, char *argv[])
     struct EdState *state = calloc(1, sizeof *state);
     LogInit(&state->log);
 
-#if defined(_DEBUG)
     LogInfo("OpenGL Version {c}", glGetString(GL_VERSION));
     LogInfo("OpenGL Renderer {c}", glGetString(GL_RENDERER));
     LogInfo("OpenGL Vendor {c}", glGetString(GL_VENDOR));
     LogInfo("OpenGL GLSL {c}", glGetString(GL_SHADING_LANGUAGE_VERSION));
-#endif
 
     ResetSettings(&state->settings);
     NewProject(&state->project);
@@ -217,10 +215,9 @@ static SDL_Window* InitSDL(void)
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, GL_MAJOR);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, GL_MINOR);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, REQ_GL_MAJOR);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, REQ_GL_MINOR);
 
-    //SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl");
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);

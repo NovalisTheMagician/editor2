@@ -10,6 +10,7 @@ struct LogBuffer
 
 enum LogSeverity
 {
+    LOG_DEBUG,
     LOG_INFO,
     LOG_WARN,
     LOG_ERROR
@@ -27,3 +28,9 @@ void LogFormat(struct LogBuffer *logBuffer, enum LogSeverity severity, const cha
 void LogInfo(const char *format, ...);
 void LogWarning(const char *format, ...);
 void LogError(const char *format, ...);
+
+#ifdef _DEBUG
+void LogDebug(const char *format, ...);
+#else
+#define LogDebug(format, ...) 
+#endif

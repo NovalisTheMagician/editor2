@@ -19,6 +19,7 @@ const char* ColorIndexToString(enum Colors color)
     case COL_LINE_SELECT: return "Selected Line";
     case COL_SECTOR_HOVER: return "Hovered Sector";
     case COL_SECTOR_SELECT: return "Selected Sector";
+    case COL_LINE_INNER: return "Inner Line";
     default: return "Unkown";
     }
 }
@@ -47,6 +48,8 @@ void ResetSettings(struct EdSettings *settings)
 
     SetColor(&settings->colors[COL_SECTOR_HOVER], (Color){ 0.4f, 0.9f, 0.4f, 1.00f });
     SetColor(&settings->colors[COL_SECTOR_SELECT], (Color){ 1.0f, 1.0f, 0.0f, 1.00f });
+
+    SetColor(&settings->colors[COL_LINE_INNER], (Color){ 0.6f, 0.6f, 0.6f, 1.00f });
 
     pstr_free(settings->gamePath);
     pstr_free(settings->launchArguments);

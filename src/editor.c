@@ -260,18 +260,17 @@ static void RenderVertices(const struct EdState *state, const mat4 viewProjMat)
 
     for(const struct MapVertex *vertex = state->map.headVertex; vertex; vertex = vertex->next)
     {
+        int colorIdx = COL_VERTEX;
         if(state->data.numSelectedElements > 0 && includes(state->data.selectedElements, state->data.numSelectedElements, vertex))
         {
-            glUniform4fv(state->gl.editorVertex.tintUniform, 1, state->settings.colors[COL_VERTEX_SELECT]);
+            colorIdx = COL_VERTEX_SELECT;
         }
         else if(vertex == state->data.hoveredElement)
         {
-            glUniform4fv(state->gl.editorVertex.tintUniform, 1, state->settings.colors[COL_VERTEX_HOVER]);
+            colorIdx = COL_VERTEX_HOVER;
         }
-        else
-        {
-            glUniform4fv(state->gl.editorVertex.tintUniform, 1, state->settings.colors[COL_VERTEX]);
-        }
+
+        glUniform4fv(state->gl.editorVertex.tintUniform, 1, state->settings.colors[colorIdx]);
         glDrawArrays(GL_POINTS, vertex->idx, 1);
     }
 }
@@ -285,18 +284,20 @@ static void RenderLines(const struct EdState *state, const mat4 viewProjMat)
 
     for(const struct MapLine *line = state->map.headLine; line; line = line->next)
     {
+        int colorIdx = COL_LINE;
         if(state->data.numSelectedElements > 0 && includes(state->data.selectedElements, state->data.numSelectedElements, line))
         {
-            glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[COL_LINE_SELECT]);
+            colorIdx = COL_LINE_SELECT;
         }
         else if(line == state->data.hoveredElement)
         {
-            glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[COL_LINE_HOVER]);
+            colorIdx = COL_LINE_HOVER;
         }
-        else
+        else if(line->refCount > 1)
         {
-            glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[COL_LINE]);
+            colorIdx = COL_LINE_INNER;
         }
+        glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[colorIdx]);
         glDrawArrays(GL_LINES, line->idx * 4, 4); // 2 verts per line segment | 2 for wall and 2 for wall normal
     }
     glLineWidth(1);
@@ -314,18 +315,17 @@ static void RenderSectors(const struct EdState *state, const mat4 viewProjMat)
 
     for(const struct MapSector *sector = state->map.headSector; sector; sector = sector->next)
     {
+        int colorIdx = COL_SECTOR;
         if(state->data.numSelectedElements > 0 && includes(state->data.selectedElements, state->data.numSelectedElements, sector))
         {
-            glUniform4fv(state->gl.editorSector.tintUniform, 1, state->settings.colors[COL_SECTOR_SELECT]);
+            colorIdx = COL_SECTOR_SELECT;
         }
         else if(sector == state->data.hoveredElement)
         {
-            glUniform4fv(state->gl.editorSector.tintUniform, 1, state->settings.colors[COL_SECTOR_HOVER]);
+            colorIdx = COL_SECTOR_HOVER;
         }
-        else
-        {
-            glUniform4fv(state->gl.editorSector.tintUniform, 1, state->settings.colors[COL_SECTOR]);
-        }
+
+        glUniform4fv(state->gl.editorSector.tintUniform, 1, state->settings.colors[colorIdx]);
         const struct TriangleData data = sector->edData;
         //glDrawElementsBaseVertex(GL_TRIANGLES, data.indexLength, GL_UNSIGNED_INT, (void*)data.indexStart, data.vertexStart);
         glDrawElements(GL_TRIANGLES, data.indexLength, GL_UNSIGNED_INT, (void*)(data.indexStart * sizeof(Index_t)));
