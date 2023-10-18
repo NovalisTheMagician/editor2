@@ -203,15 +203,20 @@ static struct Polygon* PolygonFromSector(struct Map *map, struct MapSector *sect
 {
     struct Polygon *polygon = calloc(1, sizeof *polygon + sector->numOuterLines * sizeof *polygon->vertices);
     polygon->length = sector->numOuterLines;
+    struct MapVertex *lastConnectingVert = sector->outerLines[sector->numOuterLines-1]->b;
     for(size_t i = 0; i < sector->numOuterLines; ++i)
     {
-        struct Vertex v = sector->outerLines[i]->a->pos;
+        struct MapLine *line = sector->outerLines[i];
+        bool swap = lastConnectingVert == line->a ? false : true;
+        struct Vertex v = swap ? line->b->pos : line->a->pos;
         polygon->vertices[i][0] = v.x;
         polygon->vertices[i][1] = v.y;
+        lastConnectingVert = swap ? line->a : line->b;
     }
     return polygon;
 }
 
+#if 0
 static void RemoveSector(struct EdState *state, struct MapSector *sector)
 {
     struct Map *map = &state->map;
@@ -273,6 +278,7 @@ static void RemoveSector(struct EdState *state, struct MapSector *sector)
 
     map->dirty = true;
 }
+#endif
 
 void ScreenToEditorSpace(const struct EdState *state, int32_t *x, int32_t *y)
 {
