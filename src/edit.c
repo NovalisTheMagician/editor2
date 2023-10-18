@@ -14,14 +14,14 @@ static int32_t sign(int32_t x) {
     return (x > 0) - (x < 0);
 }
 
-static void RemoveVertex(struct EdState *state, struct MapVertex *vertex)
+static void RemoveVertex(struct EdState *state, struct MapVertex *vertex, bool force)
 {
     struct Map *map = &state->map;
     assert(vertex);
     assert(vertex->refCount > 0);
 
     vertex->refCount--;
-    if(vertex->refCount == 0)
+    if(vertex->refCount == 0 || force)
     {
         struct MapVertex *prev = vertex->prev;
         struct MapVertex *next = vertex->next;
@@ -85,8 +85,8 @@ static void RemoveLine(struct EdState *state, struct MapLine *line)
             next->prev = prev;
         }
 
-        RemoveVertex(state, line->a);
-        RemoveVertex(state, line->b);
+        RemoveVertex(state, line->a, false);
+        RemoveVertex(state, line->b, false);
 
         pstr_free(line->front.lowerTex);
         pstr_free(line->front.middleTex);
@@ -376,7 +376,7 @@ void EditRemoveVertex(struct EdState *state, struct MapVertex *vertex)
         }
     }
 
-    RemoveVertex(state, vertex);
+    RemoveVertex(state, vertex, true);
 
     map->dirty = true;
 }
@@ -641,33 +641,24 @@ struct MapSector* EditApplySector(struct EdState *state, struct Vertex *points, 
     {
         struct Polygon *simple = sourceSimples[i];
         size_t numClipped = 0;
-        struct 
-        {
-            struct ClipResult res;
-            struct MapSector *sector;
-        } results[128];
+        struct Polygon *clippedSectors[1024];
+        struct MapSector *sectorsToRemove[1024];
         for(struct MapSector *sector = map->headSector; sector; sector = sector->next)
         {
             struct Polygon *sectorPolygon = PolygonFromSector(&state->map, sector);
-            struct ClipResult res = clip(sectorPolygon, simple);
+            bool res = intersects(sectorPolygon, simple);
 
-            LogDebug("A Clipped: {d}", res.numAClipped);
-            LogDebug("B Clipped: {d}", res.numBClipped);
-            LogDebug("C Clipped: {d}", res.numNewPolygons);
+            LogDebug("Sector {d} Clipped: {d}", sector->idx, res);
 
-            bool clipped = res.numAClipped > 0 || res.numBClipped > 0 || res.numNewPolygons > 0;
-            numClipped += clipped;
-            
-            free(sectorPolygon);
-            if(clipped)
+            if(res)
             {
-                results[numClipped-1].res = res;
-                results[numClipped-1].sector = sector;
+                clippedSectors[numClipped] = sectorPolygon;
+                sectorsToRemove[numClipped++] = sector;
             }
             else
-            {
-                freeClipResults(res);
-            }
+                free(sectorPolygon);
+
+            assert(numClipped < 1024);
         }
 
         if(numClipped == 0)
@@ -676,33 +667,19 @@ struct MapSector* EditApplySector(struct EdState *state, struct Vertex *points, 
         }
         else
         {
+            struct ClipResult2 res;
+            clip2(simple, clippedSectors, numClipped, &res);
+
             for(size_t j = 0; j < numClipped; ++j)
+                EditRemoveSector(state, sectorsToRemove[j]);
+
+            for(size_t j = 0; j < res.numPolys; ++j)
             {
-                struct ClipResult res = results[j].res;
-                struct MapSector *sector = results[j].sector;
-
-                if(res.numAClipped > 0)
-                {
-                    EditRemoveSector(state, sector);
-                }
-
-                for(size_t secPolyIdx = 0; secPolyIdx < res.numAClipped; ++secPolyIdx)
-                {
-                    lastSectorAdded = AddPolygon(state, res.aClipped[secPolyIdx]);
-                }
-
-                for(size_t editPolyIdx = 0; editPolyIdx < res.numBClipped; ++editPolyIdx)
-                {
-                    lastSectorAdded = AddPolygon(state, res.bClipped[editPolyIdx]);
-                }
-
-                for(size_t newPolyIdx = 0; newPolyIdx < res.numNewPolygons; ++newPolyIdx)
-                {
-                    lastSectorAdded = AddPolygon(state, res.newPolygons[newPolyIdx]);
-                }
-
-                freeClipResults(res);
+                struct Polygon *polygon = res.polygons[j];
+                lastSectorAdded = AddPolygon(state, polygon);
             }
+            freePolygons(res.polygons, res.numPolys);
+            freePolygons(clippedSectors, numClipped);
         }
     }
 
