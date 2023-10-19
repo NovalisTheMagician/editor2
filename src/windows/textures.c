@@ -90,8 +90,9 @@ struct Texture* TexturesWindow(bool *p_open, struct EdState *state, bool popup)
 
             igEndChild();
         }
+        if(popup) igEndPopup();
     }
-    popup ? igEndPopup() : igEnd();
+    if(!popup) igEnd();
 
     return selectedTexture;
 }
