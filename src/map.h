@@ -58,6 +58,7 @@ struct MapSector
 {
     struct MapLine **outerLines;
     size_t numOuterLines;
+    struct Vertex *vertices;
     uint32_t type;
 
     struct MapLine ***innerLines;

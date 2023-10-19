@@ -17,4 +17,6 @@ void StatsWindow(bool *p_open, struct EdState *state);
 void ProjectSettingsWindow(bool *p_open, struct EdState *state);
 void MapSettingsWindow(bool *p_open, struct EdState *state);
 void LogsWindow(bool *p_open, struct EdState *state);
-struct Texture TexturesWindow(bool *p_open, struct EdState *state, bool popup);
+struct Texture* TexturesWindow(bool *p_open, struct EdState *state, bool popup);
+
+void PropertyWindow(bool *p_open, struct EdState *state);

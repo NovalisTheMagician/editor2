@@ -228,6 +228,9 @@ bool DoGui(struct EdState *state, bool doQuit)
     if(state->ui.showLogs)
         LogsWindow(&state->ui.showLogs, state);
 
+    if(state->ui.showProperties)
+        PropertyWindow(&state->ui.showProperties, state);
+
     EditorWindow(NULL, state);
 
     if(doQuit)
@@ -351,6 +354,7 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
             igMenuItem_BoolPtr("Toolbar", "", &state->ui.showToolbar, true);
             igMenuItem_BoolPtr("Textures", "Ctrl+T", &state->ui.showTextures, true);
             igMenuItem_BoolPtr("Entities", "Ctrl+E", &state->ui.showEntities, true);
+            igMenuItem_BoolPtr("Properties", "", &state->ui.showProperties, true);
             igMenuItem_BoolPtr("3D View", "Ctrl+W", &state->ui.show3dView, true);
             igSeparator();
             igMenuItem_BoolPtr("Logs", "Ctrl+L", &state->ui.showLogs, true);

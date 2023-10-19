@@ -144,6 +144,8 @@ struct EdState
         bool showSettings;
         bool showMapSettings;
         bool showProjectSettings;
+
+        bool showProperties;
     } ui;
 
     struct

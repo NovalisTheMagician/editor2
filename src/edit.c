@@ -117,6 +117,17 @@ static struct MapLine* FindLine(struct EdState *state, struct Vertex a, struct V
     return NULL;
 }
 
+static struct MapVertex* FindVertex(struct EdState *state, struct Vertex v)
+{
+    struct Map *map = &state->map;
+    for(struct MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
+    {
+        struct Vertex la = vertex->pos;
+        if(VertexCmp(la, v)) return vertex;
+    }
+    return NULL;
+}
+
 static inline float MinDistToLine(struct Vertex v, struct Vertex w, struct Vertex p)
 {
     float l2 = dist2(v, w);
@@ -155,6 +166,9 @@ static struct MapSector* AddPolygon(struct EdState *state, struct Polygon *polyg
     }
     map->tailSector = sector;
 
+    sector->vertices = calloc(polygon->length, sizeof *sector->vertices);
+    memcpy(sector->vertices, polygon->vertices, polygon->length * sizeof *polygon->vertices);
+
     for(size_t i = 0; i < polygon->length; ++i)
     {
         size_t inext = (i + 1) % polygon->length;
@@ -166,6 +180,10 @@ static struct MapSector* AddPolygon(struct EdState *state, struct Polygon *polyg
             struct MapVertex *va = EditAddVertex(state, a);
             struct MapVertex *vb = EditAddVertex(state, b);
             line = EditAddLine(state, va, vb);
+        }
+        else
+        {
+            line->refCount++;
         }
 
         sector->outerLines[i] = line;
@@ -203,16 +221,7 @@ static struct Polygon* PolygonFromSector(struct Map *map, struct MapSector *sect
 {
     struct Polygon *polygon = calloc(1, sizeof *polygon + sector->numOuterLines * sizeof *polygon->vertices);
     polygon->length = sector->numOuterLines;
-    struct MapVertex *lastConnectingVert = sector->outerLines[sector->numOuterLines-1]->b;
-    for(size_t i = 0; i < sector->numOuterLines; ++i)
-    {
-        struct MapLine *line = sector->outerLines[i];
-        bool swap = lastConnectingVert == line->a ? false : true;
-        struct Vertex v = swap ? line->b->pos : line->a->pos;
-        polygon->vertices[i][0] = v.x;
-        polygon->vertices[i][1] = v.y;
-        lastConnectingVert = swap ? line->a : line->b;
-    }
+    memcpy(polygon->vertices, sector->vertices, polygon->length * sizeof *sector->vertices);
     return polygon;
 }
 

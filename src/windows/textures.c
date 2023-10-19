@@ -34,15 +34,15 @@ static void TextureIteration(struct Texture *texture, size_t idx, void *user)
     data->occupiedX += size.x + 10;
 }
 
-struct Texture TexturesWindow(bool *p_open, struct EdState *state, bool popup)
+struct Texture* TexturesWindow(bool *p_open, struct EdState *state, bool popup)
 {
     igSetNextWindowSize((ImVec2){ 800, 600 }, ImGuiCond_FirstUseEver);
 
-    struct Texture selectedTexture = { 0 };
+    struct Texture *selectedTexture = NULL;
 
     ImGuiWindowFlags flags = ImGuiWindowFlags_MenuBar;
 
-    bool open = popup ? igBeginPopup("textures_popup", flags) : igBegin("Texture Browser", p_open, flags);
+    bool open = popup ? igBeginPopupModal("Texture Browser##textures_popup", p_open, flags) : igBegin("Texture Browser", p_open, flags);
     if(open)
     {
         if(igBeginMenuBar())
@@ -58,6 +58,10 @@ struct Texture TexturesWindow(bool *p_open, struct EdState *state, bool popup)
             if(igMenuItem_Bool("Cancel Fetch", "", false, Async_IsRunningJob(&state->async)))
             {
                 Async_AbortJob(&state->async);
+            }
+            if(popup && igMenuItem_Bool("Cancel", "", false, true))
+            {
+                igCloseCurrentPopup();
             }
             igEndMenuBar();
         }
@@ -80,7 +84,7 @@ struct Texture TexturesWindow(bool *p_open, struct EdState *state, bool popup)
 
             if(data.selected)
             {
-                selectedTexture = *data.selected;
+                selectedTexture = data.selected;
                 if(popup) igCloseCurrentPopup();
             }
 

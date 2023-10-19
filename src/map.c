@@ -37,6 +37,7 @@ static void FreeSectorList(struct MapSector *head)
 
         pstr_free(sector->ceilTex);
         pstr_free(sector->floorTex);
+        free(sector->vertices);
 
         free(sector->outerLines);
         for(size_t i = 0; i < sector->numInnerLines; ++i)
