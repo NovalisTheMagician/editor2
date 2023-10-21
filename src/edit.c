@@ -6,8 +6,8 @@
 
 #include <triangulate.h>
 
-#define dot(a, b) ({ struct Vertex a_ = (a); struct Vertex b_ = (b); a_.x * b_.x + a_.y * b_.y; })
-#define dist2(a, b) ({ struct Vertex a_ = (a); struct Vertex b_ = (b); float dx = a_.x - b_.x; float dy = a_.y - b_.y; dx*dx + dy*dy; })
+#define dot(a, b) ({ ivec2s a_ = (a); ivec2s b_ = (b); a_.x * b_.x + a_.y * b_.y; })
+#define dist2(a, b) ({ ivec2s a_ = (a); ivec2s b_ = (b); float dx = a_.x - b_.x; float dy = a_.y - b_.y; dx*dx + dy*dy; })
 #define between(p, a, b) ({ __typeof__(p) p_ = (p); __typeof__(a) a_ = (a); __typeof__(b) b_ = (b); (p_ >= a_ && p_ <= b_) || (p_ <= a_ && p_ >= b_);})
 
 static int32_t sign(int32_t x) {
@@ -101,40 +101,40 @@ static void RemoveLine(struct EdState *state, struct MapLine *line)
     }
 }
 
-static inline bool VertexCmp(struct Vertex a, struct Vertex b)
+static inline bool VertexCmp(ivec2s a, ivec2s b)
 {
     return a.x == b.x && a.y == b.x;
 }
 
-static struct MapLine* FindLine(struct EdState *state, struct Vertex a, struct Vertex b)
+static struct MapLine* FindLine(struct EdState *state, ivec2s a, ivec2s b)
 {
     struct Map *map = &state->map;
     for(struct MapLine *line = map->headLine; line; line = line->next)
     {
-        struct Vertex la = line->a->pos, lb = line->b->pos;
+        ivec2s la = line->a->pos, lb = line->b->pos;
         if((VertexCmp(la, a) && VertexCmp(lb, b)) || (VertexCmp(la, b) && VertexCmp(lb, a))) return line;
     }
     return NULL;
 }
 
-static struct MapVertex* FindVertex(struct EdState *state, struct Vertex v)
+static struct MapVertex* FindVertex(struct EdState *state, ivec2s v)
 {
     struct Map *map = &state->map;
     for(struct MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
     {
-        struct Vertex la = vertex->pos;
+        ivec2s la = vertex->pos;
         if(VertexCmp(la, v)) return vertex;
     }
     return NULL;
 }
 
-static inline float MinDistToLine(struct Vertex v, struct Vertex w, struct Vertex p)
+static inline float MinDistToLine(ivec2s v, ivec2s w, ivec2s p)
 {
     float l2 = dist2(v, w);
     if (l2 == 0) return dist2(p, v);
     float t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
     t = max(0, min(1, t));
-    struct Vertex tmp = { .x = v.x + t * (w.x - v.x), .y = v.y + t * (w.y - v.y) };
+    ivec2s tmp = { .x = v.x + t * (w.x - v.x), .y = v.y + t * (w.y - v.y) };
     return sqrt(dist2(p, tmp));
 }
 
@@ -172,8 +172,8 @@ static struct MapSector* AddPolygon(struct EdState *state, struct Polygon *polyg
     for(size_t i = 0; i < polygon->length; ++i)
     {
         size_t inext = (i + 1) % polygon->length;
-        struct Vertex a = { .x = polygon->vertices[i][0], .y = polygon->vertices[i][1] };
-        struct Vertex b = { .x = polygon->vertices[inext][0], .y = polygon->vertices[inext][1] };
+        ivec2s a = { .x = polygon->vertices[i][0], .y = polygon->vertices[i][1] };
+        ivec2s b = { .x = polygon->vertices[inext][0], .y = polygon->vertices[inext][1] };
         struct MapLine *line = FindLine(state, a, b);
         if(line == NULL)
         {
@@ -336,7 +336,7 @@ void EditCut(struct EdState *state)
     LogDebug("Cut!!\n");
 }
 
-struct MapVertex* EditAddVertex(struct EdState *state, struct Vertex pos)
+struct MapVertex* EditAddVertex(struct EdState *state, ivec2s pos)
 {
     struct Map *map = &state->map;
     for(struct MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
@@ -396,7 +396,7 @@ void EditRemoveVertex(struct EdState *state, struct MapVertex *vertex)
     map->dirty = true;
 }
 
-struct MapVertex* EditGetVertex(struct EdState *state, struct Vertex pos)
+struct MapVertex* EditGetVertex(struct EdState *state, ivec2s pos)
 {
     struct Map *map = &state->map;
     for(struct MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
@@ -409,7 +409,7 @@ struct MapVertex* EditGetVertex(struct EdState *state, struct Vertex pos)
     return NULL;
 }
 
-struct MapVertex* EditGetClosestVertex(struct EdState *state, struct Vertex pos, float maxDist)
+struct MapVertex* EditGetClosestVertex(struct EdState *state, ivec2s pos, float maxDist)
 {
     struct Map *map = &state->map;
     struct MapVertex *closestVertex = NULL;
@@ -447,8 +447,8 @@ struct MapLine* EditAddLine(struct EdState *state, struct MapVertex *v0, struct 
         }
     }
 
-    const struct Vertex vert0 = v0->pos;
-    const struct Vertex vert1 = v1->pos;
+    const ivec2s vert0 = v0->pos;
+    const ivec2s vert1 = v1->pos;
     int32_t normal = sign((vert0.x*vert1.y) - (vert0.y*vert1.x));
 
     static size_t lineIndex = 0;
@@ -520,7 +520,7 @@ void EditRemoveLine(struct EdState *state, struct MapLine *line)
     map->dirty = true;
 }
 
-struct MapLine* EditGetClosestLine(struct EdState *state, struct Vertex pos, float maxDist)
+struct MapLine* EditGetClosestLine(struct EdState *state, ivec2s pos, float maxDist)
 {
     struct Map *map = &state->map;
     struct MapLine *closestLine = NULL;
@@ -596,7 +596,7 @@ void EditRemoveSector(struct EdState *state, struct MapSector *sector)
     map->dirty = true;
 }
 
-struct MapSector* EditGetSector(struct EdState *state, struct Vertex pos)
+struct MapSector* EditGetSector(struct EdState *state, ivec2s pos)
 {
     struct Map *map = &state->map;
 
@@ -605,8 +605,8 @@ struct MapSector* EditGetSector(struct EdState *state, struct Vertex pos)
         bool inside = false;
         for(size_t i = 0; i < sector->numOuterLines; ++i)
         {
-            struct Vertex A = sector->outerLines[i]->a->pos;
-            struct Vertex B = sector->outerLines[i]->b->pos;
+            ivec2s A = sector->outerLines[i]->a->pos;
+            ivec2s B = sector->outerLines[i]->b->pos;
 
             if ((pos.x == A.x && pos.y == A.y) || (pos.x == B.x && pos.y == B.y)) break;
             if (A.y == B.y && pos.y == A.y && between(pos.x, A.x, B.x)) break;
@@ -630,12 +630,12 @@ struct MapSector* EditGetSector(struct EdState *state, struct Vertex pos)
     return NULL;
 }
 
-struct MapLine* EditApplyLines(struct EdState *state, struct Vertex *points, size_t num)
+struct MapLine* EditApplyLines(struct EdState *state, ivec2s *points, size_t num)
 {
     return NULL;
 }
 
-struct MapSector* EditApplySector(struct EdState *state, struct Vertex *points, size_t num)
+struct MapSector* EditApplySector(struct EdState *state, ivec2s *points, size_t num)
 {
     struct Polygon *sourcePoly = malloc(sizeof *sourcePoly + num * sizeof *sourcePoly->vertices);
     sourcePoly->length = num;

@@ -12,11 +12,6 @@ enum SectorType
     ST_NORMAL
 };
 
-struct Vertex
-{
-    int32_t x, y;
-};
-
 struct TriangleData
 {
     size_t indexStart, indexLength;
@@ -25,7 +20,7 @@ struct TriangleData
 
 struct MapVertex
 {
-    struct Vertex pos;
+    ivec2s pos;
 
     size_t idx;
     int refCount;
@@ -58,7 +53,7 @@ struct MapSector
 {
     struct MapLine **outerLines;
     size_t numOuterLines;
-    struct Vertex *vertices;
+    ivec2s *vertices;
     uint32_t type;
 
     struct MapLine ***innerLines;

@@ -104,15 +104,15 @@ struct EdSettings
 
 struct VertexType
 {
-    vec2 position;
+    vec2s position;
     Color color;
 };
 
 struct SectorVertexType
 {
-    vec2 position;
+    vec2s position;
     Color color;
-    vec2 texCoord;
+    vec2s texCoord;
 };
 
 typedef uint32_t Index_t;
@@ -230,13 +230,13 @@ struct EdState
 
         float realtimeFov;
 
-        mat4 editorProjection;
-        mat4 realtimeProjection;
+        mat4s editorProjection;
+        mat4s realtimeProjection;
 
         bool isDragging;
-        struct Vertex startDrag, endDrag;
+        ivec2s startDrag, endDrag;
 
-        struct Vertex editVertexBuffer[EDIT_VERTEXBUFFER_CAP];
+        ivec2s editVertexBuffer[EDIT_VERTEXBUFFER_CAP];
         size_t editVertexBufferSize;
 
         enum EditState editState;

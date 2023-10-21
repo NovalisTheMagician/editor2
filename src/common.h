@@ -10,7 +10,7 @@
 #include <time.h>
 
 #include <glad2/gl.h>
-#include <cglm/cglm.h>
+#include <cglm/struct.h>
 
 #include "pstring.h"
 #include "hash.h"

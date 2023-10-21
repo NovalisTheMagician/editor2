@@ -16,19 +16,19 @@ void EditCopy(struct EdState *state);
 void EditPaste(struct EdState *state);
 void EditCut(struct EdState *state);
 
-struct MapVertex* EditAddVertex(struct EdState *state, struct Vertex pos);
+struct MapVertex* EditAddVertex(struct EdState *state, ivec2s pos);
 void EditRemoveVertex(struct EdState *state, struct MapVertex *vertex);
-struct MapVertex* EditGetVertex(struct EdState *state, struct Vertex pos);
-struct MapVertex* EditGetClosestVertex(struct EdState *state, struct Vertex pos, float maxDist);
+struct MapVertex* EditGetVertex(struct EdState *state, ivec2s pos);
+struct MapVertex* EditGetClosestVertex(struct EdState *state, ivec2s pos, float maxDist);
 
 struct MapLine* EditAddLine(struct EdState *state, struct MapVertex *v0, struct MapVertex *v1);
 void EditRemoveLine(struct EdState *state, struct MapLine *index);
 // struct MapLine* EditGetLine(struct EdState *state, struct Vertex pos);
-struct MapLine* EditGetClosestLine(struct EdState *state, struct Vertex pos, float maxDist);
+struct MapLine* EditGetClosestLine(struct EdState *state, ivec2s pos, float maxDist);
 
 // struct MapSector* EditAddSector(struct EdState *state, size_t *lineIndices, size_t numLines);
 void EditRemoveSector(struct EdState *state, struct MapSector *sector);
-struct MapSector* EditGetSector(struct EdState *state, struct Vertex pos);
+struct MapSector* EditGetSector(struct EdState *state, ivec2s pos);
 
-struct MapLine* EditApplyLines(struct EdState *state, struct Vertex *points, size_t num);
-struct MapSector* EditApplySector(struct EdState *state, struct Vertex *points, size_t num);
+struct MapLine* EditApplyLines(struct EdState *state, ivec2s *points, size_t num);
+struct MapSector* EditApplySector(struct EdState *state, ivec2s *points, size_t num);

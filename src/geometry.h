@@ -4,5 +4,5 @@
 #include <stdlib.h>
 #include "map.h"
 
-bool PointInSector(struct MapSector *sector, struct Vertex point);
-bool PointInPolygon(struct Vertex *vertices, size_t numVertices, struct Vertex point);
+bool PointInSector(struct MapSector *sector, ivec2s point);
+bool PointInPolygon(ivec2s *vertices, size_t numVertices, ivec2s point);

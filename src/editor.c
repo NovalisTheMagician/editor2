@@ -157,7 +157,7 @@ void ResizeEditorView(struct EdState *state, int width, int height)
     glNamedBufferSubData(state->gl.backgroundLinesBuffer, 0, 2 * sizeof(vec2), horLine);
     glNamedBufferSubData(state->gl.backgroundLinesBuffer, 2 * sizeof(vec2), 2 * sizeof(vec2), verLine);
 
-    glm_ortho(0, width, 0, height, -1, 1, state->data.editorProjection);
+    state->data.editorProjection = glms_ortho(0, width, 0, height, -1, 1);
 }
 
 void ChangeMode(struct EdState *state, enum SelectionMode mode)
@@ -190,7 +190,7 @@ static void RenderBackground(const struct EdState *state)
         glUniform1f(state->gl.editorBackProg.hPeriodUniform, period);
         glUniform4fv(state->gl.editorBackProg.hTintUniform, 1, state->settings.colors[COL_BACK_LINES]);
         glUniform4fv(state->gl.editorBackProg.hMajorTintUniform, 1, state->settings.colors[COL_BACK_MAJOR_LINES]);
-        glUniformMatrix4fv(state->gl.editorBackProg.hVPUniform, 1, false, (float*)state->data.editorProjection);
+        glUniformMatrix4fv(state->gl.editorBackProg.hVPUniform, 1, false, (float*)state->data.editorProjection.raw);
         if(state->settings.showMajorAxis)
             glUniform1i(state->gl.editorBackProg.hMajorIdxUniform, hMajorIdx);
         else 
@@ -203,7 +203,7 @@ static void RenderBackground(const struct EdState *state)
         glUniform1f(state->gl.editorBackProg.vPeriodUniform, period);
         glUniform4fv(state->gl.editorBackProg.vTintUniform, 1, state->settings.colors[COL_BACK_LINES]);
         glUniform4fv(state->gl.editorBackProg.vMajorTintUniform, 1, state->settings.colors[COL_BACK_MAJOR_LINES]);
-        glUniformMatrix4fv(state->gl.editorBackProg.vVPUniform, 1, false, (float*)state->data.editorProjection);
+        glUniformMatrix4fv(state->gl.editorBackProg.vVPUniform, 1, false, (float*)state->data.editorProjection.raw);
         if(state->settings.showMajorAxis)
             glUniform1i(state->gl.editorBackProg.vMajorIdxUniform, vMajorIdx);
         else
@@ -225,7 +225,7 @@ static void RenderBackground(const struct EdState *state)
         glUniform1f(state->gl.editorBackProg.hPeriodUniform, 0);
         glUniform4fv(state->gl.editorBackProg.hTintUniform, 1, state->settings.colors[COL_BACK_LINES]);
         glUniform4fv(state->gl.editorBackProg.hMajorTintUniform, 1, state->settings.colors[COL_BACK_MAJOR_LINES]);
-        glUniformMatrix4fv(state->gl.editorBackProg.hVPUniform, 1, false, (float*)state->data.editorProjection);
+        glUniformMatrix4fv(state->gl.editorBackProg.hVPUniform, 1, false, (float*)state->data.editorProjection.raw);
         glUniform1i(state->gl.editorBackProg.hMajorIdxUniform, hMajorIdx);
 
         glDrawArraysInstanced(GL_LINES, 0, 2, 1);
@@ -235,7 +235,7 @@ static void RenderBackground(const struct EdState *state)
         glUniform1f(state->gl.editorBackProg.vPeriodUniform, 0);
         glUniform4fv(state->gl.editorBackProg.vTintUniform, 1, state->settings.colors[COL_BACK_LINES]);
         glUniform4fv(state->gl.editorBackProg.vMajorTintUniform, 1, state->settings.colors[COL_BACK_MAJOR_LINES]);
-        glUniformMatrix4fv(state->gl.editorBackProg.vVPUniform, 1, false, (float*)state->data.editorProjection);
+        glUniformMatrix4fv(state->gl.editorBackProg.vVPUniform, 1, false, (float*)state->data.editorProjection.raw);
         glUniform1i(state->gl.editorBackProg.vMajorIdxUniform, vMajorIdx);
 
         glDrawArraysInstanced(GL_LINES, 2, 2, 1);
@@ -251,12 +251,12 @@ static inline bool includes(void * const *list, size_t size, const void *element
     return false;
 }
 
-static void RenderVertices(const struct EdState *state, const mat4 viewProjMat)
+static void RenderVertices(const struct EdState *state, const mat4s viewProjMat)
 {
     glPointSize(state->settings.vertexPointSize);
     glBindVertexArray(state->gl.editorVertex.vertFormat);
     glUseProgram(state->gl.editorVertex.program);
-    glUniformMatrix4fv(state->gl.editorVertex.viewProjUniform, 1, false, (float*)viewProjMat);
+    glUniformMatrix4fv(state->gl.editorVertex.viewProjUniform, 1, false, (float*)viewProjMat.raw);
 
     for(const struct MapVertex *vertex = state->map.headVertex; vertex; vertex = vertex->next)
     {
@@ -275,12 +275,12 @@ static void RenderVertices(const struct EdState *state, const mat4 viewProjMat)
     }
 }
 
-static void RenderLines(const struct EdState *state, const mat4 viewProjMat)
+static void RenderLines(const struct EdState *state, const mat4s viewProjMat)
 {
     glLineWidth(2);
     glBindVertexArray(state->gl.editorLine.vertFormat);
     glUseProgram(state->gl.editorLine.program);
-    glUniformMatrix4fv(state->gl.editorLine.viewProjUniform, 1, false, (float*)viewProjMat);
+    glUniformMatrix4fv(state->gl.editorLine.viewProjUniform, 1, false, (float*)viewProjMat.raw);
 
     for(const struct MapLine *line = state->map.headLine; line; line = line->next)
     {
@@ -303,11 +303,11 @@ static void RenderLines(const struct EdState *state, const mat4 viewProjMat)
     glLineWidth(1);
 }
 
-static void RenderSectors(const struct EdState *state, const mat4 viewProjMat)
+static void RenderSectors(const struct EdState *state, const mat4s viewProjMat)
 {
     glBindVertexArray(state->gl.editorSector.vertFormat);
     glUseProgram(state->gl.editorSector.program);
-    glUniformMatrix4fv(state->gl.editorSector.viewProjUniform, 1, false, (float*)viewProjMat);
+    glUniformMatrix4fv(state->gl.editorSector.viewProjUniform, 1, false, (float*)viewProjMat.raw);
     glUniform1i(state->gl.editorSector.textureUniform, 0);
     if(!state->data.showSectorTextures)
         glBindTextureUnit(0, state->gl.whiteTexture);
@@ -332,7 +332,7 @@ static void RenderSectors(const struct EdState *state, const mat4 viewProjMat)
     }
 }
 
-static void RenderEditData(const struct EdState *state, const mat4 viewProjMat)
+static void RenderEditData(const struct EdState *state, const mat4s viewProjMat)
 {
     if(state->data.editState == ESTATE_ADDVERTEX)
     {
@@ -340,7 +340,7 @@ static void RenderEditData(const struct EdState *state, const mat4 viewProjMat)
         glVertexArrayVertexBuffer(state->gl.editorVertex.vertFormat, 0, state->gl.editorEdit.buffer, 0, sizeof(struct VertexType));
         glBindVertexArray(state->gl.editorVertex.vertFormat);
         glUseProgram(state->gl.editorVertex.program);
-        glUniformMatrix4fv(state->gl.editorVertex.viewProjUniform, 1, false, (float*)viewProjMat);
+        glUniformMatrix4fv(state->gl.editorVertex.viewProjUniform, 1, false, (float*)viewProjMat.raw);
         glUniform4fv(state->gl.editorVertex.tintUniform, 1, state->settings.colors[COL_ACTIVE_EDIT]);
         glDrawArrays(GL_POINTS, 4, state->data.editVertexBufferSize + 1);
         glVertexArrayVertexBuffer(state->gl.editorVertex.vertFormat, 0, state->gl.editorVertex.vertBuffer, 0, sizeof(struct VertexType));
@@ -352,7 +352,7 @@ static void RenderEditData(const struct EdState *state, const mat4 viewProjMat)
         glVertexArrayVertexBuffer(state->gl.editorLine.vertFormat, 0, state->gl.editorEdit.buffer, 0, sizeof(struct VertexType));
         glBindVertexArray(state->gl.editorLine.vertFormat);
         glUseProgram(state->gl.editorLine.program);
-        glUniformMatrix4fv(state->gl.editorLine.viewProjUniform, 1, false, (float*)viewProjMat);
+        glUniformMatrix4fv(state->gl.editorLine.viewProjUniform, 1, false, (float*)viewProjMat.raw);
         glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[COL_ACTIVE_EDIT]);
 
         if(state->data.editState == ESTATE_ADDVERTEX)
@@ -368,10 +368,9 @@ static void RenderEditData(const struct EdState *state, const mat4 viewProjMat)
 
 void RenderEditorView(struct EdState *state)
 {
-    mat4 viewProjMat, viewMat;
-    glm_translate_make(viewMat, (vec3){ -state->data.viewPosition.x, -state->data.viewPosition.y, 0 });
-    glm_scale(viewMat, (vec3){ state->data.zoomLevel, state->data.zoomLevel, 1 });
-    glm_mul(state->data.editorProjection, viewMat, viewProjMat);
+    mat4s viewMat = glms_translate_make((vec3s){ -state->data.viewPosition.x, -state->data.viewPosition.y, 0 });
+    glms_scale(viewMat, (vec3s){ state->data.zoomLevel, state->data.zoomLevel, 1 });
+    mat4s viewProjMat = glms_mul(state->data.editorProjection, viewMat);
 
     RenderBackground(state);
     RenderSectors(state, viewProjMat);
