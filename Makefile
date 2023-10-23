@@ -4,7 +4,7 @@ BUILD_DIR := build
 SRC_DIR := src
 SRC_SUBDIRS := windows dialogs
 
-DEFINES := __USE_XOPEN _GNU_SOURCE
+DEFINES := __USE_XOPEN _GNU_SOURCE CGLM_USE_ANONYMOUS_STRUCT=1
 INC_DIRS := $(SRC_DIR)
 
 LIBS := m cimgui_sdl SDL2 glad2 igfd re ftp json-c triangulate Clipper2 stdc++

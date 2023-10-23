@@ -65,7 +65,7 @@ angle_t NormalizeAngle(angle_t angle)
 
 angle_t AngleDifference(angle_t a, angle_t b)
 {
-    angle_t d = Normalized(a) - Normalized(b);
+    angle_t d = NormalizeAngle(a) - NormalizeAngle(b);
 
     // Make corrections for zero barrier
     if(d < 0.0f) d += PI2;
@@ -82,7 +82,7 @@ angle_t GetAngleLine(struct MapLine *line)
 angle_t GetAngleOFLines(struct MapLine *a, struct MapLine *b)
 {
     struct MapVertex *aa = a->a;
-    struct MapVertex *ab = a->b;
+    //struct MapVertex *ab = a->b;
     struct MapVertex *ba = b->a;
     struct MapVertex *bb = b->b;
     
