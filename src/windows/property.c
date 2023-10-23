@@ -15,7 +15,6 @@ static void VertexProperties(struct EdState *state)
     {
         struct MapVertex *selectedVertex = state->data.selectedElements[0];
         igText("Index: %d", selectedVertex->idx);
-        igText("RefCount: %d", selectedVertex->refCount);
     }
     else if(state->data.numSelectedElements > 1)
     {
@@ -34,8 +33,7 @@ static void LineProperties(struct EdState *state)
     {
         struct MapLine *selectedLine = state->data.selectedElements[0];
         igText("Index: %d", selectedLine->idx);
-        igText("RefCount: %d", selectedLine->refCount);
-        igText("Vertex A: %d", selectedLine->a->idx); 
+        igText("Vertex A: %d", selectedLine->a->idx);
         igSameLine(0, 4);
         if(igButton("Select##a", (ImVec2){ 0, 0 }))
         {

@@ -18,12 +18,18 @@ struct TriangleData
     size_t vertexStart, vertexLength;
 };
 
+struct MapLine;
+struct MapSector;
+
 struct MapVertex
 {
     ivec2s pos;
 
     size_t idx;
-    int refCount;
+
+    struct MapLine *attachedLines[256];
+    size_t numAttachedLines;
+
     struct MapVertex *next, *prev;
 };
 
@@ -37,15 +43,16 @@ struct Side
 struct MapLine
 {
     struct MapVertex *a, *b;
+    size_t aVertIndex, bVertIndex;
     uint32_t type;
     
     int32_t normal;
 
-    struct Side front;
-    struct Side back;
+    struct Side front, back;
+
+    struct MapSector *frontSector, *backSector;
 
     size_t idx;
-    int refCount;
     struct MapLine *next, *prev;
 };
 

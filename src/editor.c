@@ -293,10 +293,12 @@ static void RenderLines(const struct EdState *state, const mat4s viewProjMat)
         {
             colorIdx = COL_LINE_HOVER;
         }
+        /*
         else if(line->refCount > 1)
         {
             colorIdx = COL_LINE_INNER;
         }
+        */
         glUniform4fv(state->gl.editorLine.tintUniform, 1, state->settings.colors[colorIdx]);
         glDrawArrays(GL_LINES, line->idx * 4, 4); // 2 verts per line segment | 2 for wall and 2 for wall normal
     }
@@ -368,8 +370,8 @@ static void RenderEditData(const struct EdState *state, const mat4s viewProjMat)
 
 void RenderEditorView(struct EdState *state)
 {
-    mat4s viewMat = glms_translate_make((vec3s){ -state->data.viewPosition.x, -state->data.viewPosition.y, 0 });
-    glms_scale(viewMat, (vec3s){ state->data.zoomLevel, state->data.zoomLevel, 1 });
+    mat4s viewMat = glms_translate_make((vec3s){{ -state->data.viewPosition.x, -state->data.viewPosition.y, 0 }});
+    glms_scale(viewMat, (vec3s){{ state->data.zoomLevel, state->data.zoomLevel, 1 }});
     mat4s viewProjMat = glms_mul(state->data.editorProjection, viewMat);
 
     RenderBackground(state);
