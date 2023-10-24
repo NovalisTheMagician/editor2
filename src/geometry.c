@@ -99,27 +99,27 @@ angle_t GetAngleOf(ivec2s a, ivec2s b, ivec2s c)
     vec2s cb = {{b.x - c.x, b.y - c.y}};
 
     // dot product
-    double dot = (ab.x * cb.x + ab.y * cb.y);
+    float dot = (ab.x * cb.x + ab.y * cb.y);
 
     // length square of both vectors
-    double abSqr = ab.x * ab.x + ab.y * ab.y;
-    double cbSqr = cb.x * cb.x + cb.y * cb.y;
+    float abSqr = ab.x * ab.x + ab.y * ab.y;
+    float cbSqr = cb.x * cb.x + cb.y * cb.y;
 
     // square of cosine of the needed angle
-    double cosSqr = dot * dot / abSqr / cbSqr;
+    float cosSqr = dot * dot / abSqr / cbSqr;
 
     // this is a known trigonometric equality:
     // cos(alpha * 2) = [ cos(alpha) ]^2 * 2 - 1
-    double cos2 = 2.0f * cosSqr - 1.0f;
+    float cos2 = 2.0f * cosSqr - 1.0f;
 
     // Here's the only invocation of the heavy function.
     // It's a good idea to check explicitly if cos2 is within [-1 .. 1] range
-    double alpha2 =
+    float alpha2 =
         (cos2 <= -1) ? PI :
         (cos2 >= 1) ? 0.0 :
         acos(cos2);
 
-    double rs = alpha2 * 0.5;
+    float rs = alpha2 * 0.5;
 
     // Now revolve the ambiguities.
     // 1. If dot product of two vectors is negative - the angle is definitely
@@ -130,7 +130,7 @@ angle_t GetAngleOf(ivec2s a, ivec2s b, ivec2s c)
     if(dot < 0) rs = PI - rs;
 
     // 2. Determine the sign. For this we'll use the Determinant of two vectors.
-    double det = (ab.x * cb.y - ab.y * cb.x);
+    float det = (ab.x * cb.y - ab.y * cb.x);
     if(det < 0) rs = (2.0 * PI) - rs;
 
     return rs;
