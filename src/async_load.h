@@ -6,12 +6,6 @@
 
 #define BATCH_SIZE 10
 
-enum 
-{
-    LOCATION_FS,
-    LOCATION_FTP
-};
-
 struct Batch
 {
     uint8_t *buffers[BATCH_SIZE];
@@ -21,7 +15,8 @@ struct Batch
     size_t numBuffers;
 };
 
-typedef void (*batch_finish_cb)(struct Batch batch, bool lastBatch, int type, void *handle, void *user);
+typedef void (*batch_finish_cb)(struct Batch batch, bool lastBatch, void *handle, void *user);
+typedef bool (*read_cb)(pstring, uint8_t**, size_t*, void*);
 
 struct FetchLocation
 {
@@ -38,7 +33,6 @@ struct AsyncJob
 
     struct FetchLocation *infos;
     size_t numInfos;
-    int locationType;
 
     void *handle;
 
@@ -48,13 +42,13 @@ struct AsyncJob
     size_t totalBatches;
 
     batch_finish_cb finishCb;
+    read_cb readCb;
     pthread_t threadObj;
 
     void *user;
 };
 
-bool Async_StartJobFs(struct AsyncJob *job, struct FetchLocation *fetchList, size_t len, batch_finish_cb finishCb, void *user);
-bool Async_StartJobFtp(struct AsyncJob *job, struct FetchLocation *fetchList, size_t len, batch_finish_cb finishCb, void *ftpHandle, void *user);
+bool Async_StartJob(struct AsyncJob *job, struct FetchLocation *fetchList, size_t len, batch_finish_cb finishCb, read_cb readCb, void *handle, void *user);
 void Async_UpdateJob(struct AsyncJob *job);
 void Async_AbortJob(struct AsyncJob *job);
 void Async_AbortJobAndWait(struct AsyncJob *job);

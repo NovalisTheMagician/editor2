@@ -10,6 +10,57 @@
 
 #include "async_load.h"
 
+static bool ReadFromFs(pstring path, uint8_t **buffer, size_t *size, void *unused)
+{
+    (void)unused;
+
+    FILE *file = fopen(pstr_tocstr(path), "rb");
+    if(!file) return false;
+
+    fseek(file, 0, SEEK_END);
+    *size = ftell(file);
+    rewind(file);
+
+    *buffer = calloc(*size, sizeof **buffer);
+    size_t readTotal = 0, readCurrent;
+    while((readCurrent = fread((*buffer) + readTotal, 1, (*size) - readTotal, file)) > 0)
+    {
+        readTotal += readCurrent;
+    }
+
+    fclose(file);
+
+    return true;
+}
+
+static bool ReadFromFtp(pstring path, uint8_t **buffer, size_t *size, void *ftpHandle)
+{
+    uint32_t fileSize = 0;
+    if(!FtpSize(pstr_tocstr(path), &fileSize, FTPLIB_BINARY, ftpHandle))
+    {
+        LogError("{c}", FtpLastResponse(ftpHandle));
+        return false;
+    }
+    *size = fileSize;
+
+    netbuf *fileHandle;
+    if(!FtpAccess(pstr_tocstr(path), FTPLIB_FILE_READ, FTPLIB_BINARY, ftpHandle, &fileHandle))
+    {
+        LogError("{c}", FtpLastResponse(ftpHandle));
+        return false;
+    }
+
+    *buffer = calloc(*size, sizeof **buffer);
+    size_t readTotal = 0, readCurrent;
+    while((readCurrent = FtpRead((*buffer) + readTotal, (*size) - readTotal, fileHandle)) > 0)
+    {
+        readTotal += readCurrent;
+    }
+
+    FtpClose(fileHandle);
+    return true;
+}
+
 static netbuf* ConnectToFtp(pstring url, pstring user, pstring pass)
 {
     netbuf *handle;
@@ -222,7 +273,7 @@ static size_t CollectTexturesFs(struct TextureCollection *tc, struct FetchLocati
     return size;
 }
 
-static void BatchCallback(struct Batch batch, bool lastBatch, int type, void *handle, void *user)
+static void BatchCallback(struct Batch batch, bool lastBatch, void *handle, void *user)
 {
     struct EdState *state = user;
     struct TextureCollection *tc = &state->textures;
@@ -240,7 +291,7 @@ static void BatchCallback(struct Batch batch, bool lastBatch, int type, void *ha
     if(lastBatch)
     {
         state->data.fetchingTextures = false;
-        if(type == LOCATION_FTP) FtpQuit(handle);
+        if(handle) FtpQuit(handle);
     }
 }
 
@@ -281,7 +332,7 @@ void* LoadThread(void *user)
             pthread_mutex_lock(&collectMutex);
             cancel = cancelRequest;
             pthread_mutex_unlock(&collectMutex);
-            if(num > 0 && !cancel) Async_StartJobFtp(async, locations, num, BatchCallback, handle, data->state);
+            if(num > 0 && !cancel) Async_StartJob(async, locations, num, BatchCallback, ReadFromFtp, handle, data->state);
             else 
             {
                 FtpQuit(handle);
@@ -295,7 +346,7 @@ void* LoadThread(void *user)
         pthread_mutex_lock(&collectMutex);
         cancel = cancelRequest;
         pthread_mutex_unlock(&collectMutex);
-        if(num > 0 && !cancel) Async_StartJobFs(async, locations, num, BatchCallback, data->state);
+        if(num > 0 && !cancel) Async_StartJob(async, locations, num, BatchCallback, ReadFromFs, NULL, data->state);
         else data->state->data.fetchingTextures = false;
     }
 
