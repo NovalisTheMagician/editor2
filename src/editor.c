@@ -360,10 +360,10 @@ static void RenderEditData(const struct EdState *state, const mat4s viewProjMat)
         if(state->data.editState == ESTATE_ADDVERTEX)
             glDrawArrays(GL_LINE_STRIP, 4, state->data.editVertexBufferSize + 1);
 
+        glLineWidth(1);
         if(state->data.isDragging)
             glDrawArrays(GL_LINE_LOOP, 0, 4);
 
-        glLineWidth(1);
         glVertexArrayVertexBuffer(state->gl.editorLine.vertFormat, 0, state->gl.editorLine.vertBuffer, 0, sizeof(struct VertexType));
     }
 }
@@ -371,7 +371,7 @@ static void RenderEditData(const struct EdState *state, const mat4s viewProjMat)
 void RenderEditorView(struct EdState *state)
 {
     mat4s viewMat = glms_translate_make((vec3s){{ -state->data.viewPosition.x, -state->data.viewPosition.y, 0 }});
-    glms_scale(viewMat, (vec3s){{ state->data.zoomLevel, state->data.zoomLevel, 1 }});
+    viewMat = glms_scale(viewMat, (vec3s){{ state->data.zoomLevel, state->data.zoomLevel, 1 }});
     mat4s viewProjMat = glms_mul(state->data.editorProjection, viewMat);
 
     RenderBackground(state);
