@@ -2,6 +2,9 @@
 
 #include <assert.h>
 #include <tgmath.h>
+#include <limits.h>
+
+#include <cglm/ivec2.h>
 
 bool PointInSector(struct MapSector *sector, ivec2s point)
 {
@@ -54,6 +57,23 @@ int SideOfMapLine(struct MapLine *line, ivec2s point)
 int SideOfLine(ivec2s a, ivec2s b, ivec2s point)
 {
     return (point.y - a.y) * (b.x - a.x) - (point.x - a.x) * (b.y - a.y);
+}
+
+struct BoundingBox BoundingBoxFromVertices(ivec2s *vertices, size_t numVertices)
+{
+    ivec2s min = { .x = INT32_MAX, .y = INT32_MAX }, max = { .x = INT32_MIN, .y = INT32_MIN };
+    for(size_t i = 0; i < numVertices; ++i)
+    {
+        ivec2s vert = vertices[i];
+        glm_ivec2_maxv(vert.raw, max.raw, max.raw);
+        glm_ivec2_minv(vert.raw, min.raw, min.raw);
+    }
+    return (struct BoundingBox){ .min = min, .max = max };
+}
+
+bool BoundingBoxIntersect(struct BoundingBox a, struct BoundingBox b)
+{
+    return a.min.x > b.min.x && a.min.x < b.max.x && a.max.x < b.max.x && a.min.y > b.min.y && a.min.y < b.max.y && a.max.y < b.max.y;
 }
 
 angle_t NormalizeAngle(angle_t angle)

@@ -21,9 +21,17 @@
 
 typedef float angle_t;
 
+struct BoundingBox
+{
+    ivec2s min, max;
+};
+
 bool PointInSector(struct MapSector *sector, ivec2s point);
 bool PointInPolygon(ivec2s *vertices, size_t numVertices, ivec2s point);
 float MinDistToLine(ivec2s a, ivec2s b, ivec2s point);
+
+struct BoundingBox BoundingBoxFromVertices(ivec2s *vertices, size_t numVertices);
+bool BoundingBoxIntersect(struct BoundingBox a, struct BoundingBox b);
 
 int SideOfMapLine(struct MapLine *line, ivec2s point);
 int SideOfLine(ivec2s a, ivec2s b, ivec2s point);

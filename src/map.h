@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common.h"
+#include "geometry.h"
 
 enum LineType
 {
@@ -76,6 +77,8 @@ struct MapSector
 
     pstring floorTex;
     pstring ceilTex;
+
+    struct BoundingBox bb;
 
     size_t idx;
     struct MapSector *next, *prev;
