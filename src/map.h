@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common.h"
-#include "geometry.h"
 
 enum LineType
 {
@@ -17,6 +16,11 @@ struct TriangleData
 {
     size_t indexStart, indexLength;
     size_t vertexStart, vertexLength;
+};
+
+struct BoundingBox
+{
+    ivec2s min, max;
 };
 
 struct MapLine;

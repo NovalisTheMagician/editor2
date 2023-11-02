@@ -21,11 +21,6 @@
 
 typedef float angle_t;
 
-struct BoundingBox
-{
-    ivec2s min, max;
-};
-
 bool PointInSector(struct MapSector *sector, ivec2s point);
 bool PointInPolygon(ivec2s *vertices, size_t numVertices, ivec2s point);
 float MinDistToLine(ivec2s a, ivec2s b, ivec2s point);

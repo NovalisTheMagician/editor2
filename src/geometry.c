@@ -96,7 +96,7 @@ angle_t AngleDifference(angle_t a, angle_t b)
 
 angle_t GetAngleLine(struct MapLine *line)
 {
-    
+    return 0;
 }
 
 angle_t GetAngleOFLines(struct MapLine *a, struct MapLine *b)
