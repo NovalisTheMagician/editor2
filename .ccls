@@ -1,0 +1,8 @@
+clang
+-Wall
+-std=gnu17
+-Wstrict-prototypes
+-D__USE_XOPEN
+-D_GNU_SOURCE
+-DCGLM_USE_ANONYMOUS_STRUCT=1
+
