@@ -6,6 +6,8 @@
 *.ini
 *.pro
 
+.ccls-cache
+
 memory_logs.txt
 
 editor2
