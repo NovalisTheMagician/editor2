@@ -79,7 +79,7 @@ static void RemoveLine(struct Map *map, struct MapLine *line)
             struct MapLine *attLine = line->a->attachedLines[i];
             attLine->a == line->a ? attLine->aVertIndex-- : attLine->bVertIndex--;
         }
-        memmove(line->a->attachedLines + line->aVertIndex, line->a->attachedLines + line->aVertIndex + 1, (line->a->numAttachedLines - (line->aVertIndex + 1) * sizeof *line->a->attachedLines));
+        memmove(line->a->attachedLines + line->aVertIndex, line->a->attachedLines + line->aVertIndex + 1, ((line->a->numAttachedLines - (line->aVertIndex + 1)) * sizeof *line->a->attachedLines));
         line->a->numAttachedLines--;
     }
 
@@ -94,7 +94,7 @@ static void RemoveLine(struct Map *map, struct MapLine *line)
             struct MapLine *attLine = line->b->attachedLines[i];
             attLine->a == line->b ? attLine->aVertIndex-- : attLine->bVertIndex--;
         }
-        memmove(line->b->attachedLines + line->bVertIndex, line->b->attachedLines + line->bVertIndex + 1, (line->b->numAttachedLines - (line->bVertIndex + 1) * sizeof *line->b->attachedLines));
+        memmove(line->b->attachedLines + line->bVertIndex, line->b->attachedLines + line->bVertIndex + 1, ((line->b->numAttachedLines - (line->bVertIndex + 1)) * sizeof *line->b->attachedLines));
         line->b->numAttachedLines--;
     }
 
@@ -618,70 +618,5 @@ struct MapLine* EditApplyLines(struct EdState *state, ivec2s *points, size_t num
 
 struct MapSector* EditApplySector(struct EdState *state, ivec2s *points, size_t num)
 {
-    struct Polygon *sourcePoly = malloc(sizeof *sourcePoly + num * sizeof *sourcePoly->vertices);
-    sourcePoly->length = num;
-    for(size_t i = 0; i < num; ++i)
-    {
-        sourcePoly->vertices[i][0] = points[i].x;
-        sourcePoly->vertices[i][1] = points[i].y;
-    }
-
-    struct Map *map = &state->map;
-    struct Polygon **sourceSimples;
-    size_t numSimples = makeSimple(sourcePoly, &sourceSimples);
-    struct MapSector *lastSectorAdded = NULL;
-
-    LogDebug("Make simple: {d}", numSimples);
-
-    for(size_t i = 0; i < numSimples; ++i)
-    {
-        struct Polygon *simple = sourceSimples[i];
-        size_t numClipped = 0;
-        struct Polygon *clippedSectors[1024];
-        struct MapSector *sectorsToRemove[1024];
-        for(struct MapSector *sector = map->headSector; sector; sector = sector->next)
-        {
-            struct Polygon *sectorPolygon = PolygonFromSector(&state->map, sector);
-            bool res = intersects(sectorPolygon, simple);
-
-            LogDebug("Sector {d} Clipped: {d}", sector->idx, res);
-
-            if(res)
-            {
-                clippedSectors[numClipped] = sectorPolygon;
-                sectorsToRemove[numClipped++] = sector;
-            }
-            else
-                free(sectorPolygon);
-
-            assert(numClipped < 1024);
-        }
-
-        if(numClipped == 0)
-        {
-            lastSectorAdded = AddPolygon(state, simple);
-        }
-        else
-        {
-            struct ClipResult2 res;
-            clip2(simple, clippedSectors, numClipped, &res);
-
-            for(size_t j = 0; j < numClipped; ++j)
-                EditRemoveSector(state, sectorsToRemove[j]);
-
-            for(size_t j = 0; j < res.numPolys; ++j)
-            {
-                struct Polygon *polygon = res.polygons[j];
-                lastSectorAdded = AddPolygon(state, polygon);
-            }
-            freePolygons(res.polygons, res.numPolys);
-            freePolygons(clippedSectors, numClipped);
-        }
-    }
-
-    free(sourcePoly);
-    freePolygons(sourceSimples, numSimples);
-    free(sourceSimples);
-
-    return lastSectorAdded;
+    return NULL;
 }
