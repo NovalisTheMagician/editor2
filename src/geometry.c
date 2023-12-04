@@ -6,12 +6,12 @@
 
 #include <cglm/ivec2.h>
 
-bool PointInSector(struct MapSector *sector, ivec2s point)
+bool PointInSector(struct MapSector sector[static 1], ivec2s point)
 {
-    return PointInPolygon(sector->vertices, sector->numOuterLines, point);
+    return PointInPolygon(sector->numOuterLines, sector->vertices, point);
 }
 
-bool PointInPolygon(ivec2s *vertices, size_t numVertices, ivec2s point)
+bool PointInPolygon(size_t numVertices, ivec2s vertices[static numVertices], ivec2s point)
 {
     bool inside = false;
     for(size_t i = 0; i < numVertices; ++i)
@@ -49,7 +49,7 @@ float MinDistToLine(ivec2s a, ivec2s b, ivec2s point)
     return sqrt(dist2(point, tmp));
 }
 
-int SideOfMapLine(struct MapLine *line, ivec2s point)
+int SideOfMapLine(struct MapLine line[static 1], ivec2s point)
 {
     return SideOfLine(line->a->pos, line->b->pos, point);
 }
@@ -59,7 +59,7 @@ int SideOfLine(ivec2s a, ivec2s b, ivec2s point)
     return (point.y - a.y) * (b.x - a.x) - (point.x - a.x) * (b.y - a.y);
 }
 
-struct BoundingBox BoundingBoxFromVertices(ivec2s *vertices, size_t numVertices)
+struct BoundingBox BoundingBoxFromVertices(size_t numVertices, ivec2s vertices[static numVertices])
 {
     ivec2s min = { .x = INT32_MAX, .y = INT32_MAX }, max = { .x = INT32_MIN, .y = INT32_MIN };
     for(size_t i = 0; i < numVertices; ++i)
@@ -94,12 +94,12 @@ angle_t AngleDifference(angle_t a, angle_t b)
     return d;
 }
 
-angle_t GetAngleLine(struct MapLine *line)
+angle_t AngleLine(struct MapLine line[static 1])
 {
     return 0;
 }
 
-angle_t GetAngleOFLines(struct MapLine *a, struct MapLine *b)
+angle_t AngleOfLines(struct MapLine a[static 1], struct MapLine b[static 1])
 {
     struct MapVertex *aa = a->a;
     //struct MapVertex *ab = a->b;
@@ -110,10 +110,10 @@ angle_t GetAngleOFLines(struct MapLine *a, struct MapLine *b)
     assert(common);
 
     ivec2s va = aa == common ? ba->pos : aa->pos, vb = ba == common ? bb->pos : ba->pos, vc = common->pos;
-    return GetAngleOf(va, vc, vb);
+    return AngleOf(va, vc, vb);
 }
 
-angle_t GetAngleOf(ivec2s a, ivec2s b, ivec2s c)
+angle_t AngleOf(ivec2s a, ivec2s b, ivec2s c)
 {
     vec2s ab = {{b.x - a.x, b.y - a.y}};
     vec2s cb = {{b.x - c.x, b.y - c.y}};

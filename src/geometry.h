@@ -21,18 +21,18 @@
 
 typedef float angle_t;
 
-bool PointInSector(struct MapSector *sector, ivec2s point);
-bool PointInPolygon(ivec2s *vertices, size_t numVertices, ivec2s point);
+bool PointInSector(struct MapSector sector[static 1], ivec2s point);
+bool PointInPolygon(size_t numVertices, ivec2s vertices[static numVertices], ivec2s point);
 float MinDistToLine(ivec2s a, ivec2s b, ivec2s point);
 
-struct BoundingBox BoundingBoxFromVertices(ivec2s *vertices, size_t numVertices);
+struct BoundingBox BoundingBoxFromVertices(size_t numVertices, ivec2s vertices[static numVertices]);
 bool BoundingBoxIntersect(struct BoundingBox a, struct BoundingBox b);
 
-int SideOfMapLine(struct MapLine *line, ivec2s point);
+int SideOfMapLine(struct MapLine line[static 1], ivec2s point);
 int SideOfLine(ivec2s a, ivec2s b, ivec2s point);
 
 angle_t NormalizeAngle(angle_t angle);
 angle_t AngleDifference(angle_t a, angle_t b);
-angle_t GetAngleLine(struct MapLine *line);
-angle_t GetAngleOFLines(struct MapLine *a, struct MapLine *b);
-angle_t GetAngleOf(ivec2s a, ivec2s b, ivec2s c);
+angle_t AngleLine(struct MapLine line[static 1]);
+angle_t AngleOfLines(struct MapLine a[static 1], struct MapLine b[static 1]);
+angle_t AngleOf(ivec2s a, ivec2s b, ivec2s c);

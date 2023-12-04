@@ -16,35 +16,35 @@ typedef struct pstring_buf
 } pstring_buf;
 
 pstring pstr_alloc(size_t len);
-pstring pstr_cstr(const char *cstr);
-pstring pstr_cstr_size(const char *cstr, size_t size);
+pstring pstr_cstr(const char cstr[static 1]);
+pstring pstr_cstr_size(const char cstr[static 1], size_t size);
 char* pstr_tocstr(pstring string);
 void pstr_free(pstring string);
 pstring pstr_replace(pstring old, pstring new);
 
 pstring pstr_copy(pstring string);
-void pstr_copy_into_str(pstring *into, pstring string);
-void pstr_copy_into_cstr(pstring *into, const char *string);
+void pstr_copy_into_str(pstring into[static 1], pstring string);
+void pstr_copy_into_cstr(pstring into[static 1], const char string[static 1]);
 
-size_t pstr_format(pstring *into, const char *format, ...);
-size_t pstr_vformat(pstring *into, const char *format, va_list args);
+size_t pstr_format(pstring into[static 1], const char format[static 1], ...);
+size_t pstr_vformat(pstring into[static 1], const char format[static 1], va_list args);
 
 pstring pstr_substring(pstring string, size_t start, ssize_t end);
 void pstr_upper(pstring string);
 void pstr_lower(pstring string);
 ssize_t pstr_first_index_of_str(pstring string, pstring tok);
 ssize_t pstr_last_index_of_str(pstring string, pstring tok);
-pstring pstr_tok_str(pstring *string, pstring tok);
+pstring pstr_tok_str(pstring string[static 1], pstring tok);
 
-ssize_t pstr_first_index_of_cstr(pstring string, const char *tok);
-ssize_t pstr_last_index_of_cstr(pstring string, const char *tok);
-pstring pstr_tok_cstr(pstring *string, const char *tok);
+ssize_t pstr_first_index_of_cstr(pstring string, const char tok[static 1]);
+ssize_t pstr_last_index_of_cstr(pstring string, const char tok[static 1]);
+pstring pstr_tok_cstr(pstring string[static 1], const char tok[static 1]);
 
 int pstr_cmp_str(pstring a, pstring b);
-int pstr_cmp_cstr(pstring a, const char *b);
+int pstr_cmp_cstr(pstring a, const char b[static 1]);
 
 int pstr_icmp_str(pstring a, pstring b);
-int pstr_icmp_cstr(pstring a, const char *b);
+int pstr_icmp_cstr(pstring a, const char b[static 1]);
 
 #define pstr_first_index_of(string, tok) _Generic((tok), \
                                                 char*: pstr_first_index_of_cstr, \

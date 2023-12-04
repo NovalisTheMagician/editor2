@@ -12,7 +12,7 @@ pstring pstr_alloc(size_t len)
     return (pstring){ .data = calloc(len+1, 1), .size = 0, .capacity = len };
 }
 
-pstring pstr_cstr(const char *cstr)
+pstring pstr_cstr(const char cstr[static 1])
 {
     if(!cstr) return pstr_alloc(0);
 
@@ -22,7 +22,7 @@ pstring pstr_cstr(const char *cstr)
     return string;
 }
 
-pstring pstr_cstr_size(const char *cstr, size_t size)
+pstring pstr_cstr_size(const char cstr[static 1], size_t size)
 {
     size_t len = strlen(cstr);
     size_t s = len > size ? len : size;
@@ -49,7 +49,7 @@ pstring pstr_replace(pstring old, pstring new)
     return pstr_copy(new);
 }
 
-size_t pstr_format(pstring *into, const char *format, ...)
+size_t pstr_format(pstring into[static 1], const char format[static 1], ...)
 {
     assert(into->capacity > 0);
 
@@ -63,7 +63,7 @@ size_t pstr_format(pstring *into, const char *format, ...)
     return pos;
 }
 
-size_t pstr_vformat(pstring *into, const char *format, va_list args)
+size_t pstr_vformat(pstring into[static 1], const char format[static 1], va_list args)
 {
     bool inVarDec = false;
     size_t pos = 0;
@@ -143,7 +143,7 @@ pstring pstr_copy(pstring string)
     return copy;
 }
 
-void pstr_copy_into_str(pstring *into, pstring string)
+void pstr_copy_into_str(pstring into[static 1], pstring string)
 {
     size_t len = into->capacity < string.size ? into->capacity : string.size;
     memset(into->data, 0, into->capacity);
@@ -151,7 +151,7 @@ void pstr_copy_into_str(pstring *into, pstring string)
     into->size = len;
 }
 
-void pstr_copy_into_cstr(pstring *into, const char *string)
+void pstr_copy_into_cstr(pstring into[static 1], const char string[static 1])
 {
     size_t slen = strlen(string);
     size_t len = into->capacity < slen ? into->capacity : slen;
@@ -205,7 +205,7 @@ ssize_t pstr_last_index_of_str(pstring string, pstring tok)
     return hitIdx;
 }
 
-pstring pstr_tok_str(pstring *string, pstring tok)
+pstring pstr_tok_str(pstring string[static 1], pstring tok)
 {
     ssize_t idx = pstr_first_index_of_str(*string, tok);
     if(idx == -1) // no token found return the whole string
@@ -225,7 +225,7 @@ pstring pstr_tok_str(pstring *string, pstring tok)
     return sub;
 }
 
-ssize_t pstr_first_index_of_cstr(pstring string, const char *tok)
+ssize_t pstr_first_index_of_cstr(pstring string, const char tok[static 1])
 {
     size_t tokSize = strlen(tok);
     for(size_t i = 0; i <= string.size - tokSize; ++i)
@@ -238,7 +238,7 @@ ssize_t pstr_first_index_of_cstr(pstring string, const char *tok)
     return -1;
 }
 
-ssize_t pstr_last_index_of_cstr(pstring string, const char *tok)
+ssize_t pstr_last_index_of_cstr(pstring string, const char tok[static 1])
 {
     size_t tokSize = strlen(tok);
     ssize_t hitIdx = -1;
@@ -252,7 +252,7 @@ ssize_t pstr_last_index_of_cstr(pstring string, const char *tok)
     return hitIdx;
 }
 
-pstring pstr_tok_cstr(pstring *string, const char *tok)
+pstring pstr_tok_cstr(pstring string[static 1], const char tok[static 1])
 {
     ssize_t idx = pstr_first_index_of_cstr(*string, tok);
     if(idx == -1) // no token found return the whole string
@@ -284,7 +284,7 @@ int pstr_cmp_str(pstring a, pstring b)
     return a.size - b.size;
 }
 
-int pstr_cmp_cstr(pstring a, const char *b)
+int pstr_cmp_cstr(pstring a, const char b[static 1])
 {
     size_t blen = strlen(b);
     size_t len = a.size < blen ? a.size : blen;
@@ -309,7 +309,7 @@ int pstr_icmp_str(pstring a, pstring b)
     return a.size - b.size;
 }
 
-int pstr_icmp_cstr(pstring a, const char *b)
+int pstr_icmp_cstr(pstring a, const char b[static 1])
 {
     size_t blen = strlen(b);
     size_t len = a.size < blen ? a.size : blen;

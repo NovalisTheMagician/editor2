@@ -16,21 +16,21 @@ enum LogSeverity
     LOG_ERROR
 };
 
-void LogInit(struct LogBuffer *logBuffer);
-void LogDestroy(struct LogBuffer *logBuffer);
+void LogInit(struct LogBuffer logBuffer[static 1]);
+void LogDestroy(struct LogBuffer logBuffer[static 1]);
 
-size_t LogLength(struct LogBuffer *logBuffer);
-pstring LogGet(struct LogBuffer *logBuffer, size_t idx);
-void LogClear(struct LogBuffer *logBuffer);
-void LogString(struct LogBuffer *logBuffer, enum LogSeverity severity, pstring str);
-void LogFormat(struct LogBuffer *logBuffer, enum LogSeverity severity, const char *format, ...);
+size_t LogLength(struct LogBuffer logBuffer[static 1]);
+pstring LogGet(struct LogBuffer logBuffer[static 1], size_t idx);
+void LogClear(struct LogBuffer logBuffer[static 1]);
+void LogString(struct LogBuffer logBuffer[static 1], enum LogSeverity severity, pstring str);
+void LogFormat(struct LogBuffer logBuffer[static 1], enum LogSeverity severity, const char format[static 1], ...);
 
-void LogInfo(const char *format, ...);
-void LogWarning(const char *format, ...);
-void LogError(const char *format, ...);
+void LogInfo(const char format[static 1], ...);
+void LogWarning(const char format[static 1], ...);
+void LogError(const char format[static 1], ...);
 
 #ifdef _DEBUG
-void LogDebug(const char *format, ...);
+void LogDebug(const char format[static 1], ...);
 #else
 #define LogDebug(format, ...) 
 #endif

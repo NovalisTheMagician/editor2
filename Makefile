@@ -16,7 +16,7 @@ else
 CC := gcc
 endif
 
-CCFLAGS := -Wall -std=gnu17 -Wstrict-prototypes
+CCFLAGS := -Wall -std=gnu2x -Wstrict-prototypes
 
 LD := $(CC)
 LDFLAGS := -pthread
