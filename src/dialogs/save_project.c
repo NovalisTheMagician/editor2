@@ -13,6 +13,6 @@ void SaveProjectDialog(struct Project *project, bool quitRequest)
     struct FileDialogAction *fda = calloc(1, sizeof *fda);
     fda->data = project;
     fda->callback = SaveProjectCallback;
-    fda->quitRequest = true;
+    fda->quitRequest = quitRequest;
     IGFD_OpenDialog(cfileDialog, "filedlg", "Save Project", "Project Files(*.pro){.pro}", ".", "", 1, fda, ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite | ImGuiFileDialogFlags_CaseInsensitiveExtention);
 }
