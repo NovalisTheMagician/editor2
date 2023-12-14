@@ -339,6 +339,8 @@ void* LoadThread(void *user)
                 data->state->data.fetchingTextures = false;
             }
         }
+        else
+            data->state->data.fetchingTextures = false;
     }
     else
     {
