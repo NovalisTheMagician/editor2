@@ -155,3 +155,8 @@ angle_t AngleOf(ivec2s a, ivec2s b, ivec2s c)
 
     return rs;
 }
+
+bool InsertLinesIntoMap(struct Map map[static 1], size_t numLines, ivec2s vertices[static numLines], bool isLoop)
+{
+    return false;
+}

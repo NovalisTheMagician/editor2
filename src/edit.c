@@ -613,10 +613,12 @@ struct MapSector* EditGetSector(struct EdState *state, ivec2s pos)
 
 struct MapLine* EditApplyLines(struct EdState *state, ivec2s *points, size_t num)
 {
+    InsertLinesIntoMap(&state->map, num, points, false);
     return NULL;
 }
 
 struct MapSector* EditApplySector(struct EdState *state, ivec2s *points, size_t num)
 {
+    InsertLinesIntoMap(&state->map, num, points, true);
     return NULL;
 }

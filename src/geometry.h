@@ -11,8 +11,8 @@
 #define PI2 (PI * 2.0)
 #define PIHALF (PI / 2.0)
 
-#define deg2rad(x) (x * 180.0 / PI)
-#define rad2deg(x) (x * PI / 180.0)
+#define deg2rad(x) ({__typeof__(x) _x = (x); _x * 180.0 / PI;})
+#define rad2deg(x) ({__typeof__(x) _x = (x); _x * PI / 180.0;})
 
 #define dot(a, b) ({ ivec2s a_ = (a); ivec2s b_ = (b); a_.x * b_.x + a_.y * b_.y; })
 #define dist2(a, b) ({ ivec2s a_ = (a); ivec2s b_ = (b); float dx = a_.x - b_.x; float dy = a_.y - b_.y; dx*dx + dy*dy; })
@@ -36,3 +36,5 @@ angle_t AngleDifference(angle_t a, angle_t b);
 angle_t AngleLine(struct MapLine line[static 1]);
 angle_t AngleOfLines(struct MapLine a[static 1], struct MapLine b[static 1]);
 angle_t AngleOf(ivec2s a, ivec2s b, ivec2s c);
+
+bool InsertLinesIntoMap(struct Map map[static 1], size_t numLines, ivec2s vertices[static numLines], bool isLoop);
