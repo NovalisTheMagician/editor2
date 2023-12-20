@@ -156,7 +156,28 @@ angle_t AngleOf(ivec2s a, ivec2s b, ivec2s c)
     return rs;
 }
 
-bool InsertLinesIntoMap(struct Map map[static 1], size_t numLines, ivec2s vertices[static numLines], bool isLoop)
+static bool inBetween(int a)
 {
+    return false;
+}
+
+bool LineIntersection(struct line_t a, struct line_t b, ivec2s *ia, ivec2s *ib)
+{
+
+    return false;
+}
+
+bool InsertLinesIntoMap(struct Map map[static 1], size_t numVerts, ivec2s vertices[static numVerts], bool isLoop)
+{
+    bool didIntersect = false;
+    size_t end = isLoop ? numVerts : numVerts - 1;
+    for(size_t i = 0; i < end; ++i)
+    {
+        ivec2s a = vertices[i];
+        ivec2s b = vertices[(i+1) % numVerts];
+
+        
+    }
+
     return false;
 }
