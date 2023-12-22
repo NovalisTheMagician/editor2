@@ -43,5 +43,3 @@ angle_t AngleDifference(angle_t a, angle_t b);
 angle_t AngleLine(struct MapLine line[static 1]);
 angle_t AngleOfLines(struct MapLine a[static 1], struct MapLine b[static 1]);
 angle_t AngleOf(ivec2s a, ivec2s b, ivec2s c);
-
-bool InsertLinesIntoMap(struct Map map[static 1], size_t numLines, ivec2s vertices[static numLines], bool isLoop);

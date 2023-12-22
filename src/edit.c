@@ -209,6 +209,38 @@ static struct Polygon* PolygonFromSector(struct Map *map, struct MapSector *sect
     return polygon;
 }
 
+bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, ivec2s vertices[static numVerts], bool isLoop)
+{
+    struct Map *map = &state->map;
+    bool didIntersect = false;
+    size_t end = isLoop ? numVerts : numVerts - 1;
+    for(size_t i = 0; i < end; ++i)
+    {
+        ivec2s a = vertices[i];
+        ivec2s b = vertices[(i+1) % numVerts];
+
+        for(struct MapLine *mapLine = map->headLine; mapLine != NULL; mapLine = mapLine->next)
+        {
+            bool intersect = LineIntersection((struct line_t){ .a = mapLine->a->pos, .b = mapLine->b->pos }, (struct line_t){ .a = a, .b = b }, NULL, NULL);
+            didIntersect |= intersect;
+        }
+
+        if(!didIntersect)
+        {
+            struct MapVertex *mva = EditAddVertex(state, a);
+            struct MapVertex *mvb = EditAddVertex(state, b);
+
+            struct MapLine *line = EditAddLine(state, mva, mvb);
+        }
+    }
+
+    if(isLoop)
+    {
+    }
+
+    return false;
+}
+
 #if 0
 static void RemoveSector(struct EdState *state, struct MapSector *sector)
 {
@@ -613,12 +645,12 @@ struct MapSector* EditGetSector(struct EdState *state, ivec2s pos)
 
 struct MapLine* EditApplyLines(struct EdState *state, ivec2s *points, size_t num)
 {
-    InsertLinesIntoMap(&state->map, num, points, false);
+    InsertLinesIntoMap(state, num, points, false);
     return NULL;
 }
 
 struct MapSector* EditApplySector(struct EdState *state, ivec2s *points, size_t num)
 {
-    InsertLinesIntoMap(&state->map, num, points, true);
+    InsertLinesIntoMap(state, num, points, true);
     return NULL;
 }

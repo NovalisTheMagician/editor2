@@ -8,11 +8,14 @@
 #define LINE_DIST 10
 #define VERTEX_DIST 5
 
-static void SubmitEditData(struct EdState *state)
+static void SubmitEditData(struct EdState *state, bool isLoop)
 {
     LogDebug("Edit Done with {d} vertices", state->data.editVertexBufferSize);
 
-    EditApplySector(state, state->data.editVertexBuffer, state->data.editVertexBufferSize);
+    if(isLoop)
+        EditApplySector(state, state->data.editVertexBuffer, state->data.editVertexBufferSize);
+    else
+        EditApplyLines(state, state->data.editVertexBuffer, state->data.editVertexBufferSize);
 
     state->data.editVertexBufferSize = 0;
 }
@@ -258,7 +261,7 @@ void EditorWindow(bool *p_open, struct EdState *state)
                             if(mouseVertexSnap.x == first.x && mouseVertexSnap.y == first.y && state->data.editVertexBufferSize >= 3)
                             {
                                 // submit to edit
-                                SubmitEditData(state);
+                                SubmitEditData(state, true);
 
                                 state->data.editState = ESTATE_NORMAL;
                             }
@@ -351,7 +354,7 @@ void EditorWindow(bool *p_open, struct EdState *state)
                         if(state->data.editVertexBufferSize >= 2)
                         {
                             // submit edit data
-                            SubmitEditData(state);
+                            SubmitEditData(state, false);
                             state->data.editState = ESTATE_NORMAL;
                         }
                     }
