@@ -99,7 +99,7 @@ angle_t AngleLine(struct MapLine line[static 1])
     return 0;
 }
 
-angle_t AngleOfLines(struct MapLine a[static 1], struct MapLine b[static 1])
+angle_t AngleOfMapLines(struct MapLine a[static 1], struct MapLine b[static 1])
 {
     struct MapVertex *aa = a->a;
     //struct MapVertex *ab = a->b;
@@ -111,6 +111,12 @@ angle_t AngleOfLines(struct MapLine a[static 1], struct MapLine b[static 1])
 
     ivec2s va = aa == common ? ba->pos : aa->pos, vb = ba == common ? bb->pos : ba->pos, vc = common->pos;
     return AngleOf(va, vc, vb);
+}
+
+angle_t AngleOfLines(struct line_t a, struct line_t b)
+{
+    // assume a.a and b.a are equal
+    return AngleOf(a.a, a.b, b.b);
 }
 
 angle_t AngleOf(ivec2s a, ivec2s b, ivec2s c)
@@ -156,13 +162,80 @@ angle_t AngleOf(ivec2s a, ivec2s b, ivec2s c)
     return rs;
 }
 
-static bool inBetween(int a)
+enum intersection_type_t LineIntersection(struct line_t la, struct line_t lb, struct intersection_res_t *res)
 {
-    return false;
+    vec2s u = glms_vec2_sub(tovec(la.b), tovec(la.a));
+    vec2s v = glms_vec2_sub(tovec(lb.b), tovec(lb.a));
+    vec2s w = glms_vec2_sub(tovec(la.a), tovec(lb.a));
+    float D = perp(u, v);
+
+    if(fabs(D) < SMALL_NUM)
+    {
+        if(perp(u, w) != 0 || perp(v, w) != 0)
+            return NO_INTERSECTION;
+
+        float t0, t1;
+        vec2s w2 = glms_vec2_sub(tovec(la.b), tovec(lb.a));
+        if(v.x != 0)
+        {
+            t0 = w.x / v.x;
+            t1 = w2.x / v.x;
+        }
+        else
+        {
+            t0 = w.y / v.y;
+            t1 = w2.y / v.y;
+        }
+        if(t0 > t1)
+        {
+            float t = t0; t0 = t1; t0 = t;
+        }
+        if(t0 >= 1 || t1 <= 0)
+        {
+            return NO_INTERSECTION;
+        }
+
+        t0 = max(t0, 0);
+        t1 = min(t1, 1);
+        if(t0 == t1)
+        {
+            if(res)
+            {
+                res->p0 = toivec(glms_vec2_add(tovec(lb.a), glms_vec2_scale(v, t0)));
+                res->t0 = t0;
+            }
+            return INTERSECTION;
+        }
+
+        if(res)
+        {
+            res->p0 = toivec(glms_vec2_add(tovec(lb.a), glms_vec2_scale(v, t0)));
+            res->p1 = toivec(glms_vec2_add(tovec(lb.a), glms_vec2_scale(v, t1)));
+            res->t0 = t0;
+            res->t1 = t1;
+        }
+
+        return OVERLAP;
+    }
+
+    float sI = perp(v, w) / D;
+    if (sI <= 0 || sI >= 1)
+        return NO_INTERSECTION;
+
+    float tI = perp(u, w) / D;
+    if(tI <= 0 || tI >= 1)
+        return NO_INTERSECTION;
+
+    if(res)
+    {
+        res->p0 = toivec(glms_vec2_add(tovec(la.a), glms_vec2_scale(u, sI)));
+        res->t0 = sI;
+    }
+
+    return INTERSECTION;
 }
 
-bool LineIntersection(struct line_t a, struct line_t b, ivec2s *ia, ivec2s *ib)
+enum orientation_t LineLoopOrientation(size_t numVertices, ivec2s vertices[static numVertices])
 {
-
-    return false;
+    return CW_ORIENT;
 }

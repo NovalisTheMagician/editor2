@@ -79,7 +79,7 @@ static void RemoveLine(struct Map *map, struct MapLine *line)
             struct MapLine *attLine = line->a->attachedLines[i];
             attLine->a == line->a ? attLine->aVertIndex-- : attLine->bVertIndex--;
         }
-        memmove(line->a->attachedLines + line->aVertIndex, line->a->attachedLines + line->aVertIndex + 1, ((line->a->numAttachedLines - (line->aVertIndex + 1)) * sizeof *line->a->attachedLines));
+        memmove(line->a->attachedLines + line->aVertIndex, line->a->attachedLines + line->aVertIndex + 1, ((line->a->numAttachedLines - (line->aVertIndex)) * sizeof *line->a->attachedLines));
         line->a->numAttachedLines--;
     }
 
@@ -94,9 +94,62 @@ static void RemoveLine(struct Map *map, struct MapLine *line)
             struct MapLine *attLine = line->b->attachedLines[i];
             attLine->a == line->b ? attLine->aVertIndex-- : attLine->bVertIndex--;
         }
-        memmove(line->b->attachedLines + line->bVertIndex, line->b->attachedLines + line->bVertIndex + 1, ((line->b->numAttachedLines - (line->bVertIndex + 1)) * sizeof *line->b->attachedLines));
+        memmove(line->b->attachedLines + line->bVertIndex, line->b->attachedLines + line->bVertIndex + 1, ((line->b->numAttachedLines - (line->bVertIndex)) * sizeof *line->b->attachedLines));
         line->b->numAttachedLines--;
     }
+
+    pstr_free(line->front.lowerTex);
+    pstr_free(line->front.middleTex);
+    pstr_free(line->front.upperTex);
+    pstr_free(line->back.lowerTex);
+    pstr_free(line->back.middleTex);
+    pstr_free(line->back.upperTex);
+    free(line);
+
+    map->numLines--;
+    map->dirty = true;
+}
+
+static void RemoveLineSimple(struct Map map[static 1], struct MapLine *line)
+{
+    struct MapLine *prev = line->prev;
+    struct MapLine *next = line->next;
+
+    if(prev == NULL && next == NULL)
+    {
+        map->headLine = map->tailLine = NULL;
+    }
+    else if(line == map->headLine)
+    {
+        next->prev = NULL;
+        map->headLine = next;
+    }
+    else if(line == map->tailLine)
+    {
+        prev->next = NULL;
+        map->tailLine = prev;
+    }
+    else
+    {
+        prev->next = next;
+        next->prev = prev;
+    }
+    
+    for(size_t i = line->aVertIndex + 1; i < line->a->numAttachedLines; ++i)
+    {
+        struct MapLine *attLine = line->a->attachedLines[i];
+        attLine->a == line->a ? attLine->aVertIndex-- : attLine->bVertIndex--;
+    }
+    memmove(line->a->attachedLines + line->aVertIndex, line->a->attachedLines + line->aVertIndex + 1, ((line->a->numAttachedLines - (line->aVertIndex)) * sizeof *line->a->attachedLines));
+    line->a->numAttachedLines--;
+
+    for(size_t i = line->bVertIndex + 1; i < line->b->numAttachedLines; ++i)
+    {
+        struct MapLine *attLine = line->b->attachedLines[i];
+        attLine->a == line->b ? attLine->aVertIndex-- : attLine->bVertIndex--;
+    }
+    memmove(line->b->attachedLines + line->bVertIndex, line->b->attachedLines + line->bVertIndex + 1, ((line->b->numAttachedLines - (line->bVertIndex)) * sizeof *line->b->attachedLines));
+    line->b->numAttachedLines--;
 
     pstr_free(line->front.lowerTex);
     pstr_free(line->front.middleTex);
@@ -209,36 +262,150 @@ static struct Polygon* PolygonFromSector(struct Map *map, struct MapSector *sect
     return polygon;
 }
 
-bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, ivec2s vertices[static numVerts], bool isLoop)
+static void SplitMapLine(struct EdState state[static 1], struct MapLine line[static 1], struct MapVertex vertex[static 1])
+{
+    struct Map *map = &state->map;
+
+    struct Side frontCopy = line->front;
+    struct Side backCopy = line->back;
+
+    struct MapVertex *va = line->a;
+    struct MapVertex *vb = line->b;
+
+    RemoveLineSimple(map, line);
+
+    struct MapLine *newA = EditAddLine(state, va, vertex);
+    struct MapLine *newB = EditAddLine(state, vertex, vb);
+
+    newA->front = frontCopy;
+    newA->back = backCopy;
+    newB->front = frontCopy;
+    newB->back = backCopy;
+}
+
+static void SplitMapLine2(struct EdState state[static 1], struct MapLine line[static 1], struct MapVertex vertexA[static 1], struct MapVertex vertexB[static 1])
+{
+    struct Map *map = &state->map;
+
+    struct Side frontCopy = line->front;
+    struct Side backCopy = line->back;
+
+    struct MapVertex *va = line->a;
+    struct MapVertex *vb = line->b;
+
+    RemoveLineSimple(map, line);
+
+    struct MapLine *newStart = EditAddLine(state, va, vertexA);
+    struct MapLine *newMiddle = EditAddLine(state, vertexA, vertexB);
+    struct MapLine *newEnd = EditAddLine(state, vertexB, vb);
+
+    newStart->front = frontCopy;
+    newStart->back = backCopy;
+    newMiddle->front = frontCopy;
+    newMiddle->back = backCopy;
+    newEnd->front = frontCopy;
+    newEnd->back = backCopy;
+}
+
+static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, ivec2s vertices[static numVerts], bool isLoop)
 {
     struct Map *map = &state->map;
     bool didIntersect = false;
     size_t end = isLoop ? numVerts : numVerts - 1;
+
+    //constexpr size_t QUEUE_SIZE = 1000;
+#define QUEUE_SIZE 1000
+
+    struct
+    {
+        struct line_t lines[QUEUE_SIZE];
+        int head, tail, numLines;
+    } queue = { 0 };
+
     for(size_t i = 0; i < end; ++i)
     {
         ivec2s a = vertices[i];
         ivec2s b = vertices[(i+1) % numVerts];
 
-        for(struct MapLine *mapLine = map->headLine; mapLine != NULL; mapLine = mapLine->next)
+        queue.lines[queue.tail] = (struct line_t){ .a = a, .b = b };
+        queue.tail = (queue.tail + 1) % QUEUE_SIZE;
+        queue.numLines++;
+
+        assert(queue.tail != queue.head);
+    }
+
+    while(queue.numLines > 0)
+    {
+        struct line_t line = queue.lines[queue.head];
+        queue.head = (queue.head + 1) % QUEUE_SIZE;
+        queue.numLines--;
+
+        bool canInsertLine = true;
+        enum intersection_type_t intersect;
+        struct MapLine *mapLine = map->headLine;
+        while(mapLine != NULL)
         {
-            bool intersect = LineIntersection((struct line_t){ .a = mapLine->a->pos, .b = mapLine->b->pos }, (struct line_t){ .a = a, .b = b }, NULL, NULL);
-            didIntersect |= intersect;
+            struct intersection_res_t result = {0};
+            intersect = LineIntersection((struct line_t){ .a = mapLine->a->pos, .b = mapLine->b->pos }, line, &result);
+
+            if(intersect == INTERSECTION)
+            {
+                struct MapVertex *splitVertex = EditAddVertex(state, result.p0);
+                struct MapLine *lineToSplit = mapLine;
+                mapLine = NULL; // since we are splitting the line here we should stop iterating through the rest of the lines
+                SplitMapLine(state, lineToSplit, splitVertex);
+
+                queue.lines[queue.tail] = (struct line_t){ .a = line.a, .b = result.p0 };
+                queue.tail = (queue.tail + 1) % QUEUE_SIZE;
+                queue.numLines++;
+
+                queue.lines[queue.tail] = (struct line_t){ .a = result.p0, .b = line.b };
+                queue.tail = (queue.tail + 1) % QUEUE_SIZE;
+                queue.numLines++;
+                
+                assert(queue.numLines < QUEUE_SIZE);
+
+                LogDebug("Intersection!");
+            }
+            else if(intersect == OVERLAP) // overlap
+            {
+                struct MapVertex *splitVertexA = EditAddVertex(state, result.p0);
+                struct MapVertex *splitVertexB = EditAddVertex(state, result.p1);
+                struct MapLine *lineToSplit = mapLine;
+                mapLine = NULL; // since we are splitting the line here we should stop iterating through the rest of the lines
+                SplitMapLine2(state, lineToSplit, splitVertexA, splitVertexB);
+
+                LogDebug("Overlap!");
+            }
+            else
+                mapLine = mapLine->next;
+            canInsertLine &= intersect == NO_INTERSECTION;
         }
 
-        if(!didIntersect)
+        if(canInsertLine)
         {
-            struct MapVertex *mva = EditAddVertex(state, a);
-            struct MapVertex *mvb = EditAddVertex(state, b);
+            struct MapVertex *mva = EditAddVertex(state, line.a);
+            struct MapVertex *mvb = EditAddVertex(state, line.b);
+            if(!mva || !mvb) return false;
 
             struct MapLine *line = EditAddLine(state, mva, mvb);
+            if(!line) return false;
         }
+
+        didIntersect |= !canInsertLine;
     }
 
+    // create sectors from the new lines
     if(isLoop)
     {
+
+    }
+    else if(didIntersect) // not a loop but lines did intersect: update sectors from the touched lines
+    {
+
     }
 
-    return false;
+    return true;
 }
 
 #if 0
@@ -472,6 +639,13 @@ struct MapLine* EditAddLine(struct EdState *state, struct MapVertex *v0, struct 
     line->normal = normal;
     line->idx = lineIndex++;
     line->prev = map->tailLine;
+
+    v0->attachedLines[v0->numAttachedLines] = line;
+    line->aVertIndex = v0->numAttachedLines;
+    v0->numAttachedLines++;
+    v1->attachedLines[v1->numAttachedLines] = line;
+    line->bVertIndex = v1->numAttachedLines;
+    v1->numAttachedLines++;
 
     if(map->headLine == NULL)
     {
