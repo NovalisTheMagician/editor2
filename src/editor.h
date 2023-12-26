@@ -234,9 +234,9 @@ struct EdState
         mat4s realtimeProjection;
 
         bool isDragging;
-        ivec2s startDrag, endDrag;
+        vec2s startDrag, endDrag;
 
-        ivec2s editVertexBuffer[EDIT_VERTEXBUFFER_CAP];
+        vec2s editVertexBuffer[EDIT_VERTEXBUFFER_CAP];
         size_t editVertexBufferSize;
 
         enum EditState editState;

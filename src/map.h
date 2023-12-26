@@ -20,7 +20,7 @@ struct TriangleData
 
 struct BoundingBox
 {
-    ivec2s min, max;
+    vec2s min, max;
 };
 
 struct MapLine;
@@ -28,7 +28,7 @@ struct MapSector;
 
 struct MapVertex
 {
-    ivec2s pos;
+    vec2s pos;
 
     size_t idx;
 
@@ -65,7 +65,7 @@ struct MapSector
 {
     struct MapLine **outerLines;
     size_t numOuterLines;
-    ivec2s *vertices;
+    vec2s *vertices;
     uint32_t type;
 
     struct MapLine ***innerLines;

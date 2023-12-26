@@ -20,15 +20,15 @@ static void SubmitEditData(struct EdState *state, bool isLoop)
     state->data.editVertexBufferSize = 0;
 }
 
-static bool within(ivec2s min, ivec2s max, ivec2s v)
+static bool within(vec2s min, vec2s max, vec2s v)
 {
     return v.x >= min.x && v.y >= min.y && v.x <= max.x && v.y <= max.y;
 }
 
 static void RectSelect(struct EdState *state, bool add)
 {
-    ivec2s min = { .x = min(state->data.startDrag.x, state->data.endDrag.x), .y = min(state->data.startDrag.y, state->data.endDrag.y) };
-    ivec2s max = { .x = max(state->data.startDrag.x, state->data.endDrag.x), .y = max(state->data.startDrag.y, state->data.endDrag.y) };
+    vec2s min = { .x = min(state->data.startDrag.x, state->data.endDrag.x), .y = min(state->data.startDrag.y, state->data.endDrag.y) };
+    vec2s max = { .x = max(state->data.startDrag.x, state->data.endDrag.x), .y = max(state->data.startDrag.y, state->data.endDrag.y) };
 
     LogDebug("min: {d} {d}", min.x, min.y);
     LogDebug("max: {d} {d}", max.x, max.y);
@@ -80,7 +80,7 @@ static void RectSelect(struct EdState *state, bool add)
     }
 }
 
-static void AddEditVertex(struct EdState *state, ivec2s v)
+static void AddEditVertex(struct EdState *state, vec2s v)
 {
     size_t idx = state->data.editVertexBufferSize++;
     state->data.editVertexBuffer[idx] = v;
@@ -183,7 +183,7 @@ void EditorWindow(bool *p_open, struct EdState *state)
                 
                 bool shiftDown = igGetIO()->KeyShift;
 
-                ivec2s mouseVertex = { {edX, edY} };
+                vec2s mouseVertex = { {edX, edY} };
                 if(state->data.editState == ESTATE_ADDVERTEX)
                 {
                     state->gl.editorEdit.bufferMap[state->data.editVertexBufferSize + 4] = (struct VertexType) { .position = {{edSX, edSY}}, .color = DEFAULT_WHITE };
@@ -248,7 +248,7 @@ void EditorWindow(bool *p_open, struct EdState *state)
 
                 if(igIsMouseClicked_Bool(ImGuiMouseButton_Left, false) && !state->data.isDragging)
                 {
-                    ivec2s mouseVertexSnap = { {edSX, edSY} };
+                    vec2s mouseVertexSnap = { {edSX, edSY} };
                     if(state->data.editState == ESTATE_ADDVERTEX)
                     {
                         if(state->data.editVertexBufferSize == 0)
@@ -257,7 +257,7 @@ void EditorWindow(bool *p_open, struct EdState *state)
                         }
                         else
                         {
-                            ivec2s first = state->data.editVertexBuffer[0];
+                            vec2s first = state->data.editVertexBuffer[0];
                             if(mouseVertexSnap.x == first.x && mouseVertexSnap.y == first.y && state->data.editVertexBufferSize >= 3)
                             {
                                 // submit to edit
@@ -267,7 +267,7 @@ void EditorWindow(bool *p_open, struct EdState *state)
                             }
                             else
                             {
-                                ivec2s last = state->data.editVertexBuffer[state->data.editVertexBufferSize-1];
+                                vec2s last = state->data.editVertexBuffer[state->data.editVertexBufferSize-1];
                                 if(!(mouseVertexSnap.x == last.x && mouseVertexSnap.y == last.y))
                                 {
                                     AddEditVertex(state, mouseVertexSnap);
