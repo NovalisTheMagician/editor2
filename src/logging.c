@@ -3,10 +3,16 @@
 #include <stdarg.h>
 #include <tgmath.h>
 
+
 #define LOGBUFFER_CAPACITY 1024
 #define LOGBUFFER_LINE_LEN 512
 
 static struct LogBuffer *logBuffer_;
+
+#ifdef _DEBUG
+#include <stdio.h>
+static FILE *logFile;
+#endif
 
 static size_t getNextIndex(struct LogBuffer logBuffer[static 1])
 {
@@ -43,6 +49,10 @@ void LogInit(struct LogBuffer logBuffer[static 1])
     logBuffer->length = 0;
 
     logBuffer_ = logBuffer;
+
+#ifdef _DEBUG
+    logFile = fopen("debug.log", "w");
+#endif
 }
 
 void LogDestroy(struct LogBuffer logBuffer[static 1])
@@ -51,6 +61,10 @@ void LogDestroy(struct LogBuffer logBuffer[static 1])
         pstr_free(logBuffer->lines[i]);
     free(logBuffer->lines);
     logBuffer_ = NULL;
+
+#ifdef _DEBUG
+    fclose(logFile);
+#endif
 }
 
 size_t LogLength(struct LogBuffer logBuffer[static 1])
@@ -160,6 +174,10 @@ void LogDebug(const char format[static 1], ...)
     va_start(args, format);
 
     LogFormatV(logBuffer_, LOG_DEBUG, format, args);
+
+    vfprintf(logFile, format, args);
+    fprintf(logFile, "\n");
+    fflush(logFile);
 
     va_end(args);
 }

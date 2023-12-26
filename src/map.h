@@ -106,6 +106,10 @@ struct Map
     int textureScale;
 };
 
+void FreeMapVertex(struct MapVertex *vertex);
+void FreeMapLine(struct MapLine *line);
+void FreeMapSector(struct MapSector *sector);
+
 void NewMap(struct Map *map);
 bool LoadMap(struct Map *map);
 void SaveMap(struct Map *map);

@@ -7,7 +7,7 @@ static void FreeVertList(struct MapVertex *head)
         struct MapVertex *vertex = head;
         head = head->next;
 
-        free(vertex);
+        FreeMapVertex(vertex);
     }
 }
 
@@ -18,13 +18,7 @@ static void FreeLineList(struct MapLine *head)
         struct MapLine *line = head;
         head = head->next;
 
-        pstr_free(line->front.lowerTex);
-        pstr_free(line->front.middleTex);
-        pstr_free(line->front.upperTex);
-        pstr_free(line->back.lowerTex);
-        pstr_free(line->back.middleTex);
-        pstr_free(line->back.upperTex);
-        free(line);
+        FreeMapLine(line);
     }
 }
 
@@ -35,19 +29,40 @@ static void FreeSectorList(struct MapSector *head)
         struct MapSector *sector = head;
         head = head->next;
 
-        pstr_free(sector->ceilTex);
-        pstr_free(sector->floorTex);
-        free(sector->vertices);
-
-        free(sector->outerLines);
-        for(size_t i = 0; i < sector->numInnerLines; ++i)
-            free(sector->innerLines[i]);
-        free(sector->innerLines);
-
-        free(sector->contains);
-
-        free(sector);
+        FreeMapSector(sector);
     }
+}
+
+void FreeMapVertex(struct MapVertex *vertex)
+{
+    free(vertex);
+}
+
+void FreeMapLine(struct MapLine *line)
+{
+    pstr_free(line->front.lowerTex);
+    pstr_free(line->front.middleTex);
+    pstr_free(line->front.upperTex);
+    pstr_free(line->back.lowerTex);
+    pstr_free(line->back.middleTex);
+    pstr_free(line->back.upperTex);
+    free(line);
+}
+
+void FreeMapSector(struct MapSector *sector)
+{
+    pstr_free(sector->ceilTex);
+    pstr_free(sector->floorTex);
+    free(sector->vertices);
+
+    free(sector->outerLines);
+    for(size_t i = 0; i < sector->numInnerLines; ++i)
+        free(sector->innerLines[i]);
+    free(sector->innerLines);
+
+    free(sector->contains);
+
+    free(sector);
 }
 
 void NewMap(struct Map *map)

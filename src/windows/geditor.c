@@ -13,9 +13,9 @@ static void SubmitEditData(struct EdState *state, bool isLoop)
     LogDebug("Edit Done with {d} vertices", state->data.editVertexBufferSize);
 
     if(isLoop)
-        EditApplySector(state, state->data.editVertexBuffer, state->data.editVertexBufferSize);
+        EditApplySector(state, state->data.editVertexBufferSize, state->data.editVertexBuffer);
     else
-        EditApplyLines(state, state->data.editVertexBuffer, state->data.editVertexBufferSize);
+        EditApplyLines(state, state->data.editVertexBufferSize, state->data.editVertexBuffer);
 
     state->data.editVertexBufferSize = 0;
 }
@@ -150,6 +150,12 @@ void EditorWindow(bool *p_open, struct EdState *state)
             state->data.viewPosition = (ImVec2){ -state->gl.editorFramebufferWidth / 2, -state->gl.editorFramebufferHeight / 2 };
         }
 
+        igSameLine(0, 16);
+        if(igButton("Go To", (ImVec2){ 0, 0 })) 
+        {
+            
+        }
+
         if(igBeginChild_ID(1000, (ImVec2){ 0, 0 }, false, ImGuiWindowFlags_NoMove))
         {
             ImVec2 clientArea;
@@ -182,6 +188,7 @@ void EditorWindow(bool *p_open, struct EdState *state)
 #endif
                 
                 bool shiftDown = igGetIO()->KeyShift;
+                bool altDown = igGetIO()->KeyAlt;
 
                 vec2s mouseVertex = { {edX, edY} };
                 if(state->data.editState == ESTATE_ADDVERTEX)
@@ -377,14 +384,11 @@ void EditorWindow(bool *p_open, struct EdState *state)
                 {
                     if(state->data.editState == ESTATE_NORMAL)
                     {
-                        for(size_t i = 0; i < state->data.numSelectedElements; ++i)
+                        switch(state->data.selectionMode)
                         {
-                            switch(state->data.selectionMode)
-                            {
-                            case MODE_VERTEX: EditRemoveVertex(state, state->data.selectedElements[i]); break;
-                            case MODE_LINE: EditRemoveLine(state, state->data.selectedElements[i]); break;
-                            case MODE_SECTOR: EditRemoveSector(state, state->data.selectedElements[i]); break;
-                            }
+                        case MODE_VERTEX: EditRemoveVertices(state, state->data.numSelectedElements, (struct MapVertex**)state->data.selectedElements); break;
+                        case MODE_LINE: EditRemoveLines(state, state->data.numSelectedElements, (struct MapLine**)state->data.selectedElements); break;
+                        case MODE_SECTOR: EditRemoveSectors(state, state->data.numSelectedElements, (struct MapSector**)state->data.selectedElements); break;
                         }
                         state->data.numSelectedElements = 0;
                     }

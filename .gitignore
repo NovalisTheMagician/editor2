@@ -6,6 +6,8 @@
 *.ini
 *.pro
 
+*.log
+
 .ccls-cache
 
 memory_logs.txt

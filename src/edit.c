@@ -8,10 +8,8 @@
 
 #include <triangulate.h>
 
-static void RemoveVertex(struct Map *map, struct MapVertex *vertex)
+static void RemoveVertex(struct Map map[static 1], struct MapVertex vertex[static 1])
 {
-    assert(vertex);
-
     struct MapVertex *prev = vertex->prev;
     struct MapVertex *next = vertex->next;
 
@@ -35,12 +33,13 @@ static void RemoveVertex(struct Map *map, struct MapVertex *vertex)
         next->prev = prev;
     }
 
-    free(vertex);
+    FreeMapVertex(vertex);
 
     map->numVertices--;
     map->dirty = true;
 }
 
+/*
 static void RemoveLine(struct Map *map, struct MapLine *line)
 {
     assert(line);
@@ -109,8 +108,9 @@ static void RemoveLine(struct Map *map, struct MapLine *line)
     map->numLines--;
     map->dirty = true;
 }
+*/
 
-static void RemoveLineSimple(struct Map map[static 1], struct MapLine *line)
+static void RemoveLine(struct Map map[static 1], struct MapLine line[static 1])
 {
     struct MapLine *prev = line->prev;
     struct MapLine *next = line->next;
@@ -151,35 +151,24 @@ static void RemoveLineSimple(struct Map map[static 1], struct MapLine *line)
     memmove(line->b->attachedLines + line->bVertIndex, line->b->attachedLines + line->bVertIndex + 1, ((line->b->numAttachedLines - (line->bVertIndex)) * sizeof *line->b->attachedLines));
     line->b->numAttachedLines--;
 
-    pstr_free(line->front.lowerTex);
-    pstr_free(line->front.middleTex);
-    pstr_free(line->front.upperTex);
-    pstr_free(line->back.lowerTex);
-    pstr_free(line->back.middleTex);
-    pstr_free(line->back.upperTex);
-    free(line);
+    FreeMapLine(line);
 
     map->numLines--;
     map->dirty = true;
 }
 
-static inline bool VertexCmp(vec2s a, vec2s b)
-{
-    return a.x == b.x && a.y == b.x;
-}
-
-static struct MapLine* FindLine(struct EdState *state, vec2s a, vec2s b)
+static struct MapLine* FindLine(struct EdState state[static 1], vec2s a, vec2s b)
 {
     struct Map *map = &state->map;
     for(struct MapLine *line = map->headLine; line; line = line->next)
     {
         vec2s la = line->a->pos, lb = line->b->pos;
-        if((VertexCmp(la, a) && VertexCmp(lb, b)) || (VertexCmp(la, b) && VertexCmp(lb, a))) return line;
+        if((glms_vec2_eqv_eps(la, a) && glms_vec2_eqv_eps(lb, b)) || (glms_vec2_eqv_eps(la, b) && glms_vec2_eqv_eps(lb, a))) return line;
     }
     return NULL;
 }
 
-static struct MapSector* AddPolygon(struct EdState *state, struct Polygon *polygon)
+static struct MapSector* AddPolygon(struct EdState state[static 1], struct Polygon polygon[static 1])
 {
     struct Map *map = &state->map;
     assert(polygon);
@@ -254,7 +243,7 @@ static struct MapSector* AddPolygon(struct EdState *state, struct Polygon *polyg
     return sector;
 }
 
-static struct Polygon* PolygonFromSector(struct Map *map, struct MapSector *sector)
+static struct Polygon* PolygonFromSector(struct Map map[static 1], struct MapSector sector[static 1])
 {
     struct Polygon *polygon = calloc(1, sizeof *polygon + sector->numOuterLines * sizeof *polygon->vertices);
     polygon->length = sector->numOuterLines;
@@ -272,7 +261,7 @@ static void SplitMapLine(struct EdState state[static 1], struct MapLine line[sta
     struct MapVertex *va = line->a;
     struct MapVertex *vb = line->b;
 
-    RemoveLineSimple(map, line);
+    RemoveLine(map, line);
 
     struct MapLine *newA = EditAddLine(state, va, vertex);
     struct MapLine *newB = EditAddLine(state, vertex, vb);
@@ -293,7 +282,7 @@ static void SplitMapLine2(struct EdState state[static 1], struct MapLine line[st
     struct MapVertex *va = line->a;
     struct MapVertex *vb = line->b;
 
-    RemoveLineSimple(map, line);
+    RemoveLine(map, line);
 
     struct MapLine *newStart = EditAddLine(state, va, vertexA);
     struct MapLine *newMiddle = EditAddLine(state, vertexA, vertexB);
@@ -353,7 +342,7 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
                 break;
             }
 
-            if(glms_vec2_eqv(mline.a, line.a) || glms_vec2_eqv(mline.b, line.a) || glms_vec2_eqv(mline.b, line.b) || glms_vec2_eqv(mline.a, line.b)) // line shares one of the points with the mapline
+            if(glms_vec2_eqv_eps(mline.a, line.a) || glms_vec2_eqv_eps(mline.b, line.a) || glms_vec2_eqv_eps(mline.b, line.b) || glms_vec2_eqv_eps(mline.a, line.b)) // line shares one of the points with the mapline
             {
                 if(LineIsColinear(mline, line)) // overlap
                 {
@@ -370,25 +359,35 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
             intersect = LineIntersection(mline, line, &result);
             if(intersect)
             {
+                /*
                 if(glms_vec2_eqv(mapLine->a->pos, result.p0) || glms_vec2_eqv(mapLine->b->pos, result.p0))
                 {
                     mapLine = mapLine->next;
                     continue;
                 }
+                */
 
                 struct MapVertex *splitVertex = EditAddVertex(state, result.p0);
                 struct MapLine *lineToSplit = mapLine;
                 mapLine = NULL; // since we are splitting the line here we should stop iterating through the rest of the map lines
                 SplitMapLine(state, lineToSplit, splitVertex);
 
-                queue.lines[queue.tail] = (struct line_t){ .a = line.a, .b = result.p0 };
-                queue.tail = (queue.tail + 1) % QUEUE_SIZE;
-                queue.numLines++;
+                if(!glms_vec2_eqv_eps(line.a, result.p0))
+                {
+                    queue.lines[queue.tail] = (struct line_t){ .a = line.a, .b = result.p0 };
+                    queue.tail = (queue.tail + 1) % QUEUE_SIZE;
+                    queue.numLines++;
+                }
 
-                queue.lines[queue.tail] = (struct line_t){ .a = result.p0, .b = line.b };
-                queue.tail = (queue.tail + 1) % QUEUE_SIZE;
-                queue.numLines++;
+                if(!glms_vec2_eqv_eps(result.p0, line.b))
+                {
+                    queue.lines[queue.tail] = (struct line_t){ .a = result.p0, .b = line.b };
+                    queue.tail = (queue.tail + 1) % QUEUE_SIZE;
+                    queue.numLines++;
+                }
                 
+                LogDebug("INTERSECTION");
+
                 assert(queue.numLines < QUEUE_SIZE);
             }
             /*
@@ -496,28 +495,28 @@ static void RemoveSector(struct EdState *state, struct MapSector *sector)
 }
 #endif
 
-void ScreenToEditorSpace(const struct EdState *state, int32_t *x, int32_t *y)
+void ScreenToEditorSpace(const struct EdState state[static 1], int32_t x[static 1], int32_t y[static 1])
 {
     const float z = state->data.zoomLevel;
     *x = (int32_t)((*x + state->data.viewPosition.x) / z);
     *y = (int32_t)((*y + state->data.viewPosition.y) / z);
 }
 
-void ScreenToEditorSpacef(const struct EdState *state, float *x, float *y)
+void ScreenToEditorSpacef(const struct EdState state[static 1], float x[static 1], float y[static 1])
 {
     const float z = state->data.zoomLevel;
     *x = (*x + state->data.viewPosition.x) / z;
     *y = (*y + state->data.viewPosition.y) / z;
 }
 
-void EditorToScreenSpace(const struct EdState *state, int32_t *x, int32_t *y)
+void EditorToScreenSpace(const struct EdState state[static 1], int32_t x[static 1], int32_t y[static 1])
 {
     const float z = state->data.zoomLevel;
     *x = (int32_t)((*x - state->data.viewPosition.x) * z);
     *y = (int32_t)((*y - state->data.viewPosition.y) * z);
 }
 
-void ScreenToEditorSpaceGrid(const struct EdState *state, int32_t *x, int32_t *y)
+void ScreenToEditorSpaceGrid(const struct EdState state[static 1], int32_t x[static 1], int32_t y[static 1])
 {
     ScreenToEditorSpace(state, x, y);
     const int offset = state->data.gridSize / 2;
@@ -528,22 +527,22 @@ void ScreenToEditorSpaceGrid(const struct EdState *state, int32_t *x, int32_t *y
     *y = yt / state->data.gridSize * state->data.gridSize;
 }
 
-void EditCopy(struct EdState *state)
+void EditCopy(struct EdState state[static 1])
 {
     LogDebug("Copy!!\n");
 }
 
-void EditPaste(struct EdState *state)
+void EditPaste(struct EdState state[static 1])
 {
     LogDebug("Paste!!\n");
 }
 
-void EditCut(struct EdState *state)
+void EditCut(struct EdState state[static 1])
 {
     LogDebug("Cut!!\n");
 }
 
-struct MapVertex* EditAddVertex(struct EdState *state, vec2s pos)
+struct MapVertex* EditAddVertex(struct EdState state[static 1], vec2s pos)
 {
     struct Map *map = &state->map;
     for(struct MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
@@ -576,32 +575,32 @@ struct MapVertex* EditAddVertex(struct EdState *state, vec2s pos)
     }
     map->tailVertex = vertex;
 
-    state->gl.editorVertex.bufferMap[vertex->idx] = (struct VertexType){ .position = {{ pos.x, pos.y }}, .color = { 1, 1, 1, 1 } };
+    state->gl.editorVertex.bufferMap[vertex->idx] = (struct VertexType){ .position = pos, .color = { 1, 1, 1, 1 } };
 
     map->dirty = true;
     return vertex;
 }
 
-void EditRemoveVertex(struct EdState *state, struct MapVertex *vertex)
+void EditRemoveVertices(struct EdState state[static 1], size_t num, struct MapVertex *vertices[static num])
 {
-    assert(vertex);
     struct Map *map = &state->map;
     
-    for(struct MapLine *line = map->headLine; line; line = line->next)
+    for(size_t i = 0; i < num; ++i)
     {
-        if(line->a == vertex || line->b == vertex)
+        struct MapVertex *vertex = vertices[i];
+        struct MapLine **attachedLines = calloc(vertex->numAttachedLines + 1, sizeof *attachedLines);
+        memcpy(attachedLines, vertex->attachedLines, vertex->numAttachedLines * sizeof *attachedLines);
+        for(struct MapLine **line = attachedLines; *line; line++)
         {
-            LogWarning("Can't delete vertex! Part of line.");
-            return;
+            RemoveLine(map, *line);
         }
+        RemoveVertex(map, vertex);
     }
-
-    RemoveVertex(map, vertex);
 
     map->dirty = true;
 }
 
-struct MapVertex* EditGetVertex(struct EdState *state, vec2s pos)
+struct MapVertex* EditGetVertex(struct EdState state[static 1], vec2s pos)
 {
     struct Map *map = &state->map;
     for(struct MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
@@ -614,7 +613,7 @@ struct MapVertex* EditGetVertex(struct EdState *state, vec2s pos)
     return NULL;
 }
 
-struct MapVertex* EditGetClosestVertex(struct EdState *state, vec2s pos, float maxDist)
+struct MapVertex* EditGetClosestVertex(struct EdState state[static 1], vec2s pos, float maxDist)
 {
     struct Map *map = &state->map;
     struct MapVertex *closestVertex = NULL;
@@ -635,11 +634,9 @@ struct MapVertex* EditGetClosestVertex(struct EdState *state, vec2s pos, float m
     return closestVertex;
 }
 
-struct MapLine* EditAddLine(struct EdState *state, struct MapVertex *v0, struct MapVertex *v1)
+struct MapLine* EditAddLine(struct EdState state[static 1], struct MapVertex v0[static 1], struct MapVertex v1[static 1])
 {
     struct Map *map = &state->map;
-    assert(v0);
-    assert(v1);
 
     for(struct MapLine *line = map->headLine; line; line = line->next)
     {
@@ -686,48 +683,59 @@ struct MapLine* EditAddLine(struct EdState *state, struct MapVertex *v0, struct 
     }
     map->tailLine = line;
 
-    vec2s l = glms_vec2_sub((vec2s){{ vert1.x, vert1.y }}, (vec2s){{ vert0.x, vert0.y }});
+    vec2s l = glms_vec2_sub(vert1, vert0);
     vec2s n = {{ -l.y, l.x }};
     n = glms_vec2_normalize(n);
 
     vec2s middle = glms_vec2_scale(l, 0.5f);
-    middle = glms_vec2_add((vec2s){{ vert0.x, vert0.y }}, middle);
+    middle = glms_vec2_add(vert0, middle);
 
     vec2s middleNormal = glms_vec2_scale(n, 10.0f);
     middleNormal = glms_vec2_add(middle, middleNormal);
 
-    state->gl.editorLine.bufferMap[line->idx * 4    ] = (struct VertexType){ .position = {{ vert0.x, vert0.y }}, .color = { 1, 1, 1, 1 } };
-    state->gl.editorLine.bufferMap[line->idx * 4 + 1] = (struct VertexType){ .position = {{ vert1.x, vert1.y }}, .color = { 1, 1, 1, 1 } };
-    state->gl.editorLine.bufferMap[line->idx * 4 + 2] = (struct VertexType){ .position = {{ middle.x, middle.y }}, .color = { 1, 1, 1, 1 } };
-    state->gl.editorLine.bufferMap[line->idx * 4 + 3] = (struct VertexType){ .position = {{ middleNormal.x, middleNormal.y }}, .color = { 1, 1, 1, 1 } };
+    state->gl.editorLine.bufferMap[line->idx * 4    ] = (struct VertexType){ .position = vert0, .color = { 1, 1, 1, 1 } };
+    state->gl.editorLine.bufferMap[line->idx * 4 + 1] = (struct VertexType){ .position = vert1, .color = { 1, 1, 1, 1 } };
+    state->gl.editorLine.bufferMap[line->idx * 4 + 2] = (struct VertexType){ .position = middle, .color = { 1, 1, 1, 1 } };
+    state->gl.editorLine.bufferMap[line->idx * 4 + 3] = (struct VertexType){ .position = middleNormal, .color = { 1, 1, 1, 1 } };
 
     map->dirty = true;
     return line;
 }
 
-void EditRemoveLine(struct EdState *state, struct MapLine *line)
+void EditRemoveLines(struct EdState state[static 1], size_t num, struct MapLine *lines[static num])
 {
-    assert(line);
     struct Map *map = &state->map;
 
-    for(struct MapSector *sector = map->headSector; sector; sector = sector->next)
+    struct MapVertex *potentialVertices[1024] = { 0 };
+    size_t numPotentialVertices = 0;
+
+    for(size_t i = 0; i < num; ++i)
     {
-        for(size_t i = 0; i < sector->numOuterLines; ++i)
+        struct MapLine *line = lines[i];
+        bool isAInSet = false;
+        bool isBInSet = false;
+        for(size_t i = 0; i < numPotentialVertices; ++i)
         {
-            if(sector->outerLines[i] == line)
-            {
-                LogWarning("Can't remove line! Part of sector");
-                return;
-            }
+            if(!isAInSet) isAInSet = potentialVertices[i] == line->a;
+            if(!isBInSet) isBInSet = potentialVertices[i] == line->b;
+            if(isAInSet && isBInSet) break;
         }
+        if(!isAInSet) potentialVertices[numPotentialVertices++] = line->a;
+        if(!isBInSet) potentialVertices[numPotentialVertices++] = line->b;
+
+        RemoveLine(map, line);
     }
 
-    RemoveLine(map, line);
+    for(size_t i = 0; i < numPotentialVertices; ++i)
+    {
+        struct MapVertex *vertex = potentialVertices[i];
+        if(vertex->numAttachedLines == 0) RemoveVertex(map, vertex);
+    }
 
     map->dirty = true;
 }
 
-struct MapLine* EditGetClosestLine(struct EdState *state, vec2s pos, float maxDist)
+struct MapLine* EditGetClosestLine(struct EdState state[static 1], vec2s pos, float maxDist)
 {
     struct Map *map = &state->map;
     struct MapLine *closestLine = NULL;
@@ -744,71 +752,68 @@ struct MapLine* EditGetClosestLine(struct EdState *state, vec2s pos, float maxDi
     return closestLine;
 }
 
-void EditRemoveSector(struct EdState *state, struct MapSector *sector)
+void EditRemoveSectors(struct EdState state[static 1], size_t num, struct MapSector *sectors[static num])
 {
     struct Map *map = &state->map;
-    assert(sector);
 
-    struct MapSector *prev = sector->prev;
-    struct MapSector *next = sector->next;
+    for(size_t i = 0; i < num; ++i)
+    {
+        struct MapSector *sector = sectors[i];
 
-    for(struct MapSector *s = next; s; s = s->next)
-    {
-        s->idx--;
-    }
+        struct MapSector *prev = sector->prev;
+        struct MapSector *next = sector->next;
 
-    if(prev == NULL && next == NULL)
-    {
-        map->headSector = map->tailSector = NULL;
-    }
-    else if(sector == map->headSector)
-    {
-        next->prev = NULL;
-        map->headSector = next;
-    }
-    else if(sector == map->tailSector)
-    {
-        prev->next = NULL;
-        map->tailSector = prev;
-    }
-    else
-    {
-        prev->next = next;
-        next->prev = prev;
-    }
-
-    for(size_t i = 0; i < sector->numOuterLines; ++i)
-    {
-        // RemoveLine(state, sector->outerLines[i]);
-        struct MapLine *line = sector->outerLines[i];
-        if(line->frontSector == sector) line->frontSector = NULL;
-        else if(line->backSector == sector) line->backSector = NULL;
-    }
-
-    /*
-    for(size_t i = 0; i < sector->numInnerLines; ++i)
-    {
-        for(size_t j = 0; j < sector->numInnerLinesNum[i]; ++j)
+        for(struct MapSector *s = next; s; s = s->next)
         {
-            RemoveLine(state, sector->innerLines[i][j]);
+            s->idx--;
         }
+
+        if(prev == NULL && next == NULL)
+        {
+            map->headSector = map->tailSector = NULL;
+        }
+        else if(sector == map->headSector)
+        {
+            next->prev = NULL;
+            map->headSector = next;
+        }
+        else if(sector == map->tailSector)
+        {
+            prev->next = NULL;
+            map->tailSector = prev;
+        }
+        else
+        {
+            prev->next = next;
+            next->prev = prev;
+        }
+
+        for(size_t i = 0; i < sector->numOuterLines; ++i)
+        {
+            // RemoveLine(state, sector->outerLines[i]);
+            struct MapLine *line = sector->outerLines[i];
+            if(line->frontSector == sector) line->frontSector = NULL;
+            else if(line->backSector == sector) line->backSector = NULL;
+        }
+
+        /*
+        for(size_t i = 0; i < sector->numInnerLines; ++i)
+        {
+            for(size_t j = 0; j < sector->numInnerLinesNum[i]; ++j)
+            {
+                RemoveLine(state, sector->innerLines[i][j]);
+            }
+        }
+        */
+        FreeMapSector(sector);
+
+        map->numSectors--;
     }
-    */
-
-    pstr_free(sector->ceilTex);
-    pstr_free(sector->floorTex);
-    free(sector->outerLines);
-    for(size_t i = 0; i < sector->numInnerLines; ++i)
-        free(sector->innerLines[i]);
-    free(sector->innerLines);
-    free(sector);
-
-    map->numSectors--;
 
     map->dirty = true;
 }
 
-struct MapSector* EditGetSector(struct EdState *state, vec2s pos)
+struct MapSector* EditGetSector(struct EdState state[static 1], vec2s pos)
 {
     struct Map *map = &state->map;
 
@@ -841,13 +846,13 @@ struct MapSector* EditGetSector(struct EdState *state, vec2s pos)
     return NULL;
 }
 
-struct MapLine* EditApplyLines(struct EdState *state, vec2s *points, size_t num)
+struct MapLine* EditApplyLines(struct EdState state[static 1], size_t num, vec2s points[static num])
 {
     InsertLinesIntoMap(state, num, points, false);
     return NULL;
 }
 
-struct MapSector* EditApplySector(struct EdState *state, vec2s *points, size_t num)
+struct MapSector* EditApplySector(struct EdState state[static 1], size_t num, vec2s points[static num])
 {
     InsertLinesIntoMap(state, num, points, true);
     return NULL;
