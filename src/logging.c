@@ -175,7 +175,10 @@ void LogDebug(const char format[static 1], ...)
 
     LogFormatV(logBuffer_, LOG_DEBUG, format, args);
 
-    vfprintf(logFile, format, args);
+    pstring buf = pstr_alloc(256);
+    pstr_vformat(&buf, format, args);
+    fprintf(logFile, pstr_tocstr(buf));
+    pstr_free(buf);
     fprintf(logFile, "\n");
     fflush(logFile);
 

@@ -33,6 +33,19 @@ static void RemoveVertex(struct Map map[static 1], struct MapVertex vertex[stati
         next->prev = prev;
     }
 
+    for(size_t i = 0; i < vertex->numAttachedLines; ++i)
+    {
+        struct MapLine *line = vertex->attachedLines[i];
+        if(line->a == vertex)
+        {
+            line->a = NULL;
+        }
+        else
+        {
+            line->b = NULL;
+        }
+    }
+
     FreeMapVertex(vertex);
 
     map->numVertices--;
@@ -135,21 +148,31 @@ static void RemoveLine(struct Map map[static 1], struct MapLine line[static 1])
         next->prev = prev;
     }
     
-    for(size_t i = line->aVertIndex + 1; i < line->a->numAttachedLines; ++i)
+    if(line->a && line->a->numAttachedLines > 0)
     {
-        struct MapLine *attLine = line->a->attachedLines[i];
-        attLine->a == line->a ? attLine->aVertIndex-- : attLine->bVertIndex--;
+        struct MapVertex *v = line->a;
+        for(size_t i = line->aVertIndex + 1; i < v->numAttachedLines; ++i)
+        {
+            struct MapLine *attLine = v->attachedLines[i];
+            attLine->a == v ? attLine->aVertIndex-- : attLine->bVertIndex--;
+        }
+        memmove(v->attachedLines + line->aVertIndex, v->attachedLines + line->aVertIndex + 1, (v->numAttachedLines - (line->aVertIndex)) * sizeof *v->attachedLines);
+        v->numAttachedLines--;
+        //memset(v->attachedLines + v->numAttachedLines, 0, COUNT_OF(v->attachedLines) - v->numAttachedLines);
     }
-    memmove(line->a->attachedLines + line->aVertIndex, line->a->attachedLines + line->aVertIndex + 1, ((line->a->numAttachedLines - (line->aVertIndex)) * sizeof *line->a->attachedLines));
-    line->a->numAttachedLines--;
 
-    for(size_t i = line->bVertIndex + 1; i < line->b->numAttachedLines; ++i)
+    if(line->b && line->b->numAttachedLines > 0)
     {
-        struct MapLine *attLine = line->b->attachedLines[i];
-        attLine->a == line->b ? attLine->aVertIndex-- : attLine->bVertIndex--;
+        struct MapVertex *v = line->b;
+        for(size_t i = line->bVertIndex + 1; i < v->numAttachedLines; ++i)
+        {
+            struct MapLine *attLine = v->attachedLines[i];
+            attLine->a == v ? attLine->aVertIndex-- : attLine->bVertIndex--;
+        }
+        memmove(v->attachedLines + line->bVertIndex, v->attachedLines + line->bVertIndex + 1, (v->numAttachedLines - (line->bVertIndex)) * sizeof *v->attachedLines);
+        v->numAttachedLines--;
+        //memset(v->attachedLines + v->numAttachedLines, 0, COUNT_OF(v->attachedLines) - v->numAttachedLines);
     }
-    memmove(line->b->attachedLines + line->bVertIndex, line->b->attachedLines + line->bVertIndex + 1, ((line->b->numAttachedLines - (line->bVertIndex)) * sizeof *line->b->attachedLines));
-    line->b->numAttachedLines--;
 
     FreeMapLine(line);
 
@@ -302,6 +325,21 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
     bool didIntersect = false;
     size_t end = isLoop ? numVerts : numVerts - 1;
 
+    if(isLoop)
+    {
+        enum orientation_t orientation = LineLoopOrientation(numVerts, vertices);
+        if(orientation == CCW_ORIENT)
+        {
+            size_t half = numVerts / 2;
+            for(size_t i = 0; i < half; ++i)
+            {
+                vec2s tmp = vertices[i];
+                vertices[i] = vertices[numVerts - i - 1];
+                vertices[numVerts - i - 1] = tmp;
+            }
+        }
+    }
+
     //constexpr size_t QUEUE_SIZE = 1000;
 #define QUEUE_SIZE 1000
 
@@ -347,6 +385,7 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
                 if(LineIsColinear(mline, line)) // overlap
                 {
                     LogDebug("Overlap with 1 shared point");
+                    break;
                 }
                 else // cant overlap or intersect line
                 {
@@ -547,7 +586,7 @@ struct MapVertex* EditAddVertex(struct EdState state[static 1], vec2s pos)
     struct Map *map = &state->map;
     for(struct MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
     {
-        if(vertex->pos.x == pos.x && vertex->pos.y == pos.y) 
+        if(glms_vec2_eqv_eps(vertex->pos, pos)) 
         {
             return vertex;
         }
@@ -585,16 +624,32 @@ void EditRemoveVertices(struct EdState state[static 1], size_t num, struct MapVe
 {
     struct Map *map = &state->map;
     
+    struct MapLine *potentialLines[4096] = { 0 };
+    size_t numPotentialLines = 0;
+
     for(size_t i = 0; i < num; ++i)
     {
         struct MapVertex *vertex = vertices[i];
-        struct MapLine **attachedLines = calloc(vertex->numAttachedLines + 1, sizeof *attachedLines);
-        memcpy(attachedLines, vertex->attachedLines, vertex->numAttachedLines * sizeof *attachedLines);
-        for(struct MapLine **line = attachedLines; *line; line++)
+        for(size_t i = 0; i < vertex->numAttachedLines; ++i)
         {
-            RemoveLine(map, *line);
+            bool lineIsInSet = false;
+            struct MapLine *attLine = vertex->attachedLines[i];
+            for(size_t j = 0; j < numPotentialLines; ++j)
+            {
+                lineIsInSet |= potentialLines[j] == attLine;
+                if(lineIsInSet) break;
+            }
+
+            if(!lineIsInSet) potentialLines[numPotentialLines++] = attLine;
         }
         RemoveVertex(map, vertex);
+    }
+
+    for(size_t i = 0; i < numPotentialLines; ++i)
+    {
+        struct MapLine *line = potentialLines[i];
+        if(!line->a || !line->b)
+            RemoveLine(map, line);
     }
 
     map->dirty = true;
@@ -706,7 +761,7 @@ void EditRemoveLines(struct EdState state[static 1], size_t num, struct MapLine 
 {
     struct Map *map = &state->map;
 
-    struct MapVertex *potentialVertices[1024] = { 0 };
+    struct MapVertex *potentialVertices[4096] = { 0 };
     size_t numPotentialVertices = 0;
 
     for(size_t i = 0; i < num; ++i)

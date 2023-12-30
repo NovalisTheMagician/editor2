@@ -308,5 +308,13 @@ bool LineIntersection(struct line_t la, struct line_t lb, struct intersection_re
 
 enum orientation_t LineLoopOrientation(size_t numVertices, vec2s vertices[static numVertices])
 {
-    return CW_ORIENT;
+    float res = 0;
+    for(size_t i = 0; i < numVertices; ++i)
+    {
+        vec2s a = vertices[i];
+        vec2s b = vertices[(i+1)%numVertices];
+
+        res += (b.x - a.x) * (b.y + a.y);
+    }
+    return res >= 0 ? CCW_ORIENT : CW_ORIENT;
 }

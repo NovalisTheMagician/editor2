@@ -1,6 +1,6 @@
 #include "editor.h"
 
-#define BUFFER_SIZE 10000
+#define BUFFER_SIZE (1<<20)
 
 static bool CompileShader(const char *shaderScr, GLuint *shader)
 {
