@@ -246,7 +246,7 @@ static struct MapSector* AddPolygon(struct EdState state[static 1], struct Polyg
     {
         int32_t x = polygon->vertices[i][0];
         int32_t y = polygon->vertices[i][1];
-        state->gl.editorSector.bufferMap[index++] = (struct SectorVertexType){ .position = { x, y }, .color = { 1, 1, 1, 1 }, .texCoord = { 0, 0 } };
+        state->gl.editorSector.bufferMap[index++] = (struct SectorVertexType){ .position = {{ x, y }}, .color = { 1, 1, 1, 1 }, .texCoord = {{ 0, 0 }} };
     }
     unsigned int *indices = NULL;
     unsigned long numIndices = triangulate(polygon, NULL, 0, &indices);
@@ -340,8 +340,8 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
         }
     }
 
-    //constexpr size_t QUEUE_SIZE = 1000;
-#define QUEUE_SIZE 1000
+    //constexpr size_t QUEUE_SIZE = 1<<12;
+#define QUEUE_SIZE (1<<12)
 
     struct
     {
@@ -369,12 +369,12 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
         queue.numLines--;
 
         bool canInsertLine = true;
-        enum intersection_type_t intersect;
+        bool intersect;
         struct MapLine *mapLine = map->headLine;
         while(mapLine != NULL)
         {
             struct line_t mline = { .a = mapLine->a->pos, .b = mapLine->b->pos };
-            if(lineeq(mline, line)) //line already exists, discard it
+            if(LineEq(mline, line)) //line already exists, discard it
             {
                 canInsertLine = false;
                 break;
@@ -382,10 +382,36 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
 
             if(glms_vec2_eqv_eps(mline.a, line.a) || glms_vec2_eqv_eps(mline.b, line.a) || glms_vec2_eqv_eps(mline.b, line.b) || glms_vec2_eqv_eps(mline.a, line.b)) // line shares one of the points with the mapline
             {
-                if(LineIsColinear(mline, line)) // overlap
+                if(LineIsParallel(mline, line)) // overlap
                 {
-                    LogDebug("Overlap with 1 shared point");
-                    break;
+                    vec2s commonPoint = LineGetCommonPoint(mline, line);
+                    struct line_t major = { .a = commonPoint, .b = glms_vec2_eqv_eps(commonPoint, mline.a) ? mline.b : mline.a };
+                    struct line_t minor = { .a = commonPoint, .b = glms_vec2_eqv_eps(commonPoint, line.a) ? line.b : line.a };
+
+                    vec2s u = glms_vec2_sub(major.b, major.a);
+                    vec2s v = glms_vec2_sub(minor.b, minor.a);
+                    float dot = glms_vec2_dot(u, v);
+                    if(dot > 0) // they do infact overlap
+                    {
+                        float t = LineGetPointFactor(major, minor.b);
+                        if(t > 1)
+                        {
+                            queue.lines[queue.tail] = (struct line_t){ .a = major.b, .b = minor.b };
+                            queue.tail = (queue.tail + 1) % QUEUE_SIZE;
+                            queue.numLines++;
+
+                            assert(queue.numLines < QUEUE_SIZE);
+                        }
+                        else
+                        {
+                            struct MapVertex *splitVertex = EditAddVertex(state, minor.b);
+                            struct MapLine *lineToSplit = mapLine;
+                            mapLine = NULL; // since we are splitting the line here we should stop iterating through the rest of the map lines
+                            SplitMapLine(state, lineToSplit, splitVertex);
+                        }
+                        canInsertLine = false;
+                        break;
+                    }
                 }
                 else // cant overlap or intersect line
                 {
@@ -394,22 +420,25 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
                 }
             }
 
-            struct intersection_res_t result = {0};
-            intersect = LineIntersection(mline, line, &result);
-            if(intersect)
-            {
-                /*
-                if(glms_vec2_eqv(mapLine->a->pos, result.p0) || glms_vec2_eqv(mapLine->b->pos, result.p0))
-                {
-                    mapLine = mapLine->next;
-                    continue;
-                }
-                */
+            float mlOrient = (mline.b.x - mline.a.x) * (mline.b.y + mline.a.y);
+            float lOrient = (line.b.x - line.a.x) * (line.b.y + line.a.y);
 
-                struct MapVertex *splitVertex = EditAddVertex(state, result.p0);
-                struct MapLine *lineToSplit = mapLine;
-                mapLine = NULL; // since we are splitting the line here we should stop iterating through the rest of the map lines
-                SplitMapLine(state, lineToSplit, splitVertex);
+            struct line_t lineCorrected = line;
+            if(signbit(mlOrient) != signbit(lOrient))
+            {
+                lineCorrected.a = line.b;
+                lineCorrected.b = line.a;
+            }
+
+            struct intersection_res_t result = {0};
+            if((intersect = LineIntersection(mline, line, &result)))
+            {
+                if(!glms_vec2_eqv_eps(mline.a, result.p0) && !glms_vec2_eqv_eps(mline.b, result.p0))
+                {
+                    struct MapVertex *splitVertex = EditAddVertex(state, result.p0);
+                    struct MapLine *lineToSplit = mapLine;
+                    SplitMapLine(state, lineToSplit, splitVertex);
+                }
 
                 if(!glms_vec2_eqv_eps(line.a, result.p0))
                 {
@@ -424,21 +453,62 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
                     queue.tail = (queue.tail + 1) % QUEUE_SIZE;
                     queue.numLines++;
                 }
-                
-                LogDebug("INTERSECTION");
+
+                mapLine = NULL; // since we are splitting the line here we should stop iterating through the rest of the map lines
 
                 assert(queue.numLines < QUEUE_SIZE);
             }
-            /*
-            else if(intersect == OVERLAP) // overlap
+            else if((intersect = LineOverlap(mline, lineCorrected, &result)))
             {
-                struct MapVertex *splitVertexA = EditAddVertex(state, result.p0);
-                struct MapVertex *splitVertexB = EditAddVertex(state, result.p1);
-                struct MapLine *lineToSplit = mapLine;
-                mapLine = NULL; // since we are splitting the line here we should stop iterating through the rest of the map lines
-                SplitMapLine2(state, lineToSplit, splitVertexA, splitVertexB);
+                if(result.t0 == 0 && result.t1 == 1)
+                {
+                    struct MapVertex *splitVertexA = EditAddVertex(state, result.p0);
+                    struct MapVertex *splitVertexB = EditAddVertex(state, result.p1);
+                    struct MapLine *lineToSplit = mapLine;
+                    mapLine = NULL; // since we are splitting the line here we should stop iterating through the rest of the map lines
+                    SplitMapLine2(state, lineToSplit, splitVertexA, splitVertexB);
+                }
+                else if(result.t0 == 0)
+                {
+                    struct MapVertex *splitVertex = EditAddVertex(state, result.p0);
+                    struct MapLine *lineToSplit = mapLine;
+                    mapLine = NULL; // since we are splitting the line here we should stop iterating through the rest of the map lines
+                    SplitMapLine(state, lineToSplit, splitVertex);
+
+                    queue.lines[queue.tail] = (struct line_t){ .a = mline.b, .b = lineCorrected.b };
+                    queue.tail = (queue.tail + 1) % QUEUE_SIZE;
+                    queue.numLines++;
+
+                    assert(queue.numLines < QUEUE_SIZE);
+                }
+                else if(result.t1 == 0)
+                {
+                    struct MapVertex *splitVertex = EditAddVertex(state, result.p1);
+                    struct MapLine *lineToSplit = mapLine;
+                    mapLine = NULL; // since we are splitting the line here we should stop iterating through the rest of the map lines
+                    SplitMapLine(state, lineToSplit, splitVertex);
+
+                    queue.lines[queue.tail] = (struct line_t){ .a = mline.a, .b = lineCorrected.a };
+                    queue.tail = (queue.tail + 1) % QUEUE_SIZE;
+                    queue.numLines++;
+
+                    assert(queue.numLines < QUEUE_SIZE);
+                }
+                else
+                {
+                    queue.lines[queue.tail] = (struct line_t){ .a = mline.b, .b = lineCorrected.b };
+                    queue.tail = (queue.tail + 1) % QUEUE_SIZE;
+                    queue.numLines++;
+
+                    queue.lines[queue.tail] = (struct line_t){ .a = lineCorrected.a, .b = mline.a };
+                    queue.tail = (queue.tail + 1) % QUEUE_SIZE;
+                    queue.numLines++;
+
+                    mapLine = NULL;
+
+                    assert(queue.numLines < QUEUE_SIZE);
+                }
             }
-            */
             else
                 mapLine = mapLine->next;
             canInsertLine &= !intersect;

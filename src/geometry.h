@@ -45,16 +45,22 @@ enum orientation_t
     CCW_ORIENT
 };
 
-static inline bool lineeq(struct line_t a, struct line_t b)
+static inline bool LineEq(struct line_t a, struct line_t b)
 {
-    return glms_vec2_eqv(a.a, b.a) && glms_vec2_eqv(a.b, b.a) && glms_vec2_eqv(a.a, b.b) && glms_vec2_eqv(a.b, b.b);
+    return (glms_vec2_eqv(a.a, b.a) && glms_vec2_eqv(a.b, b.b)) || (glms_vec2_eqv(a.a, b.b) && glms_vec2_eqv(a.b, b.a));
 }
 
 bool PointInSector(struct MapSector sector[static 1], vec2s point);
 bool PointInPolygon(size_t numVertices, vec2s vertices[static numVertices], vec2s point);
 float MinDistToLine(vec2s a, vec2s b, vec2s point);
 
-bool LineIsColinear(struct line_t a, struct line_t b);
+bool LineIsCollinear(struct line_t a, struct line_t b);
+bool LineIsParallel(struct line_t a, struct line_t b);
+
+// this assumes that both lines are collinear
+vec2s LineGetCommonPoint(struct line_t major, struct line_t support);
+float LineGetPointFactor(struct line_t line, vec2s point);
+
 bool LineOverlap(struct line_t a, struct line_t b, struct intersection_res_t *res);
 bool LineIntersection(struct line_t a, struct line_t b, struct intersection_res_t *res);
 enum orientation_t LineLoopOrientation(size_t numVertices, vec2s vertices[static numVertices]);

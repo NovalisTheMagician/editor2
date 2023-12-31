@@ -116,7 +116,7 @@ angle_t AngleOfMapLines(struct MapLine a[static 1], struct MapLine b[static 1])
 angle_t AngleOfLines(struct line_t a, struct line_t b)
 {
     // assume a.a and b.a are equal
-    return AngleOf(a.a, a.b, b.b);
+    return AngleOf(a.b, a.a, b.b);
 }
 
 angle_t AngleOf(vec2s a, vec2s b, vec2s c)
@@ -181,7 +181,7 @@ bool inSegment(vec2s p, struct line_t s)
     return false;
 }
 
-bool LineIsColinear(struct line_t la, struct line_t lb)
+bool LineIsCollinear(struct line_t la, struct line_t lb)
 {
     vec2s u = glms_vec2_sub(la.b, la.a);
     vec2s v = glms_vec2_sub(lb.b, lb.a);
@@ -191,10 +191,34 @@ bool LineIsColinear(struct line_t la, struct line_t lb)
     if(fabs(D) > SMALL_NUM)
         return false;
 
-    if(glms_vec2_cross(u, w) != 0 || glms_vec2_cross(v, w) != 0)
-        return false;
+    if(fabs(glms_vec2_cross(u, w)) < SMALL_NUM && fabs(glms_vec2_cross(v, w)) < SMALL_NUM)
+        return true;
 
-    return true;
+    return false;
+}
+
+bool LineIsParallel(struct line_t a, struct line_t b)
+{
+    vec2s u = glms_vec2_sub(a.b, a.a);
+    vec2s v = glms_vec2_sub(b.b, b.a);
+    float D = glms_vec2_cross(u, v);
+    return fabs(D) < SMALL_NUM;
+}
+
+vec2s LineGetCommonPoint(struct line_t major, struct line_t support)
+{
+    if(glms_vec2_eqv_eps(major.a, support.a)) return major.a;
+    if(glms_vec2_eqv_eps(major.b, support.a)) return major.b;
+    if(glms_vec2_eqv_eps(major.a, support.b)) return major.a;
+    //if(glms_vec2_eqv_eps(major.b, support.b)) return major.b;
+    return major.b;
+}
+
+float LineGetPointFactor(struct line_t line, vec2s point)
+{
+    //vec2s u = glms_vec2_sub(line.b, line.a);
+    float len = glms_vec2_distance(line.b, line.a);
+    return glms_vec2_distance(line.a, point) / len;
 }
 
 bool LineOverlap(struct line_t la, struct line_t lb, struct intersection_res_t *res)
@@ -205,13 +229,12 @@ bool LineOverlap(struct line_t la, struct line_t lb, struct intersection_res_t *
     float D = glms_vec2_cross(u, v);
 
     if(fabs(D) > SMALL_NUM)
-    {
-        return false;
-    }
-
-    if(glms_vec2_cross(u, w) != 0 || glms_vec2_cross(v, w) != 0)
         return false;
 
+    if(fabs(glms_vec2_cross(u, w)) > SMALL_NUM || fabs(glms_vec2_cross(v, w)) > SMALL_NUM)
+        return false;
+
+    /*
     float du = glms_vec2_dot(u, u);
     float dv = glms_vec2_dot(v, v);
     if(du == 0 && dv == 0)
@@ -232,6 +255,7 @@ bool LineOverlap(struct line_t la, struct line_t lb, struct intersection_res_t *
         if(res) res->p0 = lb.a;
         return true;
     }
+    */
 
     float t0, t1;
     vec2s w2 = glms_vec2_sub(la.b, lb.a);
@@ -245,10 +269,12 @@ bool LineOverlap(struct line_t la, struct line_t lb, struct intersection_res_t *
         t0 = w.y / v.y;
         t1 = w2.y / v.y;
     }
+    
     if(t0 > t1)
     {
         float t = t0; t0 = t1; t0 = t;
     }
+
     if(t0 >= 1 || t1 <= 0)
     {
         return false;
@@ -290,11 +316,11 @@ bool LineIntersection(struct line_t la, struct line_t lb, struct intersection_re
     }
 
     float sI = glms_vec2_cross(v, w) / D;
-    if (sI < 0 || sI > 1)
+    if (sI <= 0 || sI >= 1)
         return false;
 
     float tI = glms_vec2_cross(u, w) / D;
-    if(tI < 0 || tI > 1)
+    if(tI <= 0 || tI >= 1)
         return false;
 
     if(res)
