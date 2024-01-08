@@ -319,6 +319,58 @@ static void SplitMapLine2(struct EdState state[static 1], struct MapLine line[st
     newEnd->back = backCopy;
 }
 
+static struct MapSector* MakeMapSector(struct Map map[static 1], struct MapLine startLine[static 1], bool front)
+{
+    // front means natural direction
+    struct MapLine *sectorLines[1024] = {0};
+    size_t numLines = 0;
+
+    struct MapLine *mapLine = startLine;
+    struct MapVertex *mapVertexForNext = front ? mapLine->b : mapLine->a, *mapVertex = front ? mapLine->a : mapLine->b;
+    while(true)
+    {
+        // add current line to list
+        sectorLines[numLines++] = mapLine;
+
+        // get the next line with the smallest angle
+        struct MapLine *nextMapLine = NULL;
+        float smallestAngle = FLT_MAX;
+        for(size_t i = 0; i < mapVertexForNext->numAttachedLines; ++i)
+        {
+            struct MapLine *attLine = mapVertexForNext->attachedLines[i];
+            if(attLine == mapLine) continue;
+
+            struct MapVertex *otherVertex = mapVertexForNext == attLine->a ? attLine->b : attLine->a;
+            float angle = AngleOfLines((struct line_t){ .a = mapVertexForNext->pos, .b = mapVertex->pos }, (struct line_t){ .a = mapVertexForNext->pos, .b = otherVertex->pos });
+            if(angle < smallestAngle)
+            {
+                smallestAngle = angle;
+                nextMapLine = attLine;
+            }
+        }
+
+        // line ends here
+        if(nextMapLine == NULL)
+        {
+            LogDebug("Line ends, cant create sector!");
+            return NULL;
+        }
+
+        // we found a loop
+        if(nextMapLine == startLine)
+        {
+            break;
+        }
+
+        mapLine = nextMapLine;
+        mapVertex = mapVertexForNext;
+        mapVertexForNext = mapLine->a == mapVertex ? mapLine->b : mapLine->a;
+    }
+
+    LogDebug("Found a loop with {d} lines", numLines);
+    return NULL;
+} 
+
 static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, vec2s vertices[static numVerts], bool isLoop)
 {
     struct Map *map = &state->map;
@@ -361,6 +413,8 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
 
         assert(queue.tail != queue.head);
     }
+
+    struct MapLine *startLine = NULL;
 
     while(queue.numLines > 0)
     {
@@ -522,6 +576,8 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
 
             struct MapLine *line = EditAddLine(state, mva, mvb);
             if(!line) return false;
+
+            if(startLine == NULL) startLine = line;
         }
 
         didIntersect |= !canInsertLine;
@@ -530,7 +586,7 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
     // create sectors from the new lines
     if(isLoop)
     {
-
+        MakeMapSector(map, startLine, true);
     }
     else if(didIntersect) // not a loop but lines did intersect: update sectors from the touched lines
     {
