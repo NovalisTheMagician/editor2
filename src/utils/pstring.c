@@ -224,23 +224,43 @@ struct stringtok* stringtok_start(pstring source, const char *delim)
     if(tok)
     {
         tok->source = source;
-        tok->next = source;
+        tok->sourcelen = string_length(source);
+        tok->next = 0;
         tok->buffer = calloc(INITAL_TOK_BUFFER_CAP, sizeof(char));
         tok->delim = delim;
         tok->done = 0;
     }
-
     return tok;
 }
 
 char* stringtok_next(struct stringtok *tok, size_t *numChars)
 {
-    return NULL;
+    if(tok->done) return NULL;
+
+    ssize_t idx = string_first_index_of(tok->source, tok->next, tok->delim);
+    if(idx == -1) // no token found return the rest of the source
+    {
+        tok->done = 1;
+        if(numChars) *numChars = tok->sourcelen - tok->next;
+        for(size_t i = tok->next, j = 0; i < tok->sourcelen; ++i, ++j)
+            tok->buffer[j] = tok->source[i];
+        tok->buffer[tok->sourcelen - tok->next] = 0;
+    }
+    else
+    {
+        size_t len = idx - tok->next;
+        if(numChars) *numChars = len;
+        for(size_t i = tok->next, j = 0; i < len; ++i, ++j)
+            tok->buffer[j] = tok->source[i];
+        tok->buffer[len] = 0;
+        tok->next = idx + 1;
+    }
+    return tok->buffer;
 }
 
 void stringtok_reset(struct stringtok *tok)
 {
-    tok->next = tok->source;
+    tok->next = 0;
     tok->done = 0;
 }
 

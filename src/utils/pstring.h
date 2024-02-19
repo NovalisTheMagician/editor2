@@ -41,13 +41,14 @@ void string_tolower(pstring str);
 struct stringtok
 {
     pstring source;
+    size_t sourcelen;
     const char *delim;
-    char *next;
+    size_t next;
     char *buffer;
     int done;
 };
 
-struct stringtok* stringtok_start(pstring source, const char *delim);
-char* stringtok_next(struct stringtok *tok, size_t *numChars);
-void stringtok_reset(struct stringtok *tok);
+struct stringtok* stringtok_start(pstring source, const char delim[static 1]);
+char* stringtok_next(struct stringtok tok[static 1], size_t *numChars);
+void stringtok_reset(struct stringtok tok[static 1]);
 void stringtok_end(struct stringtok *tok);
