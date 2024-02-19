@@ -45,6 +45,7 @@ struct stringtok
     const char *delim;
     size_t next;
     char *buffer;
+    size_t buffercap;
     int done;
 };
 

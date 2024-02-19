@@ -227,6 +227,7 @@ struct stringtok* stringtok_start(pstring source, const char delim[static 1])
         tok->sourcelen = string_length(source);
         tok->next = 0;
         tok->buffer = calloc(INITAL_TOK_BUFFER_CAP, sizeof(char));
+        tok->buffercap = INITAL_TOK_BUFFER_CAP;
         tok->delim = delim;
         tok->done = 0;
     }
@@ -241,7 +242,13 @@ char* stringtok_next(struct stringtok tok[static 1], size_t *numChars)
     if(idx == -1) // no token found return the rest of the source
     {
         tok->done = 1;
-        if(numChars) *numChars = tok->sourcelen - tok->next;
+        size_t len = tok->sourcelen - tok->next;
+        if(numChars) *numChars = len;
+        if(len >= tok->buffercap)
+        {
+            tok->buffercap *= 2;
+            tok->buffer = realloc(tok->buffer, tok->buffercap);
+        }
         for(size_t i = tok->next, j = 0; i < tok->sourcelen; ++i, ++j)
             tok->buffer[j] = tok->source[i];
         tok->buffer[tok->sourcelen - tok->next] = 0;
@@ -250,6 +257,11 @@ char* stringtok_next(struct stringtok tok[static 1], size_t *numChars)
     {
         size_t len = idx - tok->next;
         if(numChars) *numChars = len;
+        if(len >= tok->buffercap)
+        {
+            tok->buffercap *= 2;
+            tok->buffer = realloc(tok->buffer, tok->buffercap);
+        }
         for(size_t i = tok->next, j = 0; i < len; ++i, ++j)
             tok->buffer[j] = tok->source[i];
         tok->buffer[len] = 0;
