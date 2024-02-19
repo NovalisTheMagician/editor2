@@ -354,8 +354,8 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
         }
     }
 
-    //constexpr size_t QUEUE_SIZE = 1<<12;
-#define QUEUE_SIZE (1<<12)
+    //constexpr size_t QUEUE_SIZE = 4096;
+#define QUEUE_SIZE (4096)
 
     struct
     {

@@ -2,7 +2,7 @@ APPLICATION := editor2
 
 BUILD_DIR := build
 SRC_DIR := src
-SRC_SUBDIRS := windows dialogs
+SRC_SUBDIRS := windows dialogs utils
 
 DEFINES := __USE_XOPEN _GNU_SOURCE CGLM_USE_ANONYMOUS_STRUCT=1
 INC_DIRS := $(SRC_DIR)
