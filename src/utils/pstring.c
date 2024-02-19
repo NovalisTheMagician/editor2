@@ -218,7 +218,7 @@ void string_tolower(pstring str)
 
 #define INITAL_TOK_BUFFER_CAP 256
 
-struct stringtok* stringtok_start(pstring source, const char *delim)
+struct stringtok* stringtok_start(pstring source, const char delim[static 1])
 {
     struct stringtok *tok = malloc(sizeof *tok);
     if(tok)
@@ -233,7 +233,7 @@ struct stringtok* stringtok_start(pstring source, const char *delim)
     return tok;
 }
 
-char* stringtok_next(struct stringtok *tok, size_t *numChars)
+char* stringtok_next(struct stringtok tok[static 1], size_t *numChars)
 {
     if(tok->done) return NULL;
 
@@ -258,7 +258,7 @@ char* stringtok_next(struct stringtok *tok, size_t *numChars)
     return tok->buffer;
 }
 
-void stringtok_reset(struct stringtok *tok)
+void stringtok_reset(struct stringtok tok[static 1])
 {
     tok->next = 0;
     tok->done = 0;
