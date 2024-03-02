@@ -41,7 +41,7 @@ static void HandleArguments(int argc, char *argv[], struct EdState *state)
             settingsPath = optarg;
             break;
         case 'p':
-            state->project.file = pstr_cstr(optarg);
+            state->project.file = string_cstr(optarg);
             if(!LoadProject(&state->project))
             {
                 LogWarning("failed to load project {c}", optarg);
@@ -49,7 +49,7 @@ static void HandleArguments(int argc, char *argv[], struct EdState *state)
             }
             break;
         case 'm':
-            state->map.file = pstr_cstr(optarg);
+            state->map.file = string_cstr(optarg);
             if(!LoadMap(&state->map))
             {
                 LogWarning("failed to load map {c}", optarg);
@@ -101,7 +101,7 @@ int EditorMain(int argc, char *argv[])
     if(!InitEditor(state)) return EXIT_FAILURE;
 
     tc_init(&state->textures);
-    if(state->project.file.size > 0)
+    if(string_length(state->project.file) > 0)
     {
         LoadTextures(state, true);
     }

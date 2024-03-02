@@ -12,8 +12,8 @@
 #include <glad2/gl.h>
 #include <cglm/struct.h>
 
-#include "pstring.h"
-#include "hash.h"
+#include "utils/pstring.h"
+#include "utils/hash.h"
 #include "logging.h"
 #include "weakptr.h"
 
@@ -27,4 +27,4 @@
 #define REQ_GL_MAJOR 4
 #define REQ_GL_MINOR 5
 
-#include "debug.h"
+#include "utils/debug.h"

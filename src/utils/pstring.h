@@ -23,10 +23,16 @@ void string_free(pstring str);
 size_t string_format(pstring into, const char format[static 1], ...);
 size_t string_vformat(pstring into, const char format[static 1], va_list args);
 
+size_t string_format_offset(pstring into, size_t offset, const char format[static 1], ...);
+size_t string_vformat_offset(pstring into, size_t offset, const char format[static 1], va_list args);
+
 size_t string_size(pstring str);
 size_t string_length(pstring str);
+void string_recalc(pstring str);
 
 pstring string_copy(pstring str);
+size_t string_copy_into_cstr(pstring into, const char *str);
+size_t string_copy_into(pstring into, pstring str);
 pstring string_substring(pstring str, size_t start, ssize_t end);
 
 ssize_t string_first_index_of(pstring str, size_t offset, const char tok[static 1]);
@@ -43,14 +49,14 @@ struct stringtok
 {
     pstring source;
     size_t sourcelen;
-    const char *delim;
     size_t next;
     char *buffer;
     size_t buffercap;
     int done;
 };
 
-struct stringtok* stringtok_start(pstring source, const char delim[static 1]);
-char* stringtok_next(struct stringtok tok[static 1], size_t *numChars);
+struct stringtok* stringtok_start(pstring source);
+char* stringtok_next(struct stringtok tok[static 1], const char delim[static 1], size_t *numChars);
 void stringtok_reset(struct stringtok tok[static 1]);
+int stringtok_done(struct stringtok tok[static 1]);
 void stringtok_end(struct stringtok *tok);

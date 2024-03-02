@@ -15,9 +15,9 @@ uint64_t murmurhash3_cstr(const char* str)
 uint64_t murmurhash3_pstr(pstring str)
 {
     uint64_t h = 0x12345678;
-    for (size_t i = 0; i < str.size; ++i) 
+    for (size_t i = 0; i < string_length(str); ++i) 
     {
-        h ^= str.data[i];
+        h ^= str[i];
         h *= 0x5bd1e995;
         h ^= h >> 15;
     }
@@ -38,8 +38,8 @@ uint64_t djb2hash_cstr(const char *str)
 uint64_t djb2hash_pstr(pstring str)
 {
     uint64_t hash = 5381;
-    for(size_t i = 0; i < str.size; ++i)
-        hash = ((hash << 5) + hash) + str.data[i]; /* hash * 33 + c */
+    for(size_t i = 0; i < string_length(str); ++i)
+        hash = ((hash << 5) + hash) + str[i]; /* hash * 33 + c */
 
     return hash;
 }

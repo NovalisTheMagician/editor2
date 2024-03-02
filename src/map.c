@@ -40,19 +40,19 @@ void FreeMapVertex(struct MapVertex *vertex)
 
 void FreeMapLine(struct MapLine *line)
 {
-    pstr_free(line->front.lowerTex);
-    pstr_free(line->front.middleTex);
-    pstr_free(line->front.upperTex);
-    pstr_free(line->back.lowerTex);
-    pstr_free(line->back.middleTex);
-    pstr_free(line->back.upperTex);
+    string_free(line->front.lowerTex);
+    string_free(line->front.middleTex);
+    string_free(line->front.upperTex);
+    string_free(line->back.lowerTex);
+    string_free(line->back.middleTex);
+    string_free(line->back.upperTex);
     free(line);
 }
 
 void FreeMapSector(struct MapSector *sector)
 {
-    pstr_free(sector->ceilTex);
-    pstr_free(sector->floorTex);
+    string_free(sector->ceilTex);
+    string_free(sector->floorTex);
     free(sector->vertices);
 
     free(sector->outerLines);
@@ -79,8 +79,11 @@ void NewMap(struct Map *map)
     map->headSector = map->tailSector = NULL;
     map->numSectors = 0;
 
-    pstr_free(map->file);
-    map->file = pstr_alloc(0);
+    if(map->file)
+    {
+        string_free(map->file);
+        map->file = NULL;
+    }
 
     map->dirty = false;
 
@@ -95,7 +98,7 @@ bool LoadMap(struct Map *map)
 
 void SaveMap(struct Map *map)
 {
-    if(map->file.size == 0) return;
+    if(map->file == NULL) return;
 
     map->dirty = false;
 }
@@ -106,6 +109,10 @@ void FreeMap(struct Map *map)
     FreeLineList(map->headLine);
     FreeSectorList(map->headSector);
 
-    pstr_free(map->file);
+    if(map->file)
+    {
+        string_free(map->file);
+        map->file = NULL;
+    }
 }
 

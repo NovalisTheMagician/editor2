@@ -69,7 +69,7 @@ bool InitEditor(struct EdState *state)
     state->data.gridSize = 32;
     state->data.zoomLevel = 1.0f;
 
-    state->data.textureFilter = pstr_alloc(TEXTURE_FILTER_LEN);
+    state->data.textureFilter = string_alloc(TEXTURE_FILTER_LEN);
 
     const GLbitfield 
 	mapping_flags = GL_MAP_WRITE_BIT | GL_MAP_READ_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT,
@@ -121,7 +121,7 @@ void DestroyEditor(struct EdState *state)
 
     free(state->data.selectedElements);
 
-    pstr_free(state->data.textureFilter);
+    string_free(state->data.textureFilter);
 }
 
 void ResizeEditorView(struct EdState *state, int width, int height)

@@ -58,7 +58,7 @@ void LogInit(struct LogBuffer logBuffer[static 1])
 void LogDestroy(struct LogBuffer logBuffer[static 1])
 {
     for(size_t i = 0; i < LOGBUFFER_CAPACITY; ++i)
-        pstr_free(logBuffer->lines[i]);
+        string_free(logBuffer->lines[i]);
     free(logBuffer->lines);
     logBuffer_ = NULL;
 
@@ -89,15 +89,15 @@ void LogString(struct LogBuffer logBuffer[static 1], enum LogSeverity severity, 
 {
     size_t idx = getNextIndex(logBuffer);
     pstring lineStr = logBuffer->lines[idx];
-    if(lineStr.capacity == 0)
-        lineStr = pstr_alloc(LOGBUFFER_LINE_LEN);
+    if(string_size(lineStr) == 0)
+        lineStr = string_alloc(LOGBUFFER_LINE_LEN);
 
     char timeBuffer[9] = { 0 };
     time_t timer = time(NULL);
     struct tm *tm_info = localtime(&timer);
     strftime(timeBuffer, sizeof timeBuffer, "%H:%M:%S", tm_info);
 
-    pstr_format(&lineStr, "[{c}]({c}): {s}", timeBuffer, severityToString(severity), str);
+    string_format(lineStr, "[%s](%s): {%s}", timeBuffer, severityToString(severity), str);
 
     logBuffer->lines[idx] = lineStr;
 }
@@ -106,19 +106,17 @@ static void LogFormatV(struct LogBuffer logBuffer[static 1], enum LogSeverity se
 {
     size_t idx = getNextIndex(logBuffer);
     pstring lineStr = logBuffer->lines[idx];
-    if(lineStr.capacity == 0)
-        lineStr = pstr_alloc(LOGBUFFER_LINE_LEN);
+    if(string_size(lineStr) == 0)
+        lineStr = string_alloc(LOGBUFFER_LINE_LEN);
 
     char timeBuffer[9] = { 0 };
     time_t timer = time(NULL);
     struct tm *tm_info = localtime(&timer);
     strftime(timeBuffer, sizeof timeBuffer, "%H:%M:%S", tm_info);
-    size_t prefixSize = pstr_format(&lineStr, "[{c}]({c}): ", timeBuffer, severityToString(severity));
+    size_t prefixSize = string_format(lineStr, "[%s](%s): ", timeBuffer, severityToString(severity));
+    string_vformat_offset(lineStr, prefixSize, format, args);
 
-    pstring payload = (pstring){ .data = lineStr.data + prefixSize, .size = 0, .capacity = lineStr.capacity - prefixSize };
-    size_t payloadSize = pstr_vformat(&payload, format, args);
-
-    lineStr.size += payloadSize;
+    string_recalc(lineStr);
     logBuffer->lines[idx] = lineStr;
 }
 
@@ -175,10 +173,7 @@ void LogDebug(const char format[static 1], ...)
 
     LogFormatV(logBuffer_, LOG_DEBUG, format, args);
 
-    pstring buf = pstr_alloc(256);
-    pstr_vformat(&buf, format, args);
-    fprintf(logFile, pstr_tocstr(buf));
-    pstr_free(buf);
+    vfprintf(logFile, format, args);
     fprintf(logFile, "\n");
     fflush(logFile);
 

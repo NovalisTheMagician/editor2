@@ -7,6 +7,8 @@
 #include <assert.h>
 #include <stdbool.h>
 
+#define min(a, b) ({ __typeof__(a) a_ = (a); __typeof__(b) b_ = (b); a_ < b_ ? a_ : b_; })
+
 pstring string_alloc(size_t capacity)
 {
     struct string_header *header = malloc(sizeof *header + capacity);
@@ -89,6 +91,7 @@ pstring string_cstr_size(size_t size, const char str[static size])
 
 void string_free(pstring str)
 {
+    assert(str);
     free(str - sizeof(struct string_header));
 }
 
@@ -115,6 +118,29 @@ size_t string_vformat(pstring into, const char format[static 1], va_list args)
     return ret;
 }
 
+size_t string_format_offset(pstring into, size_t offset, const char format[static 1], ...)
+{
+    va_list args;
+    va_start(args, format);
+
+    size_t num = string_vformat_offset(into, offset, format, args);
+    
+    va_end(args);
+
+    return num;
+}
+
+size_t string_vformat_offset(pstring into, size_t offset, const char format[static 1], va_list args)
+{
+    struct string_header *header = (struct string_header*)(into - sizeof *header);
+    int ret = vsnprintf(into + offset, header->size - offset, format, args);
+    if(ret > 0)
+    {
+        header->length = ret < header->size ? ret : header->size;
+    }
+    return ret;
+}
+
 size_t string_size(pstring str)
 {
     struct string_header *header = (struct string_header*)(str - sizeof *header);
@@ -127,6 +153,12 @@ size_t string_length(pstring str)
     return header->length;
 }
 
+void string_recalc(pstring str)
+{
+    struct string_header *header = (struct string_header*)(str - sizeof *header);
+    header->length = strnlen(str, header->size);
+}
+
 pstring string_copy(pstring str)
 {
     struct string_header *header = (struct string_header*)(str - sizeof *header);
@@ -137,12 +169,31 @@ pstring string_copy(pstring str)
     return string_alloc(1);
 }
 
+size_t string_copy_into_cstr(pstring into, const char *str)
+{
+    struct string_header *header = (struct string_header*)(into - sizeof *header);
+    size_t intoSize = header->size;
+    size_t strSize = strlen(str);
+    memcpy(into, str, min(intoSize, strSize));
+    string_recalc(into);
+}
+
+size_t string_copy_into(pstring into, pstring str)
+{
+    struct string_header *header = (struct string_header*)(into - sizeof *header);
+    size_t intoSize = header->size;
+    header = (struct string_header*)(str - sizeof *header);
+    size_t strSize = header->size;
+    memcpy(into, str, min(intoSize, strSize));
+    string_recalc(into);
+}
+
 pstring string_substring(pstring str, size_t start, ssize_t end)
 {
     struct string_header *header = (struct string_header*)(str - sizeof *header);
     assert(start < header->length);
     size_t e = end < 0 ? header->length : (size_t)end;
-    assert(start < e);
+    assert(start < e);e
     return string_cstr_alloc(str, e - start + 1);
 }
 
@@ -218,7 +269,7 @@ void string_tolower(pstring str)
 
 #define INITAL_TOK_BUFFER_CAP 256
 
-struct stringtok* stringtok_start(pstring source, const char delim[static 1])
+struct stringtok* stringtok_start(pstring source)
 {
     struct stringtok *tok = malloc(sizeof *tok);
     if(tok)
@@ -228,17 +279,16 @@ struct stringtok* stringtok_start(pstring source, const char delim[static 1])
         tok->next = 0;
         tok->buffer = calloc(INITAL_TOK_BUFFER_CAP, sizeof(char));
         tok->buffercap = INITAL_TOK_BUFFER_CAP;
-        tok->delim = delim;
         tok->done = 0;
     }
     return tok;
 }
 
-char* stringtok_next(struct stringtok tok[static 1], size_t *numChars)
+char* stringtok_next(struct stringtok tok[static 1], const char delim[static 1], size_t *numChars)
 {
     if(tok->done) return NULL;
 
-    ssize_t idx = string_first_index_of(tok->source, tok->next, tok->delim);
+    ssize_t idx = string_first_index_of(tok->source, tok->next, delim);
     if(idx == -1) // no token found return the rest of the source
     {
         tok->done = 1;
@@ -274,6 +324,11 @@ void stringtok_reset(struct stringtok tok[static 1])
 {
     tok->next = 0;
     tok->done = 0;
+}
+
+int stringtok_done(struct stringtok tok[static 1])
+{
+    return tok->done;
 }
 
 void stringtok_end(struct stringtok *tok)

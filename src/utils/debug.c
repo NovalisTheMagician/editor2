@@ -8,11 +8,11 @@
 #undef calloc
 #undef free
 
-#undef pstr_alloc
-#undef pstr_cstr
-#undef pstr_cstr_size
-#undef pstr_copy
-#undef pstr_free
+#undef string_alloc
+#undef string_cstr
+#undef string_cstr_size
+#undef string_copy
+#undef string_free
 
 static FILE *debugLogFile;
 
@@ -58,30 +58,36 @@ void debug_free(void *ptr, const char *file, int line)
 pstring debug_pstr_alloc(size_t len, const char *file, int line)
 {
     fprintf(debugLogFile, "+sa|%04d| %s: %d\n", ++debug_malloc_count, file, line);
-    return pstr_alloc(len);
+    return string_alloc(len);
 }
 
 pstring debug_pstr_cstr(const char *cstr, const char *file, int line)
 {
     fprintf(debugLogFile, "+sz|%04d| %s: %d (%s)\n", ++debug_malloc_count, file, line, cstr);
-    return pstr_cstr(cstr);
+    return string_cstr(cstr);
 }
 
-pstring debug_pstr_cstr_size(const char *cstr, size_t size, const char *file, int line)
+pstring debug_pstr_cstr_alloc(const char *cstr, size_t size, const char *file, int line)
 {
     fprintf(debugLogFile, "+sz|%04d| %s: %d (%s)\n", ++debug_malloc_count, file, line, cstr);
-    return pstr_cstr_size(cstr, size);
+    return string_cstr_alloc(cstr, size);
+}
+
+pstring debug_pstr_cstr_size(size_t size, const char *cstr, const char *file, int line)
+{
+    fprintf(debugLogFile, "+sz|%04d| %s: %d (%s)\n", ++debug_malloc_count, file, line, cstr);
+    return string_cstr_alloc(cstr, size);
 }
 
 pstring debug_pstr_copy(pstring string, const char *file, int line, const char *varname)
 {
-    fprintf(debugLogFile, "+sc|%04d| %s: %d {%s} (%s)\n", ++debug_malloc_count, file, line, varname, string.data);
-    return pstr_copy(string);
+    fprintf(debugLogFile, "+sc|%04d| %s: %d {%s} (%s)\n", ++debug_malloc_count, file, line, varname, string);
+    return string_copy(string);
 }
 
 void debug_pstr_free(pstring str, const char *file, int line, const char *varname)
 {
-    if(!str.data) return;
-    fprintf(debugLogFile, "-sf|%04d| %s: %d {%s} (%s)\n", --debug_malloc_count, file, line, varname, str.data);
-    pstr_free(str);
+    if(!str) return;
+    fprintf(debugLogFile, "-sf|%04d| %s: %d {%s} (%s)\n", --debug_malloc_count, file, line, varname, str);
+    string_free(str);
 }

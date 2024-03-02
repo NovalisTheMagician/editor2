@@ -79,8 +79,8 @@ static void freeFetches(struct FetchLocation *locations, size_t num)
 {
     for(size_t i = 0; i < num; ++i)
     {
-        pstr_free(locations[i].name);
-        pstr_free(locations[i].path);
+        string_free(locations[i].name);
+        string_free(locations[i].path);
     }
 }
 
