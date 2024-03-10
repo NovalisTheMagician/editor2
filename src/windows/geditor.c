@@ -10,7 +10,7 @@
 
 static void SubmitEditData(struct EdState *state, bool isLoop)
 {
-    LogDebug("Edit Done with {d} vertices", state->data.editVertexBufferSize);
+    LogDebug("Edit Done with %d vertices", state->data.editVertexBufferSize);
 
     if(isLoop)
         EditApplySector(state, state->data.editVertexBufferSize, state->data.editVertexBuffer);
@@ -30,8 +30,8 @@ static void RectSelect(struct EdState *state, bool add)
     vec2s min = { .x = min(state->data.startDrag.x, state->data.endDrag.x), .y = min(state->data.startDrag.y, state->data.endDrag.y) };
     vec2s max = { .x = max(state->data.startDrag.x, state->data.endDrag.x), .y = max(state->data.startDrag.y, state->data.endDrag.y) };
 
-    LogDebug("min: {d} {d}", min.x, min.y);
-    LogDebug("max: {d} {d}", max.x, max.y);
+    LogDebug("min: %d %d", min.x, min.y);
+    LogDebug("max: %d %d", max.x, max.y);
 
     if(!add)
         state->data.numSelectedElements = 0;

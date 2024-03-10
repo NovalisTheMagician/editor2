@@ -71,13 +71,13 @@ pstring string_cstr_alloc(const char str[static 1], size_t size)
 
 pstring string_cstr_size(size_t size, const char str[static size])
 {
-    struct string_header *header = malloc(sizeof *header + size);
+    struct string_header *header = malloc(sizeof *header + size+1);
     pstring newStr = NULL;
 
     if(header)
     {
-        header->length = size - 1;
-        header->size = size;
+        header->length = size;
+        header->size = size+1;
         newStr = (char*)header + sizeof *header;
 
         for(size_t i = 0; i < size; ++i)
@@ -92,7 +92,8 @@ pstring string_cstr_size(size_t size, const char str[static size])
 void string_free(pstring str)
 {
     assert(str);
-    free(str - sizeof(struct string_header));
+    void *header = str - sizeof(struct string_header);
+    free(header);
 }
 
 size_t string_format(pstring into, const char format[static 1], ...)
@@ -193,10 +194,10 @@ size_t string_copy_into(pstring into, pstring str)
 pstring string_substring(pstring str, size_t start, ssize_t end)
 {
     struct string_header *header = (struct string_header*)(str - sizeof *header);
-    assert(start < header->length);
+    assert(start <= header->length);
     size_t e = end < 0 ? header->length : (size_t)end;
-    assert(start < e);
-    return string_cstr_alloc(str, e - start + 1);
+    assert(start <= e);
+    return string_cstr_size(e - start, str + start);
 }
 
 ssize_t string_first_index_of(pstring str, size_t offset, const char tok[static 1])

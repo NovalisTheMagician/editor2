@@ -20,7 +20,7 @@ const char* ColorIndexToString(enum Colors color)
     case COL_SECTOR_HOVER: return "Hovered Sector";
     case COL_SECTOR_SELECT: return "Selected Sector";
     case COL_LINE_INNER: return "Inner Line";
-    default: return "Unkown";
+    default: return "Unknown";
     }
 }
 
@@ -83,7 +83,7 @@ bool LoadSettings(const char *settingsPath, struct EdSettings *settings)
         {
             size_t size;
             char *strline = stringtok_next(tokenizer, "\n", &size);
-            pstring line = string_cstr_size(size, strline);
+            pstring line = string_cstr_size(size+1, strline);
 
             ssize_t idx = string_first_index_of(line, 0, "=");
             if(idx == -1 || idx == 0)

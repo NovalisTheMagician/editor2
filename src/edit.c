@@ -329,7 +329,7 @@ static struct MapSector* MakeMapSector(struct EdState state[static 1], struct Ma
         mapVertexForNext = mapLine->a == mapVertex ? mapLine->b : mapLine->a;
     }
 
-    LogDebug("Found a loop with {d} lines", numLines);
+    LogDebug("Found a loop with %d lines", numLines);
     return EditAddSector(state, numLines, sectorLines);
 } 
 
