@@ -163,7 +163,7 @@ static size_t CollectTexturesFtp(struct TextureCollection *tc, struct FetchLocat
             char timeBuffer[128] = { 0 };
             if(!FtpModDate(files[i].filePath, timeBuffer, sizeof timeBuffer, ftpHandle))
             {
-                LogError("{c}", FtpLastResponse(ftpHandle));
+                LogError("%s", FtpLastResponse(ftpHandle));
                 continue;
             }
 

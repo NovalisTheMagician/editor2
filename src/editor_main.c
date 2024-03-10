@@ -44,7 +44,7 @@ static void HandleArguments(int argc, char *argv[], struct EdState *state)
             state->project.file = string_cstr(optarg);
             if(!LoadProject(&state->project))
             {
-                LogWarning("failed to load project {c}", optarg);
+                LogWarning("failed to load project %s", optarg);
                 NewProject(&state->project);
             }
             break;
@@ -52,7 +52,7 @@ static void HandleArguments(int argc, char *argv[], struct EdState *state)
             state->map.file = string_cstr(optarg);
             if(!LoadMap(&state->map))
             {
-                LogWarning("failed to load map {c}", optarg);
+                LogWarning("failed to load map %s", optarg);
                 NewMap(&state->map);
             }
             break;
@@ -61,7 +61,7 @@ static void HandleArguments(int argc, char *argv[], struct EdState *state)
 
     if(!LoadSettings(settingsPath, &state->settings))
     {
-        LogWarning("failed to load settings from {c}! using default values", settingsPath);
+        LogWarning("failed to load settings from %s! using default values", settingsPath);
     }
 }
 
@@ -88,10 +88,10 @@ int EditorMain(int argc, char *argv[])
     struct EdState *state = calloc(1, sizeof *state);
     LogInit(&state->log);
 
-    LogInfo("OpenGL Version {c}", glGetString(GL_VERSION));
-    LogInfo("OpenGL Renderer {c}", glGetString(GL_RENDERER));
-    LogInfo("OpenGL Vendor {c}", glGetString(GL_VENDOR));
-    LogInfo("OpenGL GLSL {c}", glGetString(GL_SHADING_LANGUAGE_VERSION));
+    LogInfo("OpenGL Version %s", glGetString(GL_VERSION));
+    LogInfo("OpenGL Renderer %s", glGetString(GL_RENDERER));
+    LogInfo("OpenGL Vendor %s", glGetString(GL_VENDOR));
+    LogInfo("OpenGL GLSL %s", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
     ResetSettings(&state->settings);
     NewProject(&state->project);
