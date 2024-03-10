@@ -92,16 +92,20 @@ bool LoadSettings(const char *settingsPath, struct EdSettings *settings)
                 continue;
             }
 
-            char *key = pstr_tok(&line, "=");
-            char *value = line;
+            pstring key = string_substring(line, 0, idx);
+            pstring value = string_substring(line, idx + 1, -1);
 
-                 if(strcasecmp(key, "theme") == 0) settings->theme = atoi(pstr_tocstr(value));
-            else if(strcasecmp(key, "vertex_point_size") == 0) settings->vertexPointSize = (float)atof(pstr_tocstr(value));
-            else if(strcasecmp(key, "show_grid_lines") == 0) settings->showGridLines = atoi(pstr_tocstr(value));
-            else if(strcasecmp(key, "show_major_axis") == 0) settings->showMajorAxis = atoi(pstr_tocstr(value));
-            else if(strcasecmp(key, "preview_fov") == 0) settings->realtimeFov = atoi(pstr_tocstr(value));
-            else if(strcasecmp(key, "game_path") == 0) pstr_copy_into(&settings->gamePath, value);
-            else if(strcasecmp(key, "launch_arguments") == 0) pstr_copy_into(&settings->launchArguments, value);
+                 if(strcasecmp(key, "theme") == 0) settings->theme = atoi(value);
+            else if(strcasecmp(key, "vertex_point_size") == 0) settings->vertexPointSize = (float)atof(value);
+            else if(strcasecmp(key, "show_grid_lines") == 0) settings->showGridLines = atoi(value);
+            else if(strcasecmp(key, "show_major_axis") == 0) settings->showMajorAxis = atoi(value);
+            else if(strcasecmp(key, "preview_fov") == 0) settings->realtimeFov = atoi(value);
+            else if(strcasecmp(key, "game_path") == 0) string_copy_into(settings->gamePath, value);
+            else if(strcasecmp(key, "launch_arguments") == 0) string_copy_into(settings->launchArguments, value);
+
+            string_free(key);
+            string_free(value);
+            string_free(line);
         }
 
         stringtok_end(tokenizer);

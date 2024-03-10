@@ -110,13 +110,13 @@ static void SectorProperties(struct EdState *state)
         {
             if(textureToSet == 0)
             {
-                pstr_free(selectedSector->floorTex);
-                selectedSector->floorTex = pstr_copy(selectedTexture->name);
+                string_free(selectedSector->floorTex);
+                selectedSector->floorTex = string_copy(selectedTexture->name);
             }
             else
             {
-                pstr_free(selectedSector->ceilTex);
-                selectedSector->ceilTex = pstr_copy(selectedTexture->name);
+                string_free(selectedSector->ceilTex);
+                selectedSector->ceilTex = string_copy(selectedTexture->name);
             }
         }
     }

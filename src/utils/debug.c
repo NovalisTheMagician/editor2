@@ -11,6 +11,7 @@
 #undef string_alloc
 #undef string_cstr
 #undef string_cstr_size
+#undef string_cstr_alloc
 #undef string_copy
 #undef string_free
 
@@ -76,7 +77,7 @@ pstring debug_pstr_cstr_alloc(const char *cstr, size_t size, const char *file, i
 pstring debug_pstr_cstr_size(size_t size, const char *cstr, const char *file, int line)
 {
     fprintf(debugLogFile, "+sz|%04d| %s: %d (%s)\n", ++debug_malloc_count, file, line, cstr);
-    return string_cstr_alloc(cstr, size);
+    return string_cstr_size(size, cstr);
 }
 
 pstring debug_pstr_copy(pstring string, const char *file, int line, const char *varname)

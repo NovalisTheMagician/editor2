@@ -20,8 +20,8 @@ void NewProject(struct Project *project)
     project->basePath.ftp.password = string_alloc(MAX_ASSETPATH_LEN);
 
     project->file = string_alloc(0);
-    project->texturesPath = string_cstr_size("textures", MAX_ASSETPATH_LEN);
-    project->thingsFile = string_cstr_size("things.txt", MAX_ASSETPATH_LEN);
+    project->texturesPath = string_cstr_alloc("textures", MAX_ASSETPATH_LEN);
+    project->thingsFile = string_cstr_alloc("things.txt", MAX_ASSETPATH_LEN);
 
     project->dirty = false;
 }

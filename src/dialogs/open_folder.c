@@ -2,12 +2,12 @@
 
 static void OpenFolderCallback(const char *path, void *data)
 {
-    pstring *str = data;
-    size_t len = strlen(path);
-    len = len < str->capacity ? len : str->capacity;
-    memset(str->data, 0, str->capacity);
-    memcpy(str->data, path, len);
-    str->size = len;
+    pstring str = data;
+    size_t len = strlen(path)+1;
+    len = len < string_size(str) ? len : string_size(str);
+    memset(str, 0, string_size(str));
+    memcpy(str, path, len);
+    string_recalc(str);
 }
 
 void OpenFolderDialog(pstring *folderPath)

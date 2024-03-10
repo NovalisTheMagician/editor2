@@ -3,8 +3,8 @@
 static void SaveProjectCallback(const char *path, void *data)
 {
     struct Project *project = data;
-    pstr_free(project->file);
-    project->file = pstr_cstr(path);
+    string_free(project->file);
+    project->file = string_cstr(path);
     SaveProject(project);
 }
 

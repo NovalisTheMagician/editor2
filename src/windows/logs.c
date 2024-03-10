@@ -18,8 +18,8 @@ void LogsWindow(bool *p_open, struct EdState *state)
             for(size_t i = 0; i < numLogs; ++i)
             {
                 pstring str = LogGet(log, i);
-                const char *start = str.data;
-                const char *end = str.data + str.size;
+                const char *start = str;
+                const char *end = str + string_length(str);
                 igTextUnformatted(start, end);
             }
 

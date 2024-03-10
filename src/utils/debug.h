@@ -29,7 +29,7 @@ void debug_pstr_free(pstring str, const char *file, int line, const char *varnam
 #define string_alloc(len) debug_pstr_alloc(len, __FILE__, __LINE__)
 #define string_cstr(cstr) debug_pstr_cstr(cstr, __FILE__, __LINE__)
 #define string_cstr_alloc(cstr, size) debug_pstr_cstr_alloc(cstr, size, __FILE__, __LINE__)
-#define string_cstr_size(cstr, size) debug_pstr_cstr_size(cstr, size, __FILE__, __LINE__)
+#define string_cstr_size(size, cstr) debug_pstr_cstr_size(size, cstr, __FILE__, __LINE__)
 #define string_copy(str) debug_pstr_copy(str, __FILE__, __LINE__, #str)
 #define string_free(str) debug_pstr_free(str, __FILE__, __LINE__, #str)
 #endif

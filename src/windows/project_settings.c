@@ -5,8 +5,9 @@
 
 static void BaseFsFields(struct EdState *state)
 {
-    if(igInputText_pstr("Path", &state->project.basePath.fs.path, 0, NULL, NULL))
+    if(igInputText("Path", state->project.basePath.fs.path, string_size(state->project.basePath.fs.path), 0, NULL, NULL))
     {
+        string_recalc(state->project.basePath.fs.path);
         state->project.dirty = true;
     }
 
@@ -27,18 +28,18 @@ static void BaseFtpFields(struct EdState *state, bool resetCheck)
     if(igButton("Check Connection", (ImVec2){ 0, 0 }))
     {
         netbuf *handle;
-        if(!FtpConnect(pstr_tocstr(state->project.basePath.ftp.url), &handle))
+        if(!FtpConnect(state->project.basePath.ftp.url, &handle))
         {
             ftpStatusText = "Failed to connect!";
             goto skip;
         }
-        if(!FtpLogin(pstr_tocstr(state->project.basePath.ftp.login), pstr_tocstr(state->project.basePath.ftp.password), handle))
+        if(!FtpLogin(state->project.basePath.ftp.login, state->project.basePath.ftp.password, handle))
         {
             ftpStatusText = "Failed to login!";
             goto skip;
         }
-        if(state->project.basePath.ftp.path.size > 0)
-        if(!FtpChdir(pstr_tocstr(state->project.basePath.ftp.path), handle))
+        if(string_length(state->project.basePath.ftp.path) > 0)
+        if(!FtpChdir(state->project.basePath.ftp.path, handle))
         {
             ftpStatusText = "Couldn't find path!";
             goto skip;
@@ -50,24 +51,28 @@ skip:
     igSameLine(0, 8);
     igText(ftpStatusText);
 
-    if(igInputText_pstr("URL", &state->project.basePath.ftp.url, 0, NULL, NULL))
+    if(igInputText("URL", state->project.basePath.ftp.url, string_size(state->project.basePath.ftp.url), 0, NULL, NULL))
     {
+        string_recalc(state->project.basePath.ftp.url);
         state->project.dirty = true;
         ftpStatusText = "";
     }
-    if(igInputText_pstr("Login", &state->project.basePath.ftp.login, 0, NULL, NULL))
+    if(igInputText("Login", state->project.basePath.ftp.login, string_size(state->project.basePath.ftp.login), 0, NULL, NULL))
     {
+        string_recalc(state->project.basePath.ftp.login);
         state->project.dirty = true;
         ftpStatusText = "";
     }
-    if(igInputText_pstr("Password", &state->project.basePath.ftp.password, ImGuiInputTextFlags_Password, NULL, NULL))
+    if(igInputText("Password", state->project.basePath.ftp.password, string_size(state->project.basePath.ftp.password), ImGuiInputTextFlags_Password, NULL, NULL))
     {
+        string_recalc(state->project.basePath.ftp.password);
         state->project.dirty = true;
         ftpStatusText = "";
     }
 
-    if(igInputText_pstr("Path", &state->project.basePath.ftp.path, 0, NULL, NULL))
+    if(igInputText("Path", state->project.basePath.ftp.path, string_size(state->project.basePath.ftp.path), 0, NULL, NULL))
     {
+        string_recalc(state->project.basePath.ftp.path);
         state->project.dirty = true;
         ftpStatusText = "";
     }
@@ -92,16 +97,18 @@ void ProjectSettingsWindow(bool *p_open, struct EdState *state)
 
         igSeparatorText("Textures");
         igPushID_Str("Textures");
-        if(igInputText_pstr("Subpath", &state->project.texturesPath, 0, NULL, NULL))
+        if(igInputText("Subpath", state->project.texturesPath, string_size(state->project.texturesPath), 0, NULL, NULL))
         {
+            string_recalc(state->project.texturesPath);
             state->project.dirty = true;
         }
         igPopID();
 
         igSeparatorText("Things");
         igPushID_Str("Things");
-        if(igInputText_pstr("File", &state->project.thingsFile, 0, NULL, NULL))
+        if(igInputText("File", state->project.thingsFile, string_size(state->project.thingsFile), 0, NULL, NULL))
         {
+            string_recalc(state->project.thingsFile);
             state->project.dirty = true;
         }
         igPopID();

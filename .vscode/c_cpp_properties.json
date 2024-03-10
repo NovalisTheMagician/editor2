@@ -10,7 +10,8 @@
             "defines": [
                 "_GNU_SOURCE",
                 "__USE_XOPEN",
-                "_DEBUG"
+                "_DEBUG",
+                "NO_MEMORY_DEBUG"
             ],
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "gnu17",
@@ -26,7 +27,8 @@
             "defines": [
                 "_GNU_SOURCE",
                 "__USE_XOPEN",
-                "_DEBUG"
+                "_DEBUG",
+                "NO_MEMORY_DEBUG"
             ],
             "compilerPath": "D:\\mingw64\\bin\\gcc.exe",
             "cStandard": "gnu17",

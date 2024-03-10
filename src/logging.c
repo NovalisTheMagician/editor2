@@ -89,7 +89,7 @@ void LogString(struct LogBuffer logBuffer[static 1], enum LogSeverity severity, 
 {
     size_t idx = getNextIndex(logBuffer);
     pstring lineStr = logBuffer->lines[idx];
-    if(string_size(lineStr) == 0)
+    if(lineStr == NULL)
         lineStr = string_alloc(LOGBUFFER_LINE_LEN);
 
     char timeBuffer[9] = { 0 };
@@ -106,7 +106,7 @@ static void LogFormatV(struct LogBuffer logBuffer[static 1], enum LogSeverity se
 {
     size_t idx = getNextIndex(logBuffer);
     pstring lineStr = logBuffer->lines[idx];
-    if(string_size(lineStr) == 0)
+    if(lineStr == NULL)
         lineStr = string_alloc(LOGBUFFER_LINE_LEN);
 
     char timeBuffer[9] = { 0 };

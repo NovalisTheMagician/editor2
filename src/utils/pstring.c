@@ -18,7 +18,7 @@ pstring string_alloc(size_t capacity)
     {
         header->length = 0;
         header->size = capacity;
-        str += sizeof *header;
+        str = (char*)header + sizeof *header;
 
         memset(str, 0, header->size);
     }
@@ -36,7 +36,7 @@ pstring string_cstr(const char str[static 1])
     {
         header->length = len;
         header->size = len + 1;
-        newStr += sizeof *header;
+        newStr = (char*)header + sizeof *header;
 
         for(size_t i = 0; i < len; ++i)
             newStr[i] = str[i];
@@ -58,7 +58,7 @@ pstring string_cstr_alloc(const char str[static 1], size_t size)
     {
         header->length = len;
         header->size = len + 1;
-        newStr += sizeof *header;
+        newStr = (char*)header + sizeof *header;
 
         for(size_t i = 0; i < stringlen; ++i)
             newStr[i] = str[i];
@@ -78,9 +78,9 @@ pstring string_cstr_size(size_t size, const char str[static size])
     {
         header->length = size - 1;
         header->size = size;
-        newStr += sizeof *header;
+        newStr = (char*)header + sizeof *header;
 
-        for(size_t i = 0; i < size-1; ++i)
+        for(size_t i = 0; i < size; ++i)
             newStr[i] = str[i];
 
         newStr[size] = 0;
@@ -176,6 +176,7 @@ size_t string_copy_into_cstr(pstring into, const char *str)
     size_t strSize = strlen(str);
     memcpy(into, str, min(intoSize, strSize));
     string_recalc(into);
+    return min(intoSize, strSize);
 }
 
 size_t string_copy_into(pstring into, pstring str)
@@ -186,6 +187,7 @@ size_t string_copy_into(pstring into, pstring str)
     size_t strSize = header->size;
     memcpy(into, str, min(intoSize, strSize));
     string_recalc(into);
+    return min(intoSize, strSize);
 }
 
 pstring string_substring(pstring str, size_t start, ssize_t end)
@@ -193,7 +195,7 @@ pstring string_substring(pstring str, size_t start, ssize_t end)
     struct string_header *header = (struct string_header*)(str - sizeof *header);
     assert(start < header->length);
     size_t e = end < 0 ? header->length : (size_t)end;
-    assert(start < e);e
+    assert(start < e);
     return string_cstr_alloc(str, e - start + 1);
 }
 
@@ -201,7 +203,7 @@ ssize_t string_first_index_of(pstring str, size_t offset, const char tok[static 
 {
     struct string_header *header = (struct string_header*)(str - sizeof *header);
     size_t tokSize = strlen(tok);
-    for(size_t i = 0; i <= header->length - tokSize; ++i)
+    for(size_t i = offset; i <= header->length - tokSize; ++i)
     {
         bool hit = true;
         for(size_t j = 0; j < tokSize; ++j)
@@ -216,7 +218,7 @@ ssize_t string_last_index_of(pstring str, size_t offset, const char tok[static 1
     struct string_header *header = (struct string_header*)(str - sizeof *header);
     size_t tokSize = strlen(tok);
     ssize_t hitIdx = -1;
-    for(size_t i = 0; i <= header->length - tokSize; ++i)
+    for(size_t i = offset; i <= header->length - tokSize; ++i)
     {
         bool hit = true;
         for(size_t j = 0; j < tokSize; ++j)

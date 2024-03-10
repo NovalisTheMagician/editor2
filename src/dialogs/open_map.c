@@ -3,8 +3,8 @@
 static void OpenMapCallback(const char *path, void *data)
 {
     struct Map *map = data;
-    pstr_free(map->file);
-    map->file = pstr_cstr(path);
+    string_free(map->file);
+    map->file = string_cstr(path);
     LoadMap(map);
 }
 

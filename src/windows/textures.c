@@ -21,14 +21,14 @@ static void TextureIteration(struct Texture *texture, size_t idx, void *user)
     else
         data->occupiedX = 0;
 
-    if(igImageButton(pstr_tocstr(texture->name), (void*)(intptr_t)texture->texture1, size, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 1 }))
+    if(igImageButton(texture->name, (void*)(intptr_t)texture->texture1, size, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 1 }))
     {
         data->selected = texture;
     }
 
     if (igIsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
     {
-        igSetTooltip("Name: %s\nSize: %dx%d", pstr_tocstr(texture->name), (int)size.x, (int)size.y);
+        igSetTooltip("Name: %s\nSize: %dx%d", texture->name, (int)size.x, (int)size.y);
     }
 
     data->occupiedX += size.x + 10;
@@ -66,7 +66,7 @@ struct Texture* TexturesWindow(bool *p_open, struct EdState *state, bool popup)
             igEndMenuBar();
         }
 
-        igInputText_pstr("Filter", &state->data.textureFilter, 0, NULL, NULL);
+        if(igInputText("Filter", state->data.textureFilter, string_size(state->data.textureFilter), 0, NULL, NULL)) string_recalc(state->data.textureFilter);
         igSameLine(0, 16);
         igText("%d Textures Found", tc_size(&state->textures));
 
@@ -77,7 +77,7 @@ struct Texture* TexturesWindow(bool *p_open, struct EdState *state, bool popup)
 
             struct IterateData data = { .state = state, .clientArea = clientArea };
 
-            if(state->data.textureFilter.data[0] == '\0')
+            if(state->data.textureFilter[0] == '\0')
                 tc_iterate(&state->textures, TextureIteration, &data);
             else
                 tc_iterate_filter(&state->textures, TextureIteration, state->data.textureFilter, &data);
