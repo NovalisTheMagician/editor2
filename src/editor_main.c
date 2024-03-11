@@ -254,9 +254,9 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
     ioptr->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 #endif
 
-    uint8_t *font = malloc(gFontSize); // imgui needs ownership of the font and the embedded data cant be free'd at imgui destruction time. should probably free it at the end but eh
-    memcpy(font, gFontData, gFontSize);
-    ImFontAtlas_AddFontFromMemoryTTF(ioptr->Fonts, font, gFontSize, 15.5f, NULL, NULL); // why does imgui take ownership of the font ??? or does it??
+    ImFontConfig *config = ImFontConfig_ImFontConfig();
+    config->FontDataOwnedByAtlas = false;
+    ImFontAtlas_AddFontFromMemoryTTF(ioptr->Fonts, (void*)gFontData, gFontSize, 15.5f, config, NULL);
 
     ioptr->IniFilename = NULL;
 
