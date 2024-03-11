@@ -41,6 +41,7 @@ static void HandleArguments(int argc, char *argv[], struct EdState *state)
             settingsPath = optarg;
             break;
         case 'p':
+            string_free(state->project.file);
             state->project.file = string_cstr(optarg);
             if(!LoadProject(&state->project))
             {
@@ -49,6 +50,7 @@ static void HandleArguments(int argc, char *argv[], struct EdState *state)
             }
             break;
         case 'm':
+            string_free(state->map.file);
             state->map.file = string_cstr(optarg);
             if(!LoadMap(&state->map))
             {

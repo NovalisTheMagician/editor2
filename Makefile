@@ -25,7 +25,7 @@ ifeq ($(CONFIG),release)
     DEFINES += NDEBUG
     CCFLAGS += -O2
 else
-    DEFINES += _DEBUG NO_MEMORY_DEBUG
+    DEFINES += _DEBUG 
     CCFLAGS += -g
 endif
 

@@ -197,7 +197,10 @@ static size_t CollectTexturesFtp(struct TextureCollection *tc, struct FetchLocat
     }
 
     for(size_t i = 0; i < numFiles; ++i)
+    {
         string_free(files[i].filePath);
+        string_free(files[i].fileName);
+    }
     free(files);
     string_free(buffer);
     return size;
