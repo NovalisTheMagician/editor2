@@ -32,11 +32,7 @@ bool PointInPolygon(size_t numVertices, vec2s vertices[static numVertices], vec2
             if ((A.y < B.y) == (c > 0)) inside = !inside;
         }
     }
-    if(inside)
-    {
-        return true;
-    }
-    return false;
+    return inside;
 }
 
 float MinDistToLine(vec2s a, vec2s b, vec2s point)
