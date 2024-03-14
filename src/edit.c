@@ -291,6 +291,7 @@ static struct MapSector* MakeMapSector(struct EdState state[static 1], struct Ma
     struct MapVertex *mapVertexForNext = front ? mapLine->b : mapLine->a, *mapVertex = front ? mapLine->a : mapLine->b;
     while(true)
     {
+        LogDebug("Iteration");
         // add current line to list
         sectorLines[numLines++] = mapLine;
 
@@ -303,12 +304,13 @@ static struct MapSector* MakeMapSector(struct EdState state[static 1], struct Ma
             if(attLine == mapLine) continue;
 
             struct MapVertex *otherVertex = mapVertexForNext == attLine->a ? attLine->b : attLine->a;
-            float angle = AngleOfLines((struct line_t){ .a = mapVertexForNext->pos, .b = mapVertex->pos }, (struct line_t){ .a = mapVertexForNext->pos, .b = otherVertex->pos });
+            float angle = PI2 - AngleOfLines((struct line_t){ .a = mapVertexForNext->pos, .b = mapVertex->pos }, (struct line_t){ .a = mapVertexForNext->pos, .b = otherVertex->pos });
             if(angle < smallestAngle)
             {
                 smallestAngle = angle;
                 nextMapLine = attLine;
             }
+            LogDebug("Line: %d, Angle: %f", attLine->idx, rad2deg(angle));
         }
 
         // line ends here
