@@ -281,10 +281,17 @@ static void SplitMapLine2(struct EdState state[static 1], struct MapLine line[st
     newEnd->back = backCopy;
 }
 
+static bool IsLineFront(struct MapVertex *v1, struct MapLine *line)
+{
+    assert(v1 == line->a || v1 == line->b);
+    return v1 == line->a;
+}
+
 static struct MapSector* MakeMapSector(struct EdState state[static 1], struct MapLine startLine[static 1], bool front)
 {
     // front means natural direction
     struct MapLine *sectorLines[1024] = {0};
+    bool lineFront[1024] = {0};
     size_t numLines = 0;
 
     struct MapLine *mapLine = startLine;
@@ -293,7 +300,8 @@ static struct MapSector* MakeMapSector(struct EdState state[static 1], struct Ma
     {
         LogDebug("Iteration");
         // add current line to list
-        sectorLines[numLines++] = mapLine;
+        sectorLines[numLines] = mapLine;
+        lineFront[numLines++] = IsLineFront(mapVertex, mapLine);
 
         // get the next line with the smallest angle
         struct MapLine *nextMapLine = NULL;
@@ -332,7 +340,7 @@ static struct MapSector* MakeMapSector(struct EdState state[static 1], struct Ma
     }
 
     LogDebug("Found a loop with %d lines", numLines);
-    return EditAddSector(state, numLines, sectorLines);
+    return EditAddSector(state, numLines, sectorLines, lineFront);
 } 
 
 static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, vec2s vertices[static numVerts], bool isLoop)
@@ -897,7 +905,7 @@ struct MapLine* EditGetClosestLine(struct EdState state[static 1], vec2s pos, fl
     return closestLine;
 }
 
-struct MapSector* EditAddSector(struct EdState *state, size_t numLines, struct MapLine *lines[static numLines])
+struct MapSector* EditAddSector(struct EdState *state, size_t numLines, struct MapLine *lines[static numLines], bool lineFronts[static numLines])
 {
     struct Map *map = &state->map;
 
@@ -959,7 +967,10 @@ struct MapSector* EditAddSector(struct EdState *state, size_t numLines, struct M
     for(size_t i = 0; i < numLines; ++i)
     {
         struct MapLine *line = lines[i];
-        line->frontSector = sector;
+        if(lineFronts[i])
+            line->frontSector = sector;
+        else
+            line->backSector = sector;
     }
 
     map->dirty = true;

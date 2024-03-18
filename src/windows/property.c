@@ -23,7 +23,6 @@ static void VertexProperties(struct EdState *state)
     else
     {
         igText("Index: -");
-        igText("RefCount: -");
     }
 }
 
@@ -45,7 +44,21 @@ static void LineProperties(struct EdState *state)
         {
             SelectElement(state, selectedLine->b, MODE_VERTEX);
         }
-        igText("Normal: %d", selectedLine->normal);
+        //igText("Normal: %d", selectedLine->normal);
+        igText("Front Sector: %d", selectedLine->frontSector ? selectedLine->frontSector->idx : -1);
+        if(selectedLine->frontSector)
+        {
+            igSameLine(0, 4);
+            if(igButton("Select##fs", (ImVec2){ 0, 0 }))
+                SelectElement(state, selectedLine->frontSector, MODE_SECTOR);
+        }
+        igText("Back Sector: %d", selectedLine->backSector ? selectedLine->backSector->idx : -1);
+        if(selectedLine->backSector)
+        {
+            igSameLine(0, 4);
+            if(igButton("Select##bs", (ImVec2){ 0, 0 }))
+                SelectElement(state, selectedLine->backSector, MODE_SECTOR);
+        }
     }
     else if(state->data.numSelectedElements > 1)
     {
@@ -54,7 +67,6 @@ static void LineProperties(struct EdState *state)
     else
     {
         igText("Index: -");
-        igText("RefCount: -");
     }
 }
 
@@ -67,6 +79,7 @@ static void SectorProperties(struct EdState *state)
         igInputInt("Floor Height", &selectedSector->floorHeight, 1, 10, 0);
         igInputInt("Ceiling Height", &selectedSector->ceilHeight, 1, 10, 0);
 
+        /*
         static int textureToSet = 0;
         struct Texture *floorTexture = tc_get(&state->textures, selectedSector->floorTex);
         igText("Floor");
@@ -119,6 +132,7 @@ static void SectorProperties(struct EdState *state)
                 selectedSector->ceilTex = string_copy(selectedTexture->name);
             }
         }
+        */
     }
     else if(state->data.numSelectedElements > 1)
     {

@@ -26,7 +26,7 @@ void EditRemoveLines(struct EdState state[static 1], size_t num, struct MapLine 
 // struct MapLine* EditGetLine(struct EdState *state, struct Vertex pos);
 struct MapLine* EditGetClosestLine(struct EdState state[static 1], vec2s pos, float maxDist);
 
-struct MapSector* EditAddSector(struct EdState *state, size_t numLines, struct MapLine *lines[static numLines]);
+struct MapSector* EditAddSector(struct EdState *state, size_t numLines, struct MapLine *lines[static numLines], bool lineFront[static numLines]);
 void EditRemoveSectors(struct EdState state[static 1], size_t num, struct MapSector *sectors[static num]);
 struct MapSector* EditGetSector(struct EdState state[static 1], vec2s pos);
 
