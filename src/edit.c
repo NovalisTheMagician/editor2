@@ -962,6 +962,7 @@ struct MapSector* EditAddSector(struct EdState *state, size_t numLines, struct M
     state->gl.editorSector.highestVertIndex += polygon->length;
     state->gl.editorSector.highestIndIndex += numIndices;
 
+    sector->bb = BoundingBoxFromVertices(polygon->length, sector->vertices);
     free(polygon);
 
     for(size_t i = 0; i < numLines; ++i)
