@@ -88,6 +88,7 @@ void NewMap(struct Map *map)
     map->dirty = false;
 
     map->textureScale = 1;
+    map->gravity = 9.80f;
 }
 
 bool LoadMap(struct Map *map)

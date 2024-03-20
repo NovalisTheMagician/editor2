@@ -318,7 +318,7 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
                 igEndMenu();
             }
             igSeparator();
-            igMenuItem_BoolPtr("Map Settings", "", &state->ui.showMapSettings, true);
+            //igMenuItem_BoolPtr("Map Settings", "", &state->ui.showMapSettings, true);
             igMenuItem_BoolPtr("Project Settings", "", &state->ui.showProjectSettings, true);
             igSeparator();
             igMenuItem_BoolPtr("Editor Options", "", &state->ui.showSettings, true);

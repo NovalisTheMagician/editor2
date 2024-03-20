@@ -209,27 +209,23 @@ static struct Polygon* PolygonFromSector(struct Map map[static 1], struct MapSec
 }
 */
 
-static struct Polygon* PolygonFromMapLines(size_t numLines, struct MapLine *lines[static numLines])
+static struct Polygon* PolygonFromMapLines(size_t numLines, struct MapLine *lines[static numLines], bool lineFronts[static numLines])
 {
     struct Polygon *polygon = calloc(1, sizeof *polygon + numLines * sizeof *polygon->vertices);
     polygon->length = numLines;
 
-    struct MapVertex *prevConnectingVertex = NULL;
     for(size_t i = 0; i < numLines; ++i)
     {
         struct MapLine *mapLine = lines[i];
-        if(prevConnectingVertex == NULL)
+        if(lineFronts[i])
         {
             polygon->vertices[i][0] = mapLine->a->pos.x;
             polygon->vertices[i][1] = mapLine->a->pos.y;
-            prevConnectingVertex = mapLine->b;
         }
         else
         {
-            struct MapVertex *vertex = mapLine->a == prevConnectingVertex ? mapLine->a : mapLine->b;
-             polygon->vertices[i][0] = vertex->pos.x;
-            polygon->vertices[i][1] = vertex->pos.y;
-            prevConnectingVertex = mapLine->a == prevConnectingVertex ? mapLine->b : mapLine->a;
+            polygon->vertices[i][0] = mapLine->b->pos.x;
+            polygon->vertices[i][1] = mapLine->b->pos.y;
         }
     }
 
@@ -302,6 +298,7 @@ static struct MapSector* MakeMapSector(struct EdState state[static 1], struct Ma
         // add current line to list
         sectorLines[numLines] = mapLine;
         lineFront[numLines++] = IsLineFront(mapVertex, mapLine);
+        LogDebug("Is line front %d", lineFront[numLines-1]);
 
         // get the next line with the smallest angle
         struct MapLine *nextMapLine = NULL;
@@ -343,6 +340,17 @@ static struct MapSector* MakeMapSector(struct EdState state[static 1], struct Ma
     return EditAddSector(state, numLines, sectorLines, lineFront);
 } 
 
+static struct MapLine* GetMapLine(struct Map map[static 1], struct line_t line)
+{
+    for(struct MapLine *mline = map->headLine; mline; mline = mline->next)
+    {
+        if((glms_vec2_eqv_eps(mline->a->pos, line.a) && glms_vec2_eqv_eps(mline->b->pos, line.b)) ||
+           (glms_vec2_eqv_eps(mline->b->pos, line.a) && glms_vec2_eqv_eps(mline->a->pos, line.b)))
+           return mline;
+    }
+    return NULL;
+}
+
 static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, vec2s vertices[static numVerts], bool isLoop)
 {
     struct Map *map = &state->map;
@@ -369,9 +377,15 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
 
     struct
     {
-        struct line_t lines[QUEUE_SIZE];
+        struct 
+        {
+            struct line_t line;
+            bool potentialStart;
+        } elements[QUEUE_SIZE];
         int head, tail, numLines;
     } queue = { 0 };
+    struct MapLine *startLines[QUEUE_SIZE];
+    size_t numStartLines = 0;
 
     // insert the drawn lines into queue
     for(size_t i = 0; i < end; ++i)
@@ -379,18 +393,17 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
         vec2s a = vertices[i];
         vec2s b = vertices[(i+1) % numVerts];
 
-        queue.lines[queue.tail] = (struct line_t){ .a = a, .b = b };
+        queue.elements[queue.tail] = (__typeof__(queue.elements[queue.tail])){ .line = { .a = a, .b = b }, .potentialStart = i == 0 };
         queue.tail = (queue.tail + 1) % QUEUE_SIZE;
         queue.numLines++;
 
         assert(queue.tail != queue.head);
     }
 
-    struct MapLine *startLine = NULL;
-
     while(queue.numLines > 0)
     {
-        struct line_t line = queue.lines[queue.head];
+        struct line_t line = queue.elements[queue.head].line;
+        bool potentialStart = queue.elements[queue.head].potentialStart;
         queue.head = (queue.head + 1) % QUEUE_SIZE;
         queue.numLines--;
 
@@ -422,7 +435,7 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
                         float t = LineGetPointFactor(major, minor.b);
                         if(t > 1)
                         {
-                            queue.lines[queue.tail] = (struct line_t){ .a = major.b, .b = minor.b };
+                            queue.elements[queue.tail] = (__typeof__(queue.elements[queue.tail])){ .line = { .a = major.b, .b = minor.b }, .potentialStart = true };
                             queue.tail = (queue.tail + 1) % QUEUE_SIZE;
                             queue.numLines++;
 
@@ -468,19 +481,19 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
 
                 if(!glms_vec2_eqv_eps(line.a, result.p0))
                 {
-                    queue.lines[queue.tail] = (struct line_t){ .a = line.a, .b = result.p0 };
+                    queue.elements[queue.tail] = (__typeof__(queue.elements[queue.tail])){ .line = { .a = line.a, .b = result.p0 }, .potentialStart = true };
                     queue.tail = (queue.tail + 1) % QUEUE_SIZE;
                     queue.numLines++;
                 }
 
                 if(!glms_vec2_eqv_eps(result.p0, line.b))
                 {
-                    queue.lines[queue.tail] = (struct line_t){ .a = result.p0, .b = line.b };
+                    queue.elements[queue.tail] = (__typeof__(queue.elements[queue.tail])){ .line = { .a = result.p0, .b = line.b }, .potentialStart = true };
                     queue.tail = (queue.tail + 1) % QUEUE_SIZE;
                     queue.numLines++;
                 }
 
-                mapLine = NULL; // since we are splitting the line here we should stop iterating through the rest of the map lines
+                mapLine = NULL;
 
                 assert(queue.numLines < QUEUE_SIZE);
             }
@@ -491,17 +504,17 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
                     struct MapVertex *splitVertexA = EditAddVertex(state, result.p0);
                     struct MapVertex *splitVertexB = EditAddVertex(state, result.p1);
                     struct MapLine *lineToSplit = mapLine;
-                    mapLine = NULL; // since we are splitting the line here we should stop iterating through the rest of the map lines
+                    mapLine = NULL;
                     SplitMapLine2(state, lineToSplit, splitVertexA, splitVertexB);
                 }
                 else if(result.t0 == 0)
                 {
                     struct MapVertex *splitVertex = EditAddVertex(state, result.p0);
                     struct MapLine *lineToSplit = mapLine;
-                    mapLine = NULL; // since we are splitting the line here we should stop iterating through the rest of the map lines
+                    mapLine = NULL;
                     SplitMapLine(state, lineToSplit, splitVertex);
 
-                    queue.lines[queue.tail] = (struct line_t){ .a = mline.b, .b = lineCorrected.b };
+                    queue.elements[queue.tail] = (__typeof__(queue.elements[queue.tail])){ .line = { .a = mline.b, .b = lineCorrected.b }, potentialStart = true };
                     queue.tail = (queue.tail + 1) % QUEUE_SIZE;
                     queue.numLines++;
 
@@ -511,10 +524,10 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
                 {
                     struct MapVertex *splitVertex = EditAddVertex(state, result.p1);
                     struct MapLine *lineToSplit = mapLine;
-                    mapLine = NULL; // since we are splitting the line here we should stop iterating through the rest of the map lines
+                    mapLine = NULL;
                     SplitMapLine(state, lineToSplit, splitVertex);
 
-                    queue.lines[queue.tail] = (struct line_t){ .a = mline.a, .b = lineCorrected.a };
+                    queue.elements[queue.tail] = (__typeof__(queue.elements[queue.tail])){ .line = { .a = mline.a, .b = lineCorrected.a }, potentialStart = true };
                     queue.tail = (queue.tail + 1) % QUEUE_SIZE;
                     queue.numLines++;
 
@@ -522,11 +535,11 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
                 }
                 else
                 {
-                    queue.lines[queue.tail] = (struct line_t){ .a = mline.b, .b = lineCorrected.b };
+                    queue.elements[queue.tail] = (__typeof__(queue.elements[queue.tail])){ .line = { .a = mline.b, .b = lineCorrected.b }, potentialStart = true };
                     queue.tail = (queue.tail + 1) % QUEUE_SIZE;
                     queue.numLines++;
 
-                    queue.lines[queue.tail] = (struct line_t){ .a = lineCorrected.a, .b = mline.a };
+                    queue.elements[queue.tail] = (__typeof__(queue.elements[queue.tail])){ .line = { .a = lineCorrected.a, .b = mline.a }, potentialStart = true };
                     queue.tail = (queue.tail + 1) % QUEUE_SIZE;
                     queue.numLines++;
 
@@ -549,7 +562,7 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
             struct MapLine *line = EditAddLine(state, mva, mvb);
             if(!line) return false;
 
-            if(startLine == NULL) startLine = line;
+            if(potentialStart) startLines[numStartLines++] = line;
         }
 
         didIntersect |= !canInsertLine;
@@ -558,11 +571,25 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
     // create sectors from the new lines
     if(isLoop)
     {
-        MakeMapSector(state, startLine, true);
+        if(numStartLines == 0) // no lines were added, possibly filling an empty space surrounded by existing lines
+        {
+            struct MapLine *l = GetMapLine(map, (struct line_t){ .a = vertices[0], .b = vertices[1] });
+            assert(l);
+            if(!(l->frontSector != NULL && l->backSector != NULL))
+                MakeMapSector(state, l, l->frontSector == NULL);
+        }
+        else
+        {
+            for(size_t i = 0; i < numStartLines; ++i)
+            {
+                if(startLines[i]->frontSector == NULL)
+                    MakeMapSector(state, startLines[i], true);
+            }
+        }
     }
     else if(didIntersect) // not a loop but lines did intersect: update sectors from the touched lines
     {
-
+        // ??
     }
 
     return true;
@@ -933,7 +960,7 @@ struct MapSector* EditAddSector(struct EdState *state, size_t numLines, struct M
     }
     map->tailSector = sector;
 
-    struct Polygon *polygon = PolygonFromMapLines(numLines, lines);
+    struct Polygon *polygon = PolygonFromMapLines(numLines, lines, lineFronts);
 
     sector->vertices = calloc(polygon->length, sizeof *sector->vertices);
     memcpy(sector->vertices, polygon->vertices, polygon->length * sizeof *polygon->vertices);

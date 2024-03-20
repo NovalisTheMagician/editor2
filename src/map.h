@@ -104,6 +104,7 @@ struct Map
     pstring file;
 
     int textureScale;
+    float gravity;
 };
 
 void FreeMapVertex(struct MapVertex *vertex);

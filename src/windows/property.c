@@ -22,7 +22,10 @@ static void CenterVertex(struct EdState *state, struct MapVertex *vertex)
 
 static void CenterLine(struct EdState *state, struct MapLine *line)
 {
-
+    vec2s d = glms_vec2_sub(line->b->pos, line->a->pos);
+    d = glms_vec2_scale(d, 0.5f);
+    d = glms_vec2_add(d, line->a->pos);
+    GotoPos(state, d);
 }
 
 static void CenterSector(struct EdState *state, struct MapSector *sector)
@@ -35,7 +38,8 @@ static void CenterSector(struct EdState *state, struct MapSector *sector)
 
 static void MapProperties(struct EdState *state)
 {
-
+    igSliderInt("Texture Scale", &state->map.textureScale, 1, 10, "%dX", 0);
+    igInputFloat("Gravity", &state->map.gravity, 0.01f, 0.1f, "%.2f", 0);
 }
 
 static void VertexProperties(struct EdState *state)
@@ -44,6 +48,23 @@ static void VertexProperties(struct EdState *state)
     {
         struct MapVertex *selectedVertex = state->data.selectedElements[0];
         igText("Index: %d", selectedVertex->idx);
+
+        igText("Attached lines: %d", selectedVertex->numAttachedLines);
+        igSeparatorEx(0, 2);
+        for(size_t i = 0; i < selectedVertex->numAttachedLines; ++i)
+        {
+            struct MapLine *line = selectedVertex->attachedLines[i];
+            igText("Line %lld:", line->idx);
+            igSameLine(0, 4);
+            char label[32] = {0};
+            snprintf(label, sizeof label, "Select##id%lld", line->idx);
+            if(igButton(label, (ImVec2){ 0, 0 }))
+            {
+                SelectElement(state, line, MODE_LINE);
+                CenterLine(state, line);
+                igSetWindowFocus_Str("Editor");
+            }
+        }
     }
     else if(state->data.numSelectedElements > 1)
     {
@@ -74,9 +95,9 @@ static void LineProperties(struct EdState *state)
             igSetWindowFocus_Str("Editor");
         }
         //igText("Normal: %d", selectedLine->normal);
-        igText("Front Sector: %d", selectedLine->frontSector ? selectedLine->frontSector->idx : -1);
         if(selectedLine->frontSector)
         {
+            igText("Front Sector: %d", selectedLine->frontSector->idx);
             igSameLine(0, 4);
             if(igButton("Select##fs", (ImVec2){ 0, 0 }))
             {
@@ -85,9 +106,9 @@ static void LineProperties(struct EdState *state)
                 igSetWindowFocus_Str("Editor");
             }
         }
-        igText("Back Sector: %d", selectedLine->backSector ? selectedLine->backSector->idx : -1);
         if(selectedLine->backSector)
         {
+            igText("Back Sector: %d", selectedLine->backSector->idx);
             igSameLine(0, 4);
             if(igButton("Select##bs", (ImVec2){ 0, 0 }))
             {
