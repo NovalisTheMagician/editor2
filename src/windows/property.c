@@ -57,7 +57,7 @@ static void VertexProperties(struct EdState *state)
             igText("Line %lld:", line->idx);
             igSameLine(0, 4);
             char label[32] = {0};
-            snprintf(label, sizeof label, "Select##id%lld", line->idx);
+            snprintf(label, sizeof label, "Select##id%zu", line->idx);
             if(igButton(label, (ImVec2){ 0, 0 }))
             {
                 SelectElement(state, line, MODE_LINE);
@@ -77,8 +77,8 @@ static void LineProperties(struct EdState *state)
     if(state->data.numSelectedElements == 1)
     {
         struct MapLine *selectedLine = state->data.selectedElements[0];
-        igText("Index: %d", selectedLine->idx);
-        igText("Vertex A: %d", selectedLine->a->idx);
+        igText("Index: %zu", selectedLine->idx);
+        igText("Vertex A: %zu", selectedLine->a->idx);
         igSameLine(0, 4);
         if(igButton("Select##a", (ImVec2){ 0, 0 }))
         {
@@ -86,7 +86,7 @@ static void LineProperties(struct EdState *state)
             CenterVertex(state, selectedLine->a);
             igSetWindowFocus_Str("Editor");
         }
-        igText("Vertex B: %d", selectedLine->b->idx);
+        igText("Vertex B: %zu", selectedLine->b->idx);
         igSameLine(0, 4);
         if(igButton("Select##b", (ImVec2){ 0, 0 }))
         {
@@ -97,7 +97,7 @@ static void LineProperties(struct EdState *state)
         //igText("Normal: %d", selectedLine->normal);
         if(selectedLine->frontSector)
         {
-            igText("Front Sector: %d", selectedLine->frontSector->idx);
+            igText("Front Sector: %zu", selectedLine->frontSector->idx);
             igSameLine(0, 4);
             if(igButton("Select##fs", (ImVec2){ 0, 0 }))
             {
@@ -108,7 +108,7 @@ static void LineProperties(struct EdState *state)
         }
         if(selectedLine->backSector)
         {
-            igText("Back Sector: %d", selectedLine->backSector->idx);
+            igText("Back Sector: %zu", selectedLine->backSector->idx);
             igSameLine(0, 4);
             if(igButton("Select##bs", (ImVec2){ 0, 0 }))
             {
