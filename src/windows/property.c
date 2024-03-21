@@ -38,12 +38,14 @@ static void CenterSector(struct EdState *state, struct MapSector *sector)
 
 static void MapProperties(struct EdState *state)
 {
+    igSeparatorTextEx(0, "Map Properties", NULL, 0);
     igSliderInt("Texture Scale", &state->map.textureScale, 1, 10, "%dX", 0);
     igInputFloat("Gravity", &state->map.gravity, 0.01f, 0.1f, "%.2f", 0);
 }
 
 static void VertexProperties(struct EdState *state)
 {
+    igSeparatorTextEx(0, "Vertex Properties", NULL, 0);
     if(state->data.numSelectedElements == 1)
     {
         struct MapVertex *selectedVertex = state->data.selectedElements[0];
@@ -74,6 +76,7 @@ static void VertexProperties(struct EdState *state)
 
 static void LineProperties(struct EdState *state)
 {
+    igSeparatorTextEx(0, "Line Properties", NULL, 0);
     if(state->data.numSelectedElements == 1)
     {
         struct MapLine *selectedLine = state->data.selectedElements[0];
@@ -126,12 +129,13 @@ static void LineProperties(struct EdState *state)
 
 static void SectorProperties(struct EdState *state)
 {
+    igSeparatorTextEx(0, "Sector Properties", NULL, 0);
     if(state->data.numSelectedElements == 1)
     {
         struct MapSector *selectedSector = state->data.selectedElements[0];
         igText("Index: %d", selectedSector->idx);
-        igInputInt("Floor Height", &selectedSector->floorHeight, 1, 10, 0);
-        igInputInt("Ceiling Height", &selectedSector->ceilHeight, 1, 10, 0);
+        igInputInt("Floor Height", &selectedSector->data.floorHeight, 1, 10, 0);
+        igInputInt("Ceiling Height", &selectedSector->data.ceilHeight, 1, 10, 0);
 
         /*
         static int textureToSet = 0;

@@ -13,6 +13,16 @@
 		},
 		{
 			"type": "shell",
+			"label": "rebuild",
+			"command": "make -B CC=gcc",
+			"args": [],
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": "build"
+		},
+		{
+			"type": "shell",
 			"label": "clean",
 			"command": "make clean",
 			"args": [],

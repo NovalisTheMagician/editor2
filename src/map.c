@@ -33,6 +33,16 @@ static void FreeSectorList(struct MapSector *head)
     }
 }
 
+struct LineData DefaultLineData(void)
+{
+    return (struct LineData){ .type = LT_NORMAL };
+}
+
+struct SectorData DefaultSectorData(void)
+{
+    return (struct SectorData){ .type = ST_NORMAL };
+}
+
 void FreeMapVertex(struct MapVertex *vertex)
 {
     free(vertex);
@@ -40,19 +50,19 @@ void FreeMapVertex(struct MapVertex *vertex)
 
 void FreeMapLine(struct MapLine *line)
 {
-    string_free(line->front.lowerTex);
-    string_free(line->front.middleTex);
-    string_free(line->front.upperTex);
-    string_free(line->back.lowerTex);
-    string_free(line->back.middleTex);
-    string_free(line->back.upperTex);
+    string_free(line->data.front.lowerTex);
+    string_free(line->data.front.middleTex);
+    string_free(line->data.front.upperTex);
+    string_free(line->data.back.lowerTex);
+    string_free(line->data.back.middleTex);
+    string_free(line->data.back.upperTex);
     free(line);
 }
 
 void FreeMapSector(struct MapSector *sector)
 {
-    string_free(sector->ceilTex);
-    string_free(sector->floorTex);
+    string_free(sector->data.ceilTex);
+    string_free(sector->data.floorTex);
     free(sector->vertices);
 
     free(sector->outerLines);

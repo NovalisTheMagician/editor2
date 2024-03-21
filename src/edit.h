@@ -21,12 +21,12 @@ void EditRemoveVertices(struct EdState state[static 1], size_t num, struct MapVe
 struct MapVertex* EditGetVertex(struct EdState state[static 1], vec2s pos);
 struct MapVertex* EditGetClosestVertex(struct EdState state[static 1], vec2s pos, float maxDist);
 
-struct MapLine* EditAddLine(struct EdState state[static 1], struct MapVertex v0[static 1], struct MapVertex v1[static 1]);
+struct MapLine* EditAddLine(struct EdState state[static 1], struct MapVertex v0[static 1], struct MapVertex v1[static 1], struct LineData data);
 void EditRemoveLines(struct EdState state[static 1], size_t num, struct MapLine *lines[static num]);
 // struct MapLine* EditGetLine(struct EdState *state, struct Vertex pos);
 struct MapLine* EditGetClosestLine(struct EdState state[static 1], vec2s pos, float maxDist);
 
-struct MapSector* EditAddSector(struct EdState *state, size_t numLines, struct MapLine *lines[static numLines], bool lineFront[static numLines]);
+struct MapSector* EditAddSector(struct EdState *state, size_t numLines, struct MapLine *lines[static numLines], bool lineFront[static numLines], struct SectorData data);
 void EditRemoveSectors(struct EdState state[static 1], size_t num, struct MapSector *sectors[static num]);
 struct MapSector* EditGetSector(struct EdState state[static 1], vec2s pos);
 
