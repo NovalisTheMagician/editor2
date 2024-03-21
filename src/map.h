@@ -45,20 +45,33 @@ struct Side
     pstring lowerTex;
 };
 
+struct LineData
+{
+    struct Side front, back;
+    uint32_t type;
+};
+
 struct MapLine
 {
     struct MapVertex *a, *b;
     size_t aVertIndex, bVertIndex;
-    uint32_t type;
-    
-    int32_t normal;
 
-    struct Side front, back;
-
+    struct LineData data;
     struct MapSector *frontSector, *backSector;
 
     size_t idx;
     struct MapLine *next, *prev;
+};
+
+struct SectorData
+{
+    uint32_t type;
+
+    int32_t floorHeight;
+    int32_t ceilHeight;
+
+    pstring floorTex;
+    pstring ceilTex;
 };
 
 struct MapSector
@@ -66,7 +79,6 @@ struct MapSector
     struct MapLine **outerLines;
     size_t numOuterLines;
     vec2s *vertices;
-    uint32_t type;
 
     struct MapLine ***innerLines;
     size_t *numInnerLinesNum;
@@ -76,11 +88,7 @@ struct MapSector
     struct MapSector **contains;
     size_t numContains;
 
-    int32_t floorHeight;
-    int32_t ceilHeight;
-
-    pstring floorTex;
-    pstring ceilTex;
+    struct SectorData data;
 
     struct BoundingBox bb;
 
@@ -106,6 +114,9 @@ struct Map
     int textureScale;
     float gravity;
 };
+
+struct LineData DefaultLineData(void);
+struct SectorData DefaultSectorData(void);
 
 void FreeMapVertex(struct MapVertex *vertex);
 void FreeMapLine(struct MapLine *line);

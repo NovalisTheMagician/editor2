@@ -109,6 +109,54 @@ static void RemoveLine(struct Map map[static 1], struct MapLine line[static 1])
     map->dirty = true;
 }
 
+static void RemoveSector(struct Map map[static 1], struct MapSector sector[static 1])
+{
+    struct MapSector *prev = sector->prev;
+    struct MapSector *next = sector->next;
+
+    if(prev == NULL && next == NULL)
+    {
+        map->headSector = map->tailSector = NULL;
+    }
+    else if(sector == map->headSector)
+    {
+        next->prev = NULL;
+        map->headSector = next;
+    }
+    else if(sector == map->tailSector)
+    {
+        prev->next = NULL;
+        map->tailSector = prev;
+    }
+    else
+    {
+        prev->next = next;
+        next->prev = prev;
+    }
+
+    for(size_t i = 0; i < sector->numOuterLines; ++i)
+    {
+        // RemoveLine(state, sector->outerLines[i]);
+        struct MapLine *line = sector->outerLines[i];
+        if(line->frontSector == sector) line->frontSector = NULL;
+        if(line->backSector == sector) line->backSector = NULL;
+    }
+
+    /*
+    for(size_t i = 0; i < sector->numInnerLines; ++i)
+    {
+        for(size_t j = 0; j < sector->numInnerLinesNum[i]; ++j)
+        {
+            RemoveLine(state, sector->innerLines[i][j]);
+        }
+    }
+    */
+    FreeMapSector(sector);
+
+    map->numSectors--;
+    map->dirty = true;
+}
+
 /*
 static struct MapLine* FindLine(struct EdState state[static 1], vec2s a, vec2s b)
 {
@@ -232,49 +280,44 @@ static struct Polygon* PolygonFromMapLines(size_t numLines, struct MapLine *line
     return polygon;
 }
 
-static void SplitMapLine(struct EdState state[static 1], struct MapLine line[static 1], struct MapVertex vertex[static 1])
+struct SplitResult
+{
+    struct MapLine *left, *right, *middle;
+};
+
+static struct SplitResult SplitMapLine(struct EdState state[static 1], struct MapLine line[static 1], struct MapVertex vertex[static 1])
 {
     struct Map *map = &state->map;
 
-    struct Side frontCopy = line->front;
-    struct Side backCopy = line->back;
+    struct LineData dataCopy = line->data;
 
     struct MapVertex *va = line->a;
     struct MapVertex *vb = line->b;
 
     RemoveLine(map, line);
 
-    struct MapLine *newA = EditAddLine(state, va, vertex);
-    struct MapLine *newB = EditAddLine(state, vertex, vb);
+    struct MapLine *newA = EditAddLine(state, va, vertex, dataCopy);
+    struct MapLine *newB = EditAddLine(state, vertex, vb, dataCopy);
 
-    newA->front = frontCopy;
-    newA->back = backCopy;
-    newB->front = frontCopy;
-    newB->back = backCopy;
+    return (struct SplitResult){ .left = newA, .right = newB };
 }
 
-static void SplitMapLine2(struct EdState state[static 1], struct MapLine line[static 1], struct MapVertex vertexA[static 1], struct MapVertex vertexB[static 1])
+static struct SplitResult SplitMapLine2(struct EdState state[static 1], struct MapLine line[static 1], struct MapVertex vertexA[static 1], struct MapVertex vertexB[static 1])
 {
     struct Map *map = &state->map;
 
-    struct Side frontCopy = line->front;
-    struct Side backCopy = line->back;
+    struct LineData dataCopy = line->data;
 
     struct MapVertex *va = line->a;
     struct MapVertex *vb = line->b;
 
     RemoveLine(map, line);
 
-    struct MapLine *newStart = EditAddLine(state, va, vertexA);
-    struct MapLine *newMiddle = EditAddLine(state, vertexA, vertexB);
-    struct MapLine *newEnd = EditAddLine(state, vertexB, vb);
+    struct MapLine *newStart = EditAddLine(state, va, vertexA, dataCopy);
+    struct MapLine *newMiddle = EditAddLine(state, vertexA, vertexB, dataCopy);
+    struct MapLine *newEnd = EditAddLine(state, vertexB, vb, dataCopy);
 
-    newStart->front = frontCopy;
-    newStart->back = backCopy;
-    newMiddle->front = frontCopy;
-    newMiddle->back = backCopy;
-    newEnd->front = frontCopy;
-    newEnd->back = backCopy;
+    return (struct SplitResult){ .left = newStart, .middle = newMiddle, .right = newEnd };
 }
 
 static bool IsLineFront(struct MapVertex *v1, struct MapLine *line)
@@ -283,7 +326,7 @@ static bool IsLineFront(struct MapVertex *v1, struct MapLine *line)
     return v1 == line->a;
 }
 
-static struct MapSector* MakeMapSector(struct EdState state[static 1], struct MapLine startLine[static 1], bool front)
+static struct MapSector* MakeMapSector(struct EdState state[static 1], struct MapLine startLine[static 1], bool front, struct SectorData data)
 {
     // front means natural direction
     struct MapLine *sectorLines[1024] = {0};
@@ -337,7 +380,7 @@ static struct MapSector* MakeMapSector(struct EdState state[static 1], struct Ma
     }
 
     LogDebug("Found a loop with %d lines", numLines);
-    return EditAddSector(state, numLines, sectorLines, lineFront);
+    return EditAddSector(state, numLines, sectorLines, lineFront, data);
 } 
 
 static struct MapLine* GetMapLine(struct Map map[static 1], struct line_t line)
@@ -384,8 +427,91 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
         } elements[QUEUE_SIZE];
         int head, tail, numLines;
     } queue = { 0 };
+#define Enqueue(c, d, p) do{ queue.elements[queue.tail] = (__typeof__(queue.elements[queue.tail])){ .line = { .a = c, .b = d }, .potentialStart = p }; queue.tail = (queue.tail + 1) % QUEUE_SIZE; queue.numLines++; }while(0)
+
     struct MapLine *startLines[QUEUE_SIZE];
     size_t numStartLines = 0;
+
+    struct
+    {
+        struct MapLine *line;
+        struct SectorData sectorData;
+        bool front;
+        bool valid;
+    } sectorsToUpdate[QUEUE_SIZE];
+    size_t numSectorsToUpdate = 0;
+#define RemoveSectorUpdate(l) do{ for(size_t i = 0; i < numSectorsToUpdate; ++i) { if(sectorsToUpdate[i].line == (l)) { sectorsToUpdate[i].valid = false; break; }}}while(0)
+#define DoSplit(v, l) do {\
+                            struct SectorData frontData = DefaultSectorData();          \
+                            struct SectorData backData = DefaultSectorData();           \
+                            bool hasFrontSector = l->frontSector != NULL;               \
+                            bool hasBackSector = l->backSector != NULL;                 \
+                            bool hasSectorsAttached = hasFrontSector || hasBackSector;  \
+                                                                                        \
+                            if(hasFrontSector)                                          \
+                            {                                                           \
+                                frontData = l->frontSector->data;                       \
+                                RemoveSector(map, l->frontSector);                      \
+                            }                                                           \
+                            if(hasBackSector)                                           \
+                            {                                                           \
+                                backData = l->backSector->data;                         \
+                                RemoveSector(map, l->backSector);                       \
+                            }                                                           \
+                                                                                        \
+                            if(hasSectorsAttached) RemoveSectorUpdate(l);               \
+                            struct SplitResult result = SplitMapLine(state, l, v);      \
+                            if(hasSectorsAttached)                                      \
+                            {                                                           \
+                                if(hasFrontSector)                                      \
+                                {                                                       \
+                                    sectorsToUpdate[numSectorsToUpdate++] = (__typeof__(sectorsToUpdate[numSectorsToUpdate-1])){ .line = result.left, .sectorData = frontData, .valid = true, .front = true }; \
+                                    sectorsToUpdate[numSectorsToUpdate++] = (__typeof__(sectorsToUpdate[numSectorsToUpdate-1])){ .line = result.right, .sectorData = frontData, .valid = true, .front = true }; \
+                                }                                                       \
+                                if(hasBackSector)                                       \
+                                {                                                       \
+                                    sectorsToUpdate[numSectorsToUpdate++] = (__typeof__(sectorsToUpdate[numSectorsToUpdate-1])){ .line = result.left, .sectorData = backData, .valid = true, .front = false }; \
+                                    sectorsToUpdate[numSectorsToUpdate++] = (__typeof__(sectorsToUpdate[numSectorsToUpdate-1])){ .line = result.right, .sectorData = backData, .valid = true, .front = false }; \
+                                }                                                       \
+                            }                                                           \
+                        }while(0)
+
+#define DoSplit2(va, vb, l) do {\
+                            struct SectorData frontData = DefaultSectorData();          \
+                            struct SectorData backData = DefaultSectorData();           \
+                            bool hasFrontSector = l->frontSector != NULL;               \
+                            bool hasBackSector = l->backSector != NULL;                 \
+                            bool hasSectorsAttached = hasFrontSector || hasBackSector;  \
+                                                                                        \
+                            if(hasFrontSector)                                          \
+                            {                                                           \
+                                frontData = l->frontSector->data;                       \
+                                RemoveSector(map, l->frontSector);                      \
+                            }                                                           \
+                            if(hasBackSector)                                           \
+                            {                                                           \
+                                backData = l->backSector->data;                         \
+                                RemoveSector(map, l->backSector);                       \
+                            }                                                           \
+                                                                                        \
+                            if(hasSectorsAttached) RemoveSectorUpdate(l);               \
+                            struct SplitResult result = SplitMapLine2(state, l, va, vb);\
+                            if(hasSectorsAttached)                                      \
+                            {                                                           \
+                                if(hasFrontSector)                                      \
+                                {                                                       \
+                                    sectorsToUpdate[numSectorsToUpdate++] = (__typeof__(sectorsToUpdate[numSectorsToUpdate-1])){ .line = result.left, .sectorData = frontData, .valid = true, .front = true }; \
+                                    sectorsToUpdate[numSectorsToUpdate++] = (__typeof__(sectorsToUpdate[numSectorsToUpdate-1])){ .line = result.right, .sectorData = frontData, .valid = true, .front = true }; \
+                                    sectorsToUpdate[numSectorsToUpdate++] = (__typeof__(sectorsToUpdate[numSectorsToUpdate-1])){ .line = result.middle, .sectorData = frontData, .valid = true, .front = true }; \
+                                }                                                       \
+                                if(hasBackSector)                                       \
+                                {                                                       \
+                                    sectorsToUpdate[numSectorsToUpdate++] = (__typeof__(sectorsToUpdate[numSectorsToUpdate-1])){ .line = result.left, .sectorData = backData, .valid = true, .front = false }; \
+                                    sectorsToUpdate[numSectorsToUpdate++] = (__typeof__(sectorsToUpdate[numSectorsToUpdate-1])){ .line = result.right, .sectorData = backData, .valid = true, .front = false }; \
+                                    sectorsToUpdate[numSectorsToUpdate++] = (__typeof__(sectorsToUpdate[numSectorsToUpdate-1])){ .line = result.middle, .sectorData = backData, .valid = true, .front = false }; \
+                                }                                                       \
+                            }                                                           \
+                        }while(0)
 
     // insert the drawn lines into queue
     for(size_t i = 0; i < end; ++i)
@@ -435,9 +561,7 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
                         float t = LineGetPointFactor(major, minor.b);
                         if(t > 1)
                         {
-                            queue.elements[queue.tail] = (__typeof__(queue.elements[queue.tail])){ .line = { .a = major.b, .b = minor.b }, .potentialStart = true };
-                            queue.tail = (queue.tail + 1) % QUEUE_SIZE;
-                            queue.numLines++;
+                            Enqueue(major.b, minor.b, false);
 
                             assert(queue.numLines < QUEUE_SIZE);
                         }
@@ -445,8 +569,8 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
                         {
                             struct MapVertex *splitVertex = EditAddVertex(state, minor.b);
                             struct MapLine *lineToSplit = mapLine;
+                            DoSplit(splitVertex, lineToSplit);
                             mapLine = NULL; // since we are splitting the line here we should stop iterating through the rest of the map lines
-                            SplitMapLine(state, lineToSplit, splitVertex);
                         }
                         canInsertLine = false;
                         break;
@@ -476,21 +600,18 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
                 {
                     struct MapVertex *splitVertex = EditAddVertex(state, result.p0);
                     struct MapLine *lineToSplit = mapLine;
-                    SplitMapLine(state, lineToSplit, splitVertex);
+                    //SplitMapLine(state, lineToSplit, splitVertex);
+                    DoSplit(splitVertex, lineToSplit);
                 }
 
                 if(!glms_vec2_eqv_eps(line.a, result.p0))
                 {
-                    queue.elements[queue.tail] = (__typeof__(queue.elements[queue.tail])){ .line = { .a = line.a, .b = result.p0 }, .potentialStart = true };
-                    queue.tail = (queue.tail + 1) % QUEUE_SIZE;
-                    queue.numLines++;
+                    Enqueue(line.a, result.p0, true);
                 }
 
                 if(!glms_vec2_eqv_eps(result.p0, line.b))
                 {
-                    queue.elements[queue.tail] = (__typeof__(queue.elements[queue.tail])){ .line = { .a = result.p0, .b = line.b }, .potentialStart = true };
-                    queue.tail = (queue.tail + 1) % QUEUE_SIZE;
-                    queue.numLines++;
+                    Enqueue(result.p0, line.b, true);
                 }
 
                 mapLine = NULL;
@@ -505,18 +626,18 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
                     struct MapVertex *splitVertexB = EditAddVertex(state, result.p1);
                     struct MapLine *lineToSplit = mapLine;
                     mapLine = NULL;
-                    SplitMapLine2(state, lineToSplit, splitVertexA, splitVertexB);
+                    //SplitMapLine2(state, lineToSplit, splitVertexA, splitVertexB);
+                    DoSplit2(splitVertexA, splitVertexB, lineToSplit);
                 }
                 else if(result.t0 == 0)
                 {
                     struct MapVertex *splitVertex = EditAddVertex(state, result.p0);
                     struct MapLine *lineToSplit = mapLine;
                     mapLine = NULL;
-                    SplitMapLine(state, lineToSplit, splitVertex);
+                    //SplitMapLine(state, lineToSplit, splitVertex);
+                    DoSplit(splitVertex, lineToSplit);
 
-                    queue.elements[queue.tail] = (__typeof__(queue.elements[queue.tail])){ .line = { .a = mline.b, .b = lineCorrected.b }, potentialStart = true };
-                    queue.tail = (queue.tail + 1) % QUEUE_SIZE;
-                    queue.numLines++;
+                    Enqueue(mline.b, lineCorrected.b, true);
 
                     assert(queue.numLines < QUEUE_SIZE);
                 }
@@ -525,23 +646,17 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
                     struct MapVertex *splitVertex = EditAddVertex(state, result.p1);
                     struct MapLine *lineToSplit = mapLine;
                     mapLine = NULL;
-                    SplitMapLine(state, lineToSplit, splitVertex);
+                    //SplitMapLine(state, lineToSplit, splitVertex);
+                    DoSplit(splitVertex, lineToSplit);
 
-                    queue.elements[queue.tail] = (__typeof__(queue.elements[queue.tail])){ .line = { .a = mline.a, .b = lineCorrected.a }, potentialStart = true };
-                    queue.tail = (queue.tail + 1) % QUEUE_SIZE;
-                    queue.numLines++;
+                    Enqueue(mline.a, lineCorrected.a, true);
 
                     assert(queue.numLines < QUEUE_SIZE);
                 }
                 else
                 {
-                    queue.elements[queue.tail] = (__typeof__(queue.elements[queue.tail])){ .line = { .a = mline.b, .b = lineCorrected.b }, potentialStart = true };
-                    queue.tail = (queue.tail + 1) % QUEUE_SIZE;
-                    queue.numLines++;
-
-                    queue.elements[queue.tail] = (__typeof__(queue.elements[queue.tail])){ .line = { .a = lineCorrected.a, .b = mline.a }, potentialStart = true };
-                    queue.tail = (queue.tail + 1) % QUEUE_SIZE;
-                    queue.numLines++;
+                    Enqueue(mline.b, lineCorrected.b, true);
+                    Enqueue(lineCorrected.a, mline.a, true);
 
                     mapLine = NULL;
 
@@ -559,13 +674,29 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
             struct MapVertex *mvb = EditAddVertex(state, line.b);
             if(!mva || !mvb) return false;
 
-            struct MapLine *line = EditAddLine(state, mva, mvb);
+            struct MapLine *line = EditAddLine(state, mva, mvb, DefaultLineData());
             if(!line) return false;
 
             if(potentialStart) startLines[numStartLines++] = line;
         }
 
         didIntersect |= !canInsertLine;
+    }
+
+#undef RemoveSectorUpdate
+#undef DoSplit
+#undef DoSplit2
+#undef Enqueue
+
+    for(size_t i = 0; i < numSectorsToUpdate; ++i)
+    {
+        if(!sectorsToUpdate[i].valid) continue;
+        bool front = sectorsToUpdate[i].front;
+        struct MapLine *line = sectorsToUpdate[i].line;
+        struct SectorData data = sectorsToUpdate[i].sectorData;
+        if(front && line->frontSector != NULL) continue;
+        if(!front && line->backSector != NULL) continue;
+        MakeMapSector(state, line, front, data);
     }
 
     // create sectors from the new lines
@@ -576,20 +707,16 @@ static bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, 
             struct MapLine *l = GetMapLine(map, (struct line_t){ .a = vertices[0], .b = vertices[1] });
             assert(l);
             if(!(l->frontSector != NULL && l->backSector != NULL))
-                MakeMapSector(state, l, l->frontSector == NULL);
+                MakeMapSector(state, l, l->frontSector == NULL, DefaultSectorData());
         }
         else
         {
             for(size_t i = 0; i < numStartLines; ++i)
             {
                 if(startLines[i]->frontSector == NULL)
-                    MakeMapSector(state, startLines[i], true);
+                    MakeMapSector(state, startLines[i], true, DefaultSectorData());
             }
         }
-    }
-    else if(didIntersect) // not a loop but lines did intersect: update sectors from the touched lines
-    {
-        // ??
     }
 
     return true;
@@ -814,7 +941,7 @@ struct MapVertex* EditGetClosestVertex(struct EdState state[static 1], vec2s pos
     return closestVertex;
 }
 
-struct MapLine* EditAddLine(struct EdState state[static 1], struct MapVertex v0[static 1], struct MapVertex v1[static 1])
+struct MapLine* EditAddLine(struct EdState state[static 1], struct MapVertex v0[static 1], struct MapVertex v1[static 1], struct LineData data)
 {
     struct Map *map = &state->map;
 
@@ -830,16 +957,15 @@ struct MapLine* EditAddLine(struct EdState state[static 1], struct MapVertex v0[
 
     const vec2s vert0 = v0->pos;
     const vec2s vert1 = v1->pos;
-    int32_t normal = sign((vert0.x*vert1.y) - (vert0.y*vert1.x));
 
     static size_t lineIndex = 0;
 
     struct MapLine *line = calloc(1, sizeof *line);
     line->a = v0;
     line->b = v1;
-    line->normal = normal;
     line->idx = lineIndex++;
     line->prev = map->tailLine;
+    line->data = data;
 
     v0->attachedLines[v0->numAttachedLines] = line;
     line->aVertIndex = v0->numAttachedLines;
@@ -932,7 +1058,7 @@ struct MapLine* EditGetClosestLine(struct EdState state[static 1], vec2s pos, fl
     return closestLine;
 }
 
-struct MapSector* EditAddSector(struct EdState *state, size_t numLines, struct MapLine *lines[static numLines], bool lineFronts[static numLines])
+struct MapSector* EditAddSector(struct EdState *state, size_t numLines, struct MapLine *lines[static numLines], bool lineFronts[static numLines], struct SectorData data)
 {
     struct Map *map = &state->map;
 
@@ -944,6 +1070,7 @@ struct MapSector* EditAddSector(struct EdState *state, size_t numLines, struct M
     memcpy(sector->outerLines, lines, sector->numOuterLines * sizeof *sector->outerLines);
     sector->idx = sectorIndex++;
     sector->prev = map->tailSector;
+    sector->data = data;
 
     if(map->headSector == NULL)
     {
@@ -1012,55 +1139,7 @@ void EditRemoveSectors(struct EdState state[static 1], size_t num, struct MapSec
     for(size_t i = 0; i < num; ++i)
     {
         struct MapSector *sector = sectors[i];
-
-        struct MapSector *prev = sector->prev;
-        struct MapSector *next = sector->next;
-
-        for(struct MapSector *s = next; s; s = s->next)
-        {
-            s->idx--;
-        }
-
-        if(prev == NULL && next == NULL)
-        {
-            map->headSector = map->tailSector = NULL;
-        }
-        else if(sector == map->headSector)
-        {
-            next->prev = NULL;
-            map->headSector = next;
-        }
-        else if(sector == map->tailSector)
-        {
-            prev->next = NULL;
-            map->tailSector = prev;
-        }
-        else
-        {
-            prev->next = next;
-            next->prev = prev;
-        }
-
-        for(size_t i = 0; i < sector->numOuterLines; ++i)
-        {
-            // RemoveLine(state, sector->outerLines[i]);
-            struct MapLine *line = sector->outerLines[i];
-            if(line->frontSector == sector) line->frontSector = NULL;
-            if(line->backSector == sector) line->backSector = NULL;
-        }
-
-        /*
-        for(size_t i = 0; i < sector->numInnerLines; ++i)
-        {
-            for(size_t j = 0; j < sector->numInnerLinesNum[i]; ++j)
-            {
-                RemoveLine(state, sector->innerLines[i][j]);
-            }
-        }
-        */
-        FreeMapSector(sector);
-
-        map->numSectors--;
+        RemoveSector(map, sector);
     }
 
     map->dirty = true;
