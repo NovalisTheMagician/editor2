@@ -134,15 +134,16 @@ void RemoveSector(struct Map map[static 1], struct MapSector sector[static 1])
         if(line->backSector == sector) line->backSector = NULL;
     }
 
-    /*
     for(size_t i = 0; i < sector->numInnerLines; ++i)
     {
         for(size_t j = 0; j < sector->numInnerLinesNum[i]; ++j)
         {
-            RemoveLine(state, sector->innerLines[i][j]);
+            //RemoveLine(state, sector->innerLines[i][j]);
+            struct MapLine *line = sector->innerLines[i][j];
+            if(line->frontSector == sector) line->frontSector = NULL;
+            if(line->backSector == sector) line->backSector = NULL;
         }
     }
-    */
     FreeMapSector(sector);
 
     map->numSectors--;

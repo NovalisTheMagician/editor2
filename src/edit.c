@@ -239,12 +239,12 @@ struct MapSector* EditAddSector(struct EdState *state, size_t numLines, struct M
     size_t index = baseVertexIndex;
     for(size_t i = 0; i < polygon->length; ++i)
     {
-        int32_t x = polygon->vertices[i][0];
-        int32_t y = polygon->vertices[i][1];
+        float x = polygon->vertices[i][0];
+        float y = polygon->vertices[i][1];
         state->gl.editorSector.bufferMap[index++] = (struct SectorVertexType){ .position = {{ x, y }}, .color = { 1, 1, 1, 1 }, .texCoord = {{ 0, 0 }} };
     }
     unsigned int *indices = NULL;
-    unsigned long numIndices = triangulate(polygon, NULL, 0, &indices);
+    size_t numIndices = triangulate(polygon, NULL, 0, &indices);
 
     index = baseIndexIndex;
     for(size_t i = 0; i < numIndices; ++i)
@@ -260,16 +260,6 @@ struct MapSector* EditAddSector(struct EdState *state, size_t numLines, struct M
     sector->bb = BoundingBoxFromVertices(polygon->length, sector->vertices);
     free(polygon);
 
-    for(size_t i = 0; i < numLines; ++i)
-    {
-        struct MapLine *line = lines[i];
-        if(lineFronts[i])
-            line->frontSector = sector;
-        else
-            line->backSector = sector;
-    }
-
-    map->dirty = true;
     return sector;
 }
 

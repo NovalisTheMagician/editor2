@@ -57,10 +57,25 @@ int SideOfLine(vec2s a, vec2s b, vec2s point)
 
 struct BoundingBox BoundingBoxFromVertices(size_t numVertices, vec2s vertices[static numVertices])
 {
-    vec2s min = { .x = INT32_MAX, .y = INT32_MAX }, max = { .x = INT32_MIN, .y = INT32_MIN };
+    vec2s min = { .x = FLT_MAX, .y = FLT_MAX }, max = { .x = FLT_MIN, .y = FLT_MIN };
     for(size_t i = 0; i < numVertices; ++i)
     {
         vec2s vert = vertices[i];
+        max = glms_vec2_maxv(vert, max);
+        min = glms_vec2_minv(vert, min);
+    }
+    return (struct BoundingBox){ .min = min, .max = max };
+}
+
+struct BoundingBox BoundingBoxFromMapLines(size_t numLines, struct MapLine *lines[static numLines])
+{
+    vec2s min = { .x = FLT_MAX, .y = FLT_MAX }, max = { .x = FLT_MIN, .y = FLT_MIN };
+    for(size_t i = 0; i < numLines; ++i)
+    {
+        vec2s vert = lines[i]->a->pos;
+        max = glms_vec2_maxv(vert, max);
+        min = glms_vec2_minv(vert, min);
+        vert = lines[i]->b->pos;
         max = glms_vec2_maxv(vert, max);
         min = glms_vec2_minv(vert, min);
     }

@@ -139,6 +139,15 @@ struct CreateResult CreateSector(struct Map map[static 1], size_t numLines, stru
     }
     map->tailSector = sector;
 
+    for(size_t i = 0; i < numLines; ++i)
+    {
+        struct MapLine *line = lines[i];
+        if(lineFronts[i])
+            line->frontSector = sector;
+        else
+            line->backSector = sector;
+    }
+
     map->dirty = true;
 
     return (struct CreateResult){ .mapElement = sector, .created = true };
