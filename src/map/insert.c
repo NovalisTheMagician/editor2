@@ -66,26 +66,26 @@ struct MapSector* MakeMapSector(struct EdState state[static 1], struct MapLine s
 
 #define QUEUE_SIZE (4096)
 
-static struct QueueElement
+struct QueueElement
 {
     struct line_t line;
     bool potentialStart;
 };
 
-static struct LineQueue
+struct LineQueue
 {
     struct QueueElement elements[QUEUE_SIZE];
     size_t head, tail, numLines;
 };
 
-static void Enqueue(struct LineQueue *queue, struct line_t line, bool potentialStart)
+static inline void Enqueue(struct LineQueue *queue, struct line_t line, bool potentialStart)
 {
     queue->elements[queue->tail] = (__typeof__(queue->elements[queue->tail])){ .line = line, .potentialStart = potentialStart };
     queue->tail = (queue->tail + 1) % QUEUE_SIZE;
     queue->numLines++;
 }
 
-static struct QueueElement Dequeue(struct LineQueue *queue)
+static inline struct QueueElement Dequeue(struct LineQueue *queue)
 {
     struct QueueElement el = queue->elements[queue->head];
     queue->head = (queue->head + 1) % QUEUE_SIZE;
@@ -93,7 +93,7 @@ static struct QueueElement Dequeue(struct LineQueue *queue)
     return el;
 }
 
-static struct SectorUpdate
+struct SectorUpdate
 {
     struct
     {
@@ -105,7 +105,7 @@ static struct SectorUpdate
     size_t length;
 };
 
-static void InsertSectorUpdate(struct SectorUpdate *sectorUpdate, struct MapLine *line, struct SectorData sectorData, bool front)
+static inline void InsertSectorUpdate(struct SectorUpdate *sectorUpdate, struct MapLine *line, struct SectorData sectorData, bool front)
 {
     assert(sectorUpdate->length <= QUEUE_SIZE);
     sectorUpdate->data[sectorUpdate->length++] = (__typeof__(sectorUpdate->data[0])){ .line = line, .sectorData = sectorData, .valid = true, .front = front };
