@@ -11,8 +11,8 @@ static void SelectElement(struct EdState *state, void *element, int selectMode)
 
 static void GotoPos(struct EdState *state, vec2s pos)
 {
-    state->data.viewPosition.x = -(state->gl.editorFramebufferWidth / 2) + pos.x;
-    state->data.viewPosition.y = -(state->gl.editorFramebufferHeight / 2) + pos.y;
+    state->data.viewPosition.x = -(state->gl.editorFramebufferWidth / 2.0f) + pos.x;
+    state->data.viewPosition.y = -(state->gl.editorFramebufferHeight / 2.0f) + pos.y;
 }
 
 static void CenterVertex(struct EdState *state, struct MapVertex *vertex)
