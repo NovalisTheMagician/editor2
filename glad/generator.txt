@@ -1,0 +1,1 @@
+https://gen.glad.sh/#generator=c&api=gl%3D4.6&profile=gl%3Dcore%2Cgles1%3Dcommon&extensions=GL_ARB_bindless_texture%2CGL_ARB_texture_compression_bptc%2CGL_EXT_texture_compression_s3tc%2CGL_EXT_texture_sRGB

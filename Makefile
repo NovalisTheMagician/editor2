@@ -7,14 +7,10 @@ SRC_SUBDIRS := windows dialogs utils map
 DEFINES := __USE_XOPEN _GNU_SOURCE CGLM_USE_ANONYMOUS_STRUCT=1
 INC_DIRS := $(SRC_DIR)
 
-LIBS := m cimgui_sdl SDL2 glad2 igfd re ftp json-c triangulate stdc++
+LIBS := m cimgui_sdl SDL2 igfd re ftp json-c triangulate stdc++
 LIB_DIRS := 
 
-ifdef CC
-CC := $(CC)
-else
 CC := gcc
-endif
 
 CCFLAGS := -Wall -std=gnu2x -Wstrict-prototypes
 
@@ -66,18 +62,22 @@ RES_PATH := $(SRC_DIR)/$(RES_DIR)
 
 RES_SRC := $(SRC_DIR)/$(RES_DIR)/resources.c
 RES_OBJ := $(BUILD_DIR)/$(RES_DIR)/resources.o
-RESOURCES := $(wildcard $(RES_PATH)/*.ttf)
+RESOURCES := $(wildcard $(RES_PATH)/*.ttf) # TODO add more resources as dependencies (e.g. shaders, images, etc...)
 
-BUILD_DIRS := $(addprefix $(BUILD_DIR)/,$(SRC_SUBDIRS)) $(BUILD_DIR)/$(RES_DIR)
+GLAD_DIR := glad
+GLAD_SRC := $(GLAD_DIR)/src/gl.c
+GLAD_OBJ := $(BUILD_DIR)/$(GLAD_DIR)/gl.o
+
+BUILD_DIRS := $(addprefix $(BUILD_DIR)/,$(SRC_SUBDIRS)) $(BUILD_DIR)/$(RES_DIR) $(BUILD_DIR)/$(GLAD_DIR)
 
 all: $(BUILD_DIR) $(APPLICATION)
 
 $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIRS)
 
-$(APPLICATION): $(OBJS) $(RES_OBJ)
+$(APPLICATION): $(OBJS) $(RES_OBJ) $(GLAD_OBJ)
 	@echo "LD $@"
-	@$(LD) $(LDFLAGS) -o $@ $(OBJS) $(RES_OBJ) $(LIB_FLAGS)
+	@$(LD) $(LDFLAGS) -o $@ $(OBJS) $(RES_OBJ) $(GLAD_OBJ) $(LIB_FLAGS)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c Makefile
 	@echo "CC $<"
@@ -86,6 +86,10 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c Makefile
 $(RES_OBJ): $(RES_SRC) $(RESOURCES) Makefile
 	@echo "CC $< (Resources)"
 	@$(CC) $(CPPFLAGS) $(CCFLAGS) -I$(RES_PATH) -c $< -o $@
+
+$(GLAD_OBJ): $(GLAD_SRC)
+	@echo "CC $< (GLAD)"
+	@$(CC) -I$(GLAD_DIR)/include -c $< -o $@
 
 .PHONY: clean echo
 clean:
