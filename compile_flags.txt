@@ -2,4 +2,5 @@
 -std=gnu2x
 -Wstrict-prototypes
 -I.
+-Iglad/include
 -IE:\DevLibs\Include
