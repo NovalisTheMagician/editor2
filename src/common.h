@@ -9,7 +9,7 @@
 #include <string.h>
 #include <time.h>
 
-#include <glad/gl.h>
+#include "glad/gl.h"
 #include <cglm/struct.h>
 
 #include "utils/pstring.h"
