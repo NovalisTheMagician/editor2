@@ -1,5 +1,6 @@
 #include "../gwindows.h"
 #include "../dialogs.h"
+#include "cimgui.h"
 
 #include <ftplib.h>
 
@@ -24,11 +25,14 @@ static void BaseFtpFields(struct EdState *state, bool resetCheck)
     static const char *ftpStatusText = "";
     if(resetCheck) ftpStatusText = "";
 
+    bool hasUrl = string_length(state->project.basePath.ftp.url);
     igSameLine(0, 8);
+    igBeginDisabled(!hasUrl);
     if(igButton("Check Connection", (ImVec2){ 0, 0 }))
     {
         netbuf *handle;
-        if(!FtpConnect(state->project.basePath.ftp.url, &handle))
+        bool connected = FtpConnect(state->project.basePath.ftp.url, &handle);
+        if(!connected)
         {
             ftpStatusText = "Failed to connect!";
             goto skip;
@@ -38,16 +42,17 @@ static void BaseFtpFields(struct EdState *state, bool resetCheck)
             ftpStatusText = "Failed to login!";
             goto skip;
         }
-        if(string_length(state->project.basePath.ftp.path) > 0)
-        if(!FtpChdir(state->project.basePath.ftp.path, handle))
+        if(string_length(state->project.basePath.ftp.path) > 0 && !FtpChdir(state->project.basePath.ftp.path, handle))
         {
             ftpStatusText = "Couldn't find path!";
             goto skip;
         }
         ftpStatusText = "Success!";
 skip:
-        FtpQuit(handle);
+        if(connected)
+            FtpQuit(handle);
     }
+    igEndDisabled();
     igSameLine(0, 8);
     igText(ftpStatusText);
 
