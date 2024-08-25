@@ -292,7 +292,7 @@ static bool InitSectors(struct EdState *state)
         SHADER_VERSION
         "layout(location=0) in vec2 inPosition;\n"
         "layout(location=1) in vec4 inColor;\n"
-        "layout(location=3) in vec2 inTexCoords;\n"
+        "layout(location=2) in vec2 inTexCoords;\n"
         "out vec4 outColor;\n"
         "out vec2 outTexCoords;\n"
         "uniform mat4 viewProj;\n"

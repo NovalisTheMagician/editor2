@@ -124,7 +124,7 @@ struct MapVertex* EditGetClosestVertex(struct EdState state[static 1], vec2s pos
 {
     struct Map *map = &state->map;
     struct MapVertex *closestVertex = NULL;
-    float closestDist = 100000;
+    float closestDist = FLT_MAX;
     for(struct MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
     {
         float dist2 = glms_vec2_distance2(vertex->pos, pos);

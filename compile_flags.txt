@@ -2,3 +2,4 @@
 -std=gnu2x
 -Wstrict-prototypes
 -I.
+-IE:\DevLibs\Include
