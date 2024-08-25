@@ -61,20 +61,31 @@ LIB_FLAGS := $(addprefix -L,$(LIB_DIRS)) $(addprefix -l,$(LIBS))
 SRCS := $(wildcard $(SRC_DIR)/*.c) $(foreach pat,$(SRC_SUBDIRS),$(wildcard $(SRC_DIR)/$(pat)/*.c))
 OBJS := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
 
-BUILD_DIRS := $(addprefix $(BUILD_DIR)/,$(SRC_SUBDIRS))
+RES_DIR := resources
+RES_PATH := $(SRC_DIR)/$(RES_DIR)
+
+RES_SRC := $(SRC_DIR)/$(RES_DIR)/resources.c
+RES_OBJ := $(BUILD_DIR)/$(RES_DIR)/resources.o
+RESOURCES := $(wildcard $(RES_PATH)/*.ttf)
+
+BUILD_DIRS := $(addprefix $(BUILD_DIR)/,$(SRC_SUBDIRS)) $(BUILD_DIR)/$(RES_DIR)
 
 all: $(BUILD_DIR) $(APPLICATION)
 
 $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIRS)
 
-$(APPLICATION): $(OBJS)
+$(APPLICATION): $(OBJS) $(RES_OBJ)
 	@echo "LD $@"
-	@$(LD) $(LDFLAGS) -o $@ $(OBJS) $(LIB_FLAGS)
+	@$(LD) $(LDFLAGS) -o $@ $(OBJS) $(RES_OBJ) $(LIB_FLAGS)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c Makefile
 	@echo "CC $<"
 	@$(CC) $(CPPFLAGS) $(CCFLAGS) -c $< -o $@
+
+$(RES_OBJ): $(RES_SRC) $(RESOURCES) Makefile
+	@echo "CC $< (Resources)"
+	@$(CC) $(CPPFLAGS) $(CCFLAGS) -I$(RES_PATH) -c $< -o $@
 
 .PHONY: clean echo
 clean:
@@ -92,4 +103,3 @@ echo:
 	@echo "LDFLAGS= $(LDFLAGS)"
 
 -include $(OBJS:.o=.d)
-

@@ -19,7 +19,7 @@
 
 #include "texture_load.h"
 
-#include "resources.h"
+#include "resources/resources.h"
 
 #define SETTINGS_FILE "./settings.ini"
 #define DEFAULT_WINDOW_WIDTH 1600
