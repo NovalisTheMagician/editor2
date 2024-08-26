@@ -9,7 +9,7 @@
             "type": "by-gdb",
             "request": "launch",
             "program": "${workspaceFolder}/editor2",
-            "programArgs": "-p debugProject.pro",
+            "programArgs": "-p debugProject.epr",
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "build"

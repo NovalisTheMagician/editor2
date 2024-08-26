@@ -14,5 +14,5 @@ void SaveProjectDialog(struct Project *project, bool quitRequest)
     fda->data = project;
     fda->callback = SaveProjectCallback;
     fda->quitRequest = quitRequest;
-    IGFD_OpenDialog(cfileDialog, "filedlg", "Save Project", "Project Files(*.pro){.pro}", ".", "", 1, fda, ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite | ImGuiFileDialogFlags_CaseInsensitiveExtention);
+    IGFD_OpenDialog(cfileDialog, "filedlg", "Save Project", "Project Files(*.epr){.epr}", ".", "", 1, fda, ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite | ImGuiFileDialogFlags_CaseInsensitiveExtention);
 }
