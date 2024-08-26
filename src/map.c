@@ -92,8 +92,8 @@ void NewMap(struct Map *map)
     if(map->file)
     {
         string_free(map->file);
-        map->file = NULL;
     }
+    map->file = string_alloc(1);
 
     map->dirty = false;
 
