@@ -25,12 +25,15 @@ else
     CCFLAGS += -g
 endif
 
+SDL_INC :=
+
 ifeq ($(OS),Windows_NT)
     LIBS += dinput8 dxguid dxerr8 user32 gdi32 winmm imm32 ole32 oleaut32 shell32 setupapi version uuid ws2_32 Iphlpapi comctl32 gdi32 comdlg32 opengl32
     APPLICATION := $(APPLICATION).exe
     LIB_DIRS += $(LIB_GCC_PATH)
     INC_DIRS += $(INC_PATH)
     LDFLAGS += -static
+    SDL_INC += -I$(INC_PATH)/SDL2
     ifeq ($(CONFIG),release)
         LDFLAGS += -mwindows
     else
@@ -42,6 +45,7 @@ else
         LIBS += GL dl
         CCFLAGS += $(shell pkg-config --cflags sdl2)
         LDFLAGS += $(shell pkg-config --libs sdl2)
+        SDL_INC += $(shell pkg-config --cflags sdl2)
         DEFINES += 
     endif
     ifeq ($(UNAME_S),Darwin)
@@ -135,7 +139,7 @@ $(IGFD_OBJ): $(IGFD_SRC)
 
 $(BUILD_DIR)/$(CIMGUI_DIR)/%.o: $(CIMGUI_DIR)/%.cpp
 	@echo "++ $< (Vendor CImgui)"
-	@g++ -O2 -c $< -o $@ -I$(CIMGUI_DIR)/imgui $(shell pkg-config --cflags sdl2) '-DIMGUI_IMPL_API=extern "C"'
+	@g++ -O2 -c $< -o $@ -I$(CIMGUI_DIR)/imgui $(SDL_INC) '-DIMGUI_IMPL_API=extern "C"'
 
 .PHONY: clean echo
 clean:
