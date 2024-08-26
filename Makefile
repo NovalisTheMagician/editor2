@@ -115,7 +115,7 @@ $(BUILD_DIRS):
 
 $(APPLICATION): $(OBJS) $(RES_OBJ) $(GLAD_OBJ) $(RE_OBJ) $(IGFD_OBJ) $(CIMGUI_OBJS)
 	@echo "LD $@"
-	@$(LD) $(LDFLAGS) -o $@ $(OBJS) $(RES_OBJ) $(GLAD_OBJ) $(RE_OBJ) $(IGFD_OBJ) $(CIMGUI_OBJS) $(LIB_FLAGS)
+	@$(LD) $(LDFLAGS) -o $@ $^ $(LIB_FLAGS)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c Makefile
 	@echo "CC $<"
