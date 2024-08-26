@@ -1,6 +1,6 @@
 #include "texture_collection.h"
 
-#include <re.h>
+#include "re.h"
 
 #if defined(_DEBUG)
 #pragma push_macro("malloc")

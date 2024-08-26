@@ -8,6 +8,7 @@
 #include <stdarg.h>
 #include <string.h>
 #include <time.h>
+#include <sys/types.h>
 
 #include "glad/gl.h"
 #include <cglm/struct.h>

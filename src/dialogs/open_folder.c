@@ -1,5 +1,4 @@
 #include "../dialogs.h"
-#include <ImGuiFileDialog.h>
 
 static void OpenFolderCallback(const char *path, void *data)
 {

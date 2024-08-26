@@ -3,8 +3,8 @@
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #define CIMGUI_USE_OPENGL3
 #define CIMGUI_USE_SDL2
-#include <cimgui.h>
-#include <cimgui_impl.h>
+#include "cimgui.h"
+#include "cimgui_impl.h"
 
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>

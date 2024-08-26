@@ -1,6 +1,12 @@
 -Wall
 -std=gnu2x
 -Wstrict-prototypes
--I.
--Iglad/include
+-D_XOPEN_SOURCE
+-D_GNU_SOURCE
+-Isrc
+-Iextern/glad/include
+-Iextern/re
+-Iextern/imguifiledialog
+-Iextern/cimgui
+-Iextern/cimgui/generator/output
 -IE:\DevLibs\Include

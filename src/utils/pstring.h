@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stdarg.h>
+#include <sys/types.h>
 
 typedef char *pstring;
 
