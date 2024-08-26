@@ -1,0 +1,9 @@
+[submodule "vendor/cimgui"]
+	path = vendor/cimgui
+	url = https://github.com/cimgui/cimgui
+[submodule "vendor/imguifiledialog"]
+	path = vendor/imguifiledialog
+	url = https://github.com/aiekick/ImGuiFileDialog
+[submodule "vendor/re"]
+	path = vendor/re
+	url = https://github.com/kokke/tiny-regex-c

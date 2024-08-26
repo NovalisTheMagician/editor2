@@ -14,5 +14,14 @@ void SaveProjectDialog(struct Project *project, bool quitRequest)
     fda->data = project;
     fda->callback = SaveProjectCallback;
     fda->quitRequest = quitRequest;
-    IGFD_OpenDialog(cfileDialog, "filedlg", "Save Project", "Project Files(*.epr){.epr}", ".", "", 1, fda, ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite | ImGuiFileDialogFlags_CaseInsensitiveExtention);
+    struct IGFD_FileDialog_Config config = 
+    {
+        .flags = ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite | ImGuiFileDialogFlags_CaseInsensitiveExtentionFiltering,
+        .path = ".",
+        .filePathName = "",
+        .fileName = "",
+        .countSelectionMax = 1,
+        .userDatas = fda,
+    };
+    IGFD_OpenDialog(cfileDialog, "filedlg", "Save Project", "Project Files(*.epr){.epr}", config);
 }

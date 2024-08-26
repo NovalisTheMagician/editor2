@@ -1,4 +1,5 @@
 #include "../dialogs.h"
+#include <ImGuiFileDialog.h>
 
 static void OpenFolderCallback(const char *path, void *data)
 {
@@ -15,5 +16,14 @@ void OpenFolderDialog(pstring *folderPath)
     struct FileDialogAction *fda = calloc(1, sizeof *fda);
     fda->data = folderPath;
     fda->callback = OpenFolderCallback;
-    IGFD_OpenDialog(cfileDialog, "filedlg", "Choose a Folder", NULL, ".", "", 1, fda, ImGuiFileDialogFlags_Modal);
+    struct IGFD_FileDialog_Config config = 
+    {
+        .flags = ImGuiFileDialogFlags_Modal,
+        .path = ".",
+        .filePathName = "",
+        .fileName = "",
+        .countSelectionMax = 1,
+        .userDatas = fda,
+    };
+    IGFD_OpenDialog(cfileDialog, "filedlg", "Choose a Folder", NULL, config);
 }

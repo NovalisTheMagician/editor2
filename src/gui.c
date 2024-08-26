@@ -2,6 +2,7 @@
 
 #include "edit.h"
 
+#include <cimgui.h>
 #include <tgmath.h>
 #include <assert.h>
 #include <ImGuiFileDialog.h>
@@ -47,9 +48,9 @@ static void SetValveStyle(ImGuiStyle *style)
     colors[ImGuiCol_ResizeGripActive]           = (ImVec4){0.59f, 0.54f, 0.18f, 1.00f};
     colors[ImGuiCol_Tab]                        = (ImVec4){0.35f, 0.42f, 0.31f, 1.00f};
     colors[ImGuiCol_TabHovered]                 = (ImVec4){0.54f, 0.57f, 0.51f, 0.78f};
-    colors[ImGuiCol_TabActive]                  = (ImVec4){0.59f, 0.54f, 0.18f, 1.00f};
-    colors[ImGuiCol_TabUnfocused]               = (ImVec4){0.24f, 0.27f, 0.20f, 1.00f};
-    colors[ImGuiCol_TabUnfocusedActive]         = (ImVec4){0.35f, 0.42f, 0.31f, 1.00f};
+    colors[ImGuiCol_TabSelected]                = (ImVec4){0.59f, 0.54f, 0.18f, 1.00f};
+    colors[ImGuiCol_TabDimmed]                  = (ImVec4){0.24f, 0.27f, 0.20f, 1.00f};
+    colors[ImGuiCol_TabDimmedSelected]          = (ImVec4){0.35f, 0.42f, 0.31f, 1.00f};
     colors[ImGuiCol_DockingPreview]             = (ImVec4){0.59f, 0.54f, 0.18f, 1.00f};
     colors[ImGuiCol_DockingEmptyBg]             = (ImVec4){0.20f, 0.20f, 0.20f, 1.00f};
     colors[ImGuiCol_PlotLines]                  = (ImVec4){0.61f, 0.61f, 0.61f, 1.00f};
@@ -115,9 +116,9 @@ static void SetDeusExStyle(ImGuiStyle *style)
     colors[ImGuiCol_ResizeGripActive]       = (ImVec4){0.78f, 0.55f, 0.21f, 1.00f};
     colors[ImGuiCol_Tab]                    = (ImVec4){0.51f, 0.36f, 0.15f, 1.00f};
     colors[ImGuiCol_TabHovered]             = (ImVec4){0.91f, 0.64f, 0.13f, 1.00f};
-    colors[ImGuiCol_TabActive]              = (ImVec4){0.78f, 0.55f, 0.21f, 1.00f};
-    colors[ImGuiCol_TabUnfocused]           = (ImVec4){0.07f, 0.10f, 0.15f, 0.97f};
-    colors[ImGuiCol_TabUnfocusedActive]     = (ImVec4){0.14f, 0.26f, 0.42f, 1.00f};
+    colors[ImGuiCol_TabSelected]            = (ImVec4){0.78f, 0.55f, 0.21f, 1.00f};
+    colors[ImGuiCol_TabDimmed]              = (ImVec4){0.07f, 0.10f, 0.15f, 0.97f};
+    colors[ImGuiCol_TabDimmedSelected]      = (ImVec4){0.14f, 0.26f, 0.42f, 1.00f};
     colors[ImGuiCol_PlotLines]              = (ImVec4){0.61f, 0.61f, 0.61f, 1.00f};
     colors[ImGuiCol_PlotLinesHovered]       = (ImVec4){1.00f, 0.43f, 0.35f, 1.00f};
     colors[ImGuiCol_PlotHistogram]          = (ImVec4){0.90f, 0.70f, 0.00f, 1.00f};
@@ -553,19 +554,19 @@ static void FileDialog(bool *doQuit)
 
 static void HandleShortcuts(struct EdState *state)
 {
-    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_N, 0, ImGuiInputFlags_RouteGlobalLow))
+    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_N, ImGuiInputFlags_RouteGlobal))
     {
         if(state->map.dirty) { openMapPopup = true; modalAction = SMA_NEW; }
         else DoNewMap(state);
     }
 
-    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_O, 0, ImGuiInputFlags_RouteGlobalLow))
+    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_O, ImGuiInputFlags_RouteGlobal))
     {
         if(state->map.dirty) { openMapPopup = true; modalAction = SMA_OPEN; }
         else DoLoadMap(state);
     }
 
-    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_S, 0, ImGuiInputFlags_RouteGlobalLow))
+    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_S, ImGuiInputFlags_RouteGlobal))
     {
         if(state->map.dirty)
         {
@@ -576,22 +577,22 @@ static void HandleShortcuts(struct EdState *state)
         }
     }
 
-    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_W, 0, ImGuiInputFlags_RouteGlobalLow))
+    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_W, ImGuiInputFlags_RouteGlobal))
     {
         state->ui.show3dView = !state->ui.show3dView;
     }
 
-    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_E, 0, ImGuiInputFlags_RouteGlobalLow))
+    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_E, ImGuiInputFlags_RouteGlobal))
     {
         state->ui.showEntities = !state->ui.showEntities;
     }
 
-    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_T, 0, ImGuiInputFlags_RouteGlobalLow))
+    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_T, ImGuiInputFlags_RouteGlobal))
     {
         state->ui.showTextures = !state->ui.showTextures;
     }
 
-    if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_L, 0, ImGuiInputFlags_RouteGlobalLow))
+    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_L, ImGuiInputFlags_RouteGlobal))
     {
         state->ui.showLogs = !state->ui.showLogs;
     }

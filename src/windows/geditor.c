@@ -102,22 +102,22 @@ void EditorWindow(bool *p_open, struct EdState *state)
 
     if(igBegin("Editor", p_open, flags))
     {
-        if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_C, 0, 0))
+        if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_C, 0))
             EditCopy(state);
-        if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_V, 0, 0))
+        if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_V, 0))
             EditPaste(state);
-        if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_X, 0, 0))
+        if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_X, 0))
             EditCut(state);
-        if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_Z, 0, 0))
+        if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_Z, 0))
             LogDebug("Undo!");
-        if(igShortcut(ImGuiMod_Ctrl | ImGuiKey_Y, 0, 0))
+        if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_Y, 0))
             LogDebug("Redo!");
 
-        if(igShortcut(ImGuiKey_V, 0, 0))
+        if(igShortcut_Nil(ImGuiKey_V, 0))
             ChangeMode(state, MODE_VERTEX);
-        if(igShortcut(ImGuiKey_L, 0, 0))
+        if(igShortcut_Nil(ImGuiKey_L, 0))
             ChangeMode(state, MODE_LINE);
-        if(igShortcut(ImGuiKey_S, 0, 0))
+        if(igShortcut_Nil(ImGuiKey_S, 0))
             ChangeMode(state, MODE_SECTOR);
 
         igPushItemWidth(80);

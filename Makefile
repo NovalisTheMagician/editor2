@@ -5,9 +5,9 @@ SRC_DIR := src
 SRC_SUBDIRS := windows dialogs utils map
 
 DEFINES := __USE_XOPEN _GNU_SOURCE CGLM_USE_ANONYMOUS_STRUCT=1
-INC_DIRS := $(SRC_DIR) glad/include
+INC_DIRS := $(SRC_DIR)
 
-LIBS := m cimgui_sdl SDL2 igfd re ftp json-c triangulate stdc++
+LIBS := m SDL2 ftp json-c triangulate stdc++
 LIB_DIRS := 
 
 CC := gcc
@@ -50,9 +50,6 @@ else
     endif
 endif
 
-CPPFLAGS := $(addprefix -I,$(INC_DIRS)) $(addprefix -D,$(DEFINES)) -MMD -MP
-LIB_FLAGS := $(addprefix -L,$(LIB_DIRS)) $(addprefix -l,$(LIBS))
-
 # SRCS := $(wildcard $(SRC_DIR)/*.c)
 SRCS := $(wildcard $(SRC_DIR)/*.c) $(foreach pat,$(SRC_SUBDIRS),$(wildcard $(SRC_DIR)/$(pat)/*.c))
 OBJS := $(patsubst $(SRC_DIR)/%.c,$(BUILD_DIR)/%.o,$(SRCS))
@@ -64,20 +61,57 @@ RES_SRC := $(SRC_DIR)/$(RES_DIR)/resources.c
 RES_OBJ := $(BUILD_DIR)/$(RES_DIR)/resources.o
 RESOURCES := $(wildcard $(RES_PATH)/*.ttf) $(wildcard $(RES_PATH)/*.vs) $(wildcard $(RES_PATH)/*.fs) # TODO add more resources as dependencies (e.g. images, etc...)
 
-GLAD_DIR := glad
+BUILD_DIRS := $(addprefix $(BUILD_DIR)/,$(SRC_SUBDIRS)) $(BUILD_DIR)/$(RES_DIR)
+
+# 3rd party libraries
+
+VENDOR_DIR := extern
+
+# GLAD
+GLAD_DIR := $(VENDOR_DIR)/glad
 GLAD_SRC := $(GLAD_DIR)/src/gl.c
 GLAD_OBJ := $(BUILD_DIR)/$(GLAD_DIR)/gl.o
 
-BUILD_DIRS := $(addprefix $(BUILD_DIR)/,$(SRC_SUBDIRS)) $(BUILD_DIR)/$(RES_DIR) $(BUILD_DIR)/$(GLAD_DIR)
+INC_DIRS += $(GLAD_DIR)/include
+BUILD_DIRS += $(BUILD_DIR)/$(GLAD_DIR)
 
-all: $(BUILD_DIR) $(APPLICATION)
+# tiny regular expression
+RE_DIR := $(VENDOR_DIR)/re
+RE_SRC := $(RE_DIR)/re.c
+RE_OBJ := $(BUILD_DIR)/$(RE_DIR)/re.o
 
-$(BUILD_DIR):
+INC_DIRS += $(RE_DIR)
+BUILD_DIRS += $(BUILD_DIR)/$(RE_DIR)
+
+# imguifiledialog
+IGFD_DIR := $(VENDOR_DIR)/imguifiledialog
+IGFD_SRC := $(IGFD_DIR)/ImGuiFileDialog.cpp
+IGFD_OBJ := $(BUILD_DIR)/$(IGFD_DIR)/ImGuiFileDialog.o
+
+INC_DIRS += $(IGFD_DIR)
+BUILD_DIRS += $(BUILD_DIR)/$(IGFD_DIR)
+
+# cimgui
+CIMGUI_DIR := $(VENDOR_DIR)/cimgui
+CIMGUI_SRCS := $(CIMGUI_DIR)/cimgui.cpp
+CIMGUI_SRCS += $(CIMGUI_DIR)/imgui/backends/imgui_impl_sdl2.cpp $(CIMGUI_DIR)/imgui/backends/imgui_impl_opengl3.cpp
+CIMGUI_SRCS += $(CIMGUI_DIR)/imgui/imgui.cpp $(CIMGUI_DIR)/imgui/imgui_demo.cpp $(CIMGUI_DIR)/imgui/imgui_draw.cpp $(CIMGUI_DIR)/imgui/imgui_tables.cpp $(CIMGUI_DIR)/imgui/imgui_widgets.cpp
+CIMGUI_OBJS := $(patsubst $(CIMGUI_DIR)/%.cpp, $(BUILD_DIR)/$(CIMGUI_DIR)/%.o, $(CIMGUI_SRCS))
+
+INC_DIRS += $(CIMGUI_DIR) $(CIMGUI_DIR)/generator/output $(CIMGUI_DIR)/imgui
+BUILD_DIRS += $(BUILD_DIR)/$(CIMGUI_DIR) $(BUILD_DIR)/$(CIMGUI_DIR)/imgui $(BUILD_DIR)/$(CIMGUI_DIR)/imgui/backends
+
+CPPFLAGS := $(addprefix -I,$(INC_DIRS)) $(addprefix -D,$(DEFINES)) -MMD -MP
+LIB_FLAGS := $(addprefix -L,$(LIB_DIRS)) $(addprefix -l,$(LIBS))
+
+all: $(BUILD_DIRS) $(APPLICATION)
+
+$(BUILD_DIRS):
 	@mkdir -p $(BUILD_DIRS)
 
-$(APPLICATION): $(OBJS) $(RES_OBJ) $(GLAD_OBJ)
+$(APPLICATION): $(OBJS) $(RES_OBJ) $(GLAD_OBJ) $(RE_OBJ) $(IGFD_OBJ) $(CIMGUI_OBJS)
 	@echo "LD $@"
-	@$(LD) $(LDFLAGS) -o $@ $(OBJS) $(RES_OBJ) $(GLAD_OBJ) $(LIB_FLAGS)
+	@$(LD) $(LDFLAGS) -o $@ $(OBJS) $(RES_OBJ) $(GLAD_OBJ) $(RE_OBJ) $(IGFD_OBJ) $(CIMGUI_OBJS) $(LIB_FLAGS)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c Makefile
 	@echo "CC $<"
@@ -88,8 +122,20 @@ $(RES_OBJ): $(RES_SRC) $(RESOURCES) Makefile
 	@$(CC) $(CPPFLAGS) $(CCFLAGS) -I$(RES_PATH) -c $< -o $@
 
 $(GLAD_OBJ): $(GLAD_SRC)
-	@echo "CC $< (GLAD)"
-	@$(CC) -I$(GLAD_DIR)/include -c $< -o $@
+	@echo "CC $< (Vendor GLAD)"
+	@$(CC) -O2 -I$(GLAD_DIR)/include -c $< -o $@
+
+$(RE_OBJ): $(RE_SRC)
+	@echo "CC $< (Vendor RE)"
+	@$(CC) -O2 -c $< -o $@
+
+$(IGFD_OBJ): $(IGFD_SRC)
+	@echo "++ $< (Vendor IGFD)"
+	@g++ -O2 -c $< -o $@ -I$(CIMGUI_DIR)/imgui
+
+$(BUILD_DIR)/$(CIMGUI_DIR)/%.o: $(CIMGUI_DIR)/%.cpp
+	@echo "++ $< (Vendor CImgui)"
+	@g++ -O2 -c $< -o $@ -I$(CIMGUI_DIR)/imgui $(shell pkg-config --cflags sdl2) '-DIMGUI_IMPL_API=extern "C"'
 
 .PHONY: clean echo
 clean:
