@@ -1,3 +1,16 @@
 #include "resources.h"
 
 INCBIN(Font, "UbuntuMono-Regular.ttf");
+
+INCTXT(BackH_vs, "backH.vs");
+INCTXT(BackV_vs, "backV.vs");
+INCTXT(Back_fs, "back.fs");
+
+INCTXT(Vertex_vs, "vertex.vs");
+INCTXT(Vertex_fs, "vertex.fs");
+
+INCTXT(Line_vs, "line.vs");
+INCTXT(Line_fs, "line.fs");
+
+INCTXT(Sector_vs, "sector.vs");
+INCTXT(Sector_fs, "sector.fs");

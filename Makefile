@@ -62,7 +62,7 @@ RES_PATH := $(SRC_DIR)/$(RES_DIR)
 
 RES_SRC := $(SRC_DIR)/$(RES_DIR)/resources.c
 RES_OBJ := $(BUILD_DIR)/$(RES_DIR)/resources.o
-RESOURCES := $(wildcard $(RES_PATH)/*.ttf) # TODO add more resources as dependencies (e.g. shaders, images, etc...)
+RESOURCES := $(wildcard $(RES_PATH)/*.ttf) $(wildcard $(RES_PATH)/*.vs) $(wildcard $(RES_PATH)/*.fs) # TODO add more resources as dependencies (e.g. images, etc...)
 
 GLAD_DIR := glad
 GLAD_SRC := $(GLAD_DIR)/src/gl.c

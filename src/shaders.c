@@ -1,5 +1,7 @@
 #include "editor.h"
 
+#include "resources/resources.h"
+
 #define BUFFER_SIZE (1<<20)
 
 static bool CompileShader(const char *shaderScr, GLuint *shader)
@@ -41,58 +43,16 @@ static bool LinkProgram(GLuint vertexShader, GLuint fragmentShader, GLuint *prog
 
 static bool InitBackground(struct EdState *state)
 {
-    const char *hVertShaderSrc = 
-        SHADER_VERSION
-        "layout(location=0) in vec2 inPosition;\n"
-        "uniform mat4 viewProj;\n"
-        "uniform float offset;\n"
-        "uniform float period;\n"
-        "flat out int idx;\n"
-        "void main() {\n"
-        "   float off = period * gl_InstanceID + offset;\n"
-        "   vec2 pos = inPosition + vec2(0, off);\n"
-        "   gl_Position = viewProj * vec4(pos, 0, 1);\n"
-        "   idx = gl_InstanceID;\n"
-        "}\n";
-
-    const char *vVertShaderSrc = 
-        SHADER_VERSION
-        "layout(location=0) in vec2 inPosition;\n"
-        "uniform mat4 viewProj;\n"
-        "uniform float offset;\n"
-        "uniform float period;\n"
-        "flat out int idx;\n"
-        "void main() {\n"
-        "   float off = period * gl_InstanceID + offset;\n"
-        "   vec2 pos = inPosition + vec2(off, 0);\n"
-        "   gl_Position = viewProj * vec4(pos, 0, 1);\n"
-        "   idx = gl_InstanceID;\n"
-        "}\n";
-
-    const char *fragShaderSrc = 
-        SHADER_VERSION
-        "uniform vec4 tint;\n"
-        "uniform vec4 majorTint;\n"
-        "uniform int majorIndex;\n"
-        "flat in int idx;\n"
-        "out vec4 fragColor;\n"
-        "void main() {\n"
-        "   if(idx == majorIndex)\n"
-        "       fragColor = majorTint;\n"
-        "   else\n"
-        "       fragColor = tint;\n"
-        "}\n";
-
     GLuint hVertShader = glCreateShader(GL_VERTEX_SHADER);
-    if(!CompileShader(hVertShaderSrc, &hVertShader))
+    if(!CompileShader(gBackH_vsData, &hVertShader))
         return false;
 
     GLuint vVertShader = glCreateShader(GL_VERTEX_SHADER);
-    if(!CompileShader(vVertShaderSrc, &vVertShader))
+    if(!CompileShader(gBackV_vsData, &vVertShader))
         return false;
 
     GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-    if(!CompileShader(fragShaderSrc, &fragShader))
+    if(!CompileShader(gBack_fsData, &fragShader))
         return false;
 
     GLuint hProg = glCreateProgram();
@@ -145,35 +105,12 @@ static bool InitBackground(struct EdState *state)
 
 static bool InitVertex(struct EdState *state)
 {
-    const char *vertShaderSrc = 
-        SHADER_VERSION
-        "layout(location=0) in vec2 inPosition;\n"
-        "layout(location=1) in vec4 inColor;\n"
-        "out vec4 outColor;\n"
-        "uniform mat4 viewProj;\n"
-        "void main() {\n"
-        "   gl_Position = viewProj * vec4(inPosition, 0, 1);\n"
-        "   outColor = inColor;\n"
-        "}\n";
-
-    const char *fragShaderSrc = 
-        SHADER_VERSION
-        "in vec4 outColor;\n"
-        "out vec4 fragColor;\n"
-        "uniform vec4 tint;\n"
-        "void main() {\n"
-        "   vec2 coord = gl_PointCoord - vec2(0.5);\n"
-        "   if(length(coord) > 0.5)\n"
-        "       discard;\n"
-        "   fragColor = outColor * tint;\n"
-        "}\n";
-
     GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
-    if(!CompileShader(vertShaderSrc, &vertShader))
+    if(!CompileShader(gVertex_vsData, &vertShader))
         return false;
 
     GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-    if(!CompileShader(fragShaderSrc, &fragShader))
+    if(!CompileShader(gVertex_fsData, &fragShader))
         return false;
 
     GLuint program = glCreateProgram();
@@ -218,32 +155,12 @@ static bool InitVertex(struct EdState *state)
 
 static bool InitLines(struct EdState *state)
 {
-    const char *vertShaderSrc = 
-        SHADER_VERSION
-        "layout(location=0) in vec2 inPosition;\n"
-        "layout(location=1) in vec4 inColor;\n"
-        "out vec4 outColor;\n"
-        "uniform mat4 viewProj;\n"
-        "void main() {\n"
-        "   gl_Position = viewProj * vec4(inPosition, 0, 1);\n"
-        "   outColor = inColor;\n"
-        "}\n";
-
-    const char *fragShaderSrc = 
-        SHADER_VERSION
-        "in vec4 outColor;\n"
-        "out vec4 fragColor;\n"
-        "uniform vec4 tint;\n"
-        "void main() {\n"
-        "   fragColor = outColor * tint;\n"
-        "}\n";
-
     GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
-    if(!CompileShader(vertShaderSrc, &vertShader))
+    if(!CompileShader(gLine_vsData, &vertShader))
         return false;
 
     GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-    if(!CompileShader(fragShaderSrc, &fragShader))
+    if(!CompileShader(gLine_fsData, &fragShader))
         return false;
 
     GLuint program = glCreateProgram();
@@ -288,38 +205,12 @@ static bool InitLines(struct EdState *state)
 
 static bool InitSectors(struct EdState *state)
 {
-    const char *vertShaderSrc = 
-        SHADER_VERSION
-        "layout(location=0) in vec2 inPosition;\n"
-        "layout(location=1) in vec4 inColor;\n"
-        "layout(location=2) in vec2 inTexCoords;\n"
-        "out vec4 outColor;\n"
-        "out vec2 outTexCoords;\n"
-        "uniform mat4 viewProj;\n"
-        "uniform vec2 coordOffset;\n"
-        "void main() {\n"
-        "   gl_Position = viewProj * vec4(inPosition, 0, 1);\n"
-        "   outColor = inColor;\n"
-        "   outTexCoords = inTexCoords;\n"
-        "}\n";
-
-    const char *fragShaderSrc = 
-        SHADER_VERSION
-        "in vec4 outColor;\n"
-        "in vec2 outTexCoords;\n"
-        "out vec4 fragColor;\n"
-        "uniform sampler2D tex;\n"
-        "uniform vec4 tint;\n"
-        "void main() {\n"
-        "   fragColor = outColor * texture(tex, outTexCoords) * tint;\n"
-        "}\n";
-
     GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
-    if(!CompileShader(vertShaderSrc, &vertShader))
+    if(!CompileShader(gSector_vsData, &vertShader))
         return false;
 
     GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-    if(!CompileShader(fragShaderSrc, &fragShader))
+    if(!CompileShader(gSector_fsData, &fragShader))
         return false;
 
     GLuint program = glCreateProgram();
