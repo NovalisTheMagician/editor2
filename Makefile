@@ -7,8 +7,8 @@ SRC_SUBDIRS := windows dialogs utils map
 DEFINES := __USE_XOPEN _GNU_SOURCE
 INC_DIRS := $(SRC_DIR)
 
-LIBS := m SDL2 ftp json-c triangulate stdc++
-LIB_DIRS := 
+LIBS := m SDL2 ftp json-c stdc++
+LIB_DIRS :=
 
 CC := gcc
 
@@ -21,11 +21,12 @@ ifeq ($(CONFIG),release)
     DEFINES += NDEBUG
     CCFLAGS += -O2
 else
-    DEFINES += _DEBUG 
+    DEFINES += _DEBUG
     CCFLAGS += -g
 endif
 
 SDL_INC :=
+EARCUT_INC :=
 
 ifeq ($(OS),Windows_NT)
     LIBS += dinput8 dxguid dxerr8 user32 gdi32 winmm imm32 ole32 oleaut32 shell32 setupapi version uuid ws2_32 Iphlpapi comctl32 gdi32 comdlg32 opengl32
@@ -34,6 +35,7 @@ ifeq ($(OS),Windows_NT)
     INC_DIRS += $(INC_PATH)
     LDFLAGS += -static
     SDL_INC += -I$(INC_PATH)/SDL2
+    EARCUT_INC += -I$(INC_PATH)
     ifeq ($(CONFIG),release)
         LDFLAGS += -mwindows
     else
@@ -46,7 +48,7 @@ else
         CCFLAGS += $(shell pkg-config --cflags sdl2)
         LDFLAGS += $(shell pkg-config --libs sdl2)
         SDL_INC += $(shell pkg-config --cflags sdl2)
-        DEFINES += 
+        DEFINES +=
     endif
     ifeq ($(UNAME_S),Darwin)
     endif
@@ -105,15 +107,24 @@ CIMGUI_OBJS := $(patsubst $(CIMGUI_DIR)/%.cpp, $(BUILD_DIR)/$(CIMGUI_DIR)/%.o, $
 INC_DIRS += $(CIMGUI_DIR) $(CIMGUI_DIR)/generator/output $(CIMGUI_DIR)/imgui
 BUILD_DIRS += $(BUILD_DIR)/$(CIMGUI_DIR) $(BUILD_DIR)/$(CIMGUI_DIR)/imgui $(BUILD_DIR)/$(CIMGUI_DIR)/imgui/backends
 
+# triang
+TRIANG_DIR := $(VENDOR_DIR)/triangulate
+TRIANG_SRC := $(TRIANG_DIR)/triangulate.cpp
+TRIANG_OBJ := $(BUILD_DIR)/$(TRIANG_DIR)/triangulate.o
+
+INC_DIRS += $(TRIANG_DIR)
+BUILD_DIRS += $(BUILD_DIR)/$(TRIANG_DIR)
+
 CPPFLAGS := $(addprefix -I,$(INC_DIRS)) $(addprefix -D,$(DEFINES)) -MMD -MP
 LIB_FLAGS := $(addprefix -L,$(LIB_DIRS)) $(addprefix -l,$(LIBS))
 
 all: $(BUILD_DIRS) $(APPLICATION)
 
 $(BUILD_DIRS):
-	@mkdir -p $(BUILD_DIRS)
+	@echo "MD $@"
+	@mkdir -p $@
 
-$(APPLICATION): $(OBJS) $(RES_OBJ) $(GLAD_OBJ) $(RE_OBJ) $(IGFD_OBJ) $(CIMGUI_OBJS)
+$(APPLICATION): $(OBJS) $(RES_OBJ) $(GLAD_OBJ) $(RE_OBJ) $(IGFD_OBJ) $(CIMGUI_OBJS) $(TRIANG_OBJ)
 	@echo "LD $@"
 	@$(LD) $(LDFLAGS) -o $@ $^ $(LIB_FLAGS)
 
@@ -126,20 +137,24 @@ $(RES_OBJ): $(RES_SRC) $(RESOURCES) Makefile
 	@$(CC) $(CPPFLAGS) $(CCFLAGS) -I$(RES_PATH) -c $< -o $@
 
 $(GLAD_OBJ): $(GLAD_SRC)
-	@echo "CC $< (Vendor GLAD)"
+	@echo "CC $< (External GLAD)"
 	@$(CC) -O2 -I$(GLAD_DIR)/include -c $< -o $@
 
 $(RE_OBJ): $(RE_SRC)
-	@echo "CC $< (Vendor RE)"
+	@echo "CC $< (External RE)"
 	@$(CC) -O2 -c $< -o $@
 
 $(IGFD_OBJ): $(IGFD_SRC)
-	@echo "++ $< (Vendor IGFD)"
+	@echo "++ $< (External IGFD)"
 	@g++ -O2 -c $< -o $@ -I$(CIMGUI_DIR)/imgui
 
 $(BUILD_DIR)/$(CIMGUI_DIR)/%.o: $(CIMGUI_DIR)/%.cpp
-	@echo "++ $< (Vendor CImgui)"
+	@echo "++ $< (External CImgui)"
 	@g++ -O2 -c $< -o $@ -I$(CIMGUI_DIR)/imgui $(SDL_INC) '-DIMGUI_IMPL_API=extern "C"'
+
+$(TRIANG_OBJ): $(TRIANG_SRC)
+	@echo "++ $< (External Triangulate)"
+	@g++ -O2 -c $< -o $@ $(EARCUT_INC)
 
 .PHONY: clean echo
 clean:
@@ -147,8 +162,6 @@ clean:
 	@rm -rf $(BUILD_DIR)
 	@echo "RM $(APPLICATION)"
 	@rm -f $(APPLICATION)
-	@echo "RM ini files"
-	@rm -f *.ini
 
 echo:
 	@echo "LIBS= $(LIBS)"

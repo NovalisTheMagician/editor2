@@ -7,3 +7,6 @@
 [submodule "extern/re"]
 	path = extern/re
 	url = https://github.com/kokke/tiny-regex-c
+[submodule "extern/triangulate"]
+	path = extern/triangulate
+	url = https://github.com/NovalisTheMagician/triangulate
