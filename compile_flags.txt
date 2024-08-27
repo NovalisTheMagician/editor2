@@ -9,4 +9,5 @@
 -Iextern/imguifiledialog
 -Iextern/cimgui
 -Iextern/cimgui/generator/output
+-Iextern/triangulate
 -IE:\DevLibs\Include

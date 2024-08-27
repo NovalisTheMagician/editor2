@@ -6,7 +6,7 @@
 #include <assert.h>
 #include <tgmath.h>
 
-#include <triangulate.h>
+#include "triangulate.h"
 
 #include "map/remove.h"
 #include "map/util.h"
@@ -75,7 +75,7 @@ struct MapVertex* EditAddVertex(struct EdState state[static 1], vec2s pos)
 void EditRemoveVertices(struct EdState state[static 1], size_t num, struct MapVertex *vertices[static num])
 {
     struct Map *map = &state->map;
-    
+
     struct MapLine *potentialLines[4096] = { 0 };
     size_t numPotentialLines = 0;
 
@@ -282,7 +282,7 @@ struct MapSector* EditGetSector(struct EdState state[static 1], vec2s pos)
 
     for(struct MapSector *sector = map->headSector; sector; sector = sector->next)
     {
-        struct 
+        struct
         {
             struct MapSector *s[1000];
             int top;
