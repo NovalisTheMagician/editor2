@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <tgmath.h>
-
+#include <time.h>
 
 #define LOGBUFFER_CAPACITY 1024
 #define LOGBUFFER_LINE_LEN 512
@@ -22,7 +22,7 @@ static size_t getNextIndex(struct LogBuffer logBuffer[static 1])
         idx = logBuffer->length;
         logBuffer->length++;
     }
-    else 
+    else
     {
         idx = logBuffer->start;
         logBuffer->start = (logBuffer->start + 1) % LOGBUFFER_CAPACITY;

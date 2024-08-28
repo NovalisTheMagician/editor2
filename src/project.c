@@ -1,6 +1,8 @@
 #include "project.h"
 
+#include <stdio.h>
 #include <json-c/json.h>
+#include "logging.h"
 
 #define PROJECT_VERSION 1
 

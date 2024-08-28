@@ -8,9 +8,6 @@
 #include "async_load.h"
 #include "logging.h"
 
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-#include "cimgui.h"
-
 #define MAX_GAMEPATH_LEN 256
 #define MAX_GAMEARGUMENTS_LEN 256
 
@@ -165,7 +162,7 @@ struct EdState
 
         GLuint whiteTexture;
 
-        struct 
+        struct
         {
             GLuint hProgram, vProgram;
             GLuint hOffsetUniform, vOffsetUniform, hPeriodUniform, vPeriodUniform, hTintUniform, vTintUniform;

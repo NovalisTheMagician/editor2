@@ -1,6 +1,8 @@
 #pragma once
 
-#include "common.h"
+#include <stdint.h>
+#include <stddef.h>
+#include "utils/pstring.h"
 
 #define MAX_ASSETPATH_LEN 256
 
@@ -15,12 +17,12 @@ struct AssetPath
     uint32_t type;
     union
     {
-        struct 
+        struct
         {
             pstring path;
         } fs;
 
-        struct 
+        struct
         {
             pstring path;
             pstring url;

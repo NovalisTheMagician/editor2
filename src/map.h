@@ -1,6 +1,8 @@
 #pragma once
 
-#include "common.h"
+#include <stddef.h>
+#include <cglm/struct.h>
+#include "utils/pstring.h"
 
 enum LineType
 {

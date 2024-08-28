@@ -1,5 +1,7 @@
 #include "geometry.h"
 
+#include "common.h"
+
 #include <assert.h>
 #include <tgmath.h>
 #include <limits.h>
@@ -22,11 +24,11 @@ bool PointInPolygon(size_t numVertices, vec2s vertices[static numVertices], vec2
         if ((point.x == A.x && point.y == A.y) || (point.x == B.x && point.y == B.y)) break;
         if (A.y == B.y && point.y == A.y && between(point.x, A.x, B.x)) break;
 
-        if (between(point.y, A.y, B.y)) 
+        if (between(point.y, A.y, B.y))
         { // if P inside the vertical range
             // filter out "ray pass vertex" problem by treating the line a little lower
             if ((point.y == A.y && B.y >= A.y) || (point.y == B.y && A.y >= B.y)) continue;
-            // calc cross product `PA X PB`, P lays on left side of AB if c > 0 
+            // calc cross product `PA X PB`, P lays on left side of AB if c > 0
             float c = (A.x - point.x) * (B.y - point.y) - (B.x - point.x) * (A.y - point.y);
             if (c == 0) break;
             if ((A.y < B.y) == (c > 0)) inside = !inside;
@@ -116,7 +118,7 @@ angle_t AngleOfMapLines(struct MapLine a[static 1], struct MapLine b[static 1])
     //struct MapVertex *ab = a->b;
     struct MapVertex *ba = b->a;
     struct MapVertex *bb = b->b;
-    
+
     struct MapVertex *common = aa == ba ? ba : aa == bb ? bb : NULL;
     assert(common);
 
@@ -280,7 +282,7 @@ bool LineOverlap(struct line_t la, struct line_t lb, struct intersection_res_t *
         t0 = w.y / v.y;
         t1 = w2.y / v.y;
     }
-    
+
     if(t0 > t1)
     {
         float t = t0; t0 = t1; t0 = t;
@@ -310,7 +312,7 @@ bool LineOverlap(struct line_t la, struct line_t lb, struct intersection_res_t *
         res->t0 = t0;
         res->t1 = t1;
     }
-    
+
     return true;
 }
 

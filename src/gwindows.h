@@ -1,10 +1,6 @@
 #pragma once
 
-#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
-#include "cimgui.h"
-
 #include "editor.h"
-#include "common.h"
 
 void AboutWindow(bool *p_open);
 void SettingsWindow(bool *p_open, struct EdState *state);

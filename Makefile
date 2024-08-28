@@ -12,7 +12,7 @@ LIB_DIRS :=
 
 CC := gcc
 
-CCFLAGS := -Wall -std=gnu2x -Wstrict-prototypes
+CCFLAGS := -Wall -std=gnu23 -Wstrict-prototypes
 
 LD := $(CC)
 LDFLAGS := -pthread

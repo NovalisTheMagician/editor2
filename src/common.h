@@ -13,6 +13,8 @@
 #include "glad/gl.h"
 #include <cglm/struct.h>
 
+#include "imguidef.h"
+
 #include "utils/pstring.h"
 #include "utils/hash.h"
 #include "logging.h"
@@ -27,4 +29,6 @@
 #define REQ_GL_MAJOR 4
 #define REQ_GL_MINOR 6
 
+#if defined(_DEBUG)
 #include "utils/debug.h"
+#endif

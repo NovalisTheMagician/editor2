@@ -1,7 +1,6 @@
 #pragma once
 
 #include "editor.h"
-#include "common.h"
 #include "ImGuiFileDialog.h"
 
 enum SaveModalAction
@@ -11,7 +10,7 @@ enum SaveModalAction
     SMA_QUIT
 };
 
-struct FileDialogAction 
+struct FileDialogAction
 {
     void *data;
     void (*callback)(const char *path, void *data);

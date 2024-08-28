@@ -1,10 +1,12 @@
 #include "create.h"
 
+#include <string.h>
+
 struct CreateResult CreateVertex(struct Map map[static 1], vec2s pos)
 {
     for(struct MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
     {
-        if(glms_vec2_eqv_eps(vertex->pos, pos)) 
+        if(glms_vec2_eqv_eps(vertex->pos, pos))
         {
             return (struct CreateResult){ .mapElement = vertex, .created = false };
         }
@@ -43,7 +45,7 @@ struct CreateResult CreateLine(struct Map map[static 1], struct MapVertex v0[sta
     {
         bool ab = line->a == v0 && line->b == v1;
         bool ba = line->a == v1 && line->b == v0;
-        if(ab || ba) 
+        if(ab || ba)
         {
             return (struct CreateResult){ .mapElement = line, .created = false };
         }
@@ -103,7 +105,7 @@ struct CreateResult CreateSector(struct Map map[static 1], size_t numLines, stru
                     break;
                 }
             }
-            if(!sharesALine) 
+            if(!sharesALine)
             {
                 allSame = false;
                 break;

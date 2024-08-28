@@ -1,9 +1,5 @@
 #pragma once
 
-#include "common.h"
-
-#include "editor.h"
-#include "map.h"
 #include "editor.h"
 
 void ScreenToEditorSpace(const struct EdState state[static 1], int32_t x[static 1], int32_t y[static 1]);

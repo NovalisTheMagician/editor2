@@ -1,8 +1,6 @@
 #pragma once
 
 #include "common.h"
-#include "project.h"
-#include "async_load.h"
 
 enum TextureFlags
 {
@@ -25,7 +23,7 @@ struct Texture
 
 struct TextureCollection
 {
-    struct 
+    struct
     {
         struct Texture textures[NUM_BUCKETS];
         size_t size;

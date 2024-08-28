@@ -1,5 +1,7 @@
 #include "remove.h"
 
+#include <string.h>
+
 void RemoveVertex(struct Map map[static 1], struct MapVertex vertex[static 1])
 {
     struct MapVertex *prev = vertex->prev;
@@ -68,7 +70,7 @@ void RemoveLine(struct Map map[static 1], struct MapLine line[static 1])
         prev->next = next;
         next->prev = prev;
     }
-    
+
     if(line->a && line->a->numAttachedLines > 0)
     {
         struct MapVertex *v = line->a;

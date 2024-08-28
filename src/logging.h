@@ -1,6 +1,7 @@
 #pragma once
 
-#include "common.h"
+#include <stddef.h>
+#include "utils/pstring.h"
 
 struct LogBuffer
 {
@@ -32,5 +33,5 @@ void LogError(const char format[static 1], ...);
 #ifdef _DEBUG
 void LogDebug(const char format[static 1], ...);
 #else
-#define LogDebug(format, ...) 
+#define LogDebug(format, ...)
 #endif

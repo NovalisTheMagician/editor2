@@ -2,9 +2,11 @@
 
 #include "edit.h"
 
-#include "cimgui.h"
 #include <tgmath.h>
 #include <assert.h>
+
+#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#include "cimgui.h"
 #include "ImGuiFileDialog.h"
 
 #include "gwindows.h"
@@ -279,8 +281,8 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
         {
             if(igMenuItem_Bool("New Project", "", false, allowFileOps)) { if(state->project.dirty) { openProjectPopup = true; modalAction = SMA_NEW; } else NewProject(&state->project); }
             if(igMenuItem_Bool("Open Project", "", false, allowFileOps)) { if(state->project.dirty) { openProjectPopup = true; modalAction = SMA_OPEN; } else OpenProjectDialog(&state->project); }
-            if(igMenuItem_Bool("Save Project", "", false, state->project.dirty && allowFileOps)) 
-            { 
+            if(igMenuItem_Bool("Save Project", "", false, state->project.dirty && allowFileOps))
+            {
                 if(string_length(state->project.file) == 0)
                     SaveProjectDialog(&state->project, false);
                 else
@@ -289,8 +291,8 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
             igSeparator();
             if(igMenuItem_Bool("New Map", "Ctrl+N", false, allowFileOps)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_NEW; } else DoNewMap(state); }
             if(igMenuItem_Bool("Open Map", "Ctrl+O", false, allowFileOps)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_OPEN; } else DoLoadMap(state); }
-            if(igMenuItem_Bool("Save Map", "Ctrl+S", false, state->map.dirty && allowFileOps)) 
-            { 
+            if(igMenuItem_Bool("Save Map", "Ctrl+S", false, state->map.dirty && allowFileOps))
+            {
                 if(string_length(state->map.file) == 0)
                     SaveMapDialog(&state->map, false);
                 else
@@ -363,15 +365,15 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
             if(igBeginMenu("Arrange", true))
             {
                 ImVec2 displaySize = igGetIO()->DisplaySize;
-                if(igMenuItem_Bool("Fullsize", "", false, true)) 
-                { 
+                if(igMenuItem_Bool("Fullsize", "", false, true))
+                {
                     ImVec2 size = { .x = displaySize.x, .y = displaySize.y - menubarHeight };
                     ImVec2 pos = { .x = 0, .y = menubarHeight };
                     igSetWindowSize_Str("Editor", size, 0);
                     igSetWindowPos_Str("Editor", pos, 0);
                 }
-                if(igMenuItem_Bool("Side by Side", "", false, true)) 
-                { 
+                if(igMenuItem_Bool("Side by Side", "", false, true))
+                {
                     ImVec2 edsize = { .x = displaySize.x * 0.60f, .y = displaySize.y - menubarHeight };
                     ImVec2 edpos = { .x = 0, .y = menubarHeight };
                     igSetWindowSize_Str("Editor", edsize, 0);
@@ -381,8 +383,8 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
                     igSetWindowSize_Str("3D View", rtsize, 0);
                     igSetWindowPos_Str("3D View", rtpos, 0);
                 }
-                if(igMenuItem_Bool("Texturing", "", false, true)) 
-                { 
+                if(igMenuItem_Bool("Texturing", "", false, true))
+                {
                     ImVec2 rtsize = { .x = displaySize.x * 0.65f, .y = displaySize.y - menubarHeight };
                     ImVec2 rtpos = { .x = 0, .y = menubarHeight };
                     igSetWindowSize_Str("3D View", rtsize, 0);
@@ -444,12 +446,12 @@ static void ProjectSavePopup(struct EdState *state, bool *quitRequest)
         {
             if(string_length(state->project.file) > 0)
                 SaveProject(&state->project);
-            
+
             switch(modalAction)
             {
             case SMA_NEW: NewProject(&state->project); break;
             case SMA_OPEN: OpenProjectDialog(&state->project); break;
-            case SMA_QUIT: 
+            case SMA_QUIT:
             {
                 SaveProjectDialog(&state->project, true);
                 break;
@@ -491,7 +493,7 @@ static void MapSavePopup(struct EdState *state, bool *quitRequest)
             {
             case SMA_NEW: DoNewMap(state); break;
             case SMA_OPEN: DoLoadMap(state); break;
-            case SMA_QUIT: 
+            case SMA_QUIT:
             {
                 SaveMapDialog(&state->map, true);
                 break;
@@ -537,7 +539,7 @@ static void FileDialog(bool *doQuit)
         {
             char* cfilePathName = IGFD_GetFilePathName(cfileDialog, IGFD_ResultMode_AddIfNoFileExt);
             action->callback(cfilePathName, action->data);
-            if (cfilePathName) 
+            if (cfilePathName)
             {
                 free(cfilePathName);
 #if defined(_DEBUG)
@@ -546,7 +548,7 @@ static void FileDialog(bool *doQuit)
             }
             *doQuit = action->quitRequest;
         }
-        
+
         free(action);
         IGFD_CloseDialog(cfileDialog);
     }
