@@ -91,7 +91,7 @@ pstring string_cstr_size(size_t size, const char str[static size])
 
 void string_free(pstring str)
 {
-    assert(str);
+    if(!str) return;
     void *header = str - sizeof(struct string_header);
     free(header);
 }
@@ -102,7 +102,7 @@ size_t string_format(pstring into, const char format[static 1], ...)
     va_start(args, format);
 
     size_t num = string_vformat(into, format, args);
-    
+
     va_end(args);
 
     return num;
@@ -125,7 +125,7 @@ size_t string_format_offset(pstring into, size_t offset, const char format[stati
     va_start(args, format);
 
     size_t num = string_vformat_offset(into, offset, format, args);
-    
+
     va_end(args);
 
     return num;
