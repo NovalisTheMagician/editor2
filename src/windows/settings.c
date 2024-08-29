@@ -37,7 +37,7 @@ void SettingsWindow(bool *p_open, struct EdState *state)
             {
                 for(int i = 0; i < NUM_COLORS; ++i)
                 {
-                    igColorEdit4(ColorIndexToString(i), state->settings.colors[i], 0);
+                    igColorEdit4(ColorIndexToString(i), state->settings.colors[i].raw, 0);
                 }
                 igEndTabItem();
             }

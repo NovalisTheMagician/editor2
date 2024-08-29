@@ -84,8 +84,6 @@ static void AddEditVertex(struct EdState *state, vec2s v)
 {
     size_t idx = state->data.editVertexBufferSize++;
     state->data.editVertexBuffer[idx] = v;
-    //state->gl.editorEdit.bufferMap[idx + 4] = (EditorVertexType) { .position = {{ v.x, v.y }}, .color = DEFAULT_WHITE };
-    //state->gl.editorEdit.bufferMap[idx+1 + 4] = (EditorVertexType) { .position = {{ v.x, v.y }}, .color = DEFAULT_WHITE }; // set the next vertex to the same to remove line jerkiness
 }
 
 void EditorWindow(bool *p_open, struct EdState *state)
@@ -349,7 +347,6 @@ void EditorWindow(bool *p_open, struct EdState *state)
                         state->data.editState = ESTATE_ADDVERTEX;
                         state->data.numSelectedElements = 0;
                         state->data.hoveredElement = NULL;
-                        // state->gl.editorEdit.bufferMap[0 + 4] = (EditorVertexType) { .position = { {edSX, edSY} }, .color = DEFAULT_WHITE }; // set first vertex to mouse position to remove vertex jump
                     }
                     break;
                     case ESTATE_ADDVERTEX:

@@ -26,30 +26,30 @@ const char* ColorIndexToString(enum Colors color)
 
 void ResetSettings(struct EdSettings *settings)
 {
-    SetColor(&settings->colors[COL_WORKSPACE_BACK], (Color){ 0.45f, 0.55f, 0.60f, 1.00f });
+    settings->colors[COL_WORKSPACE_BACK] = (Color){ .r = 0.45f, .g = 0.55f, .b = 0.60f, .a = 1.00f };
 
-    SetColor(&settings->colors[COL_BACKGROUND], (Color){ 0.2f, 0.2f, 0.2f, 1.00f });
-    SetColor(&settings->colors[COL_BACK_LINES], (Color){ 0.25f, 0.25f, 0.25f, 1.00f });
-    SetColor(&settings->colors[COL_BACK_MAJOR_LINES], (Color){ 0.4f, 0.4f, 0.4f, 1.00f });
+    settings->colors[COL_BACKGROUND] = (Color){ .r = 0.20f, .g = 0.20f, .b = 0.20f, .a = 1.00f };
+    settings->colors[COL_BACK_LINES] = (Color){ .r = 0.25f,.g =  0.25f, .b = 0.25f, .a = 1.00f };
+    settings->colors[COL_BACK_MAJOR_LINES] = (Color){ .r = 0.40f, .g = 0.40f, .b = 0.40f, .a = 1.00f };
 
-    SetColor(&settings->colors[COL_RTBACKGROUND], (Color){ 0.00f, 0.00f, 0.00f, 1.00f });
+    settings->colors[COL_RTBACKGROUND] = (Color){ .r = 0.00f, .g = 0.00f, .b = 0.00f, .a = 1.00f };
 
-    SetColor(&settings->colors[COL_VERTEX], (Color){ 0.7f, 0.7f, 0.7f, 1.00f });
-    SetColor(&settings->colors[COL_LINE], (Color){ 0.8f, 0.8f, 0.8f, 1.00f });
-    SetColor(&settings->colors[COL_SECTOR], (Color){ 0.3f, 0.8f, 0.3f, 0.7f });
+    settings->colors[COL_VERTEX] = (Color){ .r = 0.7f, .g = 0.7f, .b = 0.7f, .a = 1.00f };
+    settings->colors[COL_LINE] = (Color){ .r = 0.8f, .g = 0.8f, .b = 0.8f, .a = 1.00f };
+    settings->colors[COL_SECTOR] = (Color){ .r = 0.3f, .g = 0.8f, .b = 0.3f, .a = 0.7f };
 
-    SetColor(&settings->colors[COL_ACTIVE_EDIT], (Color){ 0.8f, 0.8f, 0.3f, 1.0f });
+    settings->colors[COL_ACTIVE_EDIT] = (Color){ .r = 0.8f, .g = 0.8f, .b = 0.3f, .a = 1.0f };
 
-    SetColor(&settings->colors[COL_VERTEX_HOVER], (Color){ 1.0f, 1.0f, 1.0f, 1.00f });
-    SetColor(&settings->colors[COL_VERTEX_SELECT], (Color){ 1.0f, 1.0f, 0.0f, 1.00f });
+    settings->colors[COL_VERTEX_HOVER] = (Color){ .r = 1.0f, .g = 1.0f, .b = 1.0f, .a = 1.00f };
+    settings->colors[COL_VERTEX_SELECT] = (Color){ .r = 1.0f, .g = 1.0f, .b = 0.0f, .a = 1.00f };
 
-    SetColor(&settings->colors[COL_LINE_HOVER], (Color){ 1.0f, 1.0f, 1.0f, 1.00f });
-    SetColor(&settings->colors[COL_LINE_SELECT], (Color){ 1.0f, 1.0f, 0.0f, 1.00f });
+    settings->colors[COL_LINE_HOVER] = (Color){ .r = 1.0f, .g = 1.0f, .b = 1.0f, .a = 1.00f };
+    settings->colors[COL_LINE_SELECT] = (Color){ .r = 1.0f, .g = 1.0f, .b = 0.0f, .a = 1.00f };
 
-    SetColor(&settings->colors[COL_SECTOR_HOVER], (Color){ 0.4f, 0.9f, 0.4f, 1.00f });
-    SetColor(&settings->colors[COL_SECTOR_SELECT], (Color){ 1.0f, 1.0f, 0.0f, 1.00f });
+    settings->colors[COL_SECTOR_HOVER] = (Color){ .r = 0.4f, .g = 0.9f, .b = 0.4f, .a = 1.00f };
+    settings->colors[COL_SECTOR_SELECT] = (Color){ .r = 1.0f, .g = 1.0f, .b = 0.0f, .a = 1.00f };
 
-    SetColor(&settings->colors[COL_LINE_INNER], (Color){ 0.6f, 0.6f, 0.6f, 1.00f });
+    settings->colors[COL_LINE_INNER] = (Color){ .r = 0.6f, .g = 0.6f, .b = 0.6f, .a = 1.00f };
 
     string_free(settings->gamePath);
     string_free(settings->launchArguments);
@@ -95,7 +95,7 @@ bool LoadSettings(const char *settingsPath, struct EdSettings *settings)
             pstring key = string_substring(line, 0, idx);
             pstring value = string_substring(line, idx + 1, -1);
 
-                 if(strcasecmp(key, "theme") == 0) settings->theme = atoi(value);
+            if(strcasecmp(key, "theme") == 0) settings->theme = atoi(value);
             else if(strcasecmp(key, "vertex_point_size") == 0) settings->vertexPointSize = (float)atof(value);
             else if(strcasecmp(key, "show_grid_lines") == 0) settings->showGridLines = atoi(value);
             else if(strcasecmp(key, "show_major_axis") == 0) settings->showMajorAxis = atoi(value);

@@ -79,16 +79,7 @@ typedef enum EditState
     ESTATE_ADDVERTEX
 } EditState;
 
-typedef float Color[4];
-static inline void SetColor(Color *to, Color from)
-{
-    (*to)[0] = from[0];
-    (*to)[1] = from[1];
-    (*to)[2] = from[2];
-    (*to)[3] = from[3];
-}
-
-#define Col2Vec4(col) ((vec4s){ .r = col[0], .g = col[1], .b = col[2], .a = col[3] })
+typedef vec4s Color;
 
 typedef struct EdSettings
 {

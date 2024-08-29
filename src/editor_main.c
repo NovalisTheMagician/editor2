@@ -141,7 +141,7 @@ int EditorMain(int argc, char *argv[])
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glBindFramebuffer(GL_FRAMEBUFFER, state->gl.editorFramebufferMS);
             glViewport(0, 0, state->gl.editorFramebufferWidth, state->gl.editorFramebufferHeight);
-            glClearNamedFramebufferfv(state->gl.editorFramebufferMS, GL_COLOR, 0, state->settings.colors[COL_BACKGROUND]);
+            glClearNamedFramebufferfv(state->gl.editorFramebufferMS, GL_COLOR, 0, state->settings.colors[COL_BACKGROUND].raw);
             RenderEditorView(state);
             glBlitNamedFramebuffer(state->gl.editorFramebufferMS, state->gl.editorFramebuffer, 0, 0, state->gl.editorFramebufferWidth, state->gl.editorFramebufferHeight, 0, 0, state->gl.editorFramebufferWidth, state->gl.editorFramebufferHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
             glDisable(GL_BLEND);
@@ -154,7 +154,7 @@ int EditorMain(int argc, char *argv[])
 
             glBindFramebuffer(GL_FRAMEBUFFER, state->gl.realtimeFramebuffer);
             glViewport(0, 0, state->gl.realtimeFramebufferWidth, state->gl.realtimeFramebufferHeight);
-            glClearNamedFramebufferfv(state->gl.realtimeFramebuffer, GL_COLOR, 0, state->settings.colors[COL_RTBACKGROUND]);
+            glClearNamedFramebufferfv(state->gl.realtimeFramebuffer, GL_COLOR, 0, state->settings.colors[COL_RTBACKGROUND].raw);
             const float depth = 1.0f;
             glClearNamedFramebufferfv(state->gl.realtimeFramebuffer, GL_DEPTH, 0, &depth);
             RenderRealtimeView(state);
@@ -166,7 +166,7 @@ int EditorMain(int argc, char *argv[])
         igRender();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, (int)ioptr->DisplaySize.x, (int)ioptr->DisplaySize.y);
-        glClearNamedFramebufferfv(0, GL_COLOR, 0, state->settings.colors[COL_WORKSPACE_BACK]);
+        glClearNamedFramebufferfv(0, GL_COLOR, 0, state->settings.colors[COL_WORKSPACE_BACK].raw);
         ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
 
         SDL_GL_SwapWindow(window);

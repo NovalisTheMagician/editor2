@@ -61,10 +61,10 @@ bool InitEditor(EdState *state)
     glCreateFramebuffers(1, &state->gl.editorFramebufferMS);
     glCreateFramebuffers(1, &state->gl.realtimeFramebuffer);
 
-    static Color whiteColor = { 1, 1, 1, 1 };
+    static Color whiteColor = { .r = 1, .g = 1, .b = 1, .a = 1 };
     glCreateTextures(GL_TEXTURE_2D, 1, &state->gl.whiteTexture);
     glTextureStorage2D(state->gl.whiteTexture, 1, GL_RGBA8, 1, 1);
-    glTextureSubImage2D(state->gl.whiteTexture, 0, 0, 0, 1, 1, GL_RGBA, GL_FLOAT, whiteColor);
+    glTextureSubImage2D(state->gl.whiteTexture, 0, 0, 0, 1, 1, GL_RGBA, GL_FLOAT, whiteColor.raw);
     glTextureParameteri(state->gl.whiteTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTextureParameteri(state->gl.whiteTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTextureParameteri(state->gl.whiteTexture, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -201,8 +201,8 @@ static void RenderBackground(const EdState *state)
         .hOffset = offsetY,
         .period = period,
         .vOffset = offsetX,
-        .tint = Col2Vec4(state->settings.colors[COL_BACK_LINES]),
-        .majorTint = Col2Vec4(state->settings.colors[COL_BACK_MAJOR_LINES]),
+        .tint = state->settings.colors[COL_BACK_LINES],
+        .majorTint = state->settings.colors[COL_BACK_MAJOR_LINES],
         .majorIndex = -1,
         .viewProj = state->data.editorProjection
     };
@@ -263,7 +263,7 @@ static size_t CollectVertices(const EdState *state, size_t vertexOffset)
             colorIdx = COL_VERTEX_HOVER;
         }
 
-        state->gl.editorVertexMap[verts + vertexOffset] = (EditorVertexType){ .position = vertex->pos, .color = Col2Vec4(state->settings.colors[colorIdx]) };
+        state->gl.editorVertexMap[verts + vertexOffset] = (EditorVertexType){ .position = vertex->pos, .color = state->settings.colors[colorIdx] };
         verts++;
     }
     return verts;
@@ -289,8 +289,8 @@ static size_t CollectLines(const EdState *state, size_t vertexOffset)
             colorIdx = COL_LINE_INNER;
         }
         */
-        state->gl.editorVertexMap[verts + vertexOffset + 0] = (EditorVertexType){ .position = line->a->pos, .color = Col2Vec4(state->settings.colors[colorIdx]) };
-        state->gl.editorVertexMap[verts + vertexOffset + 1] = (EditorVertexType){ .position = line->b->pos, .color = Col2Vec4(state->settings.colors[colorIdx]) };
+        state->gl.editorVertexMap[verts + vertexOffset + 0] = (EditorVertexType){ .position = line->a->pos, .color = state->settings.colors[colorIdx] };
+        state->gl.editorVertexMap[verts + vertexOffset + 1] = (EditorVertexType){ .position = line->b->pos, .color = state->settings.colors[colorIdx] };
         verts += 2;
     }
     return verts;
@@ -322,7 +322,7 @@ static size_t CollectSectors(const EdState *state, size_t vertexOffset, size_t i
         for(size_t i = 0; i < sector->numOuterLines; i++)
         {
             MapLine *line = sector->outerLines[i];
-            state->gl.editorVertexMap[i + offsetIndex] = (EditorVertexType){ .position = line->a->pos, .color = Col2Vec4(state->settings.colors[colorIdx]) };
+            state->gl.editorVertexMap[i + offsetIndex] = (EditorVertexType){ .position = line->a->pos, .color = state->settings.colors[colorIdx] };
         }
         verts += sector->numOuterLines;
     }
@@ -334,10 +334,10 @@ static size_t CollectDragData(const EdState *state, size_t vertexOffset)
 {
     if(state->data.isDragging)
     {
-        state->gl.editorVertexMap[vertexOffset + 0] = (EditorVertexType){ .position = state->data.editVertexDrag[0], .color = Col2Vec4(state->settings.colors[COL_ACTIVE_EDIT]) };
-        state->gl.editorVertexMap[vertexOffset + 1] = (EditorVertexType){ .position = state->data.editVertexDrag[1], .color = Col2Vec4(state->settings.colors[COL_ACTIVE_EDIT]) };
-        state->gl.editorVertexMap[vertexOffset + 2] = (EditorVertexType){ .position = state->data.editDragMouse, .color = Col2Vec4(state->settings.colors[COL_ACTIVE_EDIT]) };
-        state->gl.editorVertexMap[vertexOffset + 3] = (EditorVertexType){ .position = state->data.editVertexDrag[2], .color = Col2Vec4(state->settings.colors[COL_ACTIVE_EDIT]) };
+        state->gl.editorVertexMap[vertexOffset + 0] = (EditorVertexType){ .position = state->data.editVertexDrag[0], .color = state->settings.colors[COL_ACTIVE_EDIT] };
+        state->gl.editorVertexMap[vertexOffset + 1] = (EditorVertexType){ .position = state->data.editVertexDrag[1], .color = state->settings.colors[COL_ACTIVE_EDIT] };
+        state->gl.editorVertexMap[vertexOffset + 2] = (EditorVertexType){ .position = state->data.editDragMouse, .color = state->settings.colors[COL_ACTIVE_EDIT] };
+        state->gl.editorVertexMap[vertexOffset + 3] = (EditorVertexType){ .position = state->data.editVertexDrag[2], .color = state->settings.colors[COL_ACTIVE_EDIT] };
         return 4;
     }
     return 0;
@@ -349,9 +349,9 @@ static size_t CollectEditData(const EdState *state, size_t vertexOffset)
     {
         for(size_t i = 0; i < state->data.editVertexBufferSize; ++i)
         {
-            state->gl.editorVertexMap[vertexOffset + i] = (EditorVertexType){ .position = state->data.editVertexBuffer[i], .color = Col2Vec4(state->settings.colors[COL_ACTIVE_EDIT]) };
+            state->gl.editorVertexMap[vertexOffset + i] = (EditorVertexType){ .position = state->data.editVertexBuffer[i], .color = state->settings.colors[COL_ACTIVE_EDIT] };
         }
-        state->gl.editorVertexMap[vertexOffset + state->data.editVertexBufferSize] = (EditorVertexType){ .position = state->data.editVertexMouse, .color = Col2Vec4(state->settings.colors[COL_ACTIVE_EDIT]) };
+        state->gl.editorVertexMap[vertexOffset + state->data.editVertexBufferSize] = (EditorVertexType){ .position = state->data.editVertexMouse, .color = state->settings.colors[COL_ACTIVE_EDIT] };
 
         return state->data.editVertexBufferSize + 1;
     }
