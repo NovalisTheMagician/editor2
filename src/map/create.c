@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-struct CreateResult CreateVertex(struct Map map[static 1], vec2s pos)
+struct CreateResult CreateVertex(struct Map *map, vec2s pos)
 {
     for(struct MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
     {
@@ -39,7 +39,7 @@ struct CreateResult CreateVertex(struct Map map[static 1], vec2s pos)
     return (struct CreateResult){ .mapElement = vertex, .created = true };
 }
 
-struct CreateResult CreateLine(struct Map map[static 1], struct MapVertex v0[static 1], struct MapVertex v1[static 1], struct LineData data)
+struct CreateResult CreateLine(struct Map *map, struct MapVertex *v0, struct MapVertex *v1, struct LineData data)
 {
     for(struct MapLine *line = map->headLine; line; line = line->next)
     {
@@ -87,7 +87,7 @@ struct CreateResult CreateLine(struct Map map[static 1], struct MapVertex v0[sta
     return (struct CreateResult){ .mapElement = line, .created = true };
 }
 
-struct CreateResult CreateSector(struct Map map[static 1], size_t numLines, struct MapLine *lines[static numLines], bool lineFronts[static numLines], struct SectorData data)
+struct CreateResult CreateSector(struct Map *map, size_t numLines, struct MapLine *lines[static numLines], bool lineFronts[static numLines], struct SectorData data)
 {
     for(struct MapSector *sector = map->headSector; sector; sector = sector->next)
     {

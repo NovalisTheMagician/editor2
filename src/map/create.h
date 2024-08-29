@@ -4,12 +4,12 @@
 
 #include "../map.h"
 
-struct CreateResult
+typedef struct CreateResult
 {
     void *mapElement;
     bool created;
-};
+} CreateResult;
 
-struct CreateResult CreateVertex(struct Map map[static 1], vec2s pos);
-struct CreateResult CreateLine(struct Map map[static 1], struct MapVertex v0[static 1], struct MapVertex v1[static 1], struct LineData data);
-struct CreateResult CreateSector(struct Map map[static 1], size_t numLines, struct MapLine *lines[static numLines], bool lineFronts[static numLines], struct SectorData data);
+CreateResult CreateVertex(Map *map, vec2s pos);
+CreateResult CreateLine(Map *map, MapVertex *v0, struct MapVertex *v1, struct LineData data);
+CreateResult CreateSector(Map *map, size_t numLines, MapLine *lines[static numLines], bool lineFronts[static numLines], SectorData data);

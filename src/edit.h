@@ -2,29 +2,29 @@
 
 #include "editor.h"
 
-void ScreenToEditorSpace(const struct EdState state[static 1], int32_t x[static 1], int32_t y[static 1]);
-void EditorToScreenSpace(const struct EdState state[static 1], int32_t x[static 1], int32_t y[static 1]);
-void ScreenToEditorSpaceGrid(const struct EdState state[static 1], int32_t x[static 1], int32_t y[static 1]);
+void ScreenToEditorSpace(const EdState *state, int32_t *x, int32_t *y);
+void EditorToScreenSpace(const EdState *state, int32_t *x, int32_t *y);
+void ScreenToEditorSpaceGrid(const EdState *state, int32_t *x, int32_t *y);
 
-void ScreenToEditorSpacef(const struct EdState state[static 1], float x[static 1], float y[static 1]);
+void ScreenToEditorSpacef(const EdState *state, float *x, float *y);
 
-void EditCopy(struct EdState state[static 1]);
-void EditPaste(struct EdState state[static 1]);
-void EditCut(struct EdState state[static 1]);
+void EditCopy(EdState *state);
+void EditPaste(EdState *state);
+void EditCut(EdState *state);
 
-struct MapVertex* EditAddVertex(struct EdState state[static 1], vec2s pos);
-void EditRemoveVertices(struct EdState state[static 1], size_t num, struct MapVertex *vertices[static num]);
-struct MapVertex* EditGetVertex(struct EdState state[static 1], vec2s pos);
-struct MapVertex* EditGetClosestVertex(struct EdState state[static 1], vec2s pos, float maxDist);
+MapVertex* EditAddVertex(EdState *state, vec2s pos);
+void EditRemoveVertices(EdState *state, size_t num, MapVertex *vertices[static num]);
+MapVertex* EditGetVertex(EdState *state, vec2s pos);
+MapVertex* EditGetClosestVertex(EdState *state, vec2s pos, float maxDist);
 
-struct MapLine* EditAddLine(struct EdState state[static 1], struct MapVertex v0[static 1], struct MapVertex v1[static 1], struct LineData data);
-void EditRemoveLines(struct EdState state[static 1], size_t num, struct MapLine *lines[static num]);
-// struct MapLine* EditGetLine(struct EdState *state, struct Vertex pos);
-struct MapLine* EditGetClosestLine(struct EdState state[static 1], vec2s pos, float maxDist);
+MapLine* EditAddLine(EdState *state, MapVertex *v0, MapVertex *v1, LineData data);
+void EditRemoveLines(EdState *state, size_t num, MapLine *lines[static num]);
+// MapLine* EditGetLine(EdState *state, Vertex pos);
+MapLine* EditGetClosestLine(EdState *state, vec2s pos, float maxDist);
 
-struct MapSector* EditAddSector(struct EdState *state, size_t numLines, struct MapLine *lines[static numLines], bool lineFront[static numLines], struct SectorData data);
-void EditRemoveSectors(struct EdState state[static 1], size_t num, struct MapSector *sectors[static num]);
-struct MapSector* EditGetSector(struct EdState state[static 1], vec2s pos);
+MapSector* EditAddSector(EdState *state, size_t numLines, MapLine *lines[static numLines], bool lineFront[static numLines], SectorData data);
+void EditRemoveSectors(EdState *state, size_t num, MapSector *sectors[static num]);
+MapSector* EditGetSector(EdState *state, vec2s pos);
 
-struct MapLine* EditApplyLines(struct EdState state[static 1], size_t num, vec2s points[static num]);
-struct MapSector* EditApplySector(struct EdState state[static 1], size_t num, vec2s points[static num]);
+MapLine* EditApplyLines(EdState *state, size_t num, vec2s points[static num]);
+MapSector* EditApplySector(EdState *state, size_t num, vec2s points[static num]);

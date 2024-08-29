@@ -26,7 +26,7 @@ pstring string_alloc(size_t capacity)
     return str;
 }
 
-pstring string_cstr(const char str[static 1])
+pstring string_cstr(const char *str)
 {
     size_t len = strlen(str);
     struct string_header *header = malloc(sizeof *header + len + 1);
@@ -47,7 +47,7 @@ pstring string_cstr(const char str[static 1])
     return newStr;
 }
 
-pstring string_cstr_alloc(const char str[static 1], size_t size)
+pstring string_cstr_alloc(const char *str, size_t size)
 {
     size_t stringlen = strlen(str);
     size_t len = stringlen > size ? stringlen : size;
@@ -96,7 +96,7 @@ void string_free(pstring str)
     free(header);
 }
 
-size_t string_format(pstring into, const char format[static 1], ...)
+size_t string_format(pstring into, const char *format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -108,7 +108,7 @@ size_t string_format(pstring into, const char format[static 1], ...)
     return num;
 }
 
-size_t string_vformat(pstring into, const char format[static 1], va_list args)
+size_t string_vformat(pstring into, const char *format, va_list args)
 {
     struct string_header *header = (struct string_header*)(into - sizeof *header);
     int ret = vsnprintf(into, header->size, format, args);
@@ -119,7 +119,7 @@ size_t string_vformat(pstring into, const char format[static 1], va_list args)
     return ret;
 }
 
-size_t string_format_offset(pstring into, size_t offset, const char format[static 1], ...)
+size_t string_format_offset(pstring into, size_t offset, const char *format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -131,7 +131,7 @@ size_t string_format_offset(pstring into, size_t offset, const char format[stati
     return num;
 }
 
-size_t string_vformat_offset(pstring into, size_t offset, const char format[static 1], va_list args)
+size_t string_vformat_offset(pstring into, size_t offset, const char *format, va_list args)
 {
     struct string_header *header = (struct string_header*)(into - sizeof *header);
     int ret = vsnprintf(into + offset, header->size - offset, format, args);
@@ -200,7 +200,7 @@ pstring string_substring(pstring str, size_t start, ssize_t end)
     return string_cstr_size(e - start, str + start);
 }
 
-ssize_t string_first_index_of(pstring str, size_t offset, const char tok[static 1])
+ssize_t string_first_index_of(pstring str, size_t offset, const char *tok)
 {
     struct string_header *header = (struct string_header*)(str - sizeof *header);
     size_t tokSize = strlen(tok);
@@ -214,7 +214,7 @@ ssize_t string_first_index_of(pstring str, size_t offset, const char tok[static 
     return -1;
 }
 
-ssize_t string_last_index_of(pstring str, size_t offset, const char tok[static 1])
+ssize_t string_last_index_of(pstring str, size_t offset, const char *tok)
 {
     struct string_header *header = (struct string_header*)(str - sizeof *header);
     size_t tokSize = strlen(tok);
@@ -229,7 +229,7 @@ ssize_t string_last_index_of(pstring str, size_t offset, const char tok[static 1
     return hitIdx;
 }
 
-pstring* string_split(pstring str, const char tok[static 1])
+pstring* string_split(pstring str, const char *tok)
 {
     return NULL;
 }
@@ -287,7 +287,7 @@ struct stringtok* stringtok_start(pstring source)
     return tok;
 }
 
-char* stringtok_next(struct stringtok tok[static 1], const char delim[static 1], size_t *numChars)
+char* stringtok_next(struct stringtok *tok, const char *delim, size_t *numChars)
 {
     if(tok->done) return NULL;
 
@@ -323,13 +323,13 @@ char* stringtok_next(struct stringtok tok[static 1], const char delim[static 1],
     return tok->buffer;
 }
 
-void stringtok_reset(struct stringtok tok[static 1])
+void stringtok_reset(struct stringtok *tok)
 {
     tok->next = 0;
     tok->done = 0;
 }
 
-int stringtok_done(struct stringtok tok[static 1])
+int stringtok_done(struct stringtok *tok)
 {
     return tok->done;
 }

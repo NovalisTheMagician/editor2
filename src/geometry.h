@@ -50,7 +50,7 @@ static inline bool LineEq(struct line_t a, struct line_t b)
     return (glms_vec2_eqv(a.a, b.a) && glms_vec2_eqv(a.b, b.b)) || (glms_vec2_eqv(a.a, b.b) && glms_vec2_eqv(a.b, b.a));
 }
 
-bool PointInSector(struct MapSector sector[static 1], vec2s point);
+bool PointInSector(struct MapSector *sector, vec2s point);
 bool PointInPolygon(size_t numVertices, vec2s vertices[static numVertices], vec2s point);
 float MinDistToLine(vec2s a, vec2s b, vec2s point);
 
@@ -68,12 +68,12 @@ enum orientation_t LineLoopOrientation(size_t numVertices, vec2s vertices[static
 struct BoundingBox BoundingBoxFromVertices(size_t numVertices, vec2s vertices[static numVertices]);
 bool BoundingBoxIntersect(struct BoundingBox a, struct BoundingBox b);
 
-int SideOfMapLine(struct MapLine line[static 1], vec2s point);
+int SideOfMapLine(struct MapLine *line, vec2s point);
 int SideOfLine(vec2s a, vec2s b, vec2s point);
 
 angle_t NormalizeAngle(angle_t angle);
 angle_t AngleDifference(angle_t a, angle_t b);
-angle_t AngleLine(struct MapLine line[static 1]);
+angle_t AngleLine(struct MapLine *line);
 angle_t AngleOfLines(struct line_t a, struct line_t b);
-angle_t AngleOfMapLines(struct MapLine a[static 1], struct MapLine b[static 1]);
+angle_t AngleOfMapLines(struct MapLine *a, struct MapLine *b);
 angle_t AngleOf(vec2s a, vec2s b, vec2s c);

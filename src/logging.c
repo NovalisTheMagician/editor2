@@ -14,7 +14,7 @@ static struct LogBuffer *logBuffer_;
 static FILE *logFile;
 #endif
 
-static size_t getNextIndex(struct LogBuffer logBuffer[static 1])
+static size_t getNextIndex(struct LogBuffer *logBuffer)
 {
     size_t idx = 0;
     if(logBuffer->length < LOGBUFFER_CAPACITY)
@@ -42,7 +42,7 @@ static const char* severityToString(enum LogSeverity severity)
     return "     ";
 }
 
-void LogInit(struct LogBuffer logBuffer[static 1])
+void LogInit(struct LogBuffer *logBuffer)
 {
     logBuffer->lines = calloc(LOGBUFFER_CAPACITY, sizeof *logBuffer->lines);
     logBuffer->start = 0;
@@ -55,7 +55,7 @@ void LogInit(struct LogBuffer logBuffer[static 1])
 #endif
 }
 
-void LogDestroy(struct LogBuffer logBuffer[static 1])
+void LogDestroy(struct LogBuffer *logBuffer)
 {
     for(size_t i = 0; i < LOGBUFFER_CAPACITY; ++i)
         string_free(logBuffer->lines[i]);
@@ -67,25 +67,25 @@ void LogDestroy(struct LogBuffer logBuffer[static 1])
 #endif
 }
 
-size_t LogLength(struct LogBuffer logBuffer[static 1])
+size_t LogLength(struct LogBuffer *logBuffer)
 {
     return logBuffer->length;
 }
 
-pstring LogGet(struct LogBuffer logBuffer[static 1], size_t idx)
+pstring LogGet(struct LogBuffer *logBuffer, size_t idx)
 {
     idx += logBuffer->start;
 
     return logBuffer->lines[idx % LOGBUFFER_CAPACITY];
 }
 
-void LogClear(struct LogBuffer logBuffer[static 1])
+void LogClear(struct LogBuffer *logBuffer)
 {
     logBuffer->start = 0;
     logBuffer->length = 0;
 }
 
-void LogString(struct LogBuffer logBuffer[static 1], enum LogSeverity severity, pstring str)
+void LogString(struct LogBuffer *logBuffer, enum LogSeverity severity, pstring str)
 {
     size_t idx = getNextIndex(logBuffer);
     pstring lineStr = logBuffer->lines[idx];
@@ -102,7 +102,7 @@ void LogString(struct LogBuffer logBuffer[static 1], enum LogSeverity severity, 
     logBuffer->lines[idx] = lineStr;
 }
 
-static void LogFormatV(struct LogBuffer logBuffer[static 1], enum LogSeverity severity, const char format[static 1], va_list args)
+static void LogFormatV(struct LogBuffer *logBuffer, enum LogSeverity severity, const char *format, va_list args)
 {
     size_t idx = getNextIndex(logBuffer);
     pstring lineStr = logBuffer->lines[idx];
@@ -120,7 +120,7 @@ static void LogFormatV(struct LogBuffer logBuffer[static 1], enum LogSeverity se
     logBuffer->lines[idx] = lineStr;
 }
 
-void LogFormat(struct LogBuffer logBuffer[static 1], enum LogSeverity severity, const char format[static 1], ...)
+void LogFormat(struct LogBuffer *logBuffer, enum LogSeverity severity, const char *format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -131,7 +131,7 @@ void LogFormat(struct LogBuffer logBuffer[static 1], enum LogSeverity severity, 
 }
 
 
-void LogInfo(const char format[static 1], ...)
+void LogInfo(const char *format, ...)
 {
     assert(logBuffer_);
     va_list args;
@@ -142,7 +142,7 @@ void LogInfo(const char format[static 1], ...)
     va_end(args);
 }
 
-void LogWarning(const char format[static 1], ...)
+void LogWarning(const char *format, ...)
 {
     assert(logBuffer_);
     va_list args;
@@ -153,7 +153,7 @@ void LogWarning(const char format[static 1], ...)
     va_end(args);
 }
 
-void LogError(const char format[static 1], ...)
+void LogError(const char *format, ...)
 {
     assert(logBuffer_);
     va_list args;
@@ -165,7 +165,7 @@ void LogError(const char format[static 1], ...)
 }
 
 #ifdef _DEBUG
-void LogDebug(const char format[static 1], ...)
+void LogDebug(const char *format, ...)
 {
     assert(logBuffer_);
     va_list args;

@@ -8,7 +8,7 @@
 
 #include <cglm/ivec2.h>
 
-bool PointInSector(struct MapSector sector[static 1], vec2s point)
+bool PointInSector(struct MapSector *sector, vec2s point)
 {
     return PointInPolygon(sector->numOuterLines, sector->vertices, point);
 }
@@ -47,7 +47,7 @@ float MinDistToLine(vec2s a, vec2s b, vec2s point)
     return sqrt(glms_vec2_distance2(point, tmp));
 }
 
-int SideOfMapLine(struct MapLine line[static 1], vec2s point)
+int SideOfMapLine(struct MapLine *line, vec2s point)
 {
     return SideOfLine(line->a->pos, line->b->pos, point);
 }
@@ -107,12 +107,12 @@ angle_t AngleDifference(angle_t a, angle_t b)
     return d;
 }
 
-angle_t AngleLine(struct MapLine line[static 1])
+angle_t AngleLine(struct MapLine *line)
 {
     return 0;
 }
 
-angle_t AngleOfMapLines(struct MapLine a[static 1], struct MapLine b[static 1])
+angle_t AngleOfMapLines(struct MapLine *a, struct MapLine *b)
 {
     struct MapVertex *aa = a->a;
     //struct MapVertex *ab = a->b;

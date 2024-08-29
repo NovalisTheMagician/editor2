@@ -7,7 +7,7 @@
 #include "remove.h"
 #include "util.h"
 
-struct MapSector* MakeMapSector(struct EdState state[static 1], struct MapLine startLine[static 1], bool front, struct SectorData data)
+struct MapSector* MakeMapSector(struct EdState *state, struct MapLine *startLine, bool front, struct SectorData data)
 {
     // front means natural direction
     struct MapLine *sectorLines[1024] = {0};
@@ -123,7 +123,7 @@ static void RemoveSectorUpdate(struct SectorUpdate *sectorUpdate, struct MapLine
     }
 }
 
-static void DoSplit(struct EdState state[static 1], struct SectorUpdate *sectorUpdate, struct MapLine *line, struct MapVertex *vertex)
+static void DoSplit(struct EdState *state, struct SectorUpdate *sectorUpdate, struct MapLine *line, struct MapVertex *vertex)
 {
     struct Map *map = &state->map;
 
@@ -161,7 +161,7 @@ static void DoSplit(struct EdState state[static 1], struct SectorUpdate *sectorU
     }
 }
 
-static void DoSplit2(struct EdState state[static 1], struct SectorUpdate *sectorUpdate, struct MapLine *line, struct MapVertex *vertexA, struct MapVertex *vertexB)
+static void DoSplit2(struct EdState *state, struct SectorUpdate *sectorUpdate, struct MapLine *line, struct MapVertex *vertexA, struct MapVertex *vertexB)
 {
     struct Map *map = &state->map;
 
@@ -201,7 +201,7 @@ static void DoSplit2(struct EdState state[static 1], struct SectorUpdate *sector
     }
 }
 
-bool InsertLinesIntoMap(struct EdState state[static 1], size_t numVerts, vec2s vertices[static numVerts], bool isLoop)
+bool InsertLinesIntoMap(struct EdState *state, size_t numVerts, vec2s vertices[static numVerts], bool isLoop)
 {
     struct Map *map = &state->map;
     bool didIntersect = false;

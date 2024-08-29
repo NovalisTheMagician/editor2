@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-void RemoveVertex(struct Map map[static 1], struct MapVertex vertex[static 1])
+void RemoveVertex(struct Map *map, struct MapVertex *vertex)
 {
     struct MapVertex *prev = vertex->prev;
     struct MapVertex *next = vertex->next;
@@ -46,7 +46,7 @@ void RemoveVertex(struct Map map[static 1], struct MapVertex vertex[static 1])
     map->dirty = true;
 }
 
-void RemoveLine(struct Map map[static 1], struct MapLine line[static 1])
+void RemoveLine(struct Map *map, struct MapLine *line)
 {
     struct MapLine *prev = line->prev;
     struct MapLine *next = line->next;
@@ -103,7 +103,7 @@ void RemoveLine(struct Map map[static 1], struct MapLine line[static 1])
     map->dirty = true;
 }
 
-void RemoveSector(struct Map map[static 1], struct MapSector sector[static 1])
+void RemoveSector(struct Map *map, struct MapSector *sector)
 {
     struct MapSector *prev = sector->prev;
     struct MapSector *next = sector->next;
