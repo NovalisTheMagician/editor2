@@ -67,8 +67,6 @@ struct MapVertex* EditAddVertex(struct EdState state[static 1], vec2s pos)
     if(!result.created) return result.mapElement;
     struct MapVertex *vertex = result.mapElement;
 
-    state->gl.editorVertex.bufferMap[vertex->idx] = (struct VertexType){ .position = pos, .color = { 1, 1, 1, 1 } };
-
     return vertex;
 }
 
@@ -162,11 +160,6 @@ struct MapLine* EditAddLine(struct EdState state[static 1], struct MapVertex v0[
     vec2s middleNormal = glms_vec2_scale(n, 10.0f);
     middleNormal = glms_vec2_add(middle, middleNormal);
 
-    state->gl.editorLine.bufferMap[line->idx * 4    ] = (struct VertexType){ .position = vert0, .color = { 1, 1, 1, 1 } };
-    state->gl.editorLine.bufferMap[line->idx * 4 + 1] = (struct VertexType){ .position = vert1, .color = { 1, 1, 1, 1 } };
-    state->gl.editorLine.bufferMap[line->idx * 4 + 2] = (struct VertexType){ .position = middle, .color = { 1, 1, 1, 1 } };
-    state->gl.editorLine.bufferMap[line->idx * 4 + 3] = (struct VertexType){ .position = middleNormal, .color = { 1, 1, 1, 1 } };
-
     return line;
 }
 
@@ -233,29 +226,13 @@ struct MapSector* EditAddSector(struct EdState *state, size_t numLines, struct M
     sector->vertices = calloc(polygon->length, sizeof *sector->vertices);
     memcpy(sector->vertices, polygon->vertices, polygon->length * sizeof *polygon->vertices);
 
-    size_t baseVertexIndex = state->gl.editorSector.highestVertIndex;
-    size_t baseIndexIndex = state->gl.editorSector.highestIndIndex;
-
-    size_t index = baseVertexIndex;
-    for(size_t i = 0; i < polygon->length; ++i)
-    {
-        float x = polygon->vertices[i][0];
-        float y = polygon->vertices[i][1];
-        state->gl.editorSector.bufferMap[index++] = (struct SectorVertexType){ .position = {{ x, y }}, .color = { 1, 1, 1, 1 }, .texCoord = {{ 0, 0 }} };
-    }
     unsigned int *indices = NULL;
     size_t numIndices = triangulate(polygon, NULL, 0, &indices);
 
-    index = baseIndexIndex;
-    for(size_t i = 0; i < numIndices; ++i)
-        state->gl.editorSector.indexMap[index++] = indices[i] + baseVertexIndex;
-
+    sector->edData.indices = malloc(numIndices * sizeof *indices);
+    memcpy(sector->edData.indices, indices, numIndices * sizeof *indices);
+    sector->edData.numIndices = numIndices;
     free(indices);
-
-    sector->edData = (struct TriangleData){ .indexStart = baseIndexIndex, .indexLength = numIndices, .vertexStart = baseVertexIndex, .vertexLength = polygon->length };
-
-    state->gl.editorSector.highestVertIndex += polygon->length;
-    state->gl.editorSector.highestIndIndex += numIndices;
 
     sector->bb = BoundingBoxFromVertices(polygon->length, sector->vertices);
     free(polygon);

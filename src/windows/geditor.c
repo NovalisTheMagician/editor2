@@ -84,8 +84,8 @@ static void AddEditVertex(struct EdState *state, vec2s v)
 {
     size_t idx = state->data.editVertexBufferSize++;
     state->data.editVertexBuffer[idx] = v;
-    state->gl.editorEdit.bufferMap[idx + 4] = (struct VertexType) { .position = {{ v.x, v.y }}, .color = DEFAULT_WHITE };
-    state->gl.editorEdit.bufferMap[idx+1 + 4] = (struct VertexType) { .position = {{ v.x, v.y }}, .color = DEFAULT_WHITE }; // set the next vertex to the same to remove line jerkiness
+    //state->gl.editorEdit.bufferMap[idx + 4] = (EditorVertexType) { .position = {{ v.x, v.y }}, .color = DEFAULT_WHITE };
+    //state->gl.editorEdit.bufferMap[idx+1 + 4] = (EditorVertexType) { .position = {{ v.x, v.y }}, .color = DEFAULT_WHITE }; // set the next vertex to the same to remove line jerkiness
 }
 
 void EditorWindow(bool *p_open, struct EdState *state)
@@ -145,15 +145,15 @@ void EditorWindow(bool *p_open, struct EdState *state)
         if(igButton("Reset Zoom", (ImVec2){ 0, 0 })) { state->data.zoomLevel = 1; }
 
         igSameLine(0, 16);
-        if(igButton("Go To Origin", (ImVec2){ 0, 0 })) 
+        if(igButton("Go To Origin", (ImVec2){ 0, 0 }))
         {
             state->data.viewPosition = (ImVec2){ -state->gl.editorFramebufferWidth / 2, -state->gl.editorFramebufferHeight / 2 };
         }
 
         igSameLine(0, 16);
-        if(igButton("Go To", (ImVec2){ 0, 0 })) 
+        if(igButton("Go To", (ImVec2){ 0, 0 }))
         {
-            
+
         }
 
         if(igBeginChild_ID(1000, (ImVec2){ 0, 0 }, false, ImGuiWindowFlags_NoMove))
@@ -186,16 +186,14 @@ void EditorWindow(bool *p_open, struct EdState *state)
                 state->data.mtx = edSX;
                 state->data.mty = edSY;
 #endif
-                
+
                 bool shiftDown = igGetIO()->KeyShift;
                 bool altDown = igGetIO()->KeyAlt;
 
                 vec2s mouseVertex = { {edX, edY} };
-                if(state->data.editState == ESTATE_ADDVERTEX)
-                {
-                    state->gl.editorEdit.bufferMap[state->data.editVertexBufferSize + 4] = (struct VertexType) { .position = {{edSX, edSY}}, .color = DEFAULT_WHITE };
-                }
-                else if(state->data.editState == ESTATE_NORMAL)
+                state->data.editVertexMouse = (vec2s){ .x = edSX, .y = edSY };
+                state->data.editDragMouse = mouseVertex;
+                if(state->data.editState == ESTATE_NORMAL)
                 {
                     switch(state->data.selectionMode)
                     {
@@ -209,9 +207,8 @@ void EditorWindow(bool *p_open, struct EdState *state)
                 {
                     state->data.endDrag = mouseVertex;
 
-                    state->gl.editorEdit.bufferMap[1] = (struct VertexType) { .position = { {state->data.startDrag.x, mouseVertex.y} }, .color = DEFAULT_WHITE };
-                    state->gl.editorEdit.bufferMap[2] = (struct VertexType) { .position = { {mouseVertex.x, mouseVertex.y} }, .color = DEFAULT_WHITE };
-                    state->gl.editorEdit.bufferMap[3] = (struct VertexType) { .position = { {mouseVertex.x, state->data.startDrag.y} }, .color = DEFAULT_WHITE };
+                    state->data.editVertexDrag[1].y = mouseVertex.y;
+                    state->data.editVertexDrag[2].x = mouseVertex.x;
                 }
 
                 if(igIsMouseDragging(ImGuiMouseButton_Right, 2))
@@ -237,10 +234,9 @@ void EditorWindow(bool *p_open, struct EdState *state)
                         state->data.startDrag = mouseVertex;
                         state->data.endDrag = mouseVertex;
 
-                        state->gl.editorEdit.bufferMap[0] = (struct VertexType) { .position = { {mouseVertex.x, mouseVertex.y} }, .color = DEFAULT_WHITE };
-                        state->gl.editorEdit.bufferMap[1] = (struct VertexType) { .position = { {mouseVertex.x, mouseVertex.y} }, .color = DEFAULT_WHITE };
-                        state->gl.editorEdit.bufferMap[2] = (struct VertexType) { .position = { {mouseVertex.x, mouseVertex.y} }, .color = DEFAULT_WHITE };
-                        state->gl.editorEdit.bufferMap[3] = (struct VertexType) { .position = { {mouseVertex.x, mouseVertex.y} }, .color = DEFAULT_WHITE };
+                        state->data.editVertexDrag[0] = mouseVertex; // start position
+                        state->data.editVertexDrag[1] = mouseVertex; // top right
+                        state->data.editVertexDrag[2] = mouseVertex; // bottom left
                     }
                 }
                 else if(!igIsMouseDown_Nil(ImGuiMouseButton_Left))
@@ -282,7 +278,7 @@ void EditorWindow(bool *p_open, struct EdState *state)
                             }
                         }
                         assert(state->data.editVertexBufferSize != EDIT_VERTEXBUFFER_CAP);
-                    } 
+                    }
                     else if(state->data.editState == ESTATE_NORMAL)
                     {
                         void *selectedElement = NULL;
@@ -353,7 +349,7 @@ void EditorWindow(bool *p_open, struct EdState *state)
                         state->data.editState = ESTATE_ADDVERTEX;
                         state->data.numSelectedElements = 0;
                         state->data.hoveredElement = NULL;
-                        state->gl.editorEdit.bufferMap[0 + 4] = (struct VertexType) { .position = { {edSX, edSY} }, .color = DEFAULT_WHITE }; // set first vertex to mouse position to remove vertex jump
+                        // state->gl.editorEdit.bufferMap[0 + 4] = (EditorVertexType) { .position = { {edSX, edSY} }, .color = DEFAULT_WHITE }; // set first vertex to mouse position to remove vertex jump
                     }
                     break;
                     case ESTATE_ADDVERTEX:
@@ -411,7 +407,7 @@ void EditorWindow(bool *p_open, struct EdState *state)
 
             if(focused)
             {
-                
+
             }
 
             ResizeEditorView(state, clientArea.x, clientArea.y);

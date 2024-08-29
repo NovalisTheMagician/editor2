@@ -3,28 +3,28 @@
 #include <stddef.h>
 #include "utils/pstring.h"
 
-struct LogBuffer
+typedef struct LogBuffer
 {
     pstring *lines;
     size_t start, length;
-};
+} LogBuffer;
 
-enum LogSeverity
+typedef enum LogSeverity
 {
     LOG_DEBUG,
     LOG_INFO,
     LOG_WARN,
     LOG_ERROR
-};
+} LogSeverity;
 
-void LogInit(struct LogBuffer logBuffer[static 1]);
-void LogDestroy(struct LogBuffer logBuffer[static 1]);
+void LogInit(LogBuffer logBuffer[static 1]);
+void LogDestroy(LogBuffer logBuffer[static 1]);
 
-size_t LogLength(struct LogBuffer logBuffer[static 1]);
-pstring LogGet(struct LogBuffer logBuffer[static 1], size_t idx);
-void LogClear(struct LogBuffer logBuffer[static 1]);
-void LogString(struct LogBuffer logBuffer[static 1], enum LogSeverity severity, pstring str);
-void LogFormat(struct LogBuffer logBuffer[static 1], enum LogSeverity severity, const char format[static 1], ...);
+size_t LogLength(LogBuffer logBuffer[static 1]);
+pstring LogGet(LogBuffer logBuffer[static 1], size_t idx);
+void LogClear(LogBuffer logBuffer[static 1]);
+void LogString(LogBuffer logBuffer[static 1], LogSeverity severity, pstring str);
+void LogFormat(LogBuffer logBuffer[static 1], LogSeverity severity, const char format[static 1], ...);
 
 void LogInfo(const char format[static 1], ...);
 void LogWarning(const char format[static 1], ...);

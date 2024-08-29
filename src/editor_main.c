@@ -29,7 +29,7 @@ static SDL_Window* InitSDL(void);
 static bool InitImgui(SDL_Window *window, SDL_GLContext context);
 static SDL_GLContext InitOpenGL(SDL_Window *window);
 
-static void HandleArguments(int argc, char *argv[], struct EdState *state)
+static void HandleArguments(int argc, char *argv[], EdState *state)
 {
     int c;
     const char *settingsPath = SETTINGS_FILE;
@@ -87,7 +87,7 @@ int EditorMain(int argc, char *argv[])
 
     InitGui();
 
-    struct EdState *state = calloc(1, sizeof *state);
+    EdState *state = calloc(1, sizeof *state);
     LogInit(&state->log);
 
     LogInfo("OpenGL Version %s", glGetString(GL_VERSION));

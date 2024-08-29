@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 int EditorMain(int argc, char *argv[]);
 
 #if defined(_WIN32)

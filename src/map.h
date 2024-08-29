@@ -4,31 +4,32 @@
 #include <cglm/struct.h>
 #include "utils/pstring.h"
 
-enum LineType
+typedef enum LineType
 {
     LT_NORMAL
-};
+} LineType;
 
-enum SectorType
+typedef enum SectorType
 {
     ST_NORMAL
-};
+} SectorType;
 
-struct TriangleData
+typedef struct TriangleData
 {
-    size_t indexStart, indexLength;
-    size_t vertexStart, vertexLength;
-};
+    vec2s *texCoords;
+    uint32_t *indices;
+    size_t numIndices;
+} TriangleData;
 
-struct BoundingBox
+typedef struct BoundingBox
 {
     vec2s min, max;
-};
+} BoundingBox;
 
 struct MapLine;
 struct MapSector;
 
-struct MapVertex
+typedef struct MapVertex
 {
     vec2s pos;
 
@@ -38,22 +39,22 @@ struct MapVertex
     size_t numAttachedLines;
 
     struct MapVertex *next, *prev;
-};
+} MapVertex;
 
-struct Side
+typedef struct Side
 {
     pstring upperTex;
     pstring middleTex;
     pstring lowerTex;
-};
+} Side;
 
-struct LineData
+typedef struct LineData
 {
     struct Side front, back;
     uint32_t type;
-};
+} LineData;
 
-struct MapLine
+typedef struct MapLine
 {
     struct MapVertex *a, *b;
     size_t aVertIndex, bVertIndex;
@@ -63,9 +64,9 @@ struct MapLine
 
     size_t idx;
     struct MapLine *next, *prev;
-};
+} MapLine;
 
-struct SectorData
+typedef struct SectorData
 {
     uint32_t type;
 
@@ -74,9 +75,9 @@ struct SectorData
 
     pstring floorTex;
     pstring ceilTex;
-};
+} SectorData;
 
-struct MapSector
+typedef struct MapSector
 {
     struct MapLine **outerLines;
     size_t numOuterLines;
@@ -97,9 +98,9 @@ struct MapSector
     size_t idx;
     struct MapSector *next, *prev;
     struct TriangleData edData;
-};
+} MapSector;
 
-struct Map
+typedef struct Map
 {
     struct MapVertex *headVertex, *tailVertex;
     size_t numVertices;
@@ -115,16 +116,16 @@ struct Map
 
     int textureScale;
     float gravity;
-};
+} Map;
 
-struct LineData DefaultLineData(void);
-struct SectorData DefaultSectorData(void);
+LineData DefaultLineData(void);
+SectorData DefaultSectorData(void);
 
-void FreeMapVertex(struct MapVertex *vertex);
-void FreeMapLine(struct MapLine *line);
-void FreeMapSector(struct MapSector *sector);
+void FreeMapVertex(MapVertex *vertex);
+void FreeMapLine(MapLine *line);
+void FreeMapSector(MapSector *sector);
 
-void NewMap(struct Map *map);
-bool LoadMap(struct Map *map);
-void SaveMap(struct Map *map);
-void FreeMap(struct Map *map);
+void NewMap(Map *map);
+bool LoadMap(Map *map);
+void SaveMap(Map *map);
+void FreeMap(Map *map);

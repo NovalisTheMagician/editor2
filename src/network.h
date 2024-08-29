@@ -2,7 +2,7 @@
 
 #include "common.h"
 
-struct Network
+typedef struct Network
 {
     bool connected, hosting;
-};
+} Network;

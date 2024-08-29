@@ -602,16 +602,12 @@ static void HandleShortcuts(struct EdState *state)
 
 static void DoNewMap(struct EdState *state)
 {
-    state->gl.editorSector.highestIndIndex = 0;
-    state->gl.editorSector.highestVertIndex = 0;
     state->data.editVertexBufferSize = 0;
     NewMap(&state->map);
 }
 
 static void DoLoadMap(struct EdState *state)
 {
-    state->gl.editorSector.highestIndIndex = 0;
-    state->gl.editorSector.highestVertIndex = 0;
     state->data.editVertexBufferSize = 0;
     OpenMapDialog(&state->map);
 }

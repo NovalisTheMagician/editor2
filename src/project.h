@@ -6,13 +6,13 @@
 
 #define MAX_ASSETPATH_LEN 256
 
-enum AssetPathType
+typedef enum AssetPathType
 {
     ASSPATH_FS,
     ASSPATH_FTP
-};
+} AssetPathType;
 
-struct AssetPath
+typedef struct AssetPath
 {
     uint32_t type;
     union
@@ -30,18 +30,18 @@ struct AssetPath
             pstring password;
         } ftp;
     };
-};
+} AssetPath;
 
-struct Project
+typedef struct Project
 {
     struct AssetPath basePath;
     pstring texturesPath;
     pstring thingsFile;
     bool dirty;
     pstring file;
-};
+} Project;
 
-void NewProject(struct Project *project);
-bool LoadProject(struct Project *project);
-void SaveProject(struct Project *project);
-void FreeProject(struct Project *project);
+void NewProject(Project *project);
+bool LoadProject(Project *project);
+void SaveProject(Project *project);
+void FreeProject(Project *project);

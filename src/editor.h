@@ -25,7 +25,7 @@
 #define EDIT_VERTEXBUFFER_CAP 4096
 #define LINE_BUFFER_CAP 256
 
-enum Theme
+typedef enum Theme
 {
     THEME_IMGUI_LIGHT,
     THEME_IMGUI_DARK,
@@ -34,9 +34,9 @@ enum Theme
     THEME_DEUSEX,
 
     NUM_THEMES
-};
+} Theme;
 
-enum Colors
+typedef enum Colors
 {
     COL_WORKSPACE_BACK,
 
@@ -62,20 +62,20 @@ enum Colors
     COL_LINE_INNER,
 
     NUM_COLORS
-};
+} Colors;
 
-enum SelectionMode
+typedef enum SelectionMode
 {
     MODE_VERTEX,
     MODE_LINE,
     MODE_SECTOR
-};
+} SelectionMode;
 
-enum EditState
+typedef enum EditState
 {
     ESTATE_NORMAL,
     ESTATE_ADDVERTEX
-};
+} EditState;
 
 typedef float Color[4];
 static inline void SetColor(Color *to, Color from)
@@ -86,7 +86,9 @@ static inline void SetColor(Color *to, Color from)
     (*to)[3] = from[3];
 }
 
-struct EdSettings
+#define Col2Vec4(col) ((vec4s){ .r = col[0], .g = col[1], .b = col[2], .a = col[3] })
+
+typedef struct EdSettings
 {
     Color colors[NUM_COLORS];
     int theme;
@@ -97,32 +99,42 @@ struct EdSettings
 
     pstring gamePath;
     pstring launchArguments;
-};
+} EdSettings;
 
-struct VertexType
+typedef struct BackgroundShaderData
+{
+    mat4s viewProj;
+    vec4s tint;
+    vec4s majorTint;
+    float hOffset, vOffset, period;
+    int majorIndex;
+} BackgroundShaderData;
+
+typedef struct EditorShaderData
+{
+    mat4s viewProj;
+    vec4s tint;
+    vec2s coordOffset;
+} EditorShaderData;
+
+typedef struct EditorVertexType
 {
     vec2s position;
-    Color color;
-};
-
-struct SectorVertexType
-{
-    vec2s position;
-    Color color;
+    vec4s color;
     vec2s texCoord;
-};
+} EditorVertexType;
 
 typedef uint32_t Index_t;
 
-struct EdState
+typedef struct EdState
 {
-    struct EdSettings settings;
-    struct Map map;
-    struct Project project;
-    struct Network network;
-    struct TextureCollection textures;
-    struct AsyncJob async;
-    struct LogBuffer log;
+    EdSettings settings;
+    Map map;
+    Project project;
+    Network network;
+    TextureCollection textures;
+    AsyncJob async;
+    LogBuffer log;
 
     struct
     {
@@ -162,49 +174,32 @@ struct EdState
 
         GLuint whiteTexture;
 
+        GLuint editorVertexFormat;
+        GLuint editorVertexBuffer, editorIndexBuffer, editorShaderDataBuffer;
+        EditorVertexType *editorVertexMap;
+        Index_t *editorIndexMap;
+
         struct
         {
             GLuint hProgram, vProgram;
-            GLuint hOffsetUniform, vOffsetUniform, hPeriodUniform, vPeriodUniform, hTintUniform, vTintUniform;
-            GLuint hMajorTintUniform, hMajorIdxUniform, vMajorTintUniform, vMajorIdxUniform;
-            GLuint hVPUniform, vVPUniform;
+            GLuint shaderDataBuffer;
             GLuint backVertexFormat;
         } editorBackProg;
 
         struct
         {
             GLuint program;
-            GLuint viewProjUniform, tintUniform;
-            GLuint vertBuffer;
-            GLuint vertFormat;
-            struct VertexType *bufferMap;
         } editorVertex;
 
         struct
         {
             GLuint program;
-            GLuint viewProjUniform, tintUniform;
-            GLuint vertFormat;
-            GLuint vertBuffer;
-            struct VertexType *bufferMap;
         } editorLine;
 
         struct
         {
             GLuint program;
-            GLuint viewProjUniform, tintUniform, textureUniform, offsetUniform;
-            GLuint vertFormat;
-            GLuint vertBuffer, indBuffer;
-            struct SectorVertexType *bufferMap;
-            Index_t *indexMap;
-            size_t highestVertIndex, highestIndIndex;
         } editorSector;
-
-        struct
-        {
-            GLuint buffer;
-            struct VertexType *bufferMap;
-        } editorEdit;
     } gl;
 
     struct
@@ -233,10 +228,10 @@ struct EdState
         bool isDragging;
         vec2s startDrag, endDrag;
 
-        vec2s editVertexBuffer[EDIT_VERTEXBUFFER_CAP];
+        vec2s editVertexBuffer[EDIT_VERTEXBUFFER_CAP], editVertexMouse, editDragMouse, editVertexDrag[3];
         size_t editVertexBufferSize;
 
-        enum EditState editState;
+        EditState editState;
 
         void **selectedElements;
         size_t numSelectedElements;
@@ -248,24 +243,24 @@ struct EdState
         GLuint missingIcon;
         GLuint missingTexture;
     } defaultTextures;
-};
+} EdState;
 
-const char* ColorIndexToString(enum Colors color);
+const char* ColorIndexToString(Colors color);
 
-void ResetSettings(struct EdSettings *settings);
-bool LoadSettings(const char *settingsPath, struct EdSettings *settings);
-void SaveSettings(const char *settingsPath, const struct EdSettings *settings);
-void FreeSettings(struct EdSettings *settings);
+void ResetSettings(EdSettings *settings);
+bool LoadSettings(const char *settingsPath, EdSettings *settings);
+void SaveSettings(const char *settingsPath, const EdSettings *settings);
+void FreeSettings(EdSettings *settings);
 
-bool LoadShaders(struct EdState *state);
+bool LoadShaders(EdState *state);
 
-void ChangeMode(struct EdState *state, enum SelectionMode mode);
+void ChangeMode(EdState *state, enum SelectionMode mode);
 
-bool InitEditor(struct EdState *state);
-void DestroyEditor(struct EdState *state);
+bool InitEditor(EdState *state);
+void DestroyEditor(EdState *state);
 
-void ResizeEditorView(struct EdState *state, int width, int height);
-void ResizeRealtimeView(struct EdState *state, int width, int height);
+void ResizeEditorView(EdState *state, int width, int height);
+void ResizeRealtimeView(EdState *state, int width, int height);
 
-void RenderEditorView(struct EdState *state);
-void RenderRealtimeView(struct EdState *state);
+void RenderEditorView(EdState *state);
+void RenderRealtimeView(EdState *state);
