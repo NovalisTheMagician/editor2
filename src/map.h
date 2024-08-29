@@ -50,16 +50,16 @@ typedef struct Side
 
 typedef struct LineData
 {
-    struct Side front, back;
+    Side front, back;
     uint32_t type;
 } LineData;
 
 typedef struct MapLine
 {
-    struct MapVertex *a, *b;
+    MapVertex *a, *b;
     size_t aVertIndex, bVertIndex;
 
-    struct LineData data;
+    LineData data;
     struct MapSector *frontSector, *backSector;
 
     size_t idx;
@@ -79,11 +79,11 @@ typedef struct SectorData
 
 typedef struct MapSector
 {
-    struct MapLine **outerLines;
+    MapLine **outerLines;
     size_t numOuterLines;
     vec2s *vertices;
 
-    struct MapLine ***innerLines;
+    MapLine ***innerLines;
     size_t *numInnerLinesNum;
     size_t numInnerLines;
 
@@ -91,24 +91,24 @@ typedef struct MapSector
     struct MapSector **contains;
     size_t numContains;
 
-    struct SectorData data;
+    SectorData data;
 
-    struct BoundingBox bb;
+    BoundingBox bb;
 
     size_t idx;
     struct MapSector *next, *prev;
-    struct TriangleData edData;
+    TriangleData edData;
 } MapSector;
 
 typedef struct Map
 {
-    struct MapVertex *headVertex, *tailVertex;
+    MapVertex *headVertex, *tailVertex;
     size_t numVertices;
 
-    struct MapLine *headLine, *tailLine;
+    MapLine *headLine, *tailLine;
     size_t numLines;
 
-    struct MapSector *headSector, *tailSector;
+    MapSector *headSector, *tailSector;
     size_t numSectors;
 
     bool dirty;

@@ -3,8 +3,6 @@
 
 #include "resources/resources.h"
 
-#define BUFFER_SIZE (1<<20)
-
 static bool CompileShader(const char *shaderScr, GLuint *shader)
 {
     int success;

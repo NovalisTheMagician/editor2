@@ -25,6 +25,8 @@
 #define EDIT_VERTEXBUFFER_CAP 4096
 #define LINE_BUFFER_CAP 256
 
+#define NUM_BUFFERS 3
+
 typedef enum Theme
 {
     THEME_IMGUI_LIGHT,
@@ -178,6 +180,13 @@ typedef struct EdState
         GLuint editorVertexBuffer, editorIndexBuffer, editorShaderDataBuffer;
         EditorVertexType *editorVertexMap;
         Index_t *editorIndexMap;
+
+        size_t editorMaxBufferCount;
+
+        int currentBuffer;
+        GLsync editorBufferFence[NUM_BUFFERS];
+        size_t editorVertexBufferOffset[NUM_BUFFERS];
+        size_t editorIndexBufferOffset[NUM_BUFFERS];
 
         struct
         {

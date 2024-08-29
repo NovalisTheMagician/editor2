@@ -1,5 +1,6 @@
 #include "editor.h"
 #include "common.h"
+#include "logging.h"
 
 #include <string.h>
 #include <tgmath.h>
@@ -86,6 +87,8 @@ bool InitEditor(EdState *state)
     glCreateBuffers(1, &state->gl.editorIndexBuffer);
     glNamedBufferStorage(state->gl.editorIndexBuffer, iBufferSize, NULL, storage_flags);
     state->gl.editorIndexMap = glMapNamedBufferRange(state->gl.editorIndexBuffer, 0, iBufferSize, mapping_flags);
+
+    state->gl.editorMaxBufferCount = BUFFER_SIZE / NUM_BUFFERS;
 
     glCreateVertexArrays(1, &state->gl.editorVertexFormat);
     glEnableVertexArrayAttrib(state->gl.editorVertexFormat, 0);
@@ -248,7 +251,7 @@ static inline bool includes(void * const *list, size_t size, const void *element
 static size_t CollectVertices(const EdState *state, size_t vertexOffset)
 {
     size_t verts = 0;
-    for(const struct MapVertex *vertex = state->map.headVertex; vertex; vertex = vertex->next)
+    for(const MapVertex *vertex = state->map.headVertex; vertex; vertex = vertex->next)
     {
         int colorIdx = COL_VERTEX;
         if(state->data.numSelectedElements > 0 && includes(state->data.selectedElements, state->data.numSelectedElements, vertex))
@@ -269,7 +272,7 @@ static size_t CollectVertices(const EdState *state, size_t vertexOffset)
 static size_t CollectLines(const EdState *state, size_t vertexOffset)
 {
     size_t verts = 0;
-    for(const struct MapLine *line = state->map.headLine; line; line = line->next)
+    for(const MapLine *line = state->map.headLine; line; line = line->next)
     {
         int colorIdx = COL_LINE;
         if(state->data.numSelectedElements > 0 && includes(state->data.selectedElements, state->data.numSelectedElements, line))
@@ -293,10 +296,10 @@ static size_t CollectLines(const EdState *state, size_t vertexOffset)
     return verts;
 }
 
-static size_t CollectSectors(const EdState *state, size_t vertexOffset, size_t *numIndices)
+static size_t CollectSectors(const EdState *state, size_t vertexOffset, size_t indexOffset, size_t *numIndices)
 {
     size_t verts = 0, inds = 0;
-    for(const struct MapSector *sector = state->map.headSector; sector; sector = sector->next)
+    for(const MapSector *sector = state->map.headSector; sector; sector = sector->next)
     {
         int colorIdx = COL_SECTOR;
         if(state->data.numSelectedElements > 0 && includes(state->data.selectedElements, state->data.numSelectedElements, sector))
@@ -308,6 +311,13 @@ static size_t CollectSectors(const EdState *state, size_t vertexOffset, size_t *
             colorIdx = COL_SECTOR_HOVER;
         }
 
+        const TriangleData data = sector->edData;
+        for(size_t i = 0; i < data.numIndices; ++i)
+        {
+            state->gl.editorIndexMap[indexOffset + inds + i] = data.indices[i] + verts;
+        }
+        inds += data.numIndices;
+
         size_t offsetIndex = verts + vertexOffset;
         for(size_t i = 0; i < sector->numOuterLines; i++)
         {
@@ -315,9 +325,6 @@ static size_t CollectSectors(const EdState *state, size_t vertexOffset, size_t *
             state->gl.editorVertexMap[i + offsetIndex] = (EditorVertexType){ .position = line->a->pos, .color = Col2Vec4(state->settings.colors[colorIdx]) };
         }
         verts += sector->numOuterLines;
-        const struct TriangleData data = sector->edData;
-        memcpy(state->gl.editorIndexMap + inds, data.indices, data.numIndices * sizeof *data.indices);
-        inds += data.numIndices;
     }
     *numIndices = inds;
     return verts;
@@ -359,6 +366,13 @@ void RenderEditorView(EdState *state)
     viewMat = glms_scale(viewMat, (vec3s){{ state->data.zoomLevel, state->data.zoomLevel, 1 }});
     mat4s viewProjMat = glms_mul(state->data.editorProjection, viewMat);
 
+    if(state->gl.editorBufferFence[state->gl.currentBuffer] != NULL)
+    {
+        GLenum ret;
+        while((ret = glClientWaitSync(state->gl.editorBufferFence[state->gl.currentBuffer], 0, 1000)) == GL_TIMEOUT_EXPIRED);
+        if(ret == GL_WAIT_FAILED) LogError("Fence wait failed\n");
+    }
+
     glBindVertexArray(state->gl.editorVertexFormat);
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, state->gl.editorShaderDataBuffer);
 
@@ -369,37 +383,35 @@ void RenderEditorView(EdState *state)
     };
     glNamedBufferSubData(state->gl.editorShaderDataBuffer, 0, sizeof data, &data);
 
-    size_t vertStart = 0;
+    size_t vertStart = state->gl.currentBuffer * state->gl.editorMaxBufferCount;
     size_t vertLength = CollectVertices(state, vertStart);
     size_t lineStart = vertStart + vertLength;
     size_t lineLength = CollectLines(state, lineStart);
-    size_t sectorStart = lineStart + lineLength, sectorIndexLength;
-    size_t sectorLength = CollectSectors(state, sectorStart, &sectorIndexLength);
+    size_t sectorStart = lineStart + lineLength, sectorIndexStart = state->gl.currentBuffer * state->gl.editorMaxBufferCount, sectorIndexLength;
+    size_t sectorLength = CollectSectors(state, sectorStart, sectorIndexStart, &sectorIndexLength);
     size_t dragStart = sectorStart + sectorLength;
     size_t dragLength = CollectDragData(state, dragStart);
     size_t editStart = dragStart + dragLength;
     size_t editLength = CollectEditData(state, editStart);
+
+    if(editStart + editLength == 0) // dont issue draw calls if we dont have anything to draw
+        return;
 
     glUseProgram(state->gl.editorSector.program);
     glUniform1i(0, 0);
     if(!state->data.showSectorTextures)
         glBindTextureUnit(0, state->gl.whiteTexture);
     // handle real texture here
-
     glDrawElementsBaseVertex(GL_TRIANGLES, sectorIndexLength, GL_UNSIGNED_INT, 0, sectorStart);
-    //glDrawElements(GL_TRIANGLES, sectorIndexLength, GL_UNSIGNED_INT, 0);
 
     glLineWidth(2);
     glUseProgram(state->gl.editorLine.program);
     glDrawArrays(GL_LINES, lineStart, lineLength);
-    glLineWidth(1);
 
     glPointSize(state->settings.vertexPointSize);
     glUseProgram(state->gl.editorVertex.program);
     glDrawArrays(GL_POINTS, vertStart, vertLength);
 
-    glLineWidth(2);
-    glPointSize(state->settings.vertexPointSize);
     glUseProgram(state->gl.editorVertex.program);
     glDrawArrays(GL_POINTS, editStart, editLength);
 
@@ -408,4 +420,7 @@ void RenderEditorView(EdState *state)
     glDrawArrays(GL_LINE_STRIP, editStart, editLength);
 
     glLineWidth(1);
+
+    state->gl.editorBufferFence[state->gl.currentBuffer] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    state->gl.currentBuffer = (state->gl.currentBuffer + 1) % NUM_BUFFERS;
 }
