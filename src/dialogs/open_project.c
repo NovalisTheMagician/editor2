@@ -22,5 +22,5 @@ void OpenProjectDialog(struct Project *project)
         .countSelectionMax = 1,
         .userDatas = fda,
     };
-    IGFD_OpenDialog(cfileDialog, "filedlg", "Open Map", "Project Files(*.pro){.pro}, All(*.*){.*}", config);
+    IGFD_OpenDialog(cfileDialog, "filedlg", "Open Map", "Project Files(*.epr){.epr}, All(*.*){.*}", config);
 }
