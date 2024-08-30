@@ -1,6 +1,7 @@
 #include "resources.h"
 
-INCBIN(Font, "UbuntuMono-Regular.ttf");
+//INCBIN(Font, "UbuntuMono-Regular.ttf");
+INCBIN(Font, "LiberationMono-Regular.ttf");
 
 INCTXT(BackH_vs, "backH.vs");
 INCTXT(BackV_vs, "backV.vs");

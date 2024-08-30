@@ -256,7 +256,7 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
 
     ImFontConfig *config = ImFontConfig_ImFontConfig();
     config->FontDataOwnedByAtlas = false;
-    ImFontAtlas_AddFontFromMemoryTTF(ioptr->Fonts, (void*)gFontData, gFontSize, 15.5f, config, NULL);
+    ImFontAtlas_AddFontFromMemoryTTF(ioptr->Fonts, (void*)gFontData, gFontSize, 16.75f, config, NULL);
 
     ioptr->IniFilename = NULL;
 
