@@ -5,10 +5,8 @@
 #include "../edit.h"
 #include "remove.h"
 
-SplitResult SplitMapLine(EdState *state, MapLine *line, MapVertex *vertex)
+SplitResult SplitMapLine(Map *map, MapLine *line, MapVertex *vertex)
 {
-    Map *map = &state->map;
-
     LineData dataCopy = line->data;
 
     MapVertex *va = line->a;
@@ -16,16 +14,14 @@ SplitResult SplitMapLine(EdState *state, MapLine *line, MapVertex *vertex)
 
     RemoveLine(map, line);
 
-    MapLine *newA = EditAddLine(state, va, vertex, dataCopy);
-    MapLine *newB = EditAddLine(state, vertex, vb, dataCopy);
+    MapLine *newA = EditAddLine(map, va, vertex, dataCopy);
+    MapLine *newB = EditAddLine(map, vertex, vb, dataCopy);
 
     return (SplitResult){ .left = newA, .right = newB };
 }
 
-SplitResult SplitMapLine2(EdState *state, MapLine *line, MapVertex *vertexA, MapVertex *vertexB)
+SplitResult SplitMapLine2(Map *map, MapLine *line, MapVertex *vertexA, MapVertex *vertexB)
 {
-    Map *map = &state->map;
-
     LineData dataCopy = line->data;
 
     MapVertex *va = line->a;
@@ -33,9 +29,9 @@ SplitResult SplitMapLine2(EdState *state, MapLine *line, MapVertex *vertexA, Map
 
     RemoveLine(map, line);
 
-    MapLine *newStart = EditAddLine(state, va, vertexA, dataCopy);
-    MapLine *newMiddle = EditAddLine(state, vertexA, vertexB, dataCopy);
-    MapLine *newEnd = EditAddLine(state, vertexB, vb, dataCopy);
+    MapLine *newStart = EditAddLine(map, va, vertexA, dataCopy);
+    MapLine *newMiddle = EditAddLine(map, vertexA, vertexB, dataCopy);
+    MapLine *newEnd = EditAddLine(map, vertexB, vb, dataCopy);
 
     return (SplitResult){ .left = newStart, .middle = newMiddle, .right = newEnd };
 }

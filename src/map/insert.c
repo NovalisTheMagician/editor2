@@ -7,7 +7,7 @@
 #include "remove.h"
 #include "util.h"
 
-MapSector* MakeMapSector(EdState *state, MapLine *startLine, bool front, SectorData data)
+MapSector* MakeMapSector(Map *map, MapLine *startLine, bool front, SectorData data)
 {
     // front means natural direction
     MapLine *sectorLines[1024] = {0};
@@ -61,7 +61,7 @@ MapSector* MakeMapSector(EdState *state, MapLine *startLine, bool front, SectorD
     }
 
     LogDebug("Found a loop with %d lines", numLines);
-    return EditAddSector(state, numLines, sectorLines, lineFront, data);
+    return EditAddSector(map, numLines, sectorLines, lineFront, data);
 }
 
 #define QUEUE_SIZE (4096)
@@ -123,10 +123,8 @@ static void RemoveSectorUpdate(SectorUpdate *sectorUpdate, MapLine *line)
     }
 }
 
-static void DoSplit(EdState *state, SectorUpdate *sectorUpdate, MapLine *line, MapVertex *vertex)
+static void DoSplit(Map *map, SectorUpdate *sectorUpdate, MapLine *line, MapVertex *vertex)
 {
-    Map *map = &state->map;
-
     SectorData frontData = DefaultSectorData();
     SectorData backData = DefaultSectorData();
     bool hasFrontSector = line->frontSector != NULL;
@@ -145,7 +143,7 @@ static void DoSplit(EdState *state, SectorUpdate *sectorUpdate, MapLine *line, M
     }
 
     if(hasSectorsAttached) RemoveSectorUpdate(sectorUpdate, line);
-    SplitResult result = SplitMapLine(state, line, vertex);
+    SplitResult result = SplitMapLine(map, line, vertex);
     if(hasSectorsAttached)
     {
         if(hasFrontSector)
@@ -161,10 +159,8 @@ static void DoSplit(EdState *state, SectorUpdate *sectorUpdate, MapLine *line, M
     }
 }
 
-static void DoSplit2(EdState *state, SectorUpdate *sectorUpdate, MapLine *line, MapVertex *vertexA, MapVertex *vertexB)
+static void DoSplit2(Map *map, SectorUpdate *sectorUpdate, MapLine *line, MapVertex *vertexA, MapVertex *vertexB)
 {
-    Map *map = &state->map;
-
     SectorData frontData = DefaultSectorData();
     SectorData backData = DefaultSectorData();
     bool hasFrontSector = line->frontSector != NULL;
@@ -183,7 +179,7 @@ static void DoSplit2(EdState *state, SectorUpdate *sectorUpdate, MapLine *line, 
     }
 
     if(hasSectorsAttached) RemoveSectorUpdate(sectorUpdate, line);
-    SplitResult result = SplitMapLine2(state, line, vertexA, vertexB);
+    SplitResult result = SplitMapLine2(map, line, vertexA, vertexB);
     if(hasSectorsAttached)
     {
         if(hasFrontSector)
@@ -201,9 +197,8 @@ static void DoSplit2(EdState *state, SectorUpdate *sectorUpdate, MapLine *line, 
     }
 }
 
-bool InsertLinesIntoMap(EdState *state, size_t numVerts, vec2s vertices[static numVerts], bool isLoop)
+bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVerts], bool isLoop)
 {
-    Map *map = &state->map;
     bool didIntersect = false;
     size_t end = isLoop ? numVerts : numVerts - 1;
 
@@ -280,9 +275,9 @@ bool InsertLinesIntoMap(EdState *state, size_t numVerts, vec2s vertices[static n
                         }
                         else
                         {
-                            MapVertex *splitVertex = EditAddVertex(state, minor.b);
+                            MapVertex *splitVertex = EditAddVertex(map, minor.b);
                             MapLine *lineToSplit = mapLine;
-                            DoSplit(state, &sectorsToUpdate, lineToSplit, splitVertex);
+                            DoSplit(map, &sectorsToUpdate, lineToSplit, splitVertex);
                             mapLine = NULL; // since we are splitting the line here we should stop iterating through the rest of the map lines
                         }
                         canInsertLine = false;
@@ -311,9 +306,9 @@ bool InsertLinesIntoMap(EdState *state, size_t numVerts, vec2s vertices[static n
             {
                 if(!glms_vec2_eqv_eps(mline.a, result.p0) && !glms_vec2_eqv_eps(mline.b, result.p0))
                 {
-                    MapVertex *splitVertex = EditAddVertex(state, result.p0);
+                    MapVertex *splitVertex = EditAddVertex(map, result.p0);
                     MapLine *lineToSplit = mapLine;
-                    DoSplit(state, &sectorsToUpdate, lineToSplit, splitVertex);
+                    DoSplit(map, &sectorsToUpdate, lineToSplit, splitVertex);
                 }
 
                 if(!glms_vec2_eqv_eps(line.a, result.p0))
@@ -334,18 +329,18 @@ bool InsertLinesIntoMap(EdState *state, size_t numVerts, vec2s vertices[static n
             {
                 if(result.t0 == 0 && result.t1 == 1)
                 {
-                    MapVertex *splitVertexA = EditAddVertex(state, result.p0);
-                    MapVertex *splitVertexB = EditAddVertex(state, result.p1);
+                    MapVertex *splitVertexA = EditAddVertex(map, result.p0);
+                    MapVertex *splitVertexB = EditAddVertex(map, result.p1);
                     MapLine *lineToSplit = mapLine;
                     mapLine = NULL;
-                    DoSplit2(state, &sectorsToUpdate, lineToSplit, splitVertexA, splitVertexB);
+                    DoSplit2(map, &sectorsToUpdate, lineToSplit, splitVertexA, splitVertexB);
                 }
                 else if(result.t0 == 0)
                 {
-                    MapVertex *splitVertex = EditAddVertex(state, result.p0);
+                    MapVertex *splitVertex = EditAddVertex(map, result.p0);
                     MapLine *lineToSplit = mapLine;
                     mapLine = NULL;
-                    DoSplit(state, &sectorsToUpdate, lineToSplit, splitVertex);
+                    DoSplit(map, &sectorsToUpdate, lineToSplit, splitVertex);
 
                     Enqueue(&queue, (line_t){ mline.b, lineCorrected.b }, true);
 
@@ -353,10 +348,10 @@ bool InsertLinesIntoMap(EdState *state, size_t numVerts, vec2s vertices[static n
                 }
                 else if(result.t1 == 0)
                 {
-                    MapVertex *splitVertex = EditAddVertex(state, result.p1);
+                    MapVertex *splitVertex = EditAddVertex(map, result.p1);
                     MapLine *lineToSplit = mapLine;
                     mapLine = NULL;
-                    DoSplit(state, &sectorsToUpdate, lineToSplit, splitVertex);
+                    DoSplit(map, &sectorsToUpdate, lineToSplit, splitVertex);
 
                     Enqueue(&queue, (line_t){ mline.a, lineCorrected.a }, true);
 
@@ -379,11 +374,11 @@ bool InsertLinesIntoMap(EdState *state, size_t numVerts, vec2s vertices[static n
 
         if(canInsertLine)
         {
-            MapVertex *mva = EditAddVertex(state, line.a);
-            MapVertex *mvb = EditAddVertex(state, line.b);
+            MapVertex *mva = EditAddVertex(map, line.a);
+            MapVertex *mvb = EditAddVertex(map, line.b);
             if(!mva || !mvb) return false;
 
-            MapLine *line = EditAddLine(state, mva, mvb, DefaultLineData());
+            MapLine *line = EditAddLine(map, mva, mvb, DefaultLineData());
             if(!line) return false;
 
             if(potentialStart) startLines[numStartLines++] = line;
@@ -400,7 +395,7 @@ bool InsertLinesIntoMap(EdState *state, size_t numVerts, vec2s vertices[static n
         SectorData data = sectorsToUpdate.data[i].sectorData;
         if(front && line->frontSector != NULL) continue;
         if(!front && line->backSector != NULL) continue;
-        MakeMapSector(state, line, front, data);
+        MakeMapSector(map, line, front, data);
     }
 
     // create sectors from the new lines
@@ -411,14 +406,14 @@ bool InsertLinesIntoMap(EdState *state, size_t numVerts, vec2s vertices[static n
             MapLine *l = GetMapLine(map, (line_t){ .a = vertices[0], .b = vertices[1] });
             assert(l);
             if(!(l->frontSector != NULL && l->backSector != NULL))
-                MakeMapSector(state, l, l->frontSector == NULL, DefaultSectorData());
+                MakeMapSector(map, l, l->frontSector == NULL, DefaultSectorData());
         }
         else
         {
             for(size_t i = 0; i < numStartLines; ++i)
             {
                 if(startLines[i]->frontSector == NULL)
-                    MakeMapSector(state, startLines[i], true, DefaultSectorData());
+                    MakeMapSector(map, startLines[i], true, DefaultSectorData());
             }
         }
     }

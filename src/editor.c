@@ -369,7 +369,7 @@ void RenderEditorView(EdState *state)
     if(state->gl.editorBufferFence[state->gl.currentBuffer] != NULL)
     {
         GLenum ret;
-        while((ret = glClientWaitSync(state->gl.editorBufferFence[state->gl.currentBuffer], 0, 1000)) == GL_TIMEOUT_EXPIRED);
+        while((ret = glClientWaitSync(state->gl.editorBufferFence[state->gl.currentBuffer], 0, 100)) == GL_TIMEOUT_EXPIRED);
         if(ret == GL_WAIT_FAILED) LogError("Fence wait failed\n");
     }
 

@@ -60,9 +60,8 @@ void EditCut(EdState *state)
     LogDebug("Cut!!\n");
 }
 
-MapVertex* EditAddVertex(EdState *state, vec2s pos)
+MapVertex* EditAddVertex(Map *map, vec2s pos)
 {
-    Map *map = &state->map;
     CreateResult result = CreateVertex(map, pos);
     if(!result.created) return result.mapElement;
     MapVertex *vertex = result.mapElement;
@@ -70,10 +69,8 @@ MapVertex* EditAddVertex(EdState *state, vec2s pos)
     return vertex;
 }
 
-void EditRemoveVertices(EdState *state, size_t num, MapVertex *vertices[static num])
+void EditRemoveVertices(Map *map, size_t num, MapVertex *vertices[static num])
 {
-    Map *map = &state->map;
-
     MapLine *potentialLines[4096] = { 0 };
     size_t numPotentialLines = 0;
 
@@ -105,9 +102,8 @@ void EditRemoveVertices(EdState *state, size_t num, MapVertex *vertices[static n
     map->dirty = true;
 }
 
-MapVertex* EditGetVertex(EdState *state, vec2s pos)
+MapVertex* EditGetVertex(Map *map, vec2s pos)
 {
-    Map *map = &state->map;
     for(MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
     {
         if(vertex->pos.x == pos.x && vertex->pos.y == pos.y)
@@ -118,9 +114,8 @@ MapVertex* EditGetVertex(EdState *state, vec2s pos)
     return NULL;
 }
 
-MapVertex* EditGetClosestVertex(EdState *state, vec2s pos, float maxDist)
+MapVertex* EditGetClosestVertex(Map *map, vec2s pos, float maxDist)
 {
-    Map *map = &state->map;
     MapVertex *closestVertex = NULL;
     float closestDist = FLT_MAX;
     for(MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
@@ -139,10 +134,8 @@ MapVertex* EditGetClosestVertex(EdState *state, vec2s pos, float maxDist)
     return closestVertex;
 }
 
-MapLine* EditAddLine(EdState *state, MapVertex *v0, MapVertex *v1, LineData data)
+MapLine* EditAddLine(Map *map, MapVertex *v0, MapVertex *v1, LineData data)
 {
-    Map *map = &state->map;
-
     CreateResult result = CreateLine(map, v0, v1, data);
     if(!result.created) return result.mapElement;
     MapLine *line = result.mapElement;
@@ -163,10 +156,8 @@ MapLine* EditAddLine(EdState *state, MapVertex *v0, MapVertex *v1, LineData data
     return line;
 }
 
-void EditRemoveLines(EdState *state, size_t num, MapLine *lines[static num])
+void EditRemoveLines(Map *map, size_t num, MapLine *lines[static num])
 {
-    Map *map = &state->map;
-
     MapVertex *potentialVertices[4096] = { 0 };
     size_t numPotentialVertices = 0;
 
@@ -196,9 +187,8 @@ void EditRemoveLines(EdState *state, size_t num, MapLine *lines[static num])
     map->dirty = true;
 }
 
-MapLine* EditGetClosestLine(EdState *state, vec2s pos, float maxDist)
+MapLine* EditGetClosestLine(Map *map, vec2s pos, float maxDist)
 {
-    Map *map = &state->map;
     MapLine *closestLine = NULL;
     float closestDist = FLT_MAX;
     for(MapLine *line = map->headLine; line; line = line->next)
@@ -213,10 +203,8 @@ MapLine* EditGetClosestLine(EdState *state, vec2s pos, float maxDist)
     return closestLine;
 }
 
-MapSector* EditAddSector(EdState *state, size_t numLines, MapLine *lines[static numLines], bool lineFronts[static numLines], SectorData data)
+MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLines], bool lineFronts[static numLines], SectorData data)
 {
-    Map *map = &state->map;
-
     CreateResult result = CreateSector(map, numLines, lines, lineFronts, data);
     if(!result.created) return result.mapElement;
     MapSector *sector = result.mapElement;
@@ -240,10 +228,8 @@ MapSector* EditAddSector(EdState *state, size_t numLines, MapLine *lines[static 
     return sector;
 }
 
-void EditRemoveSectors(EdState *state, size_t num, MapSector *sectors[static num])
+void EditRemoveSectors(Map *map, size_t num, MapSector *sectors[static num])
 {
-    Map *map = &state->map;
-
     for(size_t i = 0; i < num; ++i)
     {
         MapSector *sector = sectors[i];
@@ -253,10 +239,8 @@ void EditRemoveSectors(EdState *state, size_t num, MapSector *sectors[static num
     map->dirty = true;
 }
 
-MapSector* EditGetSector(EdState *state, vec2s pos)
+MapSector* EditGetSector(Map *map, vec2s pos)
 {
-    Map *map = &state->map;
-
     for(MapSector *sector = map->headSector; sector; sector = sector->next)
     {
         struct
@@ -288,12 +272,14 @@ MapSector* EditGetSector(EdState *state, vec2s pos)
 
 MapLine* EditApplyLines(EdState *state, size_t num, vec2s points[static num])
 {
-    InsertLinesIntoMap(state, num, points, false);
+    Map *map = &state->map;
+    InsertLinesIntoMap(map, num, points, false);
     return NULL;
 }
 
 MapSector* EditApplySector(EdState *state, size_t num, vec2s points[static num])
 {
-    InsertLinesIntoMap(state, num, points, true);
+    Map *map = &state->map;
+    InsertLinesIntoMap(map, num, points, true);
     return NULL;
 }

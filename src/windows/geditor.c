@@ -30,8 +30,8 @@ static void RectSelect(EdState *state, bool add)
     vec2s min = { .x = min(state->data.startDrag.x, state->data.endDrag.x), .y = min(state->data.startDrag.y, state->data.endDrag.y) };
     vec2s max = { .x = max(state->data.startDrag.x, state->data.endDrag.x), .y = max(state->data.startDrag.y, state->data.endDrag.y) };
 
-    LogDebug("min: %d %d", min.x, min.y);
-    LogDebug("max: %d %d", max.x, max.y);
+    LogDebug("min: %d %d", (int)min.x, (int)min.y);
+    LogDebug("max: %d %d", (int)max.x, (int)max.y);
 
     if(!add)
         state->data.numSelectedElements = 0;
@@ -176,6 +176,8 @@ void EditorWindow(bool *p_open, EdState *state)
             ScreenToEditorSpace(state, &edX, &edY);
             ScreenToEditorSpacef(state, &edXf, &edYf);
 
+            Map *map = &state->map;
+
             if(hovored)
             {
 #ifdef _DEBUG
@@ -195,9 +197,9 @@ void EditorWindow(bool *p_open, EdState *state)
                 {
                     switch(state->data.selectionMode)
                     {
-                    case MODE_VERTEX: state->data.hoveredElement = EditGetClosestVertex(state, mouseVertex, VERTEX_DIST); break;
-                    case MODE_LINE: state->data.hoveredElement = EditGetClosestLine(state, mouseVertex, LINE_DIST); break;
-                    case MODE_SECTOR: state->data.hoveredElement = EditGetSector(state, mouseVertex); break;
+                    case MODE_VERTEX: state->data.hoveredElement = EditGetClosestVertex(map, mouseVertex, VERTEX_DIST); break;
+                    case MODE_LINE: state->data.hoveredElement = EditGetClosestLine(map, mouseVertex, LINE_DIST); break;
+                    case MODE_SECTOR: state->data.hoveredElement = EditGetSector(map, mouseVertex); break;
                     }
                 }
 
@@ -282,9 +284,9 @@ void EditorWindow(bool *p_open, EdState *state)
                         void *selectedElement = NULL;
                         switch(state->data.selectionMode)
                         {
-                        case MODE_VERTEX: selectedElement = EditGetClosestVertex(state, mouseVertex, VERTEX_DIST); break;
-                        case MODE_LINE: selectedElement = EditGetClosestLine(state, mouseVertex, LINE_DIST); break;
-                        case MODE_SECTOR: selectedElement = EditGetSector(state, mouseVertex); break;
+                        case MODE_VERTEX: selectedElement = EditGetClosestVertex(map, mouseVertex, VERTEX_DIST); break;
+                        case MODE_LINE: selectedElement = EditGetClosestLine(map, mouseVertex, LINE_DIST); break;
+                        case MODE_SECTOR: selectedElement = EditGetSector(map, mouseVertex); break;
                         }
 
                         if(selectedElement)
@@ -379,9 +381,9 @@ void EditorWindow(bool *p_open, EdState *state)
                     {
                         switch(state->data.selectionMode)
                         {
-                        case MODE_VERTEX: EditRemoveVertices(state, state->data.numSelectedElements, (MapVertex**)state->data.selectedElements); break;
-                        case MODE_LINE: EditRemoveLines(state, state->data.numSelectedElements, (MapLine**)state->data.selectedElements); break;
-                        case MODE_SECTOR: EditRemoveSectors(state, state->data.numSelectedElements, (MapSector**)state->data.selectedElements); break;
+                        case MODE_VERTEX: EditRemoveVertices(map, state->data.numSelectedElements, (MapVertex**)state->data.selectedElements); break;
+                        case MODE_LINE: EditRemoveLines(map, state->data.numSelectedElements, (MapLine**)state->data.selectedElements); break;
+                        case MODE_SECTOR: EditRemoveSectors(map, state->data.numSelectedElements, (MapSector**)state->data.selectedElements); break;
                         }
                         state->data.numSelectedElements = 0;
                     }
