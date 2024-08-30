@@ -22,7 +22,7 @@ typedef enum AllocType
     AC_STRING
 } AllocType;
 
-static const char* typeToString(enum AllocType type)
+static const char* typeToString(AllocType type)
 {
     switch(type)
     {
@@ -35,7 +35,7 @@ static const char* typeToString(enum AllocType type)
 struct Alloc
 {
     struct Alloc *next;
-    enum AllocType type;
+    AllocType type;
     void *address;
     const char *origin;
     int line;

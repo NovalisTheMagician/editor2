@@ -4,7 +4,7 @@
 		{
 			"type": "shell",
 			"label": "build",
-			"command": "make CC=gcc",
+			"command": "make",
 			"args": [],
 			"problemMatcher": [
 				"$gcc"
@@ -14,7 +14,7 @@
 		{
 			"type": "shell",
 			"label": "rebuild",
-			"command": "make -B CC=gcc",
+			"command": "make -B",
 			"args": [],
 			"problemMatcher": [
 				"$gcc"

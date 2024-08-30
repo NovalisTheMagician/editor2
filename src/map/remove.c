@@ -130,7 +130,7 @@ void RemoveSector(Map *map, MapSector *sector)
 
     for(size_t i = 0; i < sector->numOuterLines; ++i)
     {
-        // RemoveLine(state, sector->outerLines[i]);
+        //RemoveLine(map, sector->outerLines[i]);
         MapLine *line = sector->outerLines[i];
         if(line->frontSector == sector) line->frontSector = NULL;
         if(line->backSector == sector) line->backSector = NULL;
@@ -140,7 +140,7 @@ void RemoveSector(Map *map, MapSector *sector)
     {
         for(size_t j = 0; j < sector->numInnerLinesNum[i]; ++j)
         {
-            //RemoveLine(state, sector->innerLines[i][j]);
+            //RemoveLine(map, sector->innerLines[i][j]);
             MapLine *line = sector->innerLines[i][j];
             if(line->frontSector == sector) line->frontSector = NULL;
             if(line->backSector == sector) line->backSector = NULL;
