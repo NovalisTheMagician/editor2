@@ -24,7 +24,7 @@ const char* ColorIndexToString(enum Colors color)
     }
 }
 
-void ResetSettings(struct EdSettings *settings)
+void ResetSettings(EdSettings *settings)
 {
     settings->colors[COL_WORKSPACE_BACK] = (Color){ .r = 0.45f, .g = 0.55f, .b = 0.60f, .a = 1.00f };
 
@@ -65,7 +65,7 @@ void ResetSettings(struct EdSettings *settings)
     settings->realtimeFov = 90;
 }
 
-bool LoadSettings(const char *settingsPath, struct EdSettings *settings)
+bool LoadSettings(const char *settingsPath, EdSettings *settings)
 {
     FILE *settingsFile = fopen(settingsPath, "r");
     if(settingsFile)
@@ -78,7 +78,7 @@ bool LoadSettings(const char *settingsPath, struct EdSettings *settings)
         fread(buffer, 1, size, settingsFile);
         string_recalc(buffer);
 
-        struct stringtok *tokenizer = stringtok_start(buffer);
+        stringtok *tokenizer = stringtok_start(buffer);
         while(!stringtok_done(tokenizer))
         {
             size_t size;
@@ -117,7 +117,7 @@ bool LoadSettings(const char *settingsPath, struct EdSettings *settings)
     return false;
 }
 
-void SaveSettings(const char *settingsPath, const struct EdSettings *settings)
+void SaveSettings(const char *settingsPath, const EdSettings *settings)
 {
     FILE *settingsFile = fopen(settingsPath, "w+");
     if(settingsFile)
@@ -133,7 +133,7 @@ void SaveSettings(const char *settingsPath, const struct EdSettings *settings)
     }
 }
 
-void FreeSettings(struct EdSettings *settings)
+void FreeSettings(EdSettings *settings)
 {
     string_free(settings->gamePath);
     string_free(settings->launchArguments);

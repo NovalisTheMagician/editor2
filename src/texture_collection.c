@@ -22,10 +22,10 @@
 
 #include <tgmath.h>
 
-static size_t Partition(struct Texture **arr, size_t lo, size_t hi)
+static size_t Partition(Texture **arr, size_t lo, size_t hi)
 {
     size_t pivIdx = floor((hi - lo) / 2) + lo;
-    struct Texture *pivot = arr[pivIdx];
+    Texture *pivot = arr[pivIdx];
     size_t i = lo - 1;
     size_t j = hi + 1;
 
@@ -36,8 +36,8 @@ static size_t Partition(struct Texture **arr, size_t lo, size_t hi)
 
         if(i >= j) return j;
 
-        struct Texture *a = arr[i];
-        struct Texture *b = arr[j];
+        Texture *a = arr[i];
+        Texture *b = arr[j];
         a->orderIdx = j;
         b->orderIdx = i;
         arr[j] = a;
@@ -45,7 +45,7 @@ static size_t Partition(struct Texture **arr, size_t lo, size_t hi)
     }
 }
 
-static void Quicksort(struct Texture **arr, size_t lo, size_t hi)
+static void Quicksort(Texture **arr, size_t lo, size_t hi)
 {
     if(lo >= 0 && hi >= 0 && lo < hi)
     {
@@ -55,21 +55,21 @@ static void Quicksort(struct Texture **arr, size_t lo, size_t hi)
     }
 }
 
-void tc_init(struct TextureCollection *tc)
+void tc_init(TextureCollection *tc)
 {
     tc->slots = calloc(NUM_SLOTS, sizeof *tc->slots);
     tc->order = calloc(NUM_BUCKETS * NUM_SLOTS, sizeof *tc->order);
 }
 
-void tc_destroy(struct TextureCollection *tc)
+void tc_destroy(TextureCollection *tc)
 {
     free(tc->slots);
     free(tc->order);
 }
 
-bool tc_load(struct TextureCollection *tc, pstring name, pstring path, time_t mtime)
+bool tc_load(TextureCollection *tc, pstring name, pstring path, time_t mtime)
 {
-    struct Texture *existing = tc_get(tc, name);
+    Texture *existing = tc_get(tc, name);
 
     if(existing && existing->modTime >= mtime) return true;
 
@@ -106,7 +106,7 @@ bool tc_load(struct TextureCollection *tc, pstring name, pstring path, time_t mt
         uint64_t nameHash = hash(name) % NUM_SLOTS;
         size_t size = tc->slots[nameHash].size++;
         assert(size < NUM_BUCKETS);
-        struct Texture *texture = &tc->slots[nameHash].textures[size];
+        Texture *texture = &tc->slots[nameHash].textures[size];
 
         texture->texture1 = texId;
         texture->width = width;
@@ -124,9 +124,9 @@ bool tc_load(struct TextureCollection *tc, pstring name, pstring path, time_t mt
     return true;
 }
 
-bool tc_load_mem(struct TextureCollection *tc, pstring name, uint8_t *data, size_t dataSize, time_t mtime)
+bool tc_load_mem(TextureCollection *tc, pstring name, uint8_t *data, size_t dataSize, time_t mtime)
 {
-    struct Texture *existing = tc_get(tc, name);
+    Texture *existing = tc_get(tc, name);
 
     if(existing && existing->modTime >= mtime) return true;
 
@@ -163,7 +163,7 @@ bool tc_load_mem(struct TextureCollection *tc, pstring name, uint8_t *data, size
         uint64_t nameHash = hash(name) % NUM_SLOTS;
         size_t size = tc->slots[nameHash].size++;
         assert(size < NUM_BUCKETS);
-        struct Texture *texture = &tc->slots[nameHash].textures[size];
+        Texture *texture = &tc->slots[nameHash].textures[size];
 
         texture->texture1 = texId;
         texture->width = width;
@@ -181,22 +181,22 @@ bool tc_load_mem(struct TextureCollection *tc, pstring name, uint8_t *data, size
     return true;
 }
 
-void tc_iterate(struct TextureCollection *tc, tc_itearte_cb cb, void *user)
+void tc_iterate(TextureCollection *tc, tc_itearte_cb cb, void *user)
 {
     for(size_t i = 0; i < tc->size; ++i)
     {
-        struct Texture *texture = tc->order[i];
+        Texture *texture = tc->order[i];
         cb(texture, i, user);
     }
 }
 
-void tc_iterate_filter(struct TextureCollection *tc, tc_itearte_cb cb, pstring filter, void *user)
+void tc_iterate_filter(TextureCollection *tc, tc_itearte_cb cb, pstring filter, void *user)
 {
     struct regex_t *regex = re_compile(filter);
 
     for(size_t i = 0, j = 0; i < tc->size; ++i)
     {
-        struct Texture *texture = tc->order[i];
+        Texture *texture = tc->order[i];
         int matchLen;
         int match = re_matchp(regex, texture->name, &matchLen);
         if(match != -1)
@@ -204,14 +204,14 @@ void tc_iterate_filter(struct TextureCollection *tc, tc_itearte_cb cb, pstring f
     }
 }
 
-void tc_unload(struct TextureCollection *tc, pstring name)
+void tc_unload(TextureCollection *tc, pstring name)
 {
     uint64_t nameHash = hash(name) % NUM_SLOTS;
     size_t size = tc->slots[nameHash].size;
 
     for(size_t i = 0; i < size; ++i)
     {
-        struct Texture *texture = &tc->slots[nameHash].textures[i];
+        Texture *texture = &tc->slots[nameHash].textures[i];
         if(strcmp(name, texture->name) == 0)
         {
             glDeleteTextures(1, &texture->texture1);
@@ -230,13 +230,13 @@ void tc_unload(struct TextureCollection *tc, pstring name)
     }
 }
 
-void tc_unload_all(struct TextureCollection *tc)
+void tc_unload_all(TextureCollection *tc)
 {
     if(tc->size == 0) return;
 
     for(size_t i = 0; i < tc->size; ++i)
     {
-        struct Texture *texture = tc->order[i];
+        Texture *texture = tc->order[i];
         glDeleteTextures(1, &texture->texture1);
         string_free(texture->name);
     }
@@ -249,7 +249,7 @@ void tc_unload_all(struct TextureCollection *tc)
     tc->size = 0;
 }
 
-bool tc_has(struct TextureCollection *tc, pstring name)
+bool tc_has(TextureCollection *tc, pstring name)
 {
     uint64_t nameHash = hash(name) % NUM_SLOTS;
     size_t size = tc->slots[nameHash].size;
@@ -262,23 +262,23 @@ bool tc_has(struct TextureCollection *tc, pstring name)
     return false;
 }
 
-struct Texture* tc_get(struct TextureCollection *tc, pstring name)
+Texture* tc_get(TextureCollection *tc, pstring name)
 {
     uint64_t nameHash = hash(name) % NUM_SLOTS;
     size_t size = tc->slots[nameHash].size;
 
     for(size_t i = 0; i < size; ++i)
     {
-        struct Texture *texture = &tc->slots[nameHash].textures[i];
+        Texture *texture = &tc->slots[nameHash].textures[i];
         if(strcmp(name, texture->name) == 0) return texture;
     }
 
     return NULL;
 }
 
-bool tc_set(struct TextureCollection *tc, pstring name, struct Texture texture)
+bool tc_set(TextureCollection *tc, pstring name, Texture texture)
 {
-    struct Texture *existing = tc_get(tc, name);
+    Texture *existing = tc_get(tc, name);
     if(existing)
     {
         size_t orderNum = existing->orderIdx;
@@ -293,7 +293,7 @@ bool tc_set(struct TextureCollection *tc, pstring name, struct Texture texture)
     uint64_t nameHash = hash(name) % NUM_SLOTS;
     size_t size = tc->slots[nameHash].size++;
     assert(size < NUM_BUCKETS);
-    struct Texture *tex = &tc->slots[nameHash].textures[size];
+    Texture *tex = &tc->slots[nameHash].textures[size];
 
     *tex = texture;
     existing->name = string_copy(name);
@@ -306,20 +306,20 @@ bool tc_set(struct TextureCollection *tc, pstring name, struct Texture texture)
     return true;
 }
 
-size_t tc_size(struct TextureCollection *tc)
+size_t tc_size(TextureCollection *tc)
 {
     return tc->size;
 }
 
-void tc_sort(struct TextureCollection *tc)
+void tc_sort(TextureCollection *tc)
 {
     if(tc->size > 0)
         Quicksort(tc->order, 0, tc->size-1);
 }
 
-bool tc_is_newer(struct TextureCollection *tc, pstring name, time_t newTime)
+bool tc_is_newer(TextureCollection *tc, pstring name, time_t newTime)
 {
-    struct Texture *texture = tc_get(tc, name);
+    Texture *texture = tc_get(tc, name);
     if(texture)
     {
         return texture->modTime < newTime;

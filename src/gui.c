@@ -167,16 +167,16 @@ void SetStyle(enum Theme theme)
     }
 }
 
-static void MainMenuBar(bool *doQuit, struct EdState *state);
+static void MainMenuBar(bool *doQuit, EdState *state);
 static void FileDialog(bool *doQuit);
 
-static void ProjectSavePopup(struct EdState *state, bool *quitRequest);
-static void MapSavePopup(struct EdState *state, bool *quitRequest);
+static void ProjectSavePopup(EdState *state, bool *quitRequest);
+static void MapSavePopup(EdState *state, bool *quitRequest);
 
-static void HandleShortcuts(struct EdState *state);
+static void HandleShortcuts(EdState *state);
 
-static void DoNewMap(struct EdState *state);
-static void DoLoadMap(struct EdState *state);
+static void DoNewMap(EdState *state);
+static void DoLoadMap(EdState *state);
 
 ImGuiFileDialog *cfileDialog;
 
@@ -194,7 +194,7 @@ void FreeGui(void)
     IGFD_Destroy(cfileDialog);
 }
 
-bool DoGui(struct EdState *state, bool doQuit)
+bool DoGui(EdState *state, bool doQuit)
 {
     openProjectPopup = false;
     openMapPopup = false;
@@ -271,7 +271,7 @@ bool DoGui(struct EdState *state, bool doQuit)
     return doQuit;
 }
 
-static void MainMenuBar(bool *doQuit, struct EdState *state)
+static void MainMenuBar(bool *doQuit, EdState *state)
 {
     bool allowFileOps = state->network.hosting || !state->network.connected;
     if(igBeginMainMenuBar())
@@ -437,7 +437,7 @@ static void MainMenuBar(bool *doQuit, struct EdState *state)
     }
 }
 
-static void ProjectSavePopup(struct EdState *state, bool *quitRequest)
+static void ProjectSavePopup(EdState *state, bool *quitRequest)
 {
     if(igBeginPopupModal("Save Project?", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse))
     {
@@ -479,7 +479,7 @@ static void ProjectSavePopup(struct EdState *state, bool *quitRequest)
     }
 }
 
-static void MapSavePopup(struct EdState *state, bool *quitRequest)
+static void MapSavePopup(EdState *state, bool *quitRequest)
 {
     if(igBeginPopupModal("Save Map?", NULL, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse))
     {
@@ -533,7 +533,7 @@ static void FileDialog(bool *doQuit)
     minSize.y = maxSize.y * 0.5f;
     if (IGFD_DisplayDialog(cfileDialog, "filedlg", ImGuiWindowFlags_NoCollapse, minSize, maxSize))
     {
-        struct FileDialogAction *action = IGFD_GetUserDatas(cfileDialog);
+        FileDialogAction *action = IGFD_GetUserDatas(cfileDialog);
         assert(action);
         if(IGFD_IsOk(cfileDialog))
         {
@@ -554,7 +554,7 @@ static void FileDialog(bool *doQuit)
     }
 }
 
-static void HandleShortcuts(struct EdState *state)
+static void HandleShortcuts(EdState *state)
 {
     if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_N, ImGuiInputFlags_RouteGlobal))
     {
@@ -600,13 +600,13 @@ static void HandleShortcuts(struct EdState *state)
     }
 }
 
-static void DoNewMap(struct EdState *state)
+static void DoNewMap(EdState *state)
 {
     state->data.editVertexBufferSize = 0;
     NewMap(&state->map);
 }
 
-static void DoLoadMap(struct EdState *state)
+static void DoLoadMap(EdState *state)
 {
     state->data.editVertexBufferSize = 0;
     OpenMapDialog(&state->map);

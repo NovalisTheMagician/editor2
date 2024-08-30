@@ -213,7 +213,7 @@ MapLine* EditGetClosestLine(EdState *state, vec2s pos, float maxDist)
     return closestLine;
 }
 
-struct MapSector* EditAddSector(EdState *state, size_t numLines, MapLine *lines[static numLines], bool lineFronts[static numLines], SectorData data)
+MapSector* EditAddSector(EdState *state, size_t numLines, MapLine *lines[static numLines], bool lineFronts[static numLines], SectorData data)
 {
     Map *map = &state->map;
 
@@ -246,7 +246,7 @@ void EditRemoveSectors(EdState *state, size_t num, MapSector *sectors[static num
 
     for(size_t i = 0; i < num; ++i)
     {
-        struct MapSector *sector = sectors[i];
+        MapSector *sector = sectors[i];
         RemoveSector(map, sector);
     }
 

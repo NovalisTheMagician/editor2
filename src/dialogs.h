@@ -10,12 +10,12 @@ enum SaveModalAction
     SMA_QUIT
 };
 
-struct FileDialogAction
+typedef struct FileDialogAction
 {
     void *data;
     void (*callback)(const char *path, void *data);
     bool quitRequest;
-};
+} FileDialogAction;
 
 extern ImGuiFileDialog *cfileDialog;
 

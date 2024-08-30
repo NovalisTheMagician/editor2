@@ -6,7 +6,7 @@
 
 #define PROJECT_VERSION 1
 
-void NewProject(struct Project *project)
+void NewProject(Project *project)
 {
     string_free(project->file);
     string_free(project->thingsFile);
@@ -28,7 +28,7 @@ void NewProject(struct Project *project)
     project->dirty = false;
 }
 
-bool LoadProject(struct Project *project)
+bool LoadProject(Project *project)
 {
     json_object *root = json_object_from_file(project->file);
     if(!root)
@@ -148,7 +148,7 @@ cleanup:
     return success;
 }
 
-void SaveProject(struct Project *project)
+void SaveProject(Project *project)
 {
     json_object *root = json_object_new_object();
 
@@ -180,7 +180,7 @@ void SaveProject(struct Project *project)
     project->dirty = false;
 }
 
-void FreeProject(struct Project *project)
+void FreeProject(Project *project)
 {
     string_free(project->file);
     string_free(project->thingsFile);

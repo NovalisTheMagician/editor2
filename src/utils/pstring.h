@@ -6,11 +6,11 @@
 
 typedef char *pstring;
 
-struct string_header
+typedef struct string_header
 {
     size_t size;
     size_t length;
-};
+} string_header;
 
 #define string(str) string_cstr(str)
 
@@ -46,7 +46,7 @@ int string_icmp(pstring a, pstring b);
 void string_toupper(pstring str);
 void string_tolower(pstring str);
 
-struct stringtok
+typedef struct stringtok
 {
     pstring source;
     size_t sourcelen;
@@ -54,7 +54,7 @@ struct stringtok
     char *buffer;
     size_t buffercap;
     int done;
-};
+} stringtok;
 
 struct stringtok* stringtok_start(pstring source);
 char* stringtok_next(struct stringtok *tok, const char *delim, size_t *numChars);

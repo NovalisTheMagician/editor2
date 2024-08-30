@@ -8,7 +8,7 @@
 
 #include <cglm/ivec2.h>
 
-bool PointInSector(struct MapSector *sector, vec2s point)
+bool PointInSector(MapSector *sector, vec2s point)
 {
     return PointInPolygon(sector->numOuterLines, sector->vertices, point);
 }
@@ -47,7 +47,7 @@ float MinDistToLine(vec2s a, vec2s b, vec2s point)
     return sqrt(glms_vec2_distance2(point, tmp));
 }
 
-int SideOfMapLine(struct MapLine *line, vec2s point)
+int SideOfMapLine(MapLine *line, vec2s point)
 {
     return SideOfLine(line->a->pos, line->b->pos, point);
 }
@@ -57,7 +57,7 @@ int SideOfLine(vec2s a, vec2s b, vec2s point)
     return (point.y - a.y) * (b.x - a.x) - (point.x - a.x) * (b.y - a.y);
 }
 
-struct BoundingBox BoundingBoxFromVertices(size_t numVertices, vec2s vertices[static numVertices])
+BoundingBox BoundingBoxFromVertices(size_t numVertices, vec2s vertices[static numVertices])
 {
     vec2s min = { .x = FLT_MAX, .y = FLT_MAX }, max = { .x = FLT_MIN, .y = FLT_MIN };
     for(size_t i = 0; i < numVertices; ++i)
@@ -66,10 +66,10 @@ struct BoundingBox BoundingBoxFromVertices(size_t numVertices, vec2s vertices[st
         max = glms_vec2_maxv(vert, max);
         min = glms_vec2_minv(vert, min);
     }
-    return (struct BoundingBox){ .min = min, .max = max };
+    return (BoundingBox){ .min = min, .max = max };
 }
 
-struct BoundingBox BoundingBoxFromMapLines(size_t numLines, struct MapLine *lines[static numLines])
+BoundingBox BoundingBoxFromMapLines(size_t numLines, MapLine *lines[static numLines])
 {
     vec2s min = { .x = FLT_MAX, .y = FLT_MAX }, max = { .x = FLT_MIN, .y = FLT_MIN };
     for(size_t i = 0; i < numLines; ++i)
@@ -81,10 +81,10 @@ struct BoundingBox BoundingBoxFromMapLines(size_t numLines, struct MapLine *line
         max = glms_vec2_maxv(vert, max);
         min = glms_vec2_minv(vert, min);
     }
-    return (struct BoundingBox){ .min = min, .max = max };
+    return (BoundingBox){ .min = min, .max = max };
 }
 
-bool BoundingBoxIntersect(struct BoundingBox a, struct BoundingBox b)
+bool BoundingBoxIntersect(BoundingBox a, BoundingBox b)
 {
     return a.min.x > b.min.x && a.min.x < b.max.x && a.max.x < b.max.x && a.min.y > b.min.y && a.min.y < b.max.y && a.max.y < b.max.y;
 }
@@ -107,26 +107,26 @@ angle_t AngleDifference(angle_t a, angle_t b)
     return d;
 }
 
-angle_t AngleLine(struct MapLine *line)
+angle_t AngleLine(MapLine *line)
 {
     return 0;
 }
 
-angle_t AngleOfMapLines(struct MapLine *a, struct MapLine *b)
+angle_t AngleOfMapLines(MapLine *a, MapLine *b)
 {
-    struct MapVertex *aa = a->a;
-    //struct MapVertex *ab = a->b;
-    struct MapVertex *ba = b->a;
-    struct MapVertex *bb = b->b;
+    MapVertex *aa = a->a;
+    //MapVertex *ab = a->b;
+    MapVertex *ba = b->a;
+    MapVertex *bb = b->b;
 
-    struct MapVertex *common = aa == ba ? ba : aa == bb ? bb : NULL;
+    MapVertex *common = aa == ba ? ba : aa == bb ? bb : NULL;
     assert(common);
 
     vec2s va = aa == common ? ba->pos : aa->pos, vb = ba == common ? bb->pos : ba->pos, vc = common->pos;
     return AngleOf(va, vc, vb);
 }
 
-angle_t AngleOfLines(struct line_t a, struct line_t b)
+angle_t AngleOfLines(line_t a, line_t b)
 {
     // assume a.a and b.a are equal
     return AngleOf(a.b, a.a, b.b);
@@ -175,7 +175,7 @@ angle_t AngleOf(vec2s a, vec2s b, vec2s c)
     return rs;
 }
 
-bool inSegment(vec2s p, struct line_t s)
+bool inSegment(vec2s p, line_t s)
 {
     if(s.a.x != s.b.x)
     {
@@ -194,7 +194,7 @@ bool inSegment(vec2s p, struct line_t s)
     return false;
 }
 
-bool LineIsCollinear(struct line_t la, struct line_t lb)
+bool LineIsCollinear(line_t la, line_t lb)
 {
     vec2s u = glms_vec2_sub(la.b, la.a);
     vec2s v = glms_vec2_sub(lb.b, lb.a);
@@ -210,7 +210,7 @@ bool LineIsCollinear(struct line_t la, struct line_t lb)
     return false;
 }
 
-bool LineIsParallel(struct line_t a, struct line_t b)
+bool LineIsParallel(line_t a, line_t b)
 {
     vec2s u = glms_vec2_sub(a.b, a.a);
     vec2s v = glms_vec2_sub(b.b, b.a);
@@ -218,7 +218,7 @@ bool LineIsParallel(struct line_t a, struct line_t b)
     return fabs(D) < SMALL_NUM;
 }
 
-vec2s LineGetCommonPoint(struct line_t major, struct line_t support)
+vec2s LineGetCommonPoint(line_t major, line_t support)
 {
     if(glms_vec2_eqv_eps(major.a, support.a)) return major.a;
     if(glms_vec2_eqv_eps(major.b, support.a)) return major.b;
@@ -227,14 +227,14 @@ vec2s LineGetCommonPoint(struct line_t major, struct line_t support)
     return major.b;
 }
 
-float LineGetPointFactor(struct line_t line, vec2s point)
+float LineGetPointFactor(line_t line, vec2s point)
 {
     //vec2s u = glms_vec2_sub(line.b, line.a);
     float len = glms_vec2_distance(line.b, line.a);
     return glms_vec2_distance(line.a, point) / len;
 }
 
-bool LineOverlap(struct line_t la, struct line_t lb, struct intersection_res_t *res)
+bool LineOverlap(line_t la, line_t lb, intersection_res_t *res)
 {
     vec2s u = glms_vec2_sub(la.b, la.a);
     vec2s v = glms_vec2_sub(lb.b, lb.a);
@@ -316,7 +316,7 @@ bool LineOverlap(struct line_t la, struct line_t lb, struct intersection_res_t *
     return true;
 }
 
-bool LineIntersection(struct line_t la, struct line_t lb, struct intersection_res_t *res)
+bool LineIntersection(line_t la, line_t lb, intersection_res_t *res)
 {
     vec2s u = glms_vec2_sub(la.b, la.a);
     vec2s v = glms_vec2_sub(lb.b, lb.a);

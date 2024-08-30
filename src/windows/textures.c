@@ -2,13 +2,13 @@
 
 #include "texture_load.h"
 
-struct IterateData
+typedef struct IterateData
 {
     struct EdState *state;
     struct Texture *selected;
     ImVec2 clientArea;
     int occupiedX;
-};
+} IterateData;
 
 static void TextureIteration(struct Texture *texture, size_t idx, void *user)
 {
@@ -47,7 +47,7 @@ struct Texture* TexturesWindow(bool *p_open, struct EdState *state, bool popup)
     {
         if(igBeginMenuBar())
         {
-            if(igMenuItem_Bool("Refresh", "", false, true)) 
+            if(igMenuItem_Bool("Refresh", "", false, true))
             {
                 LoadTextures(state, true);
             }

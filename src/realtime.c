@@ -1,6 +1,6 @@
 #include "editor.h"
 
-void ResizeRealtimeView(struct EdState *state, int width, int height)
+void ResizeRealtimeView(EdState *state, int width, int height)
 {
     if(width == 0 || height == 0)
         return;
@@ -30,7 +30,7 @@ void ResizeRealtimeView(struct EdState *state, int width, int height)
     state->gl.realtimeFramebufferHeight = height;
 }
 
-void RenderRealtimeView(struct EdState *state)
+void RenderRealtimeView(EdState *state)
 {
 
 }

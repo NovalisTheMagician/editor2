@@ -66,11 +66,11 @@ struct MapSector* MakeMapSector(struct EdState *state, struct MapLine *startLine
 
 #define QUEUE_SIZE (4096)
 
-struct QueueElement
+typedef struct QueueElement
 {
     struct line_t line;
     bool potentialStart;
-};
+} QueueElement;
 
 struct LineQueue
 {

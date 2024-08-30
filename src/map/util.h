@@ -7,10 +7,10 @@
 #include "../map.h"
 #include "../geometry.h"
 
-struct SplitResult
+typedef struct SplitResult
 {
     struct MapLine *left, *right, *middle;
-};
+} SplitResult;
 
 struct SplitResult SplitMapLine(struct EdState *state, struct MapLine *line, struct MapVertex *vertex);
 struct SplitResult SplitMapLine2(struct EdState *state, struct MapLine *line, struct MapVertex *vertexA, struct MapVertex *vertexB);

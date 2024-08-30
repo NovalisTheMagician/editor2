@@ -21,16 +21,16 @@
 
 typedef float angle_t;
 
-struct line_t
+typedef struct line_t
 {
     vec2s a, b;
-};
+} line_t;
 
-struct intersection_res_t
+typedef struct intersection_res_t
 {
     float t0, t1;
     vec2s p0, p1;
-};
+} intersection_res_t;
 
 enum intersection_type_t
 {

@@ -6,7 +6,7 @@ static pthread_cond_t batchSignal = PTHREAD_COND_INITIALIZER;
 
 static void* ThreadFunction(void *data)
 {
-    struct AsyncJob *job = data;
+    AsyncJob *job = data;
 
     bool run = true;
     while(true)
@@ -42,7 +42,7 @@ static void* ThreadFunction(void *data)
     return NULL;
 }
 
-bool Async_StartJob(struct AsyncJob *job, struct FetchLocation *fetchList, size_t len, batch_finish_cb finishCb, read_cb readCb, void *handle, void *user)
+bool Async_StartJob(AsyncJob *job, FetchLocation *fetchList, size_t len, batch_finish_cb finishCb, read_cb readCb, void *handle, void *user)
 {
     if(job->running) return false;
 
@@ -69,13 +69,13 @@ bool Async_StartJob(struct AsyncJob *job, struct FetchLocation *fetchList, size_
     return true;
 }
 
-static void freeBatch(struct Batch batch)
+static void freeBatch(Batch batch)
 {
     for(size_t i = 0; i < batch.numBuffers; ++i)
         free(batch.buffers[i]);
 }
 
-static void freeFetches(struct FetchLocation *locations, size_t num)
+static void freeFetches(FetchLocation *locations, size_t num)
 {
     for(size_t i = 0; i < num; ++i)
     {
@@ -84,7 +84,7 @@ static void freeFetches(struct FetchLocation *locations, size_t num)
     }
 }
 
-void Async_UpdateJob(struct AsyncJob *job)
+void Async_UpdateJob(AsyncJob *job)
 {
     pthread_mutex_lock(&threadMutex);
     bool batchDone = job->batchDone;
@@ -112,7 +112,7 @@ void Async_UpdateJob(struct AsyncJob *job)
     }
 }
 
-void Async_AbortJob(struct AsyncJob *job)
+void Async_AbortJob(AsyncJob *job)
 {
     if(!job->running) return;
     pthread_mutex_lock(&threadMutex);
@@ -120,7 +120,7 @@ void Async_AbortJob(struct AsyncJob *job)
     pthread_mutex_unlock(&threadMutex);
 }
 
-void Async_AbortJobAndWait(struct AsyncJob *job)
+void Async_AbortJobAndWait(AsyncJob *job)
 {
     if(!job->running) return;
 
@@ -133,7 +133,7 @@ void Async_AbortJobAndWait(struct AsyncJob *job)
     free(job->infos);
 }
 
-bool Async_IsRunningJob(struct AsyncJob *job)
+bool Async_IsRunningJob(AsyncJob *job)
 {
     return job->running;
 }

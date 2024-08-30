@@ -40,7 +40,7 @@ static bool LinkProgram(GLuint vertexShader, GLuint fragmentShader, GLuint *prog
     return true;
 }
 
-static bool InitBackground(struct EdState *state)
+static bool InitBackground(EdState *state)
 {
     GLuint hVertShader = glCreateShader(GL_VERTEX_SHADER);
     if(!CompileShader(gBackH_vsData, &hVertShader))
@@ -89,7 +89,7 @@ static bool InitBackground(struct EdState *state)
     return true;
 }
 
-static bool InitVertex(struct EdState *state)
+static bool InitVertex(EdState *state)
 {
     GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
     if(!CompileShader(gVertex_vsData, &vertShader))
@@ -111,7 +111,7 @@ static bool InitVertex(struct EdState *state)
     return true;
 }
 
-static bool InitLines(struct EdState *state)
+static bool InitLines(EdState *state)
 {
     GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
     if(!CompileShader(gLine_vsData, &vertShader))
@@ -133,7 +133,7 @@ static bool InitLines(struct EdState *state)
     return true;
 }
 
-static bool InitSectors(struct EdState *state)
+static bool InitSectors(EdState *state)
 {
     GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
     if(!CompileShader(gSector_vsData, &vertShader))
@@ -155,7 +155,7 @@ static bool InitSectors(struct EdState *state)
     return true;
 }
 
-bool LoadShaders(struct EdState *state)
+bool LoadShaders(EdState *state)
 {
     if(!InitBackground(state))
         return false;

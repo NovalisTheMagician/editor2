@@ -1,54 +1,54 @@
 #include "map.h"
 
-static void FreeVertList(struct MapVertex *head)
+static void FreeVertList(MapVertex *head)
 {
     while(head)
     {
-        struct MapVertex *vertex = head;
+        MapVertex *vertex = head;
         head = head->next;
 
         FreeMapVertex(vertex);
     }
 }
 
-static void FreeLineList(struct MapLine *head)
+static void FreeLineList(MapLine *head)
 {
     while(head)
     {
-        struct MapLine *line = head;
+        MapLine *line = head;
         head = head->next;
 
         FreeMapLine(line);
     }
 }
 
-static void FreeSectorList(struct MapSector *head)
+static void FreeSectorList(MapSector *head)
 {
     while(head)
     {
-        struct MapSector *sector = head;
+        MapSector *sector = head;
         head = head->next;
 
         FreeMapSector(sector);
     }
 }
 
-struct LineData DefaultLineData(void)
+LineData DefaultLineData(void)
 {
-    return (struct LineData){ .type = LT_NORMAL };
+    return (LineData){ .type = LT_NORMAL };
 }
 
-struct SectorData DefaultSectorData(void)
+SectorData DefaultSectorData(void)
 {
-    return (struct SectorData){ .type = ST_NORMAL };
+    return (SectorData){ .type = ST_NORMAL };
 }
 
-void FreeMapVertex(struct MapVertex *vertex)
+void FreeMapVertex(MapVertex *vertex)
 {
     free(vertex);
 }
 
-void FreeMapLine(struct MapLine *line)
+void FreeMapLine(MapLine *line)
 {
     string_free(line->data.front.lowerTex);
     string_free(line->data.front.middleTex);
@@ -59,7 +59,7 @@ void FreeMapLine(struct MapLine *line)
     free(line);
 }
 
-void FreeMapSector(struct MapSector *sector)
+void FreeMapSector(MapSector *sector)
 {
     string_free(sector->data.ceilTex);
     string_free(sector->data.floorTex);
@@ -75,7 +75,7 @@ void FreeMapSector(struct MapSector *sector)
     free(sector);
 }
 
-void NewMap(struct Map *map)
+void NewMap(Map *map)
 {
     FreeVertList(map->headVertex);
     map->headVertex = map->tailVertex = NULL;
@@ -101,20 +101,20 @@ void NewMap(struct Map *map)
     map->gravity = 9.80f;
 }
 
-bool LoadMap(struct Map *map)
+bool LoadMap(Map *map)
 {
     map->dirty = false;
     return false;
 }
 
-void SaveMap(struct Map *map)
+void SaveMap(Map *map)
 {
     if(map->file == NULL) return;
 
     map->dirty = false;
 }
 
-void FreeMap(struct Map *map)
+void FreeMap(Map *map)
 {
     FreeVertList(map->headVertex);
     FreeLineList(map->headLine);
