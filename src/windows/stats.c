@@ -1,6 +1,6 @@
 #include "../gwindows.h"
 
-void StatsWindow(bool *p_open, struct EdState *state)
+void StatsWindow(bool *p_open, EdState *state)
 {
     if(igBegin("Debug Stats", p_open, 0))
     {

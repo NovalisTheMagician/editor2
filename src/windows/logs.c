@@ -1,8 +1,8 @@
 #include "../gwindows.h"
 
-void LogsWindow(bool *p_open, struct EdState *state)
+void LogsWindow(bool *p_open, EdState *state)
 {
-    struct LogBuffer *log = &state->log;
+    LogBuffer *log = &state->log;
 
     igSetNextWindowSize((ImVec2){ 800, 600 }, ImGuiCond_FirstUseEver);
     igSetNextWindowPos((ImVec2){ 40, 40 }, ImGuiCond_FirstUseEver, (ImVec2){ 0, 0 });

@@ -8,7 +8,7 @@
 #define LINE_DIST 10
 #define VERTEX_DIST 5
 
-static void SubmitEditData(struct EdState *state, bool isLoop)
+static void SubmitEditData(EdState *state, bool isLoop)
 {
     LogDebug("Edit Done with %d vertices", state->data.editVertexBufferSize);
 
@@ -25,7 +25,7 @@ static bool within(vec2s min, vec2s max, vec2s v)
     return v.x >= min.x && v.y >= min.y && v.x <= max.x && v.y <= max.y;
 }
 
-static void RectSelect(struct EdState *state, bool add)
+static void RectSelect(EdState *state, bool add)
 {
     vec2s min = { .x = min(state->data.startDrag.x, state->data.endDrag.x), .y = min(state->data.startDrag.y, state->data.endDrag.y) };
     vec2s max = { .x = max(state->data.startDrag.x, state->data.endDrag.x), .y = max(state->data.startDrag.y, state->data.endDrag.y) };
@@ -40,7 +40,7 @@ static void RectSelect(struct EdState *state, bool add)
     {
     case MODE_VERTEX:
         {
-            for(struct MapVertex *vertex = state->map.headVertex; vertex; vertex = vertex->next)
+            for(MapVertex *vertex = state->map.headVertex; vertex; vertex = vertex->next)
             {
                 if(within(min, max, vertex->pos))
                 {
@@ -51,7 +51,7 @@ static void RectSelect(struct EdState *state, bool add)
         break;
     case MODE_LINE:
         {
-            for(struct MapLine *line = state->map.headLine; line; line = line->next)
+            for(MapLine *line = state->map.headLine; line; line = line->next)
             {
                 if(within(min, max, line->a->pos) && within(min, max, line->b->pos))
                 {
@@ -62,7 +62,7 @@ static void RectSelect(struct EdState *state, bool add)
         break;
     case MODE_SECTOR:
         {
-            for(struct MapSector *sector = state->map.headSector; sector; sector = sector->next)
+            for(MapSector *sector = state->map.headSector; sector; sector = sector->next)
             {
                 bool allPointsIn = true;
                 for(size_t i = 0; i < sector->numOuterLines; ++i)
@@ -80,13 +80,13 @@ static void RectSelect(struct EdState *state, bool add)
     }
 }
 
-static void AddEditVertex(struct EdState *state, vec2s v)
+static void AddEditVertex(EdState *state, vec2s v)
 {
     size_t idx = state->data.editVertexBufferSize++;
     state->data.editVertexBuffer[idx] = v;
 }
 
-void EditorWindow(bool *p_open, struct EdState *state)
+void EditorWindow(bool *p_open, EdState *state)
 {
     static bool firstTime = true;
 
@@ -379,9 +379,9 @@ void EditorWindow(bool *p_open, struct EdState *state)
                     {
                         switch(state->data.selectionMode)
                         {
-                        case MODE_VERTEX: EditRemoveVertices(state, state->data.numSelectedElements, (struct MapVertex**)state->data.selectedElements); break;
-                        case MODE_LINE: EditRemoveLines(state, state->data.numSelectedElements, (struct MapLine**)state->data.selectedElements); break;
-                        case MODE_SECTOR: EditRemoveSectors(state, state->data.numSelectedElements, (struct MapSector**)state->data.selectedElements); break;
+                        case MODE_VERTEX: EditRemoveVertices(state, state->data.numSelectedElements, (MapVertex**)state->data.selectedElements); break;
+                        case MODE_LINE: EditRemoveLines(state, state->data.numSelectedElements, (MapLine**)state->data.selectedElements); break;
+                        case MODE_SECTOR: EditRemoveSectors(state, state->data.numSelectedElements, (MapSector**)state->data.selectedElements); break;
                         }
                         state->data.numSelectedElements = 0;
                     }

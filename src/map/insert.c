@@ -7,15 +7,15 @@
 #include "remove.h"
 #include "util.h"
 
-struct MapSector* MakeMapSector(struct EdState *state, struct MapLine *startLine, bool front, struct SectorData data)
+MapSector* MakeMapSector(EdState *state, MapLine *startLine, bool front, SectorData data)
 {
     // front means natural direction
-    struct MapLine *sectorLines[1024] = {0};
+    MapLine *sectorLines[1024] = {0};
     bool lineFront[1024] = {0};
     size_t numLines = 0;
 
-    struct MapLine *mapLine = startLine;
-    struct MapVertex *mapVertexForNext = front ? mapLine->b : mapLine->a, *mapVertex = front ? mapLine->a : mapLine->b;
+    MapLine *mapLine = startLine;
+    MapVertex *mapVertexForNext = front ? mapLine->b : mapLine->a, *mapVertex = front ? mapLine->a : mapLine->b;
     while(true)
     {
         LogDebug("Iteration");
@@ -25,15 +25,15 @@ struct MapSector* MakeMapSector(struct EdState *state, struct MapLine *startLine
         LogDebug("Is line front %d", lineFront[numLines-1]);
 
         // get the next line with the smallest angle
-        struct MapLine *nextMapLine = NULL;
+        MapLine *nextMapLine = NULL;
         float smallestAngle = FLT_MAX;
         for(size_t i = 0; i < mapVertexForNext->numAttachedLines; ++i)
         {
-            struct MapLine *attLine = mapVertexForNext->attachedLines[i];
+            MapLine *attLine = mapVertexForNext->attachedLines[i];
             if(attLine == mapLine) continue;
 
-            struct MapVertex *otherVertex = mapVertexForNext == attLine->a ? attLine->b : attLine->a;
-            float angle = PI2 - AngleOfLines((struct line_t){ .a = mapVertexForNext->pos, .b = mapVertex->pos }, (struct line_t){ .a = mapVertexForNext->pos, .b = otherVertex->pos });
+            MapVertex *otherVertex = mapVertexForNext == attLine->a ? attLine->b : attLine->a;
+            float angle = PI2 - AngleOfLines((line_t){ .a = mapVertexForNext->pos, .b = mapVertex->pos }, (line_t){ .a = mapVertexForNext->pos, .b = otherVertex->pos });
             if(angle < smallestAngle)
             {
                 smallestAngle = angle;
@@ -68,50 +68,50 @@ struct MapSector* MakeMapSector(struct EdState *state, struct MapLine *startLine
 
 typedef struct QueueElement
 {
-    struct line_t line;
+    line_t line;
     bool potentialStart;
 } QueueElement;
 
-struct LineQueue
+typedef struct LineQueue
 {
-    struct QueueElement elements[QUEUE_SIZE];
+    QueueElement elements[QUEUE_SIZE];
     size_t head, tail, numLines;
-};
+} LineQueue;
 
-static inline void Enqueue(struct LineQueue *queue, struct line_t line, bool potentialStart)
+static inline void Enqueue(LineQueue *queue, line_t line, bool potentialStart)
 {
     queue->elements[queue->tail] = (__typeof__(queue->elements[queue->tail])){ .line = line, .potentialStart = potentialStart };
     queue->tail = (queue->tail + 1) % QUEUE_SIZE;
     queue->numLines++;
 }
 
-static inline struct QueueElement Dequeue(struct LineQueue *queue)
+static inline QueueElement Dequeue(LineQueue *queue)
 {
-    struct QueueElement el = queue->elements[queue->head];
+    QueueElement el = queue->elements[queue->head];
     queue->head = (queue->head + 1) % QUEUE_SIZE;
     queue->numLines--;
     return el;
 }
 
-struct SectorUpdate
+typedef struct SectorUpdate
 {
     struct
     {
-        struct MapLine *line;
-        struct SectorData sectorData;
+        MapLine *line;
+        SectorData sectorData;
         bool front;
         bool valid;
     } data[QUEUE_SIZE];
     size_t length;
-};
+} SectorUpdate;
 
-static inline void InsertSectorUpdate(struct SectorUpdate *sectorUpdate, struct MapLine *line, struct SectorData sectorData, bool front)
+static inline void InsertSectorUpdate(SectorUpdate *sectorUpdate, MapLine *line, SectorData sectorData, bool front)
 {
     assert(sectorUpdate->length <= QUEUE_SIZE);
     sectorUpdate->data[sectorUpdate->length++] = (__typeof__(sectorUpdate->data[0])){ .line = line, .sectorData = sectorData, .valid = true, .front = front };
 }
 
-static void RemoveSectorUpdate(struct SectorUpdate *sectorUpdate, struct MapLine *line)
+static void RemoveSectorUpdate(SectorUpdate *sectorUpdate, MapLine *line)
 {
     for(size_t i = 0; i < sectorUpdate->length; ++i)
     {
@@ -123,12 +123,12 @@ static void RemoveSectorUpdate(struct SectorUpdate *sectorUpdate, struct MapLine
     }
 }
 
-static void DoSplit(struct EdState *state, struct SectorUpdate *sectorUpdate, struct MapLine *line, struct MapVertex *vertex)
+static void DoSplit(EdState *state, SectorUpdate *sectorUpdate, MapLine *line, MapVertex *vertex)
 {
-    struct Map *map = &state->map;
+    Map *map = &state->map;
 
-    struct SectorData frontData = DefaultSectorData();
-    struct SectorData backData = DefaultSectorData();
+    SectorData frontData = DefaultSectorData();
+    SectorData backData = DefaultSectorData();
     bool hasFrontSector = line->frontSector != NULL;
     bool hasBackSector = line->backSector != NULL;
     bool hasSectorsAttached = hasFrontSector || hasBackSector;
@@ -145,7 +145,7 @@ static void DoSplit(struct EdState *state, struct SectorUpdate *sectorUpdate, st
     }
 
     if(hasSectorsAttached) RemoveSectorUpdate(sectorUpdate, line);
-    struct SplitResult result = SplitMapLine(state, line, vertex);
+    SplitResult result = SplitMapLine(state, line, vertex);
     if(hasSectorsAttached)
     {
         if(hasFrontSector)
@@ -161,12 +161,12 @@ static void DoSplit(struct EdState *state, struct SectorUpdate *sectorUpdate, st
     }
 }
 
-static void DoSplit2(struct EdState *state, struct SectorUpdate *sectorUpdate, struct MapLine *line, struct MapVertex *vertexA, struct MapVertex *vertexB)
+static void DoSplit2(EdState *state, SectorUpdate *sectorUpdate, MapLine *line, MapVertex *vertexA, MapVertex *vertexB)
 {
-    struct Map *map = &state->map;
+    Map *map = &state->map;
 
-    struct SectorData frontData = DefaultSectorData();
-    struct SectorData backData = DefaultSectorData();
+    SectorData frontData = DefaultSectorData();
+    SectorData backData = DefaultSectorData();
     bool hasFrontSector = line->frontSector != NULL;
     bool hasBackSector = line->backSector != NULL;
     bool hasSectorsAttached = hasFrontSector || hasBackSector;
@@ -183,7 +183,7 @@ static void DoSplit2(struct EdState *state, struct SectorUpdate *sectorUpdate, s
     }
 
     if(hasSectorsAttached) RemoveSectorUpdate(sectorUpdate, line);
-    struct SplitResult result = SplitMapLine2(state, line, vertexA, vertexB);
+    SplitResult result = SplitMapLine2(state, line, vertexA, vertexB);
     if(hasSectorsAttached)
     {
         if(hasFrontSector)
@@ -201,9 +201,9 @@ static void DoSplit2(struct EdState *state, struct SectorUpdate *sectorUpdate, s
     }
 }
 
-bool InsertLinesIntoMap(struct EdState *state, size_t numVerts, vec2s vertices[static numVerts], bool isLoop)
+bool InsertLinesIntoMap(EdState *state, size_t numVerts, vec2s vertices[static numVerts], bool isLoop)
 {
-    struct Map *map = &state->map;
+    Map *map = &state->map;
     bool didIntersect = false;
     size_t end = isLoop ? numVerts : numVerts - 1;
 
@@ -222,12 +222,12 @@ bool InsertLinesIntoMap(struct EdState *state, size_t numVerts, vec2s vertices[s
         }
     }
 
-    struct LineQueue queue = { 0 };
+    LineQueue queue = { 0 };
 
-    struct MapLine *startLines[QUEUE_SIZE];
+    MapLine *startLines[QUEUE_SIZE];
     size_t numStartLines = 0;
 
-    struct SectorUpdate sectorsToUpdate = {0};
+    SectorUpdate sectorsToUpdate = {0};
 
     // insert the drawn lines into queue
     for(size_t i = 0; i < end; ++i)
@@ -235,23 +235,23 @@ bool InsertLinesIntoMap(struct EdState *state, size_t numVerts, vec2s vertices[s
         vec2s a = vertices[i];
         vec2s b = vertices[(i+1) % numVerts];
 
-        Enqueue(&queue, (struct line_t){ .a = a, .b = b }, i == 0);
+        Enqueue(&queue, (line_t){ .a = a, .b = b }, i == 0);
 
         assert(queue.tail != queue.head);
     }
 
     while(queue.numLines > 0)
     {
-        struct QueueElement el = Dequeue(&queue);
-        struct line_t line = el.line;
+        QueueElement el = Dequeue(&queue);
+        line_t line = el.line;
         bool potentialStart = el.potentialStart;
 
         bool canInsertLine = true;
         bool intersect;
-        struct MapLine *mapLine = map->headLine;
+        MapLine *mapLine = map->headLine;
         while(mapLine != NULL)
         {
-            struct line_t mline = { .a = mapLine->a->pos, .b = mapLine->b->pos };
+            line_t mline = { .a = mapLine->a->pos, .b = mapLine->b->pos };
             if(LineEq(mline, line)) //line already exists, discard it
             {
                 canInsertLine = false;
@@ -263,8 +263,8 @@ bool InsertLinesIntoMap(struct EdState *state, size_t numVerts, vec2s vertices[s
                 if(LineIsParallel(mline, line)) // overlap
                 {
                     vec2s commonPoint = LineGetCommonPoint(mline, line);
-                    struct line_t major = { .a = commonPoint, .b = glms_vec2_eqv_eps(commonPoint, mline.a) ? mline.b : mline.a };
-                    struct line_t minor = { .a = commonPoint, .b = glms_vec2_eqv_eps(commonPoint, line.a) ? line.b : line.a };
+                    line_t major = { .a = commonPoint, .b = glms_vec2_eqv_eps(commonPoint, mline.a) ? mline.b : mline.a };
+                    line_t minor = { .a = commonPoint, .b = glms_vec2_eqv_eps(commonPoint, line.a) ? line.b : line.a };
 
                     vec2s u = glms_vec2_sub(major.b, major.a);
                     vec2s v = glms_vec2_sub(minor.b, minor.a);
@@ -274,14 +274,14 @@ bool InsertLinesIntoMap(struct EdState *state, size_t numVerts, vec2s vertices[s
                         float t = LineGetPointFactor(major, minor.b);
                         if(t > 1)
                         {
-                            Enqueue(&queue, (struct line_t){ .a = major.b, .b = minor.b}, false);
+                            Enqueue(&queue, (line_t){ .a = major.b, .b = minor.b}, false);
 
                             assert(queue.numLines < QUEUE_SIZE);
                         }
                         else
                         {
-                            struct MapVertex *splitVertex = EditAddVertex(state, minor.b);
-                            struct MapLine *lineToSplit = mapLine;
+                            MapVertex *splitVertex = EditAddVertex(state, minor.b);
+                            MapLine *lineToSplit = mapLine;
                             DoSplit(state, &sectorsToUpdate, lineToSplit, splitVertex);
                             mapLine = NULL; // since we are splitting the line here we should stop iterating through the rest of the map lines
                         }
@@ -299,31 +299,31 @@ bool InsertLinesIntoMap(struct EdState *state, size_t numVerts, vec2s vertices[s
             float mlOrient = (mline.b.x - mline.a.x) * (mline.b.y + mline.a.y);
             float lOrient = (line.b.x - line.a.x) * (line.b.y + line.a.y);
 
-            struct line_t lineCorrected = line;
+            line_t lineCorrected = line;
             if(signbit(mlOrient) != signbit(lOrient))
             {
                 lineCorrected.a = line.b;
                 lineCorrected.b = line.a;
             }
 
-            struct intersection_res_t result = {0};
+            intersection_res_t result = {0};
             if((intersect = LineIntersection(mline, line, &result)))
             {
                 if(!glms_vec2_eqv_eps(mline.a, result.p0) && !glms_vec2_eqv_eps(mline.b, result.p0))
                 {
-                    struct MapVertex *splitVertex = EditAddVertex(state, result.p0);
-                    struct MapLine *lineToSplit = mapLine;
+                    MapVertex *splitVertex = EditAddVertex(state, result.p0);
+                    MapLine *lineToSplit = mapLine;
                     DoSplit(state, &sectorsToUpdate, lineToSplit, splitVertex);
                 }
 
                 if(!glms_vec2_eqv_eps(line.a, result.p0))
                 {
-                    Enqueue(&queue, (struct line_t){ line.a, result.p0 }, true);
+                    Enqueue(&queue, (line_t){ line.a, result.p0 }, true);
                 }
 
                 if(!glms_vec2_eqv_eps(result.p0, line.b))
                 {
-                    Enqueue(&queue, (struct line_t){ result.p0, line.b }, true);
+                    Enqueue(&queue, (line_t){ result.p0, line.b }, true);
                 }
 
                 mapLine = NULL;
@@ -334,38 +334,38 @@ bool InsertLinesIntoMap(struct EdState *state, size_t numVerts, vec2s vertices[s
             {
                 if(result.t0 == 0 && result.t1 == 1)
                 {
-                    struct MapVertex *splitVertexA = EditAddVertex(state, result.p0);
-                    struct MapVertex *splitVertexB = EditAddVertex(state, result.p1);
-                    struct MapLine *lineToSplit = mapLine;
+                    MapVertex *splitVertexA = EditAddVertex(state, result.p0);
+                    MapVertex *splitVertexB = EditAddVertex(state, result.p1);
+                    MapLine *lineToSplit = mapLine;
                     mapLine = NULL;
                     DoSplit2(state, &sectorsToUpdate, lineToSplit, splitVertexA, splitVertexB);
                 }
                 else if(result.t0 == 0)
                 {
-                    struct MapVertex *splitVertex = EditAddVertex(state, result.p0);
-                    struct MapLine *lineToSplit = mapLine;
+                    MapVertex *splitVertex = EditAddVertex(state, result.p0);
+                    MapLine *lineToSplit = mapLine;
                     mapLine = NULL;
                     DoSplit(state, &sectorsToUpdate, lineToSplit, splitVertex);
 
-                    Enqueue(&queue, (struct line_t){ mline.b, lineCorrected.b }, true);
+                    Enqueue(&queue, (line_t){ mline.b, lineCorrected.b }, true);
 
                     assert(queue.numLines < QUEUE_SIZE);
                 }
                 else if(result.t1 == 0)
                 {
-                    struct MapVertex *splitVertex = EditAddVertex(state, result.p1);
-                    struct MapLine *lineToSplit = mapLine;
+                    MapVertex *splitVertex = EditAddVertex(state, result.p1);
+                    MapLine *lineToSplit = mapLine;
                     mapLine = NULL;
                     DoSplit(state, &sectorsToUpdate, lineToSplit, splitVertex);
 
-                    Enqueue(&queue, (struct line_t){ mline.a, lineCorrected.a }, true);
+                    Enqueue(&queue, (line_t){ mline.a, lineCorrected.a }, true);
 
                     assert(queue.numLines < QUEUE_SIZE);
                 }
                 else
                 {
-                    Enqueue(&queue, (struct line_t){ mline.b, lineCorrected.b }, true);
-                    Enqueue(&queue, (struct line_t){ lineCorrected.a, mline.a }, true);
+                    Enqueue(&queue, (line_t){ mline.b, lineCorrected.b }, true);
+                    Enqueue(&queue, (line_t){ lineCorrected.a, mline.a }, true);
 
                     mapLine = NULL;
 
@@ -379,11 +379,11 @@ bool InsertLinesIntoMap(struct EdState *state, size_t numVerts, vec2s vertices[s
 
         if(canInsertLine)
         {
-            struct MapVertex *mva = EditAddVertex(state, line.a);
-            struct MapVertex *mvb = EditAddVertex(state, line.b);
+            MapVertex *mva = EditAddVertex(state, line.a);
+            MapVertex *mvb = EditAddVertex(state, line.b);
             if(!mva || !mvb) return false;
 
-            struct MapLine *line = EditAddLine(state, mva, mvb, DefaultLineData());
+            MapLine *line = EditAddLine(state, mva, mvb, DefaultLineData());
             if(!line) return false;
 
             if(potentialStart) startLines[numStartLines++] = line;
@@ -396,8 +396,8 @@ bool InsertLinesIntoMap(struct EdState *state, size_t numVerts, vec2s vertices[s
     {
         if(!sectorsToUpdate.data[i].valid) continue;
         bool front = sectorsToUpdate.data[i].front;
-        struct MapLine *line = sectorsToUpdate.data[i].line;
-        struct SectorData data = sectorsToUpdate.data[i].sectorData;
+        MapLine *line = sectorsToUpdate.data[i].line;
+        SectorData data = sectorsToUpdate.data[i].sectorData;
         if(front && line->frontSector != NULL) continue;
         if(!front && line->backSector != NULL) continue;
         MakeMapSector(state, line, front, data);
@@ -408,7 +408,7 @@ bool InsertLinesIntoMap(struct EdState *state, size_t numVerts, vec2s vertices[s
     {
         if(numStartLines == 0) // no lines were added, possibly filling an empty space surrounded by existing lines
         {
-            struct MapLine *l = GetMapLine(map, (struct line_t){ .a = vertices[0], .b = vertices[1] });
+            MapLine *l = GetMapLine(map, (line_t){ .a = vertices[0], .b = vertices[1] });
             assert(l);
             if(!(l->frontSector != NULL && l->backSector != NULL))
                 MakeMapSector(state, l, l->frontSector == NULL, DefaultSectorData());

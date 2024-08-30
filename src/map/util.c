@@ -5,49 +5,49 @@
 #include "../edit.h"
 #include "remove.h"
 
-struct SplitResult SplitMapLine(struct EdState *state, struct MapLine *line, struct MapVertex *vertex)
+SplitResult SplitMapLine(EdState *state, MapLine *line, MapVertex *vertex)
 {
-    struct Map *map = &state->map;
+    Map *map = &state->map;
 
-    struct LineData dataCopy = line->data;
+    LineData dataCopy = line->data;
 
-    struct MapVertex *va = line->a;
-    struct MapVertex *vb = line->b;
+    MapVertex *va = line->a;
+    MapVertex *vb = line->b;
 
     RemoveLine(map, line);
 
-    struct MapLine *newA = EditAddLine(state, va, vertex, dataCopy);
-    struct MapLine *newB = EditAddLine(state, vertex, vb, dataCopy);
+    MapLine *newA = EditAddLine(state, va, vertex, dataCopy);
+    MapLine *newB = EditAddLine(state, vertex, vb, dataCopy);
 
-    return (struct SplitResult){ .left = newA, .right = newB };
+    return (SplitResult){ .left = newA, .right = newB };
 }
 
-struct SplitResult SplitMapLine2(struct EdState *state, struct MapLine *line, struct MapVertex *vertexA, struct MapVertex *vertexB)
+SplitResult SplitMapLine2(EdState *state, MapLine *line, MapVertex *vertexA, MapVertex *vertexB)
 {
-    struct Map *map = &state->map;
+    Map *map = &state->map;
 
-    struct LineData dataCopy = line->data;
+    LineData dataCopy = line->data;
 
-    struct MapVertex *va = line->a;
-    struct MapVertex *vb = line->b;
+    MapVertex *va = line->a;
+    MapVertex *vb = line->b;
 
     RemoveLine(map, line);
 
-    struct MapLine *newStart = EditAddLine(state, va, vertexA, dataCopy);
-    struct MapLine *newMiddle = EditAddLine(state, vertexA, vertexB, dataCopy);
-    struct MapLine *newEnd = EditAddLine(state, vertexB, vb, dataCopy);
+    MapLine *newStart = EditAddLine(state, va, vertexA, dataCopy);
+    MapLine *newMiddle = EditAddLine(state, vertexA, vertexB, dataCopy);
+    MapLine *newEnd = EditAddLine(state, vertexB, vb, dataCopy);
 
-    return (struct SplitResult){ .left = newStart, .middle = newMiddle, .right = newEnd };
+    return (SplitResult){ .left = newStart, .middle = newMiddle, .right = newEnd };
 }
 
-struct Polygon* PolygonFromMapLines(size_t numLines, struct MapLine *lines[static numLines], bool lineFronts[static numLines])
+struct Polygon* PolygonFromMapLines(size_t numLines, MapLine *lines[static numLines], bool lineFronts[static numLines])
 {
     struct Polygon *polygon = calloc(1, sizeof *polygon + numLines * sizeof *polygon->vertices);
     polygon->length = numLines;
 
     for(size_t i = 0; i < numLines; ++i)
     {
-        struct MapLine *mapLine = lines[i];
+        MapLine *mapLine = lines[i];
         if(lineFronts[i])
         {
             polygon->vertices[i][0] = mapLine->a->pos.x;
@@ -63,15 +63,15 @@ struct Polygon* PolygonFromMapLines(size_t numLines, struct MapLine *lines[stati
     return polygon;
 }
 
-bool IsLineFront(struct MapVertex *v1, struct MapLine *line)
+bool IsLineFront(MapVertex *v1, MapLine *line)
 {
     assert(v1 == line->a || v1 == line->b);
     return v1 == line->a;
 }
 
-struct MapLine* GetMapLine(struct Map *map, struct line_t line)
+MapLine* GetMapLine(Map *map, line_t line)
 {
-    for(struct MapLine *mline = map->headLine; mline; mline = mline->next)
+    for(MapLine *mline = map->headLine; mline; mline = mline->next)
     {
         if((glms_vec2_eqv_eps(mline->a->pos, line.a) && glms_vec2_eqv_eps(mline->b->pos, line.b)) ||
            (glms_vec2_eqv_eps(mline->b->pos, line.a) && glms_vec2_eqv_eps(mline->a->pos, line.b)))

@@ -32,48 +32,48 @@ typedef struct intersection_res_t
     vec2s p0, p1;
 } intersection_res_t;
 
-enum intersection_type_t
+typedef enum intersection_type_t
 {
     NO_INTERSECTION,
     INTERSECTION,
     OVERLAP
-};
+} intersection_type_t;
 
-enum orientation_t
+typedef enum orientation_t
 {
     CW_ORIENT,
     CCW_ORIENT
-};
+} orientation_t;
 
-static inline bool LineEq(struct line_t a, struct line_t b)
+static inline bool LineEq(line_t a, line_t b)
 {
     return (glms_vec2_eqv(a.a, b.a) && glms_vec2_eqv(a.b, b.b)) || (glms_vec2_eqv(a.a, b.b) && glms_vec2_eqv(a.b, b.a));
 }
 
-bool PointInSector(struct MapSector *sector, vec2s point);
+bool PointInSector(MapSector *sector, vec2s point);
 bool PointInPolygon(size_t numVertices, vec2s vertices[static numVertices], vec2s point);
 float MinDistToLine(vec2s a, vec2s b, vec2s point);
 
-bool LineIsCollinear(struct line_t a, struct line_t b);
-bool LineIsParallel(struct line_t a, struct line_t b);
+bool LineIsCollinear(line_t a, line_t b);
+bool LineIsParallel(line_t a, line_t b);
 
 // this assumes that both lines are collinear
-vec2s LineGetCommonPoint(struct line_t major, struct line_t support);
-float LineGetPointFactor(struct line_t line, vec2s point);
+vec2s LineGetCommonPoint(line_t major, line_t support);
+float LineGetPointFactor(line_t line, vec2s point);
 
-bool LineOverlap(struct line_t a, struct line_t b, struct intersection_res_t *res);
-bool LineIntersection(struct line_t a, struct line_t b, struct intersection_res_t *res);
+bool LineOverlap(line_t a, line_t b, intersection_res_t *res);
+bool LineIntersection(line_t a, line_t b, intersection_res_t *res);
 enum orientation_t LineLoopOrientation(size_t numVertices, vec2s vertices[static numVertices]);
 
-struct BoundingBox BoundingBoxFromVertices(size_t numVertices, vec2s vertices[static numVertices]);
-bool BoundingBoxIntersect(struct BoundingBox a, struct BoundingBox b);
+BoundingBox BoundingBoxFromVertices(size_t numVertices, vec2s vertices[static numVertices]);
+bool BoundingBoxIntersect(BoundingBox a, BoundingBox b);
 
-int SideOfMapLine(struct MapLine *line, vec2s point);
+int SideOfMapLine(MapLine *line, vec2s point);
 int SideOfLine(vec2s a, vec2s b, vec2s point);
 
 angle_t NormalizeAngle(angle_t angle);
 angle_t AngleDifference(angle_t a, angle_t b);
-angle_t AngleLine(struct MapLine *line);
-angle_t AngleOfLines(struct line_t a, struct line_t b);
-angle_t AngleOfMapLines(struct MapLine *a, struct MapLine *b);
+angle_t AngleLine(MapLine *line);
+angle_t AngleOfLines(line_t a, line_t b);
+angle_t AngleOfMapLines(MapLine *a, MapLine *b);
 angle_t AngleOf(vec2s a, vec2s b, vec2s c);

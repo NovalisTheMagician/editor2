@@ -2,10 +2,10 @@
 
 #include <string.h>
 
-void RemoveVertex(struct Map *map, struct MapVertex *vertex)
+void RemoveVertex(Map *map, MapVertex *vertex)
 {
-    struct MapVertex *prev = vertex->prev;
-    struct MapVertex *next = vertex->next;
+    MapVertex *prev = vertex->prev;
+    MapVertex *next = vertex->next;
 
     if(prev == NULL && next == NULL)
     {
@@ -29,7 +29,7 @@ void RemoveVertex(struct Map *map, struct MapVertex *vertex)
 
     for(size_t i = 0; i < vertex->numAttachedLines; ++i)
     {
-        struct MapLine *line = vertex->attachedLines[i];
+        MapLine *line = vertex->attachedLines[i];
         if(line->a == vertex)
         {
             line->a = NULL;
@@ -46,10 +46,10 @@ void RemoveVertex(struct Map *map, struct MapVertex *vertex)
     map->dirty = true;
 }
 
-void RemoveLine(struct Map *map, struct MapLine *line)
+void RemoveLine(Map *map, MapLine *line)
 {
-    struct MapLine *prev = line->prev;
-    struct MapLine *next = line->next;
+    MapLine *prev = line->prev;
+    MapLine *next = line->next;
 
     if(prev == NULL && next == NULL)
     {
@@ -73,10 +73,10 @@ void RemoveLine(struct Map *map, struct MapLine *line)
 
     if(line->a && line->a->numAttachedLines > 0)
     {
-        struct MapVertex *v = line->a;
+        MapVertex *v = line->a;
         for(size_t i = line->aVertIndex + 1; i < v->numAttachedLines; ++i)
         {
-            struct MapLine *attLine = v->attachedLines[i];
+            MapLine *attLine = v->attachedLines[i];
             attLine->a == v ? attLine->aVertIndex-- : attLine->bVertIndex--;
         }
         memmove(v->attachedLines + line->aVertIndex, v->attachedLines + line->aVertIndex + 1, (v->numAttachedLines - (line->aVertIndex)) * sizeof *v->attachedLines);
@@ -86,10 +86,10 @@ void RemoveLine(struct Map *map, struct MapLine *line)
 
     if(line->b && line->b->numAttachedLines > 0)
     {
-        struct MapVertex *v = line->b;
+        MapVertex *v = line->b;
         for(size_t i = line->bVertIndex + 1; i < v->numAttachedLines; ++i)
         {
-            struct MapLine *attLine = v->attachedLines[i];
+            MapLine *attLine = v->attachedLines[i];
             attLine->a == v ? attLine->aVertIndex-- : attLine->bVertIndex--;
         }
         memmove(v->attachedLines + line->bVertIndex, v->attachedLines + line->bVertIndex + 1, (v->numAttachedLines - (line->bVertIndex)) * sizeof *v->attachedLines);
@@ -103,10 +103,10 @@ void RemoveLine(struct Map *map, struct MapLine *line)
     map->dirty = true;
 }
 
-void RemoveSector(struct Map *map, struct MapSector *sector)
+void RemoveSector(Map *map, MapSector *sector)
 {
-    struct MapSector *prev = sector->prev;
-    struct MapSector *next = sector->next;
+    MapSector *prev = sector->prev;
+    MapSector *next = sector->next;
 
     if(prev == NULL && next == NULL)
     {
@@ -131,7 +131,7 @@ void RemoveSector(struct Map *map, struct MapSector *sector)
     for(size_t i = 0; i < sector->numOuterLines; ++i)
     {
         // RemoveLine(state, sector->outerLines[i]);
-        struct MapLine *line = sector->outerLines[i];
+        MapLine *line = sector->outerLines[i];
         if(line->frontSector == sector) line->frontSector = NULL;
         if(line->backSector == sector) line->backSector = NULL;
     }
@@ -141,7 +141,7 @@ void RemoveSector(struct Map *map, struct MapSector *sector)
         for(size_t j = 0; j < sector->numInnerLinesNum[i]; ++j)
         {
             //RemoveLine(state, sector->innerLines[i][j]);
-            struct MapLine *line = sector->innerLines[i][j];
+            MapLine *line = sector->innerLines[i][j];
             if(line->frontSector == sector) line->frontSector = NULL;
             if(line->backSector == sector) line->backSector = NULL;
         }

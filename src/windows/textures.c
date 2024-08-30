@@ -4,15 +4,15 @@
 
 typedef struct IterateData
 {
-    struct EdState *state;
-    struct Texture *selected;
+    EdState *state;
+    Texture *selected;
     ImVec2 clientArea;
     int occupiedX;
 } IterateData;
 
-static void TextureIteration(struct Texture *texture, size_t idx, void *user)
+static void TextureIteration(Texture *texture, size_t idx, void *user)
 {
-    struct IterateData *data = user;
+    IterateData *data = user;
 
     ImVec2 size = { .x = texture->width, .y = texture->height };
 
@@ -34,11 +34,11 @@ static void TextureIteration(struct Texture *texture, size_t idx, void *user)
     data->occupiedX += size.x + 10;
 }
 
-struct Texture* TexturesWindow(bool *p_open, struct EdState *state, bool popup)
+Texture* TexturesWindow(bool *p_open, EdState *state, bool popup)
 {
     igSetNextWindowSize((ImVec2){ 800, 600 }, ImGuiCond_FirstUseEver);
 
-    struct Texture *selectedTexture = NULL;
+    Texture *selectedTexture = NULL;
 
     ImGuiWindowFlags flags = ImGuiWindowFlags_MenuBar;
 
@@ -75,7 +75,7 @@ struct Texture* TexturesWindow(bool *p_open, struct EdState *state, bool popup)
             ImVec2 clientArea;
             igGetContentRegionAvail(&clientArea);
 
-            struct IterateData data = { .state = state, .clientArea = clientArea };
+            IterateData data = { .state = state, .clientArea = clientArea };
 
             if(state->data.textureFilter[0] == '\0')
                 tc_iterate(&state->textures, TextureIteration, &data);

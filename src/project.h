@@ -34,7 +34,7 @@ typedef struct AssetPath
 
 typedef struct Project
 {
-    struct AssetPath basePath;
+    AssetPath basePath;
     pstring texturesPath;
     pstring thingsFile;
     bool dirty;

@@ -3,12 +3,12 @@
 #include "editor.h"
 #include "ImGuiFileDialog.h"
 
-enum SaveModalAction
+typedef enum SaveModalAction
 {
     SMA_NEW,
     SMA_OPEN,
     SMA_QUIT
-};
+} SaveModalAction;
 
 typedef struct FileDialogAction
 {
@@ -20,7 +20,7 @@ typedef struct FileDialogAction
 extern ImGuiFileDialog *cfileDialog;
 
 void OpenFolderDialog(pstring *folderPath);
-void SaveMapDialog(struct Map *map, bool quitRequest);
-void SaveProjectDialog(struct Project *project, bool quitRequest);
-void OpenMapDialog(struct Map *map);
-void OpenProjectDialog(struct Project *project);
+void SaveMapDialog(Map *map, bool quitRequest);
+void SaveProjectDialog(Project *project, bool quitRequest);
+void OpenMapDialog(Map *map);
+void OpenProjectDialog(Project *project);

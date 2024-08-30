@@ -56,8 +56,8 @@ typedef struct stringtok
     int done;
 } stringtok;
 
-struct stringtok* stringtok_start(pstring source);
-char* stringtok_next(struct stringtok *tok, const char *delim, size_t *numChars);
-void stringtok_reset(struct stringtok *tok);
-int stringtok_done(struct stringtok *tok);
-void stringtok_end(struct stringtok *tok);
+stringtok* stringtok_start(pstring source);
+char* stringtok_next(stringtok *tok, const char *delim, size_t *numChars);
+void stringtok_reset(stringtok *tok);
+int stringtok_done(stringtok *tok);
+void stringtok_end(stringtok *tok);

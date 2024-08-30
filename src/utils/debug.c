@@ -16,11 +16,11 @@
 #undef string_copy
 #undef string_free
 
-enum AllocType
+typedef enum AllocType
 {
     AC_MALLOC,
     AC_STRING
-};
+} AllocType;
 
 static const char* typeToString(enum AllocType type)
 {
@@ -32,7 +32,7 @@ static const char* typeToString(enum AllocType type)
     }
 }
 
-struct Alloc 
+struct Alloc
 {
     struct Alloc *next;
     enum AllocType type;

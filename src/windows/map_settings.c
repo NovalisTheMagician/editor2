@@ -1,6 +1,6 @@
 #include "../gwindows.h"
 
-void MapSettingsWindow(bool *p_open, struct EdState *state)
+void MapSettingsWindow(bool *p_open, EdState *state)
 {
     if(igBegin("Map Settings", p_open, 0))
     {

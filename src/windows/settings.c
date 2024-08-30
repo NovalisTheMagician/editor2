@@ -2,7 +2,7 @@
 
 #include "../gui.h"
 
-void SettingsWindow(bool *p_open, struct EdState *state)
+void SettingsWindow(bool *p_open, EdState *state)
 {
     igSetNextWindowSize((ImVec2){ 600, 300 }, ImGuiCond_FirstUseEver);
     if(igBegin("Options", p_open, 0))

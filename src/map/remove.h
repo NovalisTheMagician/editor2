@@ -2,6 +2,6 @@
 
 #include "../map.h"
 
-void RemoveVertex(struct Map *map, struct MapVertex *vertex);
-void RemoveLine(struct Map *map, struct MapLine *line);
-void RemoveSector(struct Map *map, struct MapSector *sector);
+void RemoveVertex(Map *map, MapVertex *vertex);
+void RemoveLine(Map *map, MapLine *line);
+void RemoveSector(Map *map, MapSector *sector);

@@ -1,6 +1,6 @@
 #include "../gwindows.h"
 
-void RealtimeWindow(bool *p_open, struct EdState *state)
+void RealtimeWindow(bool *p_open, EdState *state)
 {
     igSetNextWindowSize((ImVec2){ 800, 600 }, ImGuiCond_FirstUseEver);
 

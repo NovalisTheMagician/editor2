@@ -4,7 +4,7 @@
 
 #include <ftplib.h>
 
-static void BaseFsFields(struct EdState *state)
+static void BaseFsFields(EdState *state)
 {
     if(igInputText("Path", state->project.basePath.fs.path, string_size(state->project.basePath.fs.path), 0, NULL, NULL))
     {
@@ -20,7 +20,7 @@ static void BaseFsFields(struct EdState *state)
     }
 }
 
-static void BaseFtpFields(struct EdState *state, bool resetCheck)
+static void BaseFtpFields(EdState *state, bool resetCheck)
 {
     static const char *ftpStatusText = "";
     if(resetCheck) ftpStatusText = "";
@@ -83,7 +83,7 @@ skip:
     }
 }
 
-void ProjectSettingsWindow(bool *p_open, struct EdState *state)
+void ProjectSettingsWindow(bool *p_open, EdState *state)
 {
     igSetNextWindowSize((ImVec2){ 400, 290 }, ImGuiCond_FirstUseEver);
     ImGuiWindowFlags flags = state->project.dirty ? ImGuiWindowFlags_UnsavedDocument : 0;
@@ -94,7 +94,7 @@ void ProjectSettingsWindow(bool *p_open, struct EdState *state)
         bool resetCheck = false;
         if(igCheckbox("FTP", &isFtp)) resetCheck = true;
         state->project.basePath.type = isFtp ? ASSPATH_FTP : ASSPATH_FS;
-        
+
         if(isFtp)
             BaseFtpFields(state, resetCheck);
         else

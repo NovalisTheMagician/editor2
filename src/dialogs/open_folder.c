@@ -12,10 +12,10 @@ static void OpenFolderCallback(const char *path, void *data)
 
 void OpenFolderDialog(pstring *folderPath)
 {
-    struct FileDialogAction *fda = calloc(1, sizeof *fda);
+    FileDialogAction *fda = calloc(1, sizeof *fda);
     fda->data = folderPath;
     fda->callback = OpenFolderCallback;
-    struct IGFD_FileDialog_Config config = 
+    struct IGFD_FileDialog_Config config =
     {
         .flags = ImGuiFileDialogFlags_Modal,
         .path = ".",

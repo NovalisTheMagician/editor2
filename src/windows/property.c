@@ -2,25 +2,25 @@
 
 #include "../texture_collection.h"
 
-static void SelectElement(struct EdState *state, void *element, int selectMode)
+static void SelectElement(EdState *state, void *element, int selectMode)
 {
     state->data.numSelectedElements = 1;
     state->data.selectedElements[0] = element;
     state->data.selectionMode = selectMode;
 }
 
-static void GotoPos(struct EdState *state, vec2s pos)
+static void GotoPos(EdState *state, vec2s pos)
 {
     state->data.viewPosition.x = -(state->gl.editorFramebufferWidth / 2.0f) + pos.x;
     state->data.viewPosition.y = -(state->gl.editorFramebufferHeight / 2.0f) + pos.y;
 }
 
-static void CenterVertex(struct EdState *state, struct MapVertex *vertex)
+static void CenterVertex(EdState *state, MapVertex *vertex)
 {
     GotoPos(state, vertex->pos);
 }
 
-static void CenterLine(struct EdState *state, struct MapLine *line)
+static void CenterLine(EdState *state, MapLine *line)
 {
     vec2s d = glms_vec2_sub(line->b->pos, line->a->pos);
     d = glms_vec2_scale(d, 0.5f);
@@ -28,34 +28,34 @@ static void CenterLine(struct EdState *state, struct MapLine *line)
     GotoPos(state, d);
 }
 
-static void CenterSector(struct EdState *state, struct MapSector *sector)
+static void CenterSector(EdState *state, MapSector *sector)
 {
-    struct BoundingBox bb = sector->bb;
+    BoundingBox bb = sector->bb;
     float w = bb.max.x - bb.min.x;
     float h = bb.max.y - bb.min.y;
     GotoPos(state, (vec2s){ .x = (w/2) + bb.min.x, .y = (h/2) + bb.min.y });
 }
 
-static void MapProperties(struct EdState *state)
+static void MapProperties(EdState *state)
 {
     igSeparatorTextEx(0, "Map Properties", NULL, 0);
     igSliderInt("Texture Scale", &state->map.textureScale, 1, 10, "%dX", 0);
     igInputFloat("Gravity", &state->map.gravity, 0.01f, 0.1f, "%.2f", 0);
 }
 
-static void VertexProperties(struct EdState *state)
+static void VertexProperties(EdState *state)
 {
     igSeparatorTextEx(0, "Vertex Properties", NULL, 0);
     if(state->data.numSelectedElements == 1)
     {
-        struct MapVertex *selectedVertex = state->data.selectedElements[0];
+        MapVertex *selectedVertex = state->data.selectedElements[0];
         igText("Index: %d", selectedVertex->idx);
 
         igText("Attached lines: %d", selectedVertex->numAttachedLines);
         igSeparatorEx(0, 2);
         for(size_t i = 0; i < selectedVertex->numAttachedLines; ++i)
         {
-            struct MapLine *line = selectedVertex->attachedLines[i];
+            MapLine *line = selectedVertex->attachedLines[i];
             igText("Line %lld:", line->idx);
             igSameLine(0, 4);
             char label[32] = {0};
@@ -74,12 +74,12 @@ static void VertexProperties(struct EdState *state)
     }
 }
 
-static void LineProperties(struct EdState *state)
+static void LineProperties(EdState *state)
 {
     igSeparatorTextEx(0, "Line Properties", NULL, 0);
     if(state->data.numSelectedElements == 1)
     {
-        struct MapLine *selectedLine = state->data.selectedElements[0];
+        MapLine *selectedLine = state->data.selectedElements[0];
         igText("Index: %zu", selectedLine->idx);
         igText("Vertex A: %zu", selectedLine->a->idx);
         igSameLine(0, 4);
@@ -127,19 +127,19 @@ static void LineProperties(struct EdState *state)
     }
 }
 
-static void SectorProperties(struct EdState *state)
+static void SectorProperties(EdState *state)
 {
     igSeparatorTextEx(0, "Sector Properties", NULL, 0);
     if(state->data.numSelectedElements == 1)
     {
-        struct MapSector *selectedSector = state->data.selectedElements[0];
+        MapSector *selectedSector = state->data.selectedElements[0];
         igText("Index: %d", selectedSector->idx);
         igInputInt("Floor Height", &selectedSector->data.floorHeight, 1, 10, 0);
         igInputInt("Ceiling Height", &selectedSector->data.ceilHeight, 1, 10, 0);
 
         /*
         static int textureToSet = 0;
-        struct Texture *floorTexture = tc_get(&state->textures, selectedSector->floorTex);
+        Texture *floorTexture = tc_get(&state->textures, selectedSector->floorTex);
         igText("Floor");
         if(floorTexture)
         {
@@ -157,7 +157,7 @@ static void SectorProperties(struct EdState *state)
                 textureToSet = 0;
             }
         }
-        struct Texture *ceilTexture = tc_get(&state->textures, selectedSector->ceilTex);
+        Texture *ceilTexture = tc_get(&state->textures, selectedSector->ceilTex);
         igText("Ceiling");
         if(ceilTexture)
         {
@@ -176,7 +176,7 @@ static void SectorProperties(struct EdState *state)
             }
         }
 
-        struct Texture *selectedTexture = TexturesWindow(NULL, state, true);
+        Texture *selectedTexture = TexturesWindow(NULL, state, true);
         if(selectedTexture)
         {
             if(textureToSet == 0)
@@ -197,7 +197,7 @@ static void SectorProperties(struct EdState *state)
     }
 }
 
-void PropertyWindow(bool *p_open, struct EdState *state)
+void PropertyWindow(bool *p_open, EdState *state)
 {
     igSetNextWindowSize((ImVec2){ 300, 600 }, ImGuiCond_FirstUseEver);
     if(igBegin("Properties", p_open, 0))

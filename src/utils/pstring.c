@@ -11,7 +11,7 @@
 
 pstring string_alloc(size_t capacity)
 {
-    struct string_header *header = malloc(sizeof *header + capacity);
+    string_header *header = malloc(sizeof *header + capacity);
     pstring str = NULL;
 
     if(header)
@@ -29,7 +29,7 @@ pstring string_alloc(size_t capacity)
 pstring string_cstr(const char *str)
 {
     size_t len = strlen(str);
-    struct string_header *header = malloc(sizeof *header + len + 1);
+    string_header *header = malloc(sizeof *header + len + 1);
     pstring newStr = NULL;
 
     if(header)
@@ -51,7 +51,7 @@ pstring string_cstr_alloc(const char *str, size_t size)
 {
     size_t stringlen = strlen(str);
     size_t len = stringlen > size ? stringlen : size;
-    struct string_header *header = malloc(sizeof *header + len + 1);
+    string_header *header = malloc(sizeof *header + len + 1);
     pstring newStr = NULL;
 
     if(header)
@@ -71,7 +71,7 @@ pstring string_cstr_alloc(const char *str, size_t size)
 
 pstring string_cstr_size(size_t size, const char str[static size])
 {
-    struct string_header *header = malloc(sizeof *header + size+1);
+    string_header *header = malloc(sizeof *header + size+1);
     pstring newStr = NULL;
 
     if(header)
@@ -92,7 +92,7 @@ pstring string_cstr_size(size_t size, const char str[static size])
 void string_free(pstring str)
 {
     if(!str) return;
-    void *header = str - sizeof(struct string_header);
+    void *header = str - sizeof(string_header);
     free(header);
 }
 
@@ -110,7 +110,7 @@ size_t string_format(pstring into, const char *format, ...)
 
 size_t string_vformat(pstring into, const char *format, va_list args)
 {
-    struct string_header *header = (struct string_header*)(into - sizeof *header);
+    string_header *header = (string_header*)(into - sizeof *header);
     int ret = vsnprintf(into, header->size, format, args);
     if(ret > 0)
     {
@@ -133,7 +133,7 @@ size_t string_format_offset(pstring into, size_t offset, const char *format, ...
 
 size_t string_vformat_offset(pstring into, size_t offset, const char *format, va_list args)
 {
-    struct string_header *header = (struct string_header*)(into - sizeof *header);
+    string_header *header = (string_header*)(into - sizeof *header);
     int ret = vsnprintf(into + offset, header->size - offset, format, args);
     if(ret > 0)
     {
@@ -144,25 +144,25 @@ size_t string_vformat_offset(pstring into, size_t offset, const char *format, va
 
 size_t string_size(pstring str)
 {
-    struct string_header *header = (struct string_header*)(str - sizeof *header);
+    string_header *header = (string_header*)(str - sizeof *header);
     return header->size;
 }
 
 size_t string_length(pstring str)
 {
-    struct string_header *header = (struct string_header*)(str - sizeof *header);
+    string_header *header = (string_header*)(str - sizeof *header);
     return header->length;
 }
 
 void string_recalc(pstring str)
 {
-    struct string_header *header = (struct string_header*)(str - sizeof *header);
+    string_header *header = (string_header*)(str - sizeof *header);
     header->length = strnlen(str, header->size);
 }
 
 pstring string_copy(pstring str)
 {
-    struct string_header *header = (struct string_header*)(str - sizeof *header);
+    string_header *header = (string_header*)(str - sizeof *header);
     if(header->length > 0)
     {
         return string_cstr_alloc(str, header->length + 1);
@@ -172,7 +172,7 @@ pstring string_copy(pstring str)
 
 size_t string_copy_into_cstr(pstring into, const char *str)
 {
-    struct string_header *header = (struct string_header*)(into - sizeof *header);
+    string_header *header = (string_header*)(into - sizeof *header);
     size_t intoSize = header->size;
     size_t strSize = strlen(str);
     memcpy(into, str, min(intoSize, strSize));
@@ -182,9 +182,9 @@ size_t string_copy_into_cstr(pstring into, const char *str)
 
 size_t string_copy_into(pstring into, pstring str)
 {
-    struct string_header *header = (struct string_header*)(into - sizeof *header);
+    string_header *header = (string_header*)(into - sizeof *header);
     size_t intoSize = header->size;
-    header = (struct string_header*)(str - sizeof *header);
+    header = (string_header*)(str - sizeof *header);
     size_t strSize = header->size;
     memcpy(into, str, min(intoSize, strSize));
     string_recalc(into);
@@ -193,7 +193,7 @@ size_t string_copy_into(pstring into, pstring str)
 
 pstring string_substring(pstring str, size_t start, ssize_t end)
 {
-    struct string_header *header = (struct string_header*)(str - sizeof *header);
+    string_header *header = (string_header*)(str - sizeof *header);
     assert(start <= header->length);
     size_t e = end < 0 ? header->length : (size_t)end;
     assert(start <= e);
@@ -202,7 +202,7 @@ pstring string_substring(pstring str, size_t start, ssize_t end)
 
 ssize_t string_first_index_of(pstring str, size_t offset, const char *tok)
 {
-    struct string_header *header = (struct string_header*)(str - sizeof *header);
+    string_header *header = (string_header*)(str - sizeof *header);
     size_t tokSize = strlen(tok);
     for(size_t i = offset; i <= header->length - tokSize; ++i)
     {
@@ -216,7 +216,7 @@ ssize_t string_first_index_of(pstring str, size_t offset, const char *tok)
 
 ssize_t string_last_index_of(pstring str, size_t offset, const char *tok)
 {
-    struct string_header *header = (struct string_header*)(str - sizeof *header);
+    string_header *header = (string_header*)(str - sizeof *header);
     size_t tokSize = strlen(tok);
     ssize_t hitIdx = -1;
     for(size_t i = offset; i <= header->length - tokSize; ++i)
@@ -236,7 +236,7 @@ pstring* string_split(pstring str, const char *tok)
 
 int string_cmp(pstring a, pstring b)
 {
-    struct string_header *aheader = (struct string_header*)(a - sizeof *aheader), *bheader = (struct string_header*)(b - sizeof *bheader);
+    string_header *aheader = (string_header*)(a - sizeof *aheader), *bheader = (string_header*)(b - sizeof *bheader);
     size_t len = aheader->length < bheader->length ? aheader->length : bheader->length;
     for(size_t i = 0; i < len; ++i)
     {
@@ -249,7 +249,7 @@ int string_cmp(pstring a, pstring b)
 
 int string_icmp(pstring a, pstring b)
 {
-    struct string_header *aheader = (struct string_header*)(a - sizeof *aheader), *bheader = (struct string_header*)(b - sizeof *bheader);
+    string_header *aheader = (string_header*)(a - sizeof *aheader), *bheader = (string_header*)(b - sizeof *bheader);
     size_t len = aheader->length < bheader->length ? aheader->length : bheader->length;
     for(size_t i = 0; i < len; ++i)
     {
@@ -272,9 +272,9 @@ void string_tolower(pstring str)
 
 #define INITAL_TOK_BUFFER_CAP 256
 
-struct stringtok* stringtok_start(pstring source)
+stringtok* stringtok_start(pstring source)
 {
-    struct stringtok *tok = malloc(sizeof *tok);
+    stringtok *tok = malloc(sizeof *tok);
     if(tok)
     {
         tok->source = source;
@@ -287,7 +287,7 @@ struct stringtok* stringtok_start(pstring source)
     return tok;
 }
 
-char* stringtok_next(struct stringtok *tok, const char *delim, size_t *numChars)
+char* stringtok_next(stringtok *tok, const char *delim, size_t *numChars)
 {
     if(tok->done) return NULL;
 
@@ -323,18 +323,18 @@ char* stringtok_next(struct stringtok *tok, const char *delim, size_t *numChars)
     return tok->buffer;
 }
 
-void stringtok_reset(struct stringtok *tok)
+void stringtok_reset(stringtok *tok)
 {
     tok->next = 0;
     tok->done = 0;
 }
 
-int stringtok_done(struct stringtok *tok)
+int stringtok_done(stringtok *tok)
 {
     return tok->done;
 }
 
-void stringtok_end(struct stringtok *tok)
+void stringtok_end(stringtok *tok)
 {
     free(tok->buffer);
     free(tok);

@@ -15,7 +15,7 @@ typedef struct Batch
     size_t numBuffers;
 } Batch;
 
-typedef void (*batch_finish_cb)(struct Batch batch, bool lastBatch, void *handle, void *user);
+typedef void (*batch_finish_cb)(Batch batch, bool lastBatch, void *handle, void *user);
 typedef bool (*read_cb)(pstring, uint8_t**, size_t*, void*);
 
 typedef struct FetchLocation
@@ -31,12 +31,12 @@ typedef struct AsyncJob
     bool stopRequest;
     bool done, batchDone;
 
-    struct FetchLocation *infos;
+    FetchLocation *infos;
     size_t numInfos;
 
     void *handle;
 
-    struct Batch batch;
+    Batch batch;
 
     size_t currentBatch;
     size_t totalBatches;

@@ -2,19 +2,19 @@
 
 #include <string.h>
 
-struct CreateResult CreateVertex(struct Map *map, vec2s pos)
+CreateResult CreateVertex(Map *map, vec2s pos)
 {
-    for(struct MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
+    for(MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
     {
         if(glms_vec2_eqv_eps(vertex->pos, pos))
         {
-            return (struct CreateResult){ .mapElement = vertex, .created = false };
+            return (CreateResult){ .mapElement = vertex, .created = false };
         }
     }
 
     static size_t vertexIndex = 0;
 
-    struct MapVertex *vertex = calloc(1, sizeof *vertex);
+    MapVertex *vertex = calloc(1, sizeof *vertex);
     vertex->pos = pos;
     vertex->idx = vertexIndex++;
     vertex->prev = map->tailVertex;
@@ -36,24 +36,24 @@ struct CreateResult CreateVertex(struct Map *map, vec2s pos)
 
     map->dirty = true;
 
-    return (struct CreateResult){ .mapElement = vertex, .created = true };
+    return (CreateResult){ .mapElement = vertex, .created = true };
 }
 
-struct CreateResult CreateLine(struct Map *map, struct MapVertex *v0, struct MapVertex *v1, struct LineData data)
+CreateResult CreateLine(Map *map, MapVertex *v0, MapVertex *v1, LineData data)
 {
-    for(struct MapLine *line = map->headLine; line; line = line->next)
+    for(MapLine *line = map->headLine; line; line = line->next)
     {
         bool ab = line->a == v0 && line->b == v1;
         bool ba = line->a == v1 && line->b == v0;
         if(ab || ba)
         {
-            return (struct CreateResult){ .mapElement = line, .created = false };
+            return (CreateResult){ .mapElement = line, .created = false };
         }
     }
 
     static size_t lineIndex = 0;
 
-    struct MapLine *line = calloc(1, sizeof *line);
+    MapLine *line = calloc(1, sizeof *line);
     line->a = v0;
     line->b = v1;
     line->idx = lineIndex++;
@@ -84,12 +84,12 @@ struct CreateResult CreateLine(struct Map *map, struct MapVertex *v0, struct Map
 
     map->dirty = true;
 
-    return (struct CreateResult){ .mapElement = line, .created = true };
+    return (CreateResult){ .mapElement = line, .created = true };
 }
 
-struct CreateResult CreateSector(struct Map *map, size_t numLines, struct MapLine *lines[static numLines], bool lineFronts[static numLines], struct SectorData data)
+CreateResult CreateSector(Map *map, size_t numLines, MapLine *lines[static numLines], bool lineFronts[static numLines], SectorData data)
 {
-    for(struct MapSector *sector = map->headSector; sector; sector = sector->next)
+    for(MapSector *sector = map->headSector; sector; sector = sector->next)
     {
         if(sector->numOuterLines != numLines) continue;
 
@@ -113,12 +113,12 @@ struct CreateResult CreateSector(struct Map *map, size_t numLines, struct MapLin
         }
 
         if(allSame)
-            return (struct CreateResult){ .mapElement = sector, .created = false };
+            return (CreateResult){ .mapElement = sector, .created = false };
     }
 
     static size_t sectorIndex = 0;
 
-    struct MapSector *sector = calloc(1, sizeof *sector);
+    MapSector *sector = calloc(1, sizeof *sector);
     sector->numOuterLines = numLines;
     sector->outerLines = malloc(sector->numOuterLines * sizeof *sector->outerLines);
     memcpy(sector->outerLines, lines, sector->numOuterLines * sizeof *sector->outerLines);
@@ -143,7 +143,7 @@ struct CreateResult CreateSector(struct Map *map, size_t numLines, struct MapLin
 
     for(size_t i = 0; i < numLines; ++i)
     {
-        struct MapLine *line = lines[i];
+        MapLine *line = lines[i];
         if(lineFronts[i])
             line->frontSector = sector;
         else
@@ -152,5 +152,5 @@ struct CreateResult CreateSector(struct Map *map, size_t numLines, struct MapLin
 
     map->dirty = true;
 
-    return (struct CreateResult){ .mapElement = sector, .created = true };
+    return (CreateResult){ .mapElement = sector, .created = true };
 }
