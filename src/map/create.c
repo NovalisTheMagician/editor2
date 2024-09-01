@@ -33,6 +33,7 @@ CreateResult CreateVertex(Map *map, vec2s pos)
         map->tailVertex->next = vertex;
     }
     map->tailVertex = vertex;
+    map->numVertices++;
 
     map->dirty = true;
 
@@ -81,6 +82,7 @@ CreateResult CreateLine(Map *map, MapVertex *v0, MapVertex *v1, LineData data)
         map->tailLine->next = line;
     }
     map->tailLine = line;
+    map->numLines++;
 
     map->dirty = true;
 
@@ -149,6 +151,7 @@ CreateResult CreateSector(Map *map, size_t numLines, MapLine *lines[static numLi
         else
             line->backSector = sector;
     }
+    map->numSectors++;
 
     map->dirty = true;
 

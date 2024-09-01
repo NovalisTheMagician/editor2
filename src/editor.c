@@ -283,12 +283,11 @@ static size_t CollectLines(const EdState *state, size_t vertexOffset)
         {
             colorIdx = COL_LINE_HOVER;
         }
-        /*
-        else if(line->refCount > 1)
+        else if(line->frontSector && line->backSector)
         {
             colorIdx = COL_LINE_INNER;
         }
-        */
+
         state->gl.editorVertexMap[verts + vertexOffset + 0] = (EditorVertexType){ .position = line->a->pos, .color = state->settings.colors[colorIdx] };
         state->gl.editorVertexMap[verts + vertexOffset + 1] = (EditorVertexType){ .position = line->b->pos, .color = state->settings.colors[colorIdx] };
         verts += 2;

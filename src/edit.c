@@ -191,7 +191,7 @@ void EditRemoveLines(Map *map, size_t num, MapLine *lines[static num])
 
         bool isAInSet = false;
         bool isBInSet = false;
-        for(size_t v = 0; i < numPotentialVertices; ++i)
+        for(size_t v = 0; v < numPotentialVertices; ++v)
         {
             if(!isAInSet) isAInSet = potentialVertices[v] == line->a;
             if(!isBInSet) isBInSet = potentialVertices[v] == line->b;

@@ -11,6 +11,9 @@ void StatsWindow(bool *p_open, EdState *state)
         igText("Mouse World Pos: %d | %d", state->data.mx, state->data.my);
 #endif
         igText("Zoomlevel: %.2f", state->data.zoomLevel);
+        igText("Num. Vertices: %d", state->map.numVertices);
+        igText("Num. Lines: %d", state->map.numLines);
+        igText("Num. Sectors: %d", state->map.numSectors);
     }
     igEnd();
 }
