@@ -321,8 +321,7 @@ static size_t CollectSectors(const EdState *state, size_t vertexOffset, size_t i
         size_t offsetIndex = verts + vertexOffset;
         for(size_t i = 0; i < sector->numOuterLines; i++)
         {
-            MapLine *line = sector->outerLines[i];
-            state->gl.editorVertexMap[i + offsetIndex] = (EditorVertexType){ .position = line->a->pos, .color = state->settings.colors[colorIdx] };
+            state->gl.editorVertexMap[i + offsetIndex] = (EditorVertexType){ .position = sector->vertices[i], .color = state->settings.colors[colorIdx] };
         }
         verts += sector->numOuterLines;
     }
