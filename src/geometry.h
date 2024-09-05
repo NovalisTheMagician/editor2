@@ -3,8 +3,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "cglm/struct.h"
-
 #include "map.h"
 
 #define PI 3.14159265359
@@ -13,11 +11,11 @@
 
 #define SMALL_NUM 0.00000001
 
-#define rad2deg(x) ({__typeof__(x) _x = (x); _x * 180.0 / PI;})
-#define deg2rad(x) ({__typeof__(x) _x = (x); _x * PI / 180.0;})
+#define rad2deg(x) ({typeof(x) _x = (x); _x * 180.0 / PI;})
+#define deg2rad(x) ({typeof(x) _x = (x); _x * PI / 180.0;})
 
-#define between(p, a, b) ({ __typeof__(p) p_ = (p); __typeof__(a) a_ = (a); __typeof__(b) b_ = (b); (p_ >= a_ && p_ <= b_) || (p_ <= a_ && p_ >= b_); })
-#define sign(x) ({ __typeof__(x) x_ = (x); (x_ > 0) - (x_ < 0); })
+#define between(p, a, b) ({ typeof(p) p_ = (p); typeof(a) a_ = (a); typeof(b) b_ = (b); (p_ >= a_ && p_ <= b_) || (p_ <= a_ && p_ >= b_); })
+#define sign(x) ({ typeof(x) x_ = (x); (x_ > 0) - (x_ < 0); })
 
 typedef float angle_t;
 

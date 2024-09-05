@@ -93,10 +93,8 @@ void NewMap(Map *map)
     map->headSector = map->tailSector = NULL;
     map->numSectors = 0;
 
-    if(map->file)
-    {
-        string_free(map->file);
-    }
+
+    string_free(map->file);
     map->file = string_alloc(1);
 
     map->dirty = false;

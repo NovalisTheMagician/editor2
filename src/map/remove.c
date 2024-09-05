@@ -81,7 +81,6 @@ void RemoveLine(Map *map, MapLine *line)
         }
         memmove(v->attachedLines + line->aVertIndex, v->attachedLines + line->aVertIndex + 1, (v->numAttachedLines - (line->aVertIndex)) * sizeof *v->attachedLines);
         v->numAttachedLines--;
-        //memset(v->attachedLines + v->numAttachedLines, 0, COUNT_OF(v->attachedLines) - v->numAttachedLines);
     }
 
     if(line->b && line->b->numAttachedLines > 0)
@@ -94,7 +93,6 @@ void RemoveLine(Map *map, MapLine *line)
         }
         memmove(v->attachedLines + line->bVertIndex, v->attachedLines + line->bVertIndex + 1, (v->numAttachedLines - (line->bVertIndex)) * sizeof *v->attachedLines);
         v->numAttachedLines--;
-        //memset(v->attachedLines + v->numAttachedLines, 0, COUNT_OF(v->attachedLines) - v->numAttachedLines);
     }
 
     FreeMapLine(line);
@@ -130,7 +128,6 @@ void RemoveSector(Map *map, MapSector *sector)
 
     for(size_t i = 0; i < sector->numOuterLines; ++i)
     {
-        //RemoveLine(map, sector->outerLines[i]);
         MapLine *line = sector->outerLines[i];
         if(line->frontSector == sector) line->frontSector = NULL;
         if(line->backSector == sector) line->backSector = NULL;
@@ -140,7 +137,6 @@ void RemoveSector(Map *map, MapSector *sector)
     {
         for(size_t j = 0; j < sector->numInnerLinesNum[i]; ++j)
         {
-            //RemoveLine(map, sector->innerLines[i][j]);
             MapLine *line = sector->innerLines[i][j];
             if(line->frontSector == sector) line->frontSector = NULL;
             if(line->backSector == sector) line->backSector = NULL;

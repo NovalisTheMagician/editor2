@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <stdbool.h>
 
-#define min(a, b) ({ __typeof__(a) a_ = (a); __typeof__(b) b_ = (b); a_ < b_ ? a_ : b_; })
+#define min(a, b) ({ typeof(a) a_ = (a); typeof(b) b_ = (b); a_ < b_ ? a_ : b_; })
 
 pstring string_alloc(size_t capacity)
 {

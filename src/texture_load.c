@@ -133,7 +133,7 @@ static size_t CollectTexturesFtp(TextureCollection *tc, FetchLocation **location
         string_format(filePath, "%s/%s", folder, fileName);
         stringtok_end(tok);
 
-        files[numFiles++] = (__typeof__(*files)){ .fileName = fileName, .filePath = filePath, .isDir = isDir };
+        files[numFiles++] = (typeof(*files)){ .fileName = fileName, .filePath = filePath, .isDir = isDir };
     }
     FtpClose(dirHandle);
 

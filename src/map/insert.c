@@ -80,7 +80,7 @@ typedef struct LineQueue
 
 static inline void Enqueue(LineQueue *queue, line_t line, bool potentialStart)
 {
-    queue->elements[queue->tail] = (__typeof__(queue->elements[queue->tail])){ .line = line, .potentialStart = potentialStart };
+    queue->elements[queue->tail] = (typeof(queue->elements[queue->tail])){ .line = line, .potentialStart = potentialStart };
     queue->tail = (queue->tail + 1) % QUEUE_SIZE;
     queue->numLines++;
 }
@@ -108,7 +108,7 @@ typedef struct SectorUpdate
 static inline void InsertSectorUpdate(SectorUpdate *sectorUpdate, MapLine *line, SectorData sectorData, bool front)
 {
     assert(sectorUpdate->length <= QUEUE_SIZE);
-    sectorUpdate->data[sectorUpdate->length++] = (__typeof__(sectorUpdate->data[0])){ .line = line, .sectorData = sectorData, .valid = true, .front = front };
+    sectorUpdate->data[sectorUpdate->length++] = (typeof(sectorUpdate->data[0])){ .line = line, .sectorData = sectorData, .valid = true, .front = front };
 }
 
 static void RemoveSectorUpdate(SectorUpdate *sectorUpdate, MapLine *line)
