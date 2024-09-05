@@ -10,3 +10,6 @@
 [submodule "extern/triangulate"]
 	path = extern/triangulate
 	url = https://github.com/NovalisTheMagician/triangulate
+[submodule "extern/incbin"]
+	path = extern/incbin
+	url = https://github.com/graphitemaster/incbin

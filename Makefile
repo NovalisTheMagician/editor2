@@ -115,6 +115,10 @@ TRIANG_OBJ := $(BUILD_DIR)/$(TRIANG_DIR)/triangulate.o
 INC_DIRS += $(TRIANG_DIR)
 BUILD_DIRS += $(BUILD_DIR)/$(TRIANG_DIR)
 
+# incbin
+INCBIN_DIR := $(VENDOR_DIR)/incbin
+INC_DIRS += $(INCBIN_DIR)
+
 CPPFLAGS := $(addprefix -I,$(INC_DIRS)) $(addprefix -D,$(DEFINES)) -MMD -MP
 LIB_FLAGS := $(addprefix -L,$(LIB_DIRS)) $(addprefix -l,$(LIBS))
 

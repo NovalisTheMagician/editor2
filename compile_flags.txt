@@ -10,4 +10,5 @@
 -Iextern/cimgui
 -Iextern/cimgui/generator/output
 -Iextern/triangulate
+-Iextern/incbin
 -IE:\DevLibs\Include
