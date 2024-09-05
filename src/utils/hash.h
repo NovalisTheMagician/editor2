@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdint.h>
-#include "pstring.h"
 
 uint64_t murmurhash3(const char* str);
 

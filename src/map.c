@@ -1,5 +1,7 @@
 #include "map.h"
 
+#include "utils/debug.h"
+
 static void FreeVertList(MapVertex *head)
 {
     while(head)
@@ -69,6 +71,8 @@ void FreeMapSector(MapSector *sector)
     for(size_t i = 0; i < sector->numInnerLines; ++i)
         free(sector->innerLines[i]);
     free(sector->innerLines);
+
+    free(sector->edData.indices);
 
     free(sector->contains);
 

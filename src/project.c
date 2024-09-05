@@ -4,6 +4,8 @@
 #include <json-c/json.h>
 #include "logging.h"
 
+#include "utils/debug.h"
+
 #define PROJECT_VERSION 1
 
 void NewProject(Project *project)
