@@ -119,6 +119,10 @@ BUILD_DIRS += $(BUILD_DIR)/$(TRIANG_DIR)
 INCBIN_DIR := $(VENDOR_DIR)/incbin
 INC_DIRS += $(INCBIN_DIR)
 
+# cglm
+CGLM_DIR := $(VENDOR)/cglm
+INC_DIRS += $(CGLM_DIR)/include
+
 CPPFLAGS := $(addprefix -I,$(INC_DIRS)) $(addprefix -D,$(DEFINES)) -MMD -MP
 LIB_FLAGS := $(addprefix -L,$(LIB_DIRS)) $(addprefix -l,$(LIBS))
 

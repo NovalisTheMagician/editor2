@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include <cglm/struct.h>
+#include "cglm/struct.h"
 
 #include "map.h"
 

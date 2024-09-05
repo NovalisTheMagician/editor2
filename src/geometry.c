@@ -6,8 +6,6 @@
 #include <tgmath.h>
 #include <limits.h>
 
-#include <cglm/ivec2.h>
-
 bool PointInSector(MapSector *sector, vec2s point)
 {
     return PointInPolygon(sector->numOuterLines, sector->vertices, point);

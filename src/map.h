@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stddef.h>
-#include <cglm/struct.h>
+#include "cglm/struct.h"
 #include "utils/pstring.h"
 
 typedef enum LineType

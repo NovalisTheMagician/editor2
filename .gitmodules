@@ -13,3 +13,6 @@
 [submodule "extern/incbin"]
 	path = extern/incbin
 	url = https://github.com/graphitemaster/incbin
+[submodule "extern/cglm"]
+	path = extern/cglm
+	url = https://github.com/recp/cglm

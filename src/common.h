@@ -11,7 +11,7 @@
 #include <sys/types.h>
 
 #include "glad/gl.h"
-#include <cglm/struct.h>
+#include "cglm/struct.h"
 
 #include "imguidef.h"
 
