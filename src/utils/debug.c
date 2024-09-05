@@ -43,8 +43,6 @@ struct Alloc
 
 static FILE *debugLogFile;
 
-static int debug_malloc_count = 0;
-
 static void insertAlloc(void *address, enum AllocType type, const char *origin, int line)
 {
     if(allocStart == NULL)
@@ -123,10 +121,8 @@ void debug_init(const char *file)
         LogError("failed to create debug log file\n");
 }
 
-void debug_finish(int mallocOffset)
+void debug_finish(void)
 {
-    //fprintf(debugLogFile, "\n\nBALANCE (offset=%d): %d\n", mallocOffset, debug_malloc_count + mallocOffset);
-
     struct Alloc *alloc = allocStart;
     while(alloc)
     {
@@ -139,14 +135,8 @@ void debug_finish(int mallocOffset)
     fclose(debugLogFile);
 }
 
-void debug_adjust(int offset)
-{
-    debug_malloc_count += offset;
-}
-
 void* debug_malloc(size_t size, const char *file, int line)
 {
-    //fprintf(debugLogFile, "+m|%04d| %s: %d\n", ++debug_malloc_count, file, line);
     void *address = malloc(size);
     insertAlloc(address, AC_MALLOC, file, line);
     return address;
@@ -154,7 +144,6 @@ void* debug_malloc(size_t size, const char *file, int line)
 
 void* debug_calloc(size_t num, size_t size, const char *file, int line)
 {
-    //fprintf(debugLogFile, "+c|%04d| %s: %d\n", ++debug_malloc_count, file, line);
     void *address = calloc(num, size);
     insertAlloc(address, AC_MALLOC, file, line);
     return address;
@@ -173,14 +162,12 @@ void* debug_realloc(void *ptr, size_t size, const char *file, int line)
 void debug_free(void *ptr, const char *file, int line)
 {
     if(!ptr) return;
-    //fprintf(debugLogFile, "-f|%04d| %s: %d\n", --debug_malloc_count, file, line);
     removeAlloc(ptr);
     free(ptr);
 }
 
 pstring debug_pstr_alloc(size_t len, const char *file, int line)
 {
-    //fprintf(debugLogFile, "+s|%04d| %s: %d\n", ++debug_malloc_count, file, line);
     pstring string = string_alloc(len);
     insertAlloc(string, AC_STRING, file, line);
     return string;
@@ -188,7 +175,6 @@ pstring debug_pstr_alloc(size_t len, const char *file, int line)
 
 pstring debug_pstr_cstr(const char *cstr, const char *file, int line)
 {
-    //fprintf(debugLogFile, "+s|%04d| %s: %d (%s)\n", ++debug_malloc_count, file, line, cstr);
     pstring string = string_cstr(cstr);
     insertAlloc(string, AC_STRING, file, line);
     return string;
@@ -196,7 +182,6 @@ pstring debug_pstr_cstr(const char *cstr, const char *file, int line)
 
 pstring debug_pstr_cstr_alloc(const char *cstr, size_t size, const char *file, int line)
 {
-    //fprintf(debugLogFile, "+s|%04d| %s: %d (%s)\n", ++debug_malloc_count, file, line, cstr);
     pstring string = string_cstr_alloc(cstr, size);
     insertAlloc(string, AC_STRING, file, line);
     return string;
@@ -204,7 +189,6 @@ pstring debug_pstr_cstr_alloc(const char *cstr, size_t size, const char *file, i
 
 pstring debug_pstr_cstr_size(size_t size, const char *cstr, const char *file, int line)
 {
-    //fprintf(debugLogFile, "+s|%04d| %s: %d (%s)\n", ++debug_malloc_count, file, line, cstr);
     pstring string = string_cstr_size(size, cstr);
     insertAlloc(string, AC_STRING, file, line);
     return string;
@@ -212,7 +196,6 @@ pstring debug_pstr_cstr_size(size_t size, const char *cstr, const char *file, in
 
 pstring debug_pstr_copy(pstring string, const char *file, int line, const char *varname)
 {
-    //fprintf(debugLogFile, "+s|%04d| %s: %d {%s} (%s)\n", ++debug_malloc_count, file, line, varname, string);
     pstring copy = string_copy(string);
     insertAlloc(copy, AC_STRING, file, line);
     return copy;
@@ -221,7 +204,6 @@ pstring debug_pstr_copy(pstring string, const char *file, int line, const char *
 void debug_pstr_free(pstring str, const char *file, int line, const char *varname)
 {
     if(!str) return;
-    //fprintf(debugLogFile, "-f|%04d| %s: %d {%s} (%s)\n", --debug_malloc_count, file, line, varname, str);
     removeAlloc(str);
     string_free(str);
 }

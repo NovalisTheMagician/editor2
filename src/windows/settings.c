@@ -5,7 +5,7 @@
 void SettingsWindow(bool *p_open, EdState *state)
 {
     igSetNextWindowSize((ImVec2){ 600, 300 }, ImGuiCond_FirstUseEver);
-    if(igBegin("Options", p_open, 0))
+    if(igBegin("Options", p_open, ImGuiWindowFlags_NoDocking))
     {
         if(igBeginTabBar("", 0))
         {

@@ -1,12 +1,13 @@
 #pragma once
 
+#if defined(_DEBUG)
+
 #include <stdlib.h>
 #include <malloc.h>
 #include "pstring.h"
 
 void debug_init(const char *file);
-void debug_finish(int mallocOffset);
-void debug_adjust(int offset);
+void debug_finish(void);
 void* debug_malloc(size_t size, const char *file, int line);
 void* debug_calloc(size_t num, size_t size, const char *file, int line);
 void* debug_realloc(void *ptr, size_t size, const char *file, int line);
@@ -33,4 +34,6 @@ void debug_pstr_free(pstring str, const char *file, int line, const char *varnam
 #define string_cstr_size(size, cstr) debug_pstr_cstr_size(size, cstr, __FILE__, __LINE__)
 #define string_copy(str) debug_pstr_copy(str, __FILE__, __LINE__, #str)
 #define string_free(str) debug_pstr_free(str, __FILE__, __LINE__, #str)
+#endif
+
 #endif

@@ -11,6 +11,6 @@ void StatsWindow(bool *p_open, EdState *state);
 void ProjectSettingsWindow(bool *p_open, EdState *state);
 void MapSettingsWindow(bool *p_open, EdState *state);
 void LogsWindow(bool *p_open, EdState *state);
-Texture* TexturesWindow(bool *p_open, EdState *state, bool popup);
+void TexturesWindow(bool *p_open, EdState *state);
 
 void PropertyWindow(bool *p_open, EdState *state);

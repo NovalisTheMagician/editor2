@@ -4,6 +4,7 @@
 
 #include <tgmath.h>
 #include <assert.h>
+#include <time.h>
 
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include "cimgui.h"
@@ -168,6 +169,7 @@ void SetStyle(enum Theme theme)
 }
 
 static void MainMenuBar(bool *doQuit, EdState *state);
+static void DockSpace(bool *doQuit, EdState *state);
 static void FileDialog(bool *doQuit);
 
 static void ProjectSavePopup(EdState *state, bool *quitRequest);
@@ -199,7 +201,7 @@ bool DoGui(EdState *state, bool doQuit)
     openProjectPopup = false;
     openMapPopup = false;
 
-    MainMenuBar(&doQuit, state);
+    DockSpace(&doQuit, state);
 
     if(state->ui.showAbout)
         AboutWindow(&state->ui.showAbout);
@@ -226,7 +228,7 @@ bool DoGui(EdState *state, bool doQuit)
         MapSettingsWindow(&state->ui.showMapSettings, state);
 
     if(state->ui.showTextures)
-        TexturesWindow(&state->ui.showTextures, state, false);
+        TexturesWindow(&state->ui.showTextures, state);
 
     if(state->ui.showLogs)
         LogsWindow(&state->ui.showLogs, state);
@@ -542,9 +544,6 @@ static void FileDialog(bool *doQuit)
             if (cfilePathName)
             {
                 free(cfilePathName);
-#if defined(_DEBUG)
-                debug_adjust(1);
-#endif
             }
             *doQuit = action->quitRequest;
         }
@@ -610,4 +609,49 @@ static void DoLoadMap(EdState *state)
 {
     state->data.editVertexBufferSize = 0;
     OpenMapDialog(&state->map);
+}
+
+static void DockSpace(bool *doQuit, EdState *state)
+{
+    ImGuiViewport *viewport = igGetMainViewport();
+
+    ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+    igSetNextWindowPos(viewport->Pos, ImGuiCond_None, (ImVec2){ 0, 0 });
+    igSetNextWindowSize(viewport->Size, ImGuiCond_None);
+    igSetNextWindowViewport(viewport->ID);
+    igPushStyleVar_Float(ImGuiStyleVar_WindowRounding, 0.0f);
+    igPushStyleVar_Float(ImGuiStyleVar_WindowBorderSize, 0.0f);
+    igPushStyleVar_Vec2(ImGuiStyleVar_WindowPadding, (ImVec2){ 0, 0 });
+    igBegin("Dockspacewindow", NULL, windowFlags);
+    igPopStyleVar(3);
+
+    if(igDockBuilderGetNode(igGetID_Str("Dockspace")) == NULL)
+    {
+        ImGuiID dockSpaceId = igGetID_Str("Dockspace");
+
+        igDockBuilderRemoveNode(dockSpaceId);
+        igDockBuilderAddNode(dockSpaceId, 0);
+        igDockBuilderSetNodeSize(dockSpaceId, viewport->Size);
+
+        ImGuiID dockMainId = dockSpaceId;
+
+        ImGuiID dock1 = igDockBuilderSplitNode(dockMainId, ImGuiDir_Left, 0.5f, NULL, &dockMainId);
+        ImGuiID dock2 = igDockBuilderSplitNode(dockMainId, ImGuiDir_Right, 0.5f, NULL, &dockMainId);
+        ImGuiID dock3 = igDockBuilderSplitNode(dock2, ImGuiDir_Down, 0.5f, NULL, &dock2);
+
+        igDockBuilderDockWindow("Editor", dock1);
+        igDockBuilderDockWindow("Texture Browser", dock2);
+        igDockBuilderDockWindow("Logs", dock3);
+
+        igDockBuilderFinish(dockSpaceId);
+    }
+
+    igPushStyleColor_Vec4(ImGuiCol_DockingEmptyBg, (ImVec4){ .y = 1 });
+    ImGuiID dockSpaceId = igGetID_Str("Dockspace");
+    igDockSpace(dockSpaceId, (ImVec2){ 0, 0 }, 0, NULL);
+    igPopStyleColor(1);
+
+    MainMenuBar(doQuit, state);
+
+    igEnd();
 }

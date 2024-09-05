@@ -3,6 +3,7 @@
 #include <assert.h>
 
 #include "../edit.h"
+#include "cimgui.h"
 
 #define DEFAULT_WHITE { 1, 1, 1, 1 }
 #define LINE_DIST 10
@@ -88,13 +89,7 @@ static void AddEditVertex(EdState *state, vec2s v)
 
 void EditorWindow(bool *p_open, EdState *state)
 {
-    static bool firstTime = true;
-
-    igSetNextWindowSize((ImVec2){ 800, 600 }, ImGuiCond_FirstUseEver);
-    igSetNextWindowPos((ImVec2){ 40, 40 }, ImGuiCond_FirstUseEver, (ImVec2){ 0, 0 });
-
-    igPushStyleVar_Vec2(ImGuiStyleVar_WindowMinSize, (ImVec2){ 400, 300 });
-    ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
     if(state->map.dirty)
         flags |= ImGuiWindowFlags_UnsavedDocument;
 
@@ -412,6 +407,7 @@ void EditorWindow(bool *p_open, EdState *state)
             ResizeEditorView(state, clientArea.x, clientArea.y);
             igImage((ImTextureID)(intptr_t)state->gl.editorColorTexture, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 0 });
 
+            static bool firstTime = true;
             if(firstTime)
             {
                 firstTime = false;
@@ -421,5 +417,4 @@ void EditorWindow(bool *p_open, EdState *state)
         igEndChild();
     }
     igEnd();
-    igPopStyleVar(1);
 }

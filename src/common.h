@@ -29,6 +29,4 @@
 #define REQ_GL_MAJOR 4
 #define REQ_GL_MINOR 6
 
-#if defined(_DEBUG)
 #include "utils/debug.h"
-#endif

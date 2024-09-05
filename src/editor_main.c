@@ -1,4 +1,5 @@
 #include "common.h"
+#include <SDL2/SDL_events.h>
 
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #define CIMGUI_USE_OPENGL3
@@ -199,7 +200,7 @@ int EditorMain(int argc, char *argv[])
     SDL_DestroyWindow(window);
 
 #if defined(_DEBUG)
-    debug_finish(-1);
+    debug_finish();
 #endif
 
     return EXIT_SUCCESS;
@@ -249,10 +250,7 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
     igCreateContext(NULL);
 
     ImGuiIO *ioptr = igGetIO();
-    ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-#if defined(USE_DOCKING)
-    ioptr->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-#endif
+    ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_DockingEnable;
 
     ImFontConfig *config = ImFontConfig_ImFontConfig();
     config->FontDataOwnedByAtlas = false;
