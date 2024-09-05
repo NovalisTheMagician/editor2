@@ -635,13 +635,15 @@ static void DockSpace(bool *doQuit, EdState *state)
 
         ImGuiID dockMainId = dockSpaceId;
 
-        ImGuiID dock1 = igDockBuilderSplitNode(dockMainId, ImGuiDir_Left, 0.5f, NULL, &dockMainId);
-        ImGuiID dock2 = igDockBuilderSplitNode(dockMainId, ImGuiDir_Right, 0.5f, NULL, &dockMainId);
+        ImGuiID dock1 = igDockBuilderSplitNode(dockMainId, ImGuiDir_Left, 0.7f, NULL, &dockMainId);
+        ImGuiID dock2 = igDockBuilderSplitNode(dockMainId, ImGuiDir_Right, 0.3f, NULL, &dockMainId);
         ImGuiID dock3 = igDockBuilderSplitNode(dock2, ImGuiDir_Down, 0.5f, NULL, &dock2);
+        ImGuiID dock4 = igDockBuilderSplitNode(dock1, ImGuiDir_Down, 0.3f, NULL, &dock1);
 
         igDockBuilderDockWindow("Editor", dock1);
+        igDockBuilderDockWindow("3D View", dock1);
         igDockBuilderDockWindow("Texture Browser", dock2);
-        igDockBuilderDockWindow("Logs", dock3);
+        igDockBuilderDockWindow("Logs", dock4);
 
         igDockBuilderFinish(dockSpaceId);
     }

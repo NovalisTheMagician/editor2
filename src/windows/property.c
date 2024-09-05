@@ -52,7 +52,7 @@ static void VertexProperties(EdState *state)
         igText("Index: %d", selectedVertex->idx);
 
         igText("Attached lines: %d", selectedVertex->numAttachedLines);
-        igSeparatorEx(0, 2);
+        igSeparatorEx(ImGuiSeparatorFlags_Horizontal, 2);
         for(size_t i = 0; i < selectedVertex->numAttachedLines; ++i)
         {
             MapLine *line = selectedVertex->attachedLines[i];
