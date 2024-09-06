@@ -150,8 +150,6 @@ int EditorMain(int argc, char *argv[])
 
         quit = DoGui(state, quit);
 
-        //SDL_GL_MakeCurrent(window, glContext);
-
         if(!state->ui.render3d && state->gl.editorColorTexture > 0)
         {
             glEnable(GL_BLEND);
@@ -185,12 +183,6 @@ int EditorMain(int argc, char *argv[])
         glViewport(0, 0, (int)ioptr->DisplaySize.x, (int)ioptr->DisplaySize.y);
         glClearNamedFramebufferfv(0, GL_COLOR, 0, state->settings.colors[COL_WORKSPACE_BACK].raw);
         ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
-
-        SDL_Window *backupCurrentWindow = SDL_GL_GetCurrentWindow();
-        SDL_GLContext backupCurrentContext = SDL_GL_GetCurrentContext();
-        igUpdatePlatformWindows();
-        igRenderPlatformWindowsDefault(NULL, NULL);
-        SDL_GL_MakeCurrent(backupCurrentWindow, backupCurrentContext);
 
         SDL_GL_SwapWindow(window);
     }
@@ -272,7 +264,7 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
     igCreateContext(NULL);
 
     ImGuiIO *ioptr = igGetIO();
-    ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
+    ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_DockingEnable;
 
     ImFontConfig *config = ImFontConfig_ImFontConfig();
     config->FontDataOwnedByAtlas = false;
