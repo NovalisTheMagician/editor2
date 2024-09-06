@@ -9,6 +9,7 @@
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_events.h>
+#include <SDL2/SDL_messagebox.h>
 
 #include "glad/gl.h"
 
@@ -31,9 +32,9 @@
 #define REQ_GL_MAJOR 4
 #define REQ_GL_MINOR 6
 
-static SDL_Window* InitSDL(void);
-static bool InitImgui(SDL_Window *window, SDL_GLContext context);
-static SDL_GLContext InitOpenGL(SDL_Window *window);
+static SDL_Window* InitSDL(char *error, size_t errorSize);
+static bool InitImgui(SDL_Window *window, SDL_GLContext context, char *error, size_t errorSize);
+static SDL_GLContext InitOpenGL(SDL_Window *window, char *error, size_t errorSize);
 
 static void HandleArguments(int argc, char *argv[], EdState *state)
 {
@@ -91,13 +92,29 @@ int EditorMain(int argc, char *argv[])
 
     FtpInit();
 
-    SDL_Window *window = InitSDL();
-    if(!window) return EXIT_FAILURE;
+    char errorBuffer[256] = { 0 };
+    SDL_Window *window = InitSDL(errorBuffer, sizeof errorBuffer);
+    if(!window) 
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Failed to create window", errorBuffer, NULL);
+        return EXIT_FAILURE;
+    }
 
-    SDL_GLContext glContext = InitOpenGL(window);
-    if(!glContext) return EXIT_FAILURE;
+    SDL_GLContext glContext = InitOpenGL(window, errorBuffer, sizeof errorBuffer);
+    if(!glContext) 
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Failed to create OpenGL context", errorBuffer, window);
+        SDL_DestroyWindow(window);
+        return EXIT_FAILURE;
+    }
 
-    if(!InitImgui(window, glContext)) return EXIT_FAILURE;
+    if(!InitImgui(window, glContext, errorBuffer, sizeof errorBuffer)) 
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Failed to initialize ImGui", errorBuffer, window);
+        SDL_GL_DeleteContext(glContext);
+        SDL_DestroyWindow(window);
+        return EXIT_FAILURE;
+    }
 
     InitGui();
 
@@ -220,12 +237,12 @@ int EditorMain(int argc, char *argv[])
     return EXIT_SUCCESS;
 }
 
-static SDL_Window* InitSDL(void)
+static SDL_Window* InitSDL(char *error, size_t errorSize)
 {
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
     {
         const char *errMsg = SDL_GetError();
-        printf("failed to init sdl: %s\n", errMsg);
+        snprintf(error, errorSize, "%s", errMsg);
         return NULL;
     }
 #ifdef _DEBUG
@@ -250,7 +267,7 @@ static SDL_Window* InitSDL(void)
     if(!window)
     {
         const char *errMsg = SDL_GetError();
-        printf("failed to create window: %s\n", errMsg);
+        snprintf(error, errorSize, "%s", errMsg);
         return NULL;
     }
 
@@ -259,7 +276,7 @@ static SDL_Window* InitSDL(void)
     return window;
 }
 
-static bool InitImgui(SDL_Window *window, SDL_GLContext context)
+static bool InitImgui(SDL_Window *window, SDL_GLContext context, char *error, size_t errorSize)
 {
     igCreateContext(NULL);
 
@@ -273,33 +290,39 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
     ioptr->IniFilename = NULL;
 
     if(!ImGui_ImplSDL2_InitForOpenGL(window, context))
+    {
+        snprintf(error, errorSize, "ImGui: SDL2 init failed");
         return false;
+    }
     if(!ImGui_ImplOpenGL3_Init(SHADER_VERSION))
+    {
+        snprintf(error, errorSize, "ImGui: OpenGL3 init failed");
         return false;
+    }
 
     return true;
 }
 
-static SDL_GLContext InitOpenGL(SDL_Window *window)
+static SDL_GLContext InitOpenGL(SDL_Window *window, char *error, size_t errorSize)
 {
     SDL_GLContext glContext = SDL_GL_CreateContext(window);
     if(!glContext)
     {
         const char *errMsg = SDL_GetError();
-        printf("failed to create context: %s\n", errMsg);
+        snprintf(error, errorSize, "failed to create context: %s", errMsg);
         return NULL;
     }
 
     if(SDL_GL_MakeCurrent(window, glContext) != 0)
     {
         const char *errMsg = SDL_GetError();
-        printf("failed to make context current: %s\n", errMsg);
+        snprintf(error, errorSize, "failed to make context current: %s", errMsg);
         return NULL;
     }
 
     if(!gladLoadGL((GLADloadfunc)SDL_GL_GetProcAddress))
     {
-        printf("couldn't load GL functions\n");
+        snprintf(error, errorSize, "couldn't load GL functions");
         return NULL;
     }
 
