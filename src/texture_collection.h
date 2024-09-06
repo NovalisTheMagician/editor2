@@ -12,7 +12,7 @@ typedef struct Texture
 {
     pstring name;
     int width, height;
-    enum TextureFlags flags;
+    TextureFlags flags;
     GLuint texture1, texture2;
     size_t orderIdx;
     time_t modTime;

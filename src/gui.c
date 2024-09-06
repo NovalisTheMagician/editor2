@@ -209,14 +209,8 @@ bool DoGui(EdState *state, bool doQuit)
     if(state->ui.showMetrics)
         igShowMetricsWindow(&state->ui.showMetrics);
 
-    if(state->ui.showToolbar)
-        ToolbarWindow(&state->ui.showToolbar, state);
-
     if(state->ui.showSettings)
         SettingsWindow(&state->ui.showSettings, state);
-
-    if(state->ui.show3dView)
-        RealtimeWindow(&state->ui.show3dView, state);
 
     if(state->ui.showStats)
         StatsWindow(&state->ui.showStats, state);
@@ -236,7 +230,11 @@ bool DoGui(EdState *state, bool doQuit)
     if(state->ui.showProperties)
         PropertyWindow(&state->ui.showProperties, state);
 
+    if(state->ui.showEntities)
+        EntitiesWindow(&state->ui.showEntities, state);
+
     EditorWindow(NULL, state);
+    RealtimeWindow(NULL, state);
 
     if(doQuit)
     {
@@ -270,6 +268,13 @@ bool DoGui(EdState *state, bool doQuit)
 
     FileDialog(&doQuit);
 
+    static bool firstTime = true;
+    if(firstTime)
+    {
+        firstTime = false;
+        igSetWindowFocus_Str("Editor");
+    }
+
     return doQuit;
 }
 
@@ -278,7 +283,6 @@ static void MainMenuBar(bool *doQuit, EdState *state)
     bool allowFileOps = state->network.hosting || !state->network.connected;
     if(igBeginMainMenuBar())
     {
-        float menubarHeight = igGetWindowHeight();
         if(igBeginMenu("File", true))
         {
             if(igMenuItem_Bool("New Project", "", false, allowFileOps)) { if(state->project.dirty) { openProjectPopup = true; modalAction = SMA_NEW; } else NewProject(&state->project); }
@@ -356,44 +360,11 @@ static void MainMenuBar(bool *doQuit, EdState *state)
 
         if(igBeginMenu("Windows", true))
         {
-            igMenuItem_BoolPtr("Toolbar", "", &state->ui.showToolbar, true);
             igMenuItem_BoolPtr("Textures", "Ctrl+T", &state->ui.showTextures, true);
             igMenuItem_BoolPtr("Entities", "Ctrl+E", &state->ui.showEntities, true);
-            igMenuItem_BoolPtr("Properties", "", &state->ui.showProperties, true);
-            igMenuItem_BoolPtr("3D View", "Ctrl+W", &state->ui.show3dView, true);
+            igMenuItem_BoolPtr("Properties", "Ctrl+P", &state->ui.showProperties, true);
             igSeparator();
             igMenuItem_BoolPtr("Logs", "Ctrl+L", &state->ui.showLogs, true);
-            igSeparator();
-            if(igBeginMenu("Arrange", true))
-            {
-                ImVec2 displaySize = igGetIO()->DisplaySize;
-                if(igMenuItem_Bool("Fullsize", "", false, true))
-                {
-                    ImVec2 size = { .x = displaySize.x, .y = displaySize.y - menubarHeight };
-                    ImVec2 pos = { .x = 0, .y = menubarHeight };
-                    igSetWindowSize_Str("Editor", size, 0);
-                    igSetWindowPos_Str("Editor", pos, 0);
-                }
-                if(igMenuItem_Bool("Side by Side", "", false, true))
-                {
-                    ImVec2 edsize = { .x = displaySize.x * 0.60f, .y = displaySize.y - menubarHeight };
-                    ImVec2 edpos = { .x = 0, .y = menubarHeight };
-                    igSetWindowSize_Str("Editor", edsize, 0);
-                    igSetWindowPos_Str("Editor", edpos, 0);
-                    ImVec2 rtsize = { .x = displaySize.x * 0.40f, .y = displaySize.y - menubarHeight };
-                    ImVec2 rtpos = { .x = displaySize.x * 0.60f, .y = menubarHeight };
-                    igSetWindowSize_Str("3D View", rtsize, 0);
-                    igSetWindowPos_Str("3D View", rtpos, 0);
-                }
-                if(igMenuItem_Bool("Texturing", "", false, true))
-                {
-                    ImVec2 rtsize = { .x = displaySize.x * 0.65f, .y = displaySize.y - menubarHeight };
-                    ImVec2 rtpos = { .x = 0, .y = menubarHeight };
-                    igSetWindowSize_Str("3D View", rtsize, 0);
-                    igSetWindowPos_Str("3D View", rtpos, 0);
-                }
-                igEndMenu();
-            }
 #ifdef _DEBUG
             igSeparator();
             igMenuItem_BoolPtr("Stats", "", &state->ui.showStats, true);
@@ -580,7 +551,7 @@ static void HandleShortcuts(EdState *state)
 
     if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_W, ImGuiInputFlags_RouteGlobal))
     {
-        state->ui.show3dView = !state->ui.show3dView;
+
     }
 
     if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_E, ImGuiInputFlags_RouteGlobal))
@@ -643,7 +614,9 @@ static void DockSpace(bool *doQuit, EdState *state)
         igDockBuilderDockWindow("Editor", dock1);
         igDockBuilderDockWindow("3D View", dock1);
         igDockBuilderDockWindow("Texture Browser", dock2);
+        igDockBuilderDockWindow("Entities Browser", dock2);
         igDockBuilderDockWindow("Logs", dock4);
+        igDockBuilderDockWindow("Properties", dock3);
 
         igDockBuilderFinish(dockSpaceId);
     }

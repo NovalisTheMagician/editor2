@@ -206,6 +206,7 @@ void tc_iterate_filter(TextureCollection *tc, tc_itearte_cb cb, pstring filter, 
 
 void tc_unload(TextureCollection *tc, pstring name)
 {
+    if(name == NULL) return;
     uint64_t nameHash = hash(name) % NUM_SLOTS;
     size_t size = tc->slots[nameHash].size;
 
@@ -251,6 +252,7 @@ void tc_unload_all(TextureCollection *tc)
 
 bool tc_has(TextureCollection *tc, pstring name)
 {
+    if(name == NULL) return false;
     uint64_t nameHash = hash(name) % NUM_SLOTS;
     size_t size = tc->slots[nameHash].size;
 
@@ -264,6 +266,7 @@ bool tc_has(TextureCollection *tc, pstring name)
 
 Texture* tc_get(TextureCollection *tc, pstring name)
 {
+    if(name == NULL) return NULL;
     uint64_t nameHash = hash(name) % NUM_SLOTS;
     size_t size = tc->slots[nameHash].size;
 
@@ -278,6 +281,7 @@ Texture* tc_get(TextureCollection *tc, pstring name)
 
 bool tc_set(TextureCollection *tc, pstring name, Texture texture)
 {
+    if(name == NULL) return false;
     Texture *existing = tc_get(tc, name);
     if(existing)
     {

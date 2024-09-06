@@ -1,5 +1,6 @@
 #include "../gwindows.h"
 
+#include "cimgui.h"
 #include "texture_load.h"
 
 typedef struct IterateData
@@ -26,6 +27,13 @@ static void TextureIteration(Texture *texture, size_t idx, void *user)
         data->selected = texture;
     }
 
+    if(igBeginDragDropSource(ImGuiDragDropFlags_SourceNoDisableHover))
+    {
+        igImage((void*)(intptr_t)texture->texture1, size, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 1 });
+        igSetDragDropPayload("TextureDnD", texture, sizeof *texture, ImGuiCond_Once);
+        igEndDragDropSource();
+    }
+
     if (igIsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled))
     {
         igSetTooltip("Name: %s\nSize: %dx%d", texture->name, (int)size.x, (int)size.y);
@@ -36,8 +44,6 @@ static void TextureIteration(Texture *texture, size_t idx, void *user)
 
 void TexturesWindow(bool *p_open, EdState *state)
 {
-    igSetNextWindowSize((ImVec2){ 800, 600 }, ImGuiCond_FirstUseEver);
-
     if(igBegin("Texture Browser", p_open, ImGuiWindowFlags_MenuBar))
     {
         if(igBeginMenuBar())

@@ -120,6 +120,10 @@ typedef struct Map
 
 LineData DefaultLineData(void);
 SectorData DefaultSectorData(void);
+LineData CopyLineData(LineData data);
+SectorData CopySectorData(SectorData data);
+void FreeLineData(LineData data);
+void FreeSectorData(SectorData data);
 
 void FreeMapVertex(MapVertex *vertex);
 void FreeMapLine(MapLine *line);

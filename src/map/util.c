@@ -3,11 +3,12 @@
 #include <assert.h>
 
 #include "../edit.h"
+#include "map.h"
 #include "remove.h"
 
 SplitResult SplitMapLine(Map *map, MapLine *line, MapVertex *vertex)
 {
-    LineData dataCopy = line->data;
+    LineData dataCopy = CopyLineData(line->data);
 
     MapVertex *va = line->a;
     MapVertex *vb = line->b;
@@ -17,12 +18,14 @@ SplitResult SplitMapLine(Map *map, MapLine *line, MapVertex *vertex)
     MapLine *newA = EditAddLine(map, va, vertex, dataCopy);
     MapLine *newB = EditAddLine(map, vertex, vb, dataCopy);
 
+    FreeLineData(dataCopy);
+
     return (SplitResult){ .left = newA, .right = newB };
 }
 
 SplitResult SplitMapLine2(Map *map, MapLine *line, MapVertex *vertexA, MapVertex *vertexB)
 {
-    LineData dataCopy = line->data;
+    LineData dataCopy = CopyLineData(line->data);
 
     MapVertex *va = line->a;
     MapVertex *vb = line->b;
@@ -32,6 +35,8 @@ SplitResult SplitMapLine2(Map *map, MapLine *line, MapVertex *vertexA, MapVertex
     MapLine *newStart = EditAddLine(map, va, vertexA, dataCopy);
     MapLine *newMiddle = EditAddLine(map, vertexA, vertexB, dataCopy);
     MapLine *newEnd = EditAddLine(map, vertexB, vb, dataCopy);
+
+    FreeLineData(dataCopy);
 
     return (SplitResult){ .left = newStart, .middle = newMiddle, .right = newEnd };
 }

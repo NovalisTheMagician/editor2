@@ -1,4 +1,5 @@
 #include "../gwindows.h"
+#include "cimgui.h"
 
 void RealtimeWindow(bool *p_open, EdState *state)
 {
@@ -38,6 +39,12 @@ void RealtimeWindow(bool *p_open, EdState *state)
             igImage((void*)(intptr_t)state->gl.realtimeColorTexture, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 0 });
         }
         igEndChild();
+
+        state->ui.render3d = true;
+    }
+    else
+    {
+        state->ui.render3d = false;
     }
     igEnd();
 }

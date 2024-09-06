@@ -1,6 +1,7 @@
 #include "map.h"
 
 #include "utils/debug.h"
+#include "utils/pstring.h"
 
 static void FreeVertList(MapVertex *head)
 {
@@ -45,6 +46,50 @@ SectorData DefaultSectorData(void)
     return (SectorData){ .type = ST_NORMAL };
 }
 
+LineData CopyLineData(LineData data)
+{
+    LineData copy = data;
+    if(data.front.lowerTex)
+        copy.front.lowerTex = string_copy(data.front.lowerTex);
+    if(data.front.middleTex)
+        copy.front.middleTex = string_copy(data.front.middleTex);
+    if(data.front.upperTex)
+        copy.front.upperTex = string_copy(data.front.upperTex);
+    if(data.back.lowerTex)
+        copy.back.lowerTex = string_copy(data.back.lowerTex);
+    if(data.back.middleTex)
+        copy.back.middleTex = string_copy(data.back.middleTex);
+    if(data.back.upperTex)
+        copy.back.upperTex = string_copy(data.back.upperTex);
+    return copy;
+}
+
+SectorData CopySectorData(SectorData data)
+{
+    SectorData copy = data;
+    if(data.ceilTex)
+        copy.ceilTex = string_copy(data.ceilTex);
+    if(data.floorTex)
+        copy.floorTex = string_copy(data.floorTex);
+    return copy;
+}
+
+void FreeLineData(LineData data)
+{
+    string_free(data.front.lowerTex);
+    string_free(data.front.middleTex);
+    string_free(data.front.upperTex);
+    string_free(data.back.lowerTex);
+    string_free(data.back.middleTex);
+    string_free(data.back.upperTex);
+}
+
+void FreeSectorData(SectorData data)
+{
+    string_free(data.ceilTex);
+    string_free(data.floorTex);
+}
+
 void FreeMapVertex(MapVertex *vertex)
 {
     free(vertex);
@@ -52,19 +97,13 @@ void FreeMapVertex(MapVertex *vertex)
 
 void FreeMapLine(MapLine *line)
 {
-    string_free(line->data.front.lowerTex);
-    string_free(line->data.front.middleTex);
-    string_free(line->data.front.upperTex);
-    string_free(line->data.back.lowerTex);
-    string_free(line->data.back.middleTex);
-    string_free(line->data.back.upperTex);
+    FreeLineData(line->data);
     free(line);
 }
 
 void FreeMapSector(MapSector *sector)
 {
-    string_free(sector->data.ceilTex);
-    string_free(sector->data.floorTex);
+    FreeSectorData(sector->data);
     free(sector->vertices);
 
     free(sector->outerLines);

@@ -68,6 +68,14 @@ static void HandleArguments(int argc, char *argv[], EdState *state)
     }
 }
 
+static void InitState(EdState *state)
+{
+    state->ui.showTextures = true;
+    state->ui.showEntities = true;
+    state->ui.showLogs = true;
+    state->ui.showProperties = true;
+}
+
 int EditorMain(int argc, char *argv[])
 {
 #if defined(_DEBUG)
@@ -89,6 +97,7 @@ int EditorMain(int argc, char *argv[])
     InitGui();
 
     EdState *state = calloc(1, sizeof *state);
+    InitState(state);
     LogInit(&state->log);
 
     LogInfo("OpenGL Version %s", glGetString(GL_VERSION));
@@ -136,7 +145,7 @@ int EditorMain(int argc, char *argv[])
 
         quit = DoGui(state, quit);
 
-        if(state->gl.editorColorTexture > 0)
+        if(!state->ui.render3d && state->gl.editorColorTexture > 0)
         {
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -148,7 +157,7 @@ int EditorMain(int argc, char *argv[])
             glDisable(GL_BLEND);
         }
 
-        if(state->ui.show3dView && state->gl.realtimeColorTexture > 0)
+        if(state->ui.render3d && state->gl.realtimeColorTexture > 0)
         {
             glEnable(GL_DEPTH_TEST);
             glEnable(GL_CULL_FACE);

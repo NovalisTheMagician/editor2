@@ -134,10 +134,8 @@ typedef struct EdState
         bool showMetrics;
         bool showAbout;
 
-        bool showToolbar;
         bool showTextures;
         bool showEntities;
-        bool show3dView;
         bool showLogs;
         bool showStats;
 
@@ -148,6 +146,8 @@ typedef struct EdState
         bool showProjectSettings;
 
         bool showProperties;
+
+        bool render3d;
     } ui;
 
     struct

@@ -1,4 +1,5 @@
 #include "create.h"
+#include "map.h"
 
 #include <string.h>
 
@@ -59,7 +60,7 @@ CreateResult CreateLine(Map *map, MapVertex *v0, MapVertex *v1, LineData data)
     line->b = v1;
     line->idx = lineIndex++;
     line->prev = map->tailLine;
-    line->data = data;
+    line->data = CopyLineData(data);
 
     v0->attachedLines[v0->numAttachedLines] = line;
     line->aVertIndex = v0->numAttachedLines;
@@ -126,7 +127,7 @@ CreateResult CreateSector(Map *map, size_t numLines, MapLine *lines[static numLi
     memcpy(sector->outerLines, lines, sector->numOuterLines * sizeof *sector->outerLines);
     sector->idx = sectorIndex++;
     sector->prev = map->tailSector;
-    sector->data = data;
+    sector->data = CopySectorData(data);
 
     if(map->headSector == NULL)
     {

@@ -4,6 +4,7 @@
 
 #include "../edit.h"
 #include "../geometry.h"
+#include "map.h"
 #include "remove.h"
 #include "util.h"
 
@@ -118,6 +119,7 @@ static void RemoveSectorUpdate(SectorUpdate *sectorUpdate, MapLine *line)
         if(sectorUpdate->data[i].line == line)
         {
             sectorUpdate->data[i].valid = false;
+            FreeSectorData(sectorUpdate->data[i].sectorData);
             break;
         }
     }
@@ -133,12 +135,12 @@ static void DoSplit(Map *map, SectorUpdate *sectorUpdate, MapLine *line, MapVert
 
     if(hasFrontSector)
     {
-        frontData = line->frontSector->data;
+        frontData = CopySectorData(line->frontSector->data);
         RemoveSector(map, line->frontSector);
     }
     if(hasBackSector)
     {
-        backData = line->backSector->data;
+        backData = CopySectorData(line->backSector->data);
         RemoveSector(map, line->backSector);
     }
 
@@ -169,12 +171,12 @@ static void DoSplit2(Map *map, SectorUpdate *sectorUpdate, MapLine *line, MapVer
 
     if(hasFrontSector)
     {
-        frontData = line->frontSector->data;
+        frontData = CopySectorData(line->frontSector->data);
         RemoveSector(map, line->frontSector);
     }
     if(hasBackSector)
     {
-        backData = line->backSector->data;
+        backData = CopySectorData(line->backSector->data);
         RemoveSector(map, line->backSector);
     }
 
@@ -396,6 +398,7 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
         if(front && line->frontSector != NULL) continue;
         if(!front && line->backSector != NULL) continue;
         MakeMapSector(map, line, front, data);
+        FreeSectorData(data);
     }
 
     // create sectors from the new lines
