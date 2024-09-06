@@ -1,8 +1,9 @@
 #pragma once
 
-#include "common.h"
-
+#include <stdint.h>
 #include <pthread.h>
+
+#include "utils/pstring.h"
 
 #define BATCH_SIZE 10
 

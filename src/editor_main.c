@@ -1,6 +1,5 @@
-#include "common.h"
-#include <SDL2/SDL_events.h>
-
+#include <SDL2/SDL_video.h>
+#include <time.h>
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #define CIMGUI_USE_OPENGL3
 #define CIMGUI_USE_SDL2
@@ -9,6 +8,9 @@
 
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_events.h>
+
+#include "glad/gl.h"
 
 #include <ftplib.h>
 #include <unistd.h>
@@ -17,14 +19,17 @@
 #include "map.h"
 #include "gui.h"
 #include "async_load.h"
-
 #include "texture_load.h"
-
 #include "resources/resources.h"
+#include "memory.h" // IWYU pragma: keep
 
 #define SETTINGS_FILE "./settings.ini"
 #define DEFAULT_WINDOW_WIDTH 1600
 #define DEFAULT_WINDOW_HEIGHT 900
+
+#define SHADER_VERSION "#version 460 core\n"
+#define REQ_GL_MAJOR 4
+#define REQ_GL_MINOR 6
 
 static SDL_Window* InitSDL(void);
 static bool InitImgui(SDL_Window *window, SDL_GLContext context);
@@ -145,6 +150,8 @@ int EditorMain(int argc, char *argv[])
 
         quit = DoGui(state, quit);
 
+        //SDL_GL_MakeCurrent(window, glContext);
+
         if(!state->ui.render3d && state->gl.editorColorTexture > 0)
         {
             glEnable(GL_BLEND);
@@ -178,6 +185,12 @@ int EditorMain(int argc, char *argv[])
         glViewport(0, 0, (int)ioptr->DisplaySize.x, (int)ioptr->DisplaySize.y);
         glClearNamedFramebufferfv(0, GL_COLOR, 0, state->settings.colors[COL_WORKSPACE_BACK].raw);
         ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
+
+        SDL_Window *backupCurrentWindow = SDL_GL_GetCurrentWindow();
+        SDL_GLContext backupCurrentContext = SDL_GL_GetCurrentContext();
+        igUpdatePlatformWindows();
+        igRenderPlatformWindowsDefault(NULL, NULL);
+        SDL_GL_MakeCurrent(backupCurrentWindow, backupCurrentContext);
 
         SDL_GL_SwapWindow(window);
     }
@@ -259,7 +272,7 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context)
     igCreateContext(NULL);
 
     ImGuiIO *ioptr = igGetIO();
-    ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_DockingEnable;
+    ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_DockingEnable | ImGuiConfigFlags_ViewportsEnable;
 
     ImFontConfig *config = ImFontConfig_ImFontConfig();
     config->FontDataOwnedByAtlas = false;

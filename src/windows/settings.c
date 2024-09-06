@@ -1,5 +1,6 @@
 #include "../gwindows.h"
 
+#include "utils.h"
 #include "../gui.h"
 
 void SettingsWindow(bool *p_open, EdState *state)

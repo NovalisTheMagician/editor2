@@ -1,9 +1,10 @@
 #include "editor.h"
-#include "common.h"
-#include "logging.h"
 
 #include <string.h>
 #include <tgmath.h>
+
+#include "logging.h"
+#include "utils.h"
 
 #define SELECTION_CAPACITY 10000
 #define BUFFER_SIZE (1<<20)

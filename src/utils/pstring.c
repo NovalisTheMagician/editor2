@@ -5,7 +5,7 @@
 #include <ctype.h>
 #include <stdarg.h>
 #include <assert.h>
-#include <stdbool.h>
+#include <malloc.h>
 
 #define min(a, b) ({ typeof(a) a_ = (a); typeof(b) b_ = (b); a_ < b_ ? a_ : b_; })
 

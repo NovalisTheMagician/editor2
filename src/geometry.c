@@ -1,10 +1,10 @@
 #include "geometry.h"
 
-#include "common.h"
-
 #include <assert.h>
 #include <tgmath.h>
 #include <limits.h>
+
+#include "utils.h"
 
 bool PointInSector(MapSector *sector, vec2s point)
 {

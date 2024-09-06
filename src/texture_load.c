@@ -1,13 +1,13 @@
 #include "texture_load.h"
 
-#include <unistd.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <dirent.h>
+#include <string.h>
 
 #include <ftplib.h>
 #include <pthread.h>
 
+#include "memory.h" // IWYU pragma: keep
 #include "async_load.h"
 
 static bool ReadFromFs(pstring path, uint8_t **buffer, size_t *size, void *unused)

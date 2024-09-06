@@ -1,6 +1,9 @@
 #pragma once
 
-#include "common.h"
+#include "glad/gl.h"
+#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#include "cimgui.h"
+
 #include "map.h"
 #include "project.h"
 #include "network.h"

@@ -1,5 +1,7 @@
 #include "editor.h"
 
+#include <string.h> // IWYU pragma: keep
+
 const char* ColorIndexToString(enum Colors color)
 {
     switch(color)

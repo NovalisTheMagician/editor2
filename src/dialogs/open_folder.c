@@ -1,5 +1,7 @@
 #include "../dialogs.h"
 
+#include <string.h>
+
 static void OpenFolderCallback(const char *path, void *data)
 {
     pstring str = data;

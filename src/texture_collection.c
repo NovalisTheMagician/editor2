@@ -22,6 +22,9 @@
 
 #include <tgmath.h>
 
+#include "utils.h"
+#include "utils/hash.h"
+
 static size_t Partition(Texture **arr, size_t lo, size_t hi)
 {
     size_t pivIdx = floor((hi - lo) / 2) + lo;

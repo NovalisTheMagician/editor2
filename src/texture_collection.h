@@ -1,6 +1,8 @@
 #pragma once
 
-#include "common.h"
+#include "glad/gl.h"
+
+#include "utils/pstring.h"
 
 typedef enum TextureFlags
 {

@@ -1,4 +1,3 @@
-#include "common.h"
 #include "editor.h"
 
 #include "resources/resources.h"

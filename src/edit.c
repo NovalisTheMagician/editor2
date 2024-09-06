@@ -1,13 +1,14 @@
 #include "edit.h"
-#include "map.h"
 
-#include "geometry.h"
 
 #include <assert.h>
 #include <tgmath.h>
+#include <string.h>
 
 #include "triangulate.h"
 
+#include "geometry.h"
+#include "map.h"
 #include "map/remove.h"
 #include "map/util.h"
 #include "map/insert.h"

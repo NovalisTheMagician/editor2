@@ -1,9 +1,11 @@
 #include "../gwindows.h"
 
 #include <assert.h>
-
-#include "../edit.h"
+#include <string.h>
 #include "cimgui.h"
+
+#include "utils.h"
+#include "../edit.h"
 
 #define DEFAULT_WHITE { 1, 1, 1, 1 }
 #define LINE_DIST 10
