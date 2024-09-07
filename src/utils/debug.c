@@ -1,8 +1,10 @@
 #include "debug.h"
 
 #include <stdio.h>
+#include <assert.h>
 
 #include "logging.h"
+#include "utils/pstring.h"
 
 #undef malloc
 #undef calloc
@@ -15,6 +17,7 @@
 #undef string_cstr_alloc
 #undef string_copy
 #undef string_free
+#undef string_substring
 
 typedef enum AllocType
 {
@@ -90,12 +93,12 @@ static void removeAlloc(void *address)
                 prev->next = alloc->next;
             }
             free(toFree);
-            break;
+            return;
         }
         prev = alloc;
         alloc = alloc->next;
     }
-    //assert(false, "address not found");
+    //assert(false && "address not found");
 }
 
 static void updateAlloc(void *oldAddress, void *newAddress, const char *origin, int line)
@@ -206,4 +209,11 @@ void debug_pstr_free(pstring str, const char *file, int line, const char *varnam
     if(!str) return;
     removeAlloc(str);
     string_free(str);
+}
+
+pstring debug_pstr_substring(pstring str, size_t start, ssize_t end, const char *file, int line)
+{
+    pstring substr = string_substring(str, start, end);
+    insertAlloc(substr, AC_STRING, file, line);
+    return substr;
 }

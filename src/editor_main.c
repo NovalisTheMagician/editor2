@@ -22,7 +22,7 @@
 #include "async_load.h"
 #include "texture_load.h"
 #include "resources/resources.h"
-#include "memory.h" // IWYU pragma: keep
+#include "memory.h"
 
 #define SETTINGS_FILE "./settings.ini"
 #define DEFAULT_WINDOW_WIDTH 1600
@@ -229,6 +229,7 @@ int EditorMain(int argc, char *argv[])
 
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(window);
+    SDL_Quit();
 
 #if defined(_DEBUG)
     debug_finish();
@@ -286,6 +287,7 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context, char *error, si
     ImFontConfig *config = ImFontConfig_ImFontConfig();
     config->FontDataOwnedByAtlas = false;
     ImFontAtlas_AddFontFromMemoryTTF(ioptr->Fonts, (void*)gFontData, gFontSize, 16.75f, config, NULL);
+    ImFontConfig_destroy(config);
 
     ioptr->IniFilename = NULL;
 

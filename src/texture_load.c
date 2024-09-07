@@ -299,8 +299,12 @@ static void BatchCallback(Batch batch, bool lastBatch, void *handle, void *user)
     if(lastBatch)
     {
         state->data.fetchingTextures = false;
-        if(handle) FtpQuit(handle);
     }
+}
+
+static void FinalizeFtpCallback(void *handle, void *user)
+{
+    FtpQuit(handle);
 }
 
 typedef struct ThreadData
@@ -340,7 +344,7 @@ void* LoadThread(void *user)
             pthread_mutex_lock(&collectMutex);
             cancel = cancelRequest;
             pthread_mutex_unlock(&collectMutex);
-            if(num > 0 && !cancel) Async_StartJob(async, locations, num, BatchCallback, ReadFromFtp, handle, data->state);
+            if(num > 0 && !cancel) Async_StartJob(async, locations, num, BatchCallback, ReadFromFtp, FinalizeFtpCallback, handle, data->state);
             else
             {
                 FtpQuit(handle);
@@ -356,7 +360,7 @@ void* LoadThread(void *user)
         pthread_mutex_lock(&collectMutex);
         cancel = cancelRequest;
         pthread_mutex_unlock(&collectMutex);
-        if(num > 0 && !cancel) Async_StartJob(async, locations, num, BatchCallback, ReadFromFs, NULL, data->state);
+        if(num > 0 && !cancel) Async_StartJob(async, locations, num, BatchCallback, ReadFromFs, NULL, NULL, data->state);
         else data->state->data.fetchingTextures = false;
     }
 

@@ -46,7 +46,7 @@ static void* ThreadFunction(void *data)
     return NULL;
 }
 
-bool Async_StartJob(AsyncJob *job, FetchLocation *fetchList, size_t len, batch_finish_cb finishCb, read_cb readCb, void *handle, void *user)
+bool Async_StartJob(AsyncJob *job, FetchLocation *fetchList, size_t len, batch_finish_cb finishCb, read_cb readCb, finalize_cb finalizeCb, void *handle, void *user)
 {
     if(job->running) return false;
 
@@ -65,6 +65,8 @@ bool Async_StartJob(AsyncJob *job, FetchLocation *fetchList, size_t len, batch_f
 
     job->handle = handle;
     job->readCb = readCb;
+
+    job->finalizeCb = finalizeCb;
 
     job->user = user;
 
@@ -107,6 +109,7 @@ void Async_UpdateJob(AsyncJob *job)
             job->running = false;
             job->stopRequest = false;
             job->done = false;
+            if(job->finalizeCb) job->finalizeCb(job->handle, job->user);
         }
         else
         {
@@ -132,6 +135,7 @@ void Async_AbortJobAndWait(AsyncJob *job)
     job->stopRequest = true;
     pthread_mutex_unlock(&threadMutex);
     pthread_join(job->threadObj, NULL);
+    if(job->finalizeCb) job->finalizeCb(job->handle, job->user);
     freeFetches(job->infos, job->numInfos);
     freeBatch(job->batch);
     free(job->infos);

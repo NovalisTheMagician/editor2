@@ -2,7 +2,7 @@
 
 #include "glad/gl.h"
 
-#include "utils/pstring.h"
+#include "memory.h"
 
 typedef enum TextureFlags
 {

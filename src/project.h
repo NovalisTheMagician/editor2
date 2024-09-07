@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include "utils/pstring.h"
+#include "memory.h"
 
 #define MAX_ASSETPATH_LEN 256
 

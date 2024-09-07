@@ -17,6 +17,7 @@ pstring debug_pstr_cstr_alloc(const char *cstr, size_t size, const char *file, i
 pstring debug_pstr_cstr_size(size_t size, const char *cstr, const char *file, int line);
 pstring debug_pstr_copy(pstring string, const char *file, int line, const char *varname);
 void debug_pstr_free(pstring str, const char *file, int line, const char *varname);
+pstring debug_pstr_substring(pstring str, size_t start, ssize_t end, const char *file, int line);
 
 #ifndef NO_MEMORY_DEBUG
 #define malloc(size) debug_malloc(size, __FILE__, __LINE__)
@@ -32,4 +33,6 @@ void debug_pstr_free(pstring str, const char *file, int line, const char *varnam
 #define string_cstr_size(size, cstr) debug_pstr_cstr_size(size, cstr, __FILE__, __LINE__)
 #define string_copy(str) debug_pstr_copy(str, __FILE__, __LINE__, #str)
 #define string_free(str) debug_pstr_free(str, __FILE__, __LINE__, #str)
+
+#define string_substring(str, start, end) debug_pstr_substring(str, start, end, __FILE__, __LINE__)
 #endif

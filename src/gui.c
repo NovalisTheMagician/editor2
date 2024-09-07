@@ -551,7 +551,8 @@ static void HandleShortcuts(EdState *state)
 
     if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_W, ImGuiInputFlags_RouteGlobal))
     {
-
+        const char *window = state->ui.render3d ? "Editor" : "3D View";
+        igSetWindowFocus_Str(window);
     }
 
     if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_E, ImGuiInputFlags_RouteGlobal))

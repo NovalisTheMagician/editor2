@@ -2,7 +2,7 @@
 
 #include <stddef.h>
 #include "cglm/struct.h" // IWYU pragma: keep
-#include "utils/pstring.h"
+#include "memory.h"
 
 typedef enum LineType
 {

@@ -119,6 +119,7 @@ static void RemoveSectorUpdate(SectorUpdate *sectorUpdate, MapLine *line)
         if(sectorUpdate->data[i].line == line)
         {
             sectorUpdate->data[i].valid = false;
+            sectorUpdate->data[i].line = NULL;
             FreeSectorData(sectorUpdate->data[i].sectorData);
             break;
         }

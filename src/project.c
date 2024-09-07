@@ -4,7 +4,7 @@
 #include <json-c/json.h>
 #include "logging.h"
 
-#include "utils/debug.h"
+#include "memory.h" // IWYU pragma: keep
 
 #define PROJECT_VERSION 1
 
@@ -185,6 +185,7 @@ void SaveProject(Project *project)
 void FreeProject(Project *project)
 {
     string_free(project->file);
+    project->file = NULL;
     string_free(project->thingsFile);
     string_free(project->texturesPath);
     string_free(project->basePath.ftp.path);

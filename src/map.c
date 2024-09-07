@@ -1,7 +1,6 @@
 #include "map.h"
 
-#include "utils/debug.h"
-#include "utils/pstring.h"
+#include "memory.h" // IWYU pragma: keep
 
 static void FreeVertList(MapVertex *head)
 {
@@ -161,10 +160,7 @@ void FreeMap(Map *map)
     FreeLineList(map->headLine);
     FreeSectorList(map->headSector);
 
-    if(map->file)
-    {
-        string_free(map->file);
-        map->file = NULL;
-    }
+    string_free(map->file);
+    map->file = NULL;
 }
 
