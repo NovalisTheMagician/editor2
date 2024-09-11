@@ -2,11 +2,11 @@
 
 #include <dirent.h>
 #include <string.h>
+#include <assert.h>
 
 #include <lauxlib.h>
 #include <lua.h>
 #include <lualib.h>
-#include <stdio.h>
 
 #include "editor.h"
 #include "logging.h"
