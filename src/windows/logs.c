@@ -18,6 +18,7 @@ static ImVec4 severityToColor(EdState *state, LogSeverity severity)
     case LOG_ERROR: return Col2ImVec4(state->settings.colors[COL_LOG_ERRO]);
     case LOG_DEBUG: return Col2ImVec4(state->settings.colors[COL_LOG_DEBU]);
     }
+    return (ImVec4){ 0 };
 }
 
 void LogsWindow(bool *p_open, EdState *state)
@@ -37,7 +38,7 @@ void LogsWindow(bool *p_open, EdState *state)
             memset(inputBuffer, 0, sizeof inputBuffer);
         }
         igPopItemWidth();
-        if(igBeginChild_Str("logWindow", (ImVec2){ 0, 0 }, ImGuiChildFlags_Border, 0))
+        if(igBeginChild_Str("logWindow", (ImVec2){ 0, 0 }, ImGuiChildFlags_Borders, 0))
         {
             size_t numLogs = LogLength(log);
             for(size_t i = 0; i < numLogs; ++i)
