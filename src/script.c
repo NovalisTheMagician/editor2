@@ -1,6 +1,7 @@
 #include "script.h"
 
 #include <dirent.h>
+#include <string.h>
 
 #include <lauxlib.h>
 #include <lua.h>
@@ -9,6 +10,7 @@
 
 #include "editor.h"
 #include "logging.h"
+#include "utils/pstring.h"
 
 static void luaError(lua_State *L)
 {
@@ -62,9 +64,82 @@ static int logWarnFunc(lua_State *L)
     return 0;
 }
 
+static size_t addPlugin(Script *script, size_t len, const char name[static len])
+{
+    for(size_t i = 0; i < script->numPlugins; ++i)
+    {
+        if(strncmp(name, script->plugins[i].name, len) == 0)
+        {
+            return i;
+        }
+    }
+
+    script->numPlugins++;
+    script->plugins = realloc(script->plugins, sizeof *script->plugins * script->numPlugins);
+    script->plugins[script->numPlugins-1] = (Plugin){ .name = string_cstr_size(len, name), .flags = 0 };
+    return script->numPlugins-1;
+}
+
+// function (name: string, execute: function, check: function, gui: function)
+static int registerPluginFunc(lua_State *L)
+{
+    int numArgs = lua_gettop(L);
+    if(!lua_isstring(L, 1) || !lua_isfunction(L, 2) || (numArgs > 2 && !lua_isfunction(L, 3)) || (numArgs > 3 && !lua_isfunction(L, 4)) || numArgs > 4)
+    {
+        lua_pushstring(L, "invalid arguments");
+        lua_error(L);
+    }
+
+    EdState *state = lua_touserdata(L, lua_upvalueindex(1));
+
+    size_t nameLen;
+    const char *name = lua_tolstring(L, 1, &nameLen);
+
+    lua_getglobal(L, "_Plugins");
+    lua_pushstring(L, name);
+    lua_gettable(L, -2);
+    if(lua_istable(L, -1))
+    {
+        lua_pushfstring(L, "Plugin \"%s\" already registered", name);
+        lua_error(L);
+    }
+    lua_pop(L, 1);
+
+    Script *script = &state->script;
+    size_t idx = addPlugin(script, nameLen, name);
+
+    lua_pushstring(L, name);
+
+    lua_newtable(L);
+    lua_pushstring(L, "execute");
+    lua_pushvalue(L, 2);
+    lua_settable(L, -3);
+
+    if(lua_isfunction(L, 3)) // check function
+    {
+        lua_pushstring(L, "check");
+        lua_pushvalue(L, 3);
+        lua_settable(L, -3);
+        script->plugins[idx].flags |= Plugin_HasPrerequisite;
+    }
+
+    if(lua_isfunction(L, 4)) // gui function
+    {
+        lua_pushstring(L, "gui");
+        lua_pushvalue(L, 4);
+        lua_settable(L, -3);
+        script->plugins[idx].flags |= Plugin_HasGui;
+    }
+
+    lua_settable(L, -3);
+
+    lua_pop(L, 1);
+
+    return 0;
+}
+
 static void registerBuiltins(lua_State *L, EdState *state)
 {
-    //lua_pushlightuserdata(L, state);
     lua_pushcclosure(L, logInfoFunc, 0);
     lua_setglobal(L, "LogInfo");
 
@@ -73,12 +148,28 @@ static void registerBuiltins(lua_State *L, EdState *state)
 
     lua_pushcclosure(L, logWarnFunc, 0);
     lua_setglobal(L, "LogWarn");
+
+    luaL_Reg funcs[] =
+    {
+        { .name = "RegisterPlugin", .func = registerPluginFunc },
+        { NULL, NULL }
+    };
+    luaL_newlibtable(L, funcs);
+    lua_pushlightuserdata(L, state);
+    luaL_setfuncs(L, funcs, 1);
+    lua_setglobal(L, "Editor");
+
+    lua_newtable(L);
+    lua_setglobal(L, "_Plugins");
 }
 
 bool ScriptInit(Script *script, EdState *state)
 {
     script->state = luaL_newstate();
     if(!script->state) return false;
+
+    luaL_checkversion(script->state);
+    LogInfo("Using Lua Version %d", (int)lua_version(script->state));
 
     lua_setwarnf(script->state, luaWarningFunc, NULL);
 
@@ -90,20 +181,142 @@ bool ScriptInit(Script *script, EdState *state)
 
     registerBuiltins(script->state, state);
 
-    lua_pushstring(script->state, "./plugins/?.lua");
+    lua_pushstring(script->state, "?.lua;./plugins/?.lua");
     lua_setglobal(script->state, "LUA_PATH");
+
+    ScriptLoadScripts(script);
 
     return true;
 }
 
 void ScriptLoadScripts(Script *script)
 {
+    DIR *dir = opendir("./plugins");
+    while(dir)
+    {
+        struct dirent *dent = readdir(dir);
+        if(!dent) break;
 
+        pstring filename = string_cstr(dent->d_name);
+        ssize_t idx = string_last_index_of(filename, 0, ".");
+        if(idx != -1 && (strcmp(filename + idx, ".lua") == 0))
+        {
+            char filepath[512] = { 0 };
+            snprintf(filepath, sizeof filepath, "%s/%s", "./plugins", filename);
+
+            size_t cacheSize = script->numPlugins;
+            if(luaL_dofile(script->state, filepath) != LUA_OK)
+            {
+                luaError(script->state);
+            }
+            else
+            {
+                if(cacheSize != script->numPlugins) // plugin has been added
+                {
+                    script->plugins[script->numPlugins-1].file = string_cstr(filepath);
+                }
+            }
+        }
+        string_free(filename);
+    }
+    closedir(dir);
 }
 
 void ScriptDestroy(Script *script)
 {
     lua_close(script->state);
+    for(size_t i = 0; i < script->numPlugins; ++i)
+    {
+        string_free(script->plugins[i].name);
+        string_free(script->plugins[i].file);
+    }
+    free(script->plugins);
+}
+
+void ScriptReloadPlugin(Script *script, size_t idx)
+{
+    assert(idx < script->numPlugins);
+
+    lua_State *L = script->state;
+    lua_getglobal(L, "_Plugins");
+    lua_pushstring(L, script->plugins[idx].name);
+    lua_pushnil(L);
+    lua_settable(L, -3);
+    lua_pop(L, 1);
+
+    if(luaL_dofile(L, script->plugins[idx].file) != LUA_OK)
+        luaError(L);
+}
+
+void ScriptReloadAll(Script *script)
+{
+    for(size_t i = 0; i < script->numPlugins; ++i)
+    {
+        string_free(script->plugins[i].name);
+        string_free(script->plugins[i].file);
+    }
+    free(script->plugins);
+    script->numPlugins = 0;
+    script->plugins = NULL;
+    lua_newtable(script->state);
+    lua_setglobal(script->state, "_Plugins");
+    ScriptLoadScripts(script);
+}
+
+void ScriptPluginExec(Script *script, size_t idx)
+{
+    assert(idx < script->numPlugins);
+
+    lua_State *L = script->state;
+    lua_getglobal(L, "_Plugins");
+    lua_pushstring(L, script->plugins[idx].name);
+    lua_gettable(L, -2);
+    if(!lua_istable(L, -1))
+    {
+        LogError("Failed to execute plugin: \"%s\" not found", script->plugins[idx].name);
+        lua_pop(L, 2);
+    }
+
+    lua_pushstring(L, "execute");
+    lua_gettable(L, -2);
+    if(lua_pcall(L, 0, 0, 0) != LUA_OK)
+        luaError(L);
+
+    lua_pop(L, 3);
+}
+
+bool ScriptPluginCheck(Script *script, size_t idx)
+{
+    assert(idx < script->numPlugins);
+
+    lua_State *L = script->state;
+    lua_getglobal(L, "_Plugins");
+    lua_pushstring(L, script->plugins[idx].name);
+    lua_gettable(L, -2);
+    if(!lua_istable(L, -1))
+    {
+        LogError("Failed to execute plugin: \"%s\" not found", script->plugins[idx].name);
+        lua_pop(L, 2);
+    }
+
+    lua_pushstring(L, "check");
+    lua_gettable(L, -2);
+    if(!lua_isfunction(L, -1))
+    {
+        lua_pop(L, 3);
+        return true;
+    }
+
+    if(lua_pcall(L, 0, 1, 0) != LUA_OK)
+        luaError(L);
+
+    bool ret = true;
+    if(lua_isboolean(L, -1))
+        ret = lua_toboolean(L, -1);
+
+    lua_pop(L, 3);
+
+    return ret;
 }
 
 void ScriptRunString(Script *script, const char *str)

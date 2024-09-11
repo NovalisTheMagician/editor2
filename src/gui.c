@@ -13,6 +13,8 @@
 #include "gwindows.h"
 #include "dialogs.h"
 
+#include "script.h"
+
 static void SetValveStyle(ImGuiStyle *style)
 {
     ImVec4* colors = style->Colors;
@@ -336,7 +338,16 @@ static void MainMenuBar(bool *doQuit, EdState *state)
 
         if(igBeginMenu("Tools", true))
         {
-            igMenuItem_Bool("DRAGONS!", "", false, false);
+            for(size_t i = 0; i < state->script.numPlugins; ++i)
+            {
+                bool enabled = state->script.plugins[i].flags & Plugin_HasPrerequisite ? ScriptPluginCheck(&state->script, i) : true;
+                if(igMenuItem_Bool(state->script.plugins[i].name, "", false, enabled))
+                    ScriptPluginExec(&state->script, i);
+            }
+            if(state->script.numPlugins == 0)
+            {
+                igMenuItem_Bool("No Plugins Registered", "", false, false);
+            }
             igEndMenu();
         }
 
@@ -367,7 +378,7 @@ static void MainMenuBar(bool *doQuit, EdState *state)
             igMenuItem_BoolPtr("Logs", "Ctrl+L", &state->ui.showLogs, true);
 #ifdef _DEBUG
             igSeparator();
-            igMenuItem_BoolPtr("Stats", "", &state->ui.showStats, true);
+            igMenuItem_BoolPtr("Debug", "", &state->ui.showStats, true);
 #endif
             igEndMenu();
         }
@@ -611,6 +622,7 @@ static void DockSpace(bool *doQuit, EdState *state)
         ImGuiID dock2 = igDockBuilderSplitNode(dockMainId, ImGuiDir_Right, 0.3f, NULL, &dockMainId);
         ImGuiID dock3 = igDockBuilderSplitNode(dock2, ImGuiDir_Down, 0.5f, NULL, &dock2);
         ImGuiID dock4 = igDockBuilderSplitNode(dock1, ImGuiDir_Down, 0.3f, NULL, &dock1);
+        ImGuiID dock5 = igDockBuilderSplitNode(dock4, ImGuiDir_Right, 0.4f, NULL, &dock4);
 
         igDockBuilderDockWindow("Editor", dock1);
         igDockBuilderDockWindow("3D View", dock1);
@@ -618,6 +630,7 @@ static void DockSpace(bool *doQuit, EdState *state)
         igDockBuilderDockWindow("Entities Browser", dock2);
         igDockBuilderDockWindow("Logs", dock4);
         igDockBuilderDockWindow("Properties", dock3);
+        igDockBuilderDockWindow("Debug", dock5);
 
         igDockBuilderFinish(dockSpaceId);
     }

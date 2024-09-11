@@ -1,8 +1,11 @@
 #include "../gwindows.h"
 
+#include "../script.h"
+#include "cimgui.h"
+
 void StatsWindow(bool *p_open, EdState *state)
 {
-    if(igBegin("Debug Stats", p_open, 0))
+    if(igBegin("Debug", p_open, 0))
     {
         igSeparatorText("Editor");
         igText("Viewposition: %.2f | %.2f", state->data.viewPosition.x, state->data.viewPosition.y);
@@ -14,6 +17,16 @@ void StatsWindow(bool *p_open, EdState *state)
         igText("Num. Vertices: %d", state->map.numVertices);
         igText("Num. Lines: %d", state->map.numLines);
         igText("Num. Sectors: %d", state->map.numSectors);
+
+        igSeparatorText("Plugins");
+        if(igButton("Reload All", (ImVec2){ 0 })) ScriptReloadAll(&state->script);
+        for(size_t i = 0; i < state->script.numPlugins; ++i)
+        {
+            igText("%s (%s)", state->script.plugins[i].name, state->script.plugins[i].file);
+            igSameLine(0, 4);
+            if(igButton("Reload", (ImVec2){ 0 }))
+                ScriptReloadPlugin(&state->script, i);
+        }
     }
     igEnd();
 }
