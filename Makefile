@@ -7,7 +7,7 @@ SRC_SUBDIRS := windows dialogs utils map
 DEFINES := __USE_XOPEN _GNU_SOURCE
 INC_DIRS := $(SRC_DIR)
 
-LIBS := m SDL2 ftp json-c stdc++
+LIBS := m SDL2 ftp json-c stdc++ lua
 LIB_DIRS :=
 
 CC := gcc
@@ -71,10 +71,10 @@ BUILD_DIRS := $(addprefix $(BUILD_DIR)/,$(SRC_SUBDIRS)) $(BUILD_DIR)/$(RES_DIR)
 
 # 3rd party libraries
 
-VENDOR_DIR := extern
+EXTERN_DIR := extern
 
 # GLAD
-GLAD_DIR := $(VENDOR_DIR)/glad
+GLAD_DIR := $(EXTERN_DIR)/glad
 GLAD_SRC := $(GLAD_DIR)/src/gl.c
 GLAD_OBJ := $(BUILD_DIR)/$(GLAD_DIR)/gl.o
 
@@ -82,7 +82,7 @@ INC_DIRS += $(GLAD_DIR)/include
 BUILD_DIRS += $(BUILD_DIR)/$(GLAD_DIR)
 
 # tiny regular expression
-RE_DIR := $(VENDOR_DIR)/re
+RE_DIR := $(EXTERN_DIR)/re
 RE_SRC := $(RE_DIR)/re.c
 RE_OBJ := $(BUILD_DIR)/$(RE_DIR)/re.o
 
@@ -90,7 +90,7 @@ INC_DIRS += $(RE_DIR)
 BUILD_DIRS += $(BUILD_DIR)/$(RE_DIR)
 
 # imguifiledialog
-IGFD_DIR := $(VENDOR_DIR)/imguifiledialog
+IGFD_DIR := $(EXTERN_DIR)/imguifiledialog
 IGFD_SRC := $(IGFD_DIR)/ImGuiFileDialog.cpp
 IGFD_OBJ := $(BUILD_DIR)/$(IGFD_DIR)/ImGuiFileDialog.o
 
@@ -98,7 +98,7 @@ INC_DIRS += $(IGFD_DIR)
 BUILD_DIRS += $(BUILD_DIR)/$(IGFD_DIR)
 
 # cimgui
-CIMGUI_DIR := $(VENDOR_DIR)/cimgui
+CIMGUI_DIR := $(EXTERN_DIR)/cimgui
 CIMGUI_SRCS := $(CIMGUI_DIR)/cimgui.cpp
 CIMGUI_SRCS += $(CIMGUI_DIR)/imgui/backends/imgui_impl_sdl2.cpp $(CIMGUI_DIR)/imgui/backends/imgui_impl_opengl3.cpp
 CIMGUI_SRCS += $(CIMGUI_DIR)/imgui/imgui.cpp $(CIMGUI_DIR)/imgui/imgui_demo.cpp $(CIMGUI_DIR)/imgui/imgui_draw.cpp $(CIMGUI_DIR)/imgui/imgui_tables.cpp $(CIMGUI_DIR)/imgui/imgui_widgets.cpp
@@ -108,7 +108,7 @@ INC_DIRS += $(CIMGUI_DIR) $(CIMGUI_DIR)/generator/output $(CIMGUI_DIR)/imgui
 BUILD_DIRS += $(BUILD_DIR)/$(CIMGUI_DIR) $(BUILD_DIR)/$(CIMGUI_DIR)/imgui $(BUILD_DIR)/$(CIMGUI_DIR)/imgui/backends
 
 # triang
-TRIANG_DIR := $(VENDOR_DIR)/triangulate
+TRIANG_DIR := $(EXTERN_DIR)/triangulate
 TRIANG_SRC := $(TRIANG_DIR)/triangulate.cpp
 TRIANG_OBJ := $(BUILD_DIR)/$(TRIANG_DIR)/triangulate.o
 
@@ -116,7 +116,7 @@ INC_DIRS += $(TRIANG_DIR)
 BUILD_DIRS += $(BUILD_DIR)/$(TRIANG_DIR)
 
 # incbin
-INCBIN_DIR := $(VENDOR_DIR)/incbin
+INCBIN_DIR := $(EXTERN_DIR)/incbin
 INC_DIRS += $(INCBIN_DIR)
 
 # cglm

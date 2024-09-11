@@ -1,3 +1,5 @@
+#include "logging.h"
+#include "script.h"
 #include <SDL2/SDL_video.h>
 #include <time.h>
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
@@ -94,21 +96,21 @@ int EditorMain(int argc, char *argv[])
 
     char errorBuffer[256] = { 0 };
     SDL_Window *window = InitSDL(errorBuffer, sizeof errorBuffer);
-    if(!window) 
+    if(!window)
     {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Failed to create window", errorBuffer, NULL);
         return EXIT_FAILURE;
     }
 
     SDL_GLContext glContext = InitOpenGL(window, errorBuffer, sizeof errorBuffer);
-    if(!glContext) 
+    if(!glContext)
     {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Failed to create OpenGL context", errorBuffer, window);
         SDL_DestroyWindow(window);
         return EXIT_FAILURE;
     }
 
-    if(!InitImgui(window, glContext, errorBuffer, sizeof errorBuffer)) 
+    if(!InitImgui(window, glContext, errorBuffer, sizeof errorBuffer))
     {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Failed to initialize ImGui", errorBuffer, window);
         SDL_GL_DeleteContext(glContext);
@@ -133,6 +135,11 @@ int EditorMain(int argc, char *argv[])
     HandleArguments(argc, argv, state);
 
     if(!InitEditor(state)) return EXIT_FAILURE;
+
+    if(!ScriptInit(&state->script, state))
+    {
+        LogWarning("Failed to initilize scripting system. Scripting won\'t be available");
+    }
 
     tc_init(&state->textures);
     if(string_length(state->project.file) > 0)
@@ -218,6 +225,8 @@ int EditorMain(int argc, char *argv[])
     FreeProject(&state->project);
     FreeSettings(&state->settings);
     DestroyEditor(state);
+
+    ScriptDestroy(&state->script);
 
     LogDestroy(&state->log);
 

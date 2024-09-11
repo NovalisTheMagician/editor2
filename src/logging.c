@@ -47,6 +47,7 @@ static const char* severityToString(enum LogSeverity severity)
 void LogInit(LogBuffer *logBuffer)
 {
     logBuffer->lines = calloc(LOGBUFFER_CAPACITY, sizeof *logBuffer->lines);
+    logBuffer->severities = calloc(LOGBUFFER_CAPACITY, sizeof *logBuffer->severities);
     logBuffer->start = 0;
     logBuffer->length = 0;
 
@@ -62,6 +63,7 @@ void LogDestroy(LogBuffer *logBuffer)
     for(size_t i = 0; i < LOGBUFFER_CAPACITY; ++i)
         string_free(logBuffer->lines[i]);
     free(logBuffer->lines);
+    free(logBuffer->severities);
     logBuffer_ = NULL;
 
 #ifdef _DEBUG
@@ -77,8 +79,13 @@ size_t LogLength(LogBuffer *logBuffer)
 pstring LogGet(LogBuffer *logBuffer, size_t idx)
 {
     idx += logBuffer->start;
-
     return logBuffer->lines[idx % LOGBUFFER_CAPACITY];
+}
+
+LogSeverity LogGetSeverity(LogBuffer *logBuffer, size_t idx)
+{
+    idx += logBuffer->start;
+    return logBuffer->severities[idx % LOGBUFFER_CAPACITY];
 }
 
 void LogClear(LogBuffer *logBuffer)
@@ -87,7 +94,7 @@ void LogClear(LogBuffer *logBuffer)
     logBuffer->length = 0;
 }
 
-void LogString(LogBuffer *logBuffer, enum LogSeverity severity, pstring str)
+void LogString(LogBuffer *logBuffer, LogSeverity severity, pstring str)
 {
     size_t idx = getNextIndex(logBuffer);
     pstring lineStr = logBuffer->lines[idx];
@@ -102,9 +109,10 @@ void LogString(LogBuffer *logBuffer, enum LogSeverity severity, pstring str)
     string_format(lineStr, "[%s](%s): {%s}", timeBuffer, severityToString(severity), str);
 
     logBuffer->lines[idx] = lineStr;
+    logBuffer->severities[idx] = severity;
 }
 
-static void LogFormatV(LogBuffer *logBuffer, enum LogSeverity severity, const char *format, va_list args)
+static void LogFormatV(LogBuffer *logBuffer, LogSeverity severity, const char *format, va_list args)
 {
     size_t idx = getNextIndex(logBuffer);
     pstring lineStr = logBuffer->lines[idx];
@@ -120,9 +128,10 @@ static void LogFormatV(LogBuffer *logBuffer, enum LogSeverity severity, const ch
 
     string_recalc(lineStr);
     logBuffer->lines[idx] = lineStr;
+    logBuffer->severities[idx] = severity;
 }
 
-void LogFormat(LogBuffer *logBuffer, enum LogSeverity severity, const char *format, ...)
+void LogFormat(LogBuffer *logBuffer, LogSeverity severity, const char *format, ...)
 {
     va_list args;
     va_start(args, format);

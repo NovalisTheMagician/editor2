@@ -10,6 +10,7 @@
 #include "texture_collection.h"
 #include "async_load.h"
 #include "logging.h"
+#include "script.h"
 
 #define MAX_GAMEPATH_LEN 256
 #define MAX_GAMEARGUMENTS_LEN 256
@@ -43,6 +44,11 @@ typedef enum Theme
 
 typedef enum Colors
 {
+    COL_LOG_INFO,
+    COL_LOG_WARN,
+    COL_LOG_ERRO,
+    COL_LOG_DEBU,
+
     COL_WORKSPACE_BACK,
 
     COL_BACKGROUND,
@@ -131,6 +137,7 @@ typedef struct EdState
     TextureCollection textures;
     AsyncJob async;
     LogBuffer log;
+    Script script;
 
     struct
     {

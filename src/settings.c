@@ -6,6 +6,9 @@ const char* ColorIndexToString(enum Colors color)
 {
     switch(color)
     {
+    case COL_LOG_INFO: return "Log Info Text";
+    case COL_LOG_WARN: return "Log Warning Text";
+    case COL_LOG_ERRO: return "Log Error Text";
     case COL_WORKSPACE_BACK: return "Workspace Background";
     case COL_BACKGROUND: return "Editor Background";
     case COL_RTBACKGROUND: return "3D View Background";
@@ -28,6 +31,11 @@ const char* ColorIndexToString(enum Colors color)
 
 void ResetSettings(EdSettings *settings)
 {
+    settings->colors[COL_LOG_INFO] = (Color){ .r = 0.95f, .g = 0.95f, .b = 0.95f, .a = 1.00f };
+    settings->colors[COL_LOG_WARN] = (Color){ .r = 1.00f, .g = 1.00f, .b = 0.05f, .a = 1.00f };
+    settings->colors[COL_LOG_ERRO] = (Color){ .r = 1.00f, .g = 0.00f, .b = 0.00f, .a = 1.00f };
+    settings->colors[COL_LOG_DEBU] = (Color){ .r = 0.00f, .g = 0.75f, .b = 1.00f, .a = 1.00f };
+
     settings->colors[COL_WORKSPACE_BACK] = (Color){ .r = 0.45f, .g = 0.55f, .b = 0.60f, .a = 1.00f };
 
     settings->colors[COL_BACKGROUND] = (Color){ .r = 0.20f, .g = 0.20f, .b = 0.20f, .a = 1.00f };
