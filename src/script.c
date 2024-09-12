@@ -10,7 +10,7 @@
 
 #include "editor.h"
 #include "logging.h"
-#include "utils/pstring.h"
+#include "memory.h"
 
 static void luaError(lua_State *L)
 {
@@ -28,6 +28,7 @@ static void collectLogData(lua_State *L, char *buffer, size_t bufferSize)
     size_t offset = 0;
     for(int i = 1; i <= numArgs; ++i)
     {
+        if(offset >= bufferSize) break;
         if(lua_isstring(L, i))
         {
             const char *str = lua_tostring(L, i);
@@ -40,10 +41,31 @@ static void collectLogData(lua_State *L, char *buffer, size_t bufferSize)
             int ret = snprintf(buffer + offset, bufferSize - offset, "%s ", b ? "true" : "false");
             if(ret > 0) offset += ret;
         }
-        else
+        else if(lua_isnil(L, i))
         {
-            lua_pushstring(L, "incorrect argument");
-            lua_error(L);
+            int ret = snprintf(buffer + offset, bufferSize - offset, "%s ", "nil");
+            if(ret > 0) offset += ret;
+        }
+        else // try to convert the value into a string
+        {
+            lua_getglobal(L, "tostring");
+            lua_pushvalue(L, i);
+            if(lua_pcall(L, 1, 1, 0) != LUA_OK)
+                luaError(L);
+
+            if(lua_isstring(L, -1))
+            {
+                const char *str = lua_tostring(L, -1);
+                int ret = snprintf(buffer + offset, bufferSize - offset, "%s ", str);
+                if(ret > 0) offset += ret;
+
+                lua_pop(L, 1);
+            }
+            else
+            {
+                lua_pushstring(L, "invalid argument");
+                lua_error(L);
+            }
         }
     }
 }
@@ -80,20 +102,20 @@ static size_t addPlugin(Script *script, size_t len, const char name[static len])
     return script->numPlugins-1;
 }
 
-// function (name: string, execute: function, check: function, gui: function)
+// Editor.RegisterPlugin(name: string, execute: function, check: function, gui: function)
 static int registerPluginFunc(lua_State *L)
 {
+    size_t nameLen;
+    const char *name = luaL_checklstring(L, 1, &nameLen);
+
     int numArgs = lua_gettop(L);
-    if(!lua_isstring(L, 1) || !lua_isfunction(L, 2) || (numArgs > 2 && !lua_isfunction(L, 3)) || (numArgs > 3 && !lua_isfunction(L, 4)) || numArgs > 4)
+    if(!lua_isfunction(L, 2) || (numArgs > 2 && !lua_isfunction(L, 3)) || (numArgs > 3 && !lua_isfunction(L, 4)))
     {
         lua_pushstring(L, "invalid arguments");
         lua_error(L);
     }
 
     EdState *state = lua_touserdata(L, lua_upvalueindex(1));
-
-    size_t nameLen;
-    const char *name = lua_tolstring(L, 1, &nameLen);
 
     lua_getglobal(L, "_Plugins");
     lua_pushstring(L, name);
@@ -173,15 +195,20 @@ bool ScriptInit(Script *script, EdState *state)
 
     lua_setwarnf(script->state, luaWarningFunc, NULL);
 
-    luaopen_base(script->state);
-    luaopen_table(script->state);
-    //luaopen_io(script->state);
-    luaopen_string(script->state);
-    luaopen_math(script->state);
+    luaL_requiref(script->state, "_G", luaopen_base, 1);
+    lua_pop(script->state, 1);
+    luaL_requiref(script->state, LUA_TABLIBNAME, luaopen_table, 1);
+    lua_pop(script->state, 1);
+    luaL_requiref(script->state, LUA_STRLIBNAME, luaopen_string, 1);
+    lua_pop(script->state, 1);
+    luaL_requiref(script->state, LUA_MATHLIBNAME, luaopen_math, 1);
+    lua_pop(script->state, 1);
+    luaL_requiref(script->state, LUA_LOADLIBNAME, luaopen_package, 1);
+    lua_pop(script->state, 1);
 
     registerBuiltins(script->state, state);
 
-    lua_pushstring(script->state, "?.lua;./plugins/?.lua");
+    lua_pushstring(script->state, "./plugins/dep/?.lua");
     lua_setglobal(script->state, "LUA_PATH");
 
     ScriptLoadScripts(script);
@@ -268,6 +295,7 @@ void ScriptPluginExec(Script *script, size_t idx)
     assert(idx < script->numPlugins);
 
     lua_State *L = script->state;
+
     lua_getglobal(L, "_Plugins");
     lua_pushstring(L, script->plugins[idx].name);
     lua_gettable(L, -2);
@@ -282,7 +310,7 @@ void ScriptPluginExec(Script *script, size_t idx)
     if(lua_pcall(L, 0, 0, 0) != LUA_OK)
         luaError(L);
 
-    lua_pop(L, 3);
+    lua_pop(L, 2);
 }
 
 bool ScriptPluginCheck(Script *script, size_t idx)
