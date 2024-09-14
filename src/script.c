@@ -63,7 +63,7 @@ static void collectLogData(lua_State *L, char *buffer, size_t bufferSize)
             }
             else
             {
-                lua_pushstring(L, "invalid argument");
+                lua_pushfstring(L, "type \"%s\" is not convertible to string", luaL_typename(L, i));
                 lua_error(L);
             }
         }
@@ -102,17 +102,24 @@ static size_t addPlugin(Script *script, size_t len, const char name[static len])
     return script->numPlugins-1;
 }
 
-// Editor.RegisterPlugin(name: string, execute: function, check: function, gui: function)
+// Editor.RegisterPlugin(name: string, execute: function, check?: function, gui?: function)
 static int registerPluginFunc(lua_State *L)
 {
     size_t nameLen;
     const char *name = luaL_checklstring(L, 1, &nameLen);
 
     int numArgs = lua_gettop(L);
-    if(!lua_isfunction(L, 2) || (numArgs > 2 && !lua_isfunction(L, 3)) || (numArgs > 3 && !lua_isfunction(L, 4)))
+    if(!lua_isfunction(L, 2))
     {
-        lua_pushstring(L, "invalid arguments");
-        lua_error(L);
+        luaL_typeerror(L, 2, "function");
+    }
+    else if(numArgs > 2 && !lua_isfunction(L, 3))
+    {
+        luaL_typeerror(L, 3, "function");
+    }
+    else if(numArgs > 3 && !lua_isfunction(L, 4))
+    {
+        luaL_typeerror(L, 4, "function");
     }
 
     EdState *state = lua_touserdata(L, lua_upvalueindex(1));
