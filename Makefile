@@ -120,7 +120,7 @@ INCBIN_DIR := $(EXTERN_DIR)/incbin
 INC_DIRS += $(INCBIN_DIR)
 
 # cglm
-CGLM_DIR := $(VENDOR)/cglm
+CGLM_DIR := $(EXTERN_DIR)/cglm
 INC_DIRS += $(CGLM_DIR)/include
 
 CPPFLAGS := $(addprefix -I,$(INC_DIRS)) $(addprefix -D,$(DEFINES)) -MMD -MP
