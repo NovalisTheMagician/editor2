@@ -1,4 +1,5 @@
 #include "../dialogs.h"
+#include "ImGuiFileDialog.h"
 
 static void SaveMapCallback(const char *path, void *data)
 {
@@ -14,14 +15,9 @@ void SaveMapDialog(Map *map, bool quitRequest)
     fda->data = map;
     fda->callback = SaveMapCallback;
     fda->quitRequest = quitRequest;
-    struct IGFD_FileDialog_Config config =
-    {
-        .flags = ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite | ImGuiFileDialogFlags_CaseInsensitiveExtentionFiltering,
-        .path = ".",
-        .filePathName = "",
-        .fileName = "",
-        .countSelectionMax = 1,
-        .userDatas = fda,
-    };
+    struct IGFD_FileDialog_Config config = IGFD_FileDialog_Config_Get();
+    config.flags = ImGuiFileDialogFlags_Modal | ImGuiFileDialogFlags_ConfirmOverwrite | ImGuiFileDialogFlags_CaseInsensitiveExtentionFiltering;
+    config.path = ".";
+    config.userDatas = fda;
     IGFD_OpenDialog(cfileDialog, "filedlg", "Save Map", "Map Files(*.map){.map}", config);
 }

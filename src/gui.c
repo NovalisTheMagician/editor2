@@ -521,7 +521,9 @@ static void FileDialog(bool *doQuit)
         assert(action);
         if(IGFD_IsOk(cfileDialog))
         {
-            char* cfilePathName = IGFD_GetFilePathName(cfileDialog, IGFD_ResultMode_AddIfNoFileExt);
+            char *cfilePathName = IGFD_GetFilePathName(cfileDialog, IGFD_ResultMode_AddIfNoFileExt);
+            if(!cfilePathName)
+                cfilePathName = IGFD_GetCurrentPath(cfileDialog);
             action->callback(cfilePathName, action->data);
             if (cfilePathName)
             {

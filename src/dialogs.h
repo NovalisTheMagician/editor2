@@ -1,6 +1,11 @@
 #pragma once
 
-#include "editor.h"
+#include "memory.h"
+#include "map.h"
+#include "project.h"
+
+#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#include "cimgui.h" // IWYU pragma: keep
 #include "ImGuiFileDialog.h"
 
 typedef enum SaveModalAction
@@ -19,7 +24,7 @@ typedef struct FileDialogAction
 
 extern ImGuiFileDialog *cfileDialog;
 
-void OpenFolderDialog(pstring *folderPath);
+void OpenFolderDialog(pstring folderPath);
 void SaveMapDialog(Map *map, bool quitRequest);
 void SaveProjectDialog(Project *project, bool quitRequest);
 void OpenMapDialog(Map *map);

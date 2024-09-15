@@ -15,7 +15,7 @@ static void BaseFsFields(EdState *state)
     igSameLine(0, 8);
     if(igButton("Browse", (ImVec2){ 0, 0 }))
     {
-        OpenFolderDialog(&state->project.basePath.fs.path);
+        OpenFolderDialog(state->project.basePath.fs.path);
         state->project.dirty = true;
     }
 }
