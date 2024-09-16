@@ -164,6 +164,41 @@ static int len2_(lua_State *L)
     return 1;
 }
 
+static int dot_(lua_State *L)
+{
+    luaL_argexpected(L, lua_istable(L, 1), 1, "Vec2");
+    luaL_argexpected(L, lua_istable(L, 2), 2, "Vec2");
+
+    lua_pushstring(L, "x");
+    lua_gettable(L, 1);
+    float x1 = lua_tonumber(L, -1);
+    lua_pop(L, 1);
+    lua_pushstring(L, "y");
+    lua_gettable(L, 1);
+    float y1 = lua_tonumber(L, -1);
+    lua_pop(L, 1);
+
+    lua_pushstring(L, "x");
+    lua_gettable(L, 2);
+    float x2 = lua_tonumber(L, -1);
+    lua_pop(L, 1);
+    lua_pushstring(L, "y");
+    lua_gettable(L, 2);
+    float y2 = lua_tonumber(L, -1);
+    lua_pop(L, 1);
+
+    lua_getglobal(L, "Vec2");
+    lua_pushstring(L, "new");
+    lua_gettable(L, -2);
+    lua_pushnumber(L, x1 * x2);
+    lua_pushnumber(L, y1 * y2);
+    lua_pcall(L, 2, 1, 0);
+
+    lua_remove(L, -2);
+
+    return 1;
+}
+
 static int tostring_(lua_State *L)
 {
     luaL_argexpected(L, lua_istable(L, 1), 1, "Vec2");
@@ -177,7 +212,7 @@ static int tostring_(lua_State *L)
     float y = lua_tonumber(L, -1);
     lua_pop(L, 1);
 
-    lua_pushfstring(L, "(%f | %f)", x, y);
+    lua_pushfstring(L, "Vec2(%f | %f)", x, y);
 
     return 1;
 }
@@ -204,6 +239,10 @@ static int new_(lua_State *L)
 
     lua_pushstring(L, "length2");
     lua_pushcfunction(L, len2_);
+    lua_settable(L, -3);
+
+    lua_pushstring(L, "dot");
+    lua_pushcfunction(L, dot_);
     lua_settable(L, -3);
 
     return 1;
@@ -243,4 +282,16 @@ void ScriptRegisterVecMath(lua_State *L, EdState *state)
     lua_pushcfunction(L, new_);
     lua_settable(L, -3);
     lua_setglobal(L, "Vec2");
+}
+
+void ScriptCreateVec2(lua_State *L, float x, float y)
+{
+    lua_getglobal(L, "Vec2");
+    lua_pushstring(L, "new");
+    lua_gettable(L, -2);
+    lua_pushnumber(L, x);
+    lua_pushnumber(L, y);
+    lua_pcall(L, 2, 1, 0);
+
+    lua_remove(L, -2);
 }

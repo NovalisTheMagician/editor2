@@ -104,7 +104,7 @@ static size_t addPlugin(Script *script, size_t len, const char name[static len])
     return script->numPlugins-1;
 }
 
-// Editor.RegisterPlugin(name: string, execute: function, check?: function, gui?: function)
+// void Editor.RegisterPlugin(name: string, execute: function, check?: function, gui?: function)
 static int registerPluginFunc(lua_State *L)
 {
     size_t nameLen;
@@ -191,6 +191,7 @@ static void registerBuiltins(lua_State *L, EdState *state)
     lua_setglobal(L, "Editor");
 
     ScriptRegisterVecMath(L, state);
+    ScriptRegisterEditor(L, state);
 
     lua_newtable(L);
     lua_setglobal(L, "_Plugins");
