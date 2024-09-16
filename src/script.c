@@ -12,6 +12,8 @@
 #include "logging.h"
 #include "memory.h"
 
+#include "scripts/scripts.h"
+
 static void luaError(lua_State *L)
 {
     LogError("[script] %s", lua_tostring(L, -1));
@@ -187,6 +189,8 @@ static void registerBuiltins(lua_State *L, EdState *state)
     lua_pushlightuserdata(L, state);
     luaL_setfuncs(L, funcs, 1);
     lua_setglobal(L, "Editor");
+
+    ScriptRegisterVecMath(L, state);
 
     lua_newtable(L);
     lua_setglobal(L, "_Plugins");
