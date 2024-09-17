@@ -47,14 +47,15 @@ static void MapProperties(EdState *state)
 
 static void VertexProperties(EdState *state)
 {
-    igSeparatorTextEx(0, "Vertex Properties", NULL, 0);
     if(state->data.numSelectedElements == 1)
     {
         MapVertex *selectedVertex = state->data.selectedElements[0];
-        igText("Index: %d", selectedVertex->idx);
+        char title[128] = { 0 };
+        snprintf(title, sizeof title, "Vertex %d Properties", (int)selectedVertex->idx);
+        igSeparatorTextEx(0, title, NULL, 0);
 
         igText("Attached lines: %d", selectedVertex->numAttachedLines);
-        igSeparatorEx(ImGuiSeparatorFlags_Horizontal, 2);
+        //igSeparatorEx(ImGuiSeparatorFlags_Horizontal, 2);
         for(size_t i = 0; i < selectedVertex->numAttachedLines; ++i)
         {
             MapLine *line = selectedVertex->attachedLines[i];
@@ -72,17 +73,19 @@ static void VertexProperties(EdState *state)
     }
     else if(state->data.numSelectedElements > 1)
     {
-
+        igSeparatorTextEx(0, "Vertex (...) Properties", NULL, 0);
     }
 }
 
 static void LineProperties(EdState *state)
 {
-    igSeparatorTextEx(0, "Line Properties", NULL, 0);
     if(state->data.numSelectedElements == 1)
     {
         MapLine *selectedLine = state->data.selectedElements[0];
-        igText("Index: %zu", selectedLine->idx);
+        char title[128] = { 0 };
+        snprintf(title, sizeof title, "Line %d Properties", (int)selectedLine->idx);
+        igSeparatorTextEx(0, title, NULL, 0);
+
         igText("Vertex A: %zu", selectedLine->a->idx);
         igSameLine(0, 4);
         if(igButton("Select##a", (ImVec2){ 0, 0 }))
@@ -125,17 +128,19 @@ static void LineProperties(EdState *state)
     }
     else if(state->data.numSelectedElements > 1)
     {
-
+        igSeparatorTextEx(0, "Line (...) Properties", NULL, 0);
     }
 }
 
 static void SectorProperties(EdState *state)
 {
-    igSeparatorTextEx(0, "Sector Properties", NULL, 0);
     if(state->data.numSelectedElements == 1)
     {
         MapSector *selectedSector = state->data.selectedElements[0];
-        igText("Index: %d", selectedSector->idx);
+        char title[128] = { 0 };
+        snprintf(title, sizeof title, "Sector %d Properties", (int)selectedSector->idx);
+        igSeparatorTextEx(0, title, NULL, 0);
+
         igInputInt("Floor Height", &selectedSector->data.floorHeight, 1, 10, 0);
         igInputInt("Ceiling Height", &selectedSector->data.ceilHeight, 1, 10, 0);
 
@@ -199,6 +204,7 @@ static void SectorProperties(EdState *state)
     }
     else if(state->data.numSelectedElements > 1)
     {
+        igSeparatorTextEx(0, "Sector (...) Properties", NULL, 0);
     }
 }
 
