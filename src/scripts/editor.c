@@ -1,10 +1,12 @@
 #include "scripts.h"
 
+#include "cglm/types-struct.h"
 #include <string.h>
 
 #include "lua.h"
 #include "lauxlib.h"
 #include "../editor.h"
+#include "edit.h"
 
 static const char* selectionModeToString(int selectionMode)
 {
@@ -92,12 +94,50 @@ static int checkselection_(lua_State *L)
     return 1;
 }
 
+static int insertlines_(lua_State *L)
+{
+    EdState *state = lua_touserdata(L, lua_upvalueindex(1));
+
+    luaL_argexpected(L, lua_istable(L, 1), 1, "Vec2[]");
+    bool isLoop = false;
+    if(!lua_isnoneornil(L, 2))
+        isLoop = lua_toboolean(L, 2);
+
+    int numVertices = luaL_len(L, 1);
+    vec2s vertices[numVertices];
+    for(int i = 0; i < numVertices; ++i)
+    {
+        lua_rawgeti(L, 1, i+1);
+        lua_pushstring(L, "x");
+        lua_gettable(L, -2);
+        float x = lua_tonumber(L, -1);
+        lua_pop(L, 1);
+
+        lua_pushstring(L, "y");
+        lua_gettable(L, -2);
+        float y = lua_tonumber(L, -1);
+        lua_pop(L, 1);
+
+        vertices[i] = (vec2s){ .x = x, .y = y };
+
+        lua_pop(L, 1);
+    }
+
+    if(isLoop)
+        EditApplySector(state, numVertices, vertices);
+    else
+        EditApplyLines(state, numVertices, vertices);
+
+    return 0;
+}
+
 void ScriptRegisterEditor(lua_State *L, EdState *state)
 {
     lua_getglobal(L, "Editor");
     luaL_Reg funcs[] = {
         { .name = "GetSelection", .func = getselection_ },
         { .name = "CheckSelection", .func = checkselection_ },
+        { .name = "InsertLines", .func = insertlines_ },
         { NULL, NULL }
     };
     lua_pushlightuserdata(L, state);
