@@ -109,17 +109,13 @@ static int registerPluginFunc(lua_State *L)
 {
     size_t nameLen;
     const char *name = luaL_checklstring(L, 1, &nameLen);
+    luaL_argexpected(L, lua_isfunction(L, 2), 2, "function");
 
-    int numArgs = lua_gettop(L);
-    if(!lua_isfunction(L, 2))
-    {
-        luaL_typeerror(L, 2, "function");
-    }
-    else if(numArgs > 2 && !lua_isfunction(L, 3))
+    if(!lua_isnoneornil(L, 3)&& !lua_isfunction(L, 3))
     {
         luaL_typeerror(L, 3, "function");
     }
-    else if(numArgs > 3 && !lua_isfunction(L, 4))
+    else if(!lua_isnoneornil(L, 4) && !lua_isfunction(L, 4))
     {
         luaL_typeerror(L, 4, "function");
     }

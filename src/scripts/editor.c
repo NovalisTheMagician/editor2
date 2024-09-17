@@ -28,17 +28,54 @@ static void fillMapVertices(lua_State *L, MapVertex **vertices, size_t numVertic
     }
 }
 
+static void fillSideData(lua_State *L, Side side)
+{
+    lua_pushstring(L, "upper");
+    if(side.upperTex)
+        lua_pushstring(L, side.upperTex);
+    else
+        lua_pushnil(L);
+    lua_settable(L, -3);
+    lua_pushstring(L, "middle");
+    if(side.middleTex)
+        lua_pushstring(L, side.middleTex);
+    else
+        lua_pushnil(L);
+    lua_settable(L, -3);
+    lua_pushstring(L, "lower");
+    if(side.lowerTex)
+        lua_pushstring(L, side.lowerTex);
+    else
+        lua_pushnil(L);
+    lua_settable(L, -3);
+}
+
 static void fillMapLines(lua_State *L, MapLine **lines, size_t numLines)
 {
     for(int i = 0; i < numLines; ++i)
     {
+        MapLine *line = lines[i];
         lua_newtable(L);
         lua_pushstring(L, "a");
-        ScriptCreateVec2(L, lines[i]->a->pos.x, lines[i]->a->pos.y);
+        ScriptCreateVec2(L, line->a->pos.x, line->a->pos.y);
         lua_settable(L, -3);
 
         lua_pushstring(L, "b");
-        ScriptCreateVec2(L, lines[i]->a->pos.x, lines[i]->a->pos.y);
+        ScriptCreateVec2(L, line->a->pos.x, line->a->pos.y);
+        lua_settable(L, -3);
+
+        lua_pushstring(L, "type");
+        lua_pushnumber(L, line->data.type);
+        lua_settable(L, -3);
+
+        lua_pushstring(L, "front");
+        lua_newtable(L);
+        fillSideData(L, line->data.front);
+        lua_settable(L, -3);
+
+        lua_pushstring(L, "back");
+        lua_newtable(L);
+        fillSideData(L, line->data.back);
         lua_settable(L, -3);
 
         lua_rawseti(L, -2, i+1);
@@ -134,7 +171,8 @@ static int insertlines_(lua_State *L)
 void ScriptRegisterEditor(lua_State *L, EdState *state)
 {
     lua_getglobal(L, "Editor");
-    luaL_Reg funcs[] = {
+    luaL_Reg funcs[] =
+    {
         { .name = "GetSelection", .func = getselection_ },
         { .name = "CheckSelection", .func = checkselection_ },
         { .name = "InsertLines", .func = insertlines_ },
