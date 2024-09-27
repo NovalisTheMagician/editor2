@@ -1,5 +1,7 @@
 #include "../gwindows.h"
 
+#include "cimgui.h"
+#include "logging.h"
 #include "utils.h"
 #include "../gui.h"
 
@@ -16,6 +18,11 @@ void SettingsWindow(bool *p_open, EdState *state)
                 if(igInputText("Gamepath", state->settings.gamePath, string_size(state->settings.gamePath), 0, NULL, NULL)) string_recalc(state->settings.gamePath);
                 if(igInputText("Launch Arguments", state->settings.launchArguments, string_size(state->settings.launchArguments), 0, NULL, NULL)) string_recalc(state->settings.launchArguments);
                 igSeparatorText("Other");
+                if(igInputInt("Logs Buffer", &state->log.capacity, 1, 10, 0))
+                {
+                    if(state->log.capacity < 4) state->log.capacity = 4;
+                    LogResizeBuffer(&state->log);
+                }
                 if(igButton("Reset Settings", (ImVec2){ 0, 0 })) { ResetSettings(&state->settings); }
                 igEndTabItem();
             }

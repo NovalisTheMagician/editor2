@@ -16,10 +16,13 @@ typedef struct LogBuffer
     pstring *lines;
     LogSeverity *severities;
     size_t start, length;
+
+    int capacity;
 } LogBuffer;
 
 void LogInit(LogBuffer *logBuffer);
 void LogDestroy(LogBuffer *logBuffer);
+void LogResizeBuffer(LogBuffer *logBuffer);
 
 size_t LogLength(LogBuffer *logBuffer);
 pstring LogGet(LogBuffer *logBuffer, size_t idx);
