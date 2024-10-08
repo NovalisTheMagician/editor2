@@ -142,7 +142,7 @@ void EditorWindow(bool *p_open, EdState *state)
         igSameLine(0, 16);
         if(igButton("Go To Origin", (ImVec2){ 0, 0 }))
         {
-            state->data.viewPosition = (ImVec2){ -state->gl.editorFramebufferWidth / 2, -state->gl.editorFramebufferHeight / 2 };
+            state->data.viewPosition = (ImVec2){ -state->gl.editorFramebufferWidth / 2.0f, -state->gl.editorFramebufferHeight / 2.0f };
         }
 
         igSameLine(0, 16);
@@ -413,7 +413,7 @@ void EditorWindow(bool *p_open, EdState *state)
             if(firstTime)
             {
                 firstTime = false;
-                state->data.viewPosition = (ImVec2){ -state->gl.editorFramebufferWidth / 2, -state->gl.editorFramebufferHeight / 2 };
+                state->data.viewPosition = (ImVec2){ -state->gl.editorFramebufferWidth / 2.0f, -state->gl.editorFramebufferHeight / 2.0f };
             }
         }
         igEndChild();
