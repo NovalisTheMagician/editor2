@@ -327,11 +327,11 @@ bool LineIntersection(line_t la, line_t lb, intersection_res_t *res)
     }
 
     float sI = glms_vec2_cross(v, w) / D;
-    if (sI <= 0 || sI >= 1)
+    if (sI < 0 || sI > 1)
         return false;
 
     float tI = glms_vec2_cross(u, w) / D;
-    if(tI <= 0 || tI >= 1)
+    if(tI < 0 || tI > 1)
         return false;
 
     if(res)
