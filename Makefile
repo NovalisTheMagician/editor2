@@ -11,6 +11,7 @@ LIBS := m SDL2 ftp json-c stdc++ lua
 LIB_DIRS :=
 
 CC := gcc
+C++ := g++
 
 CCFLAGS := -Wall -std=gnu23 -Wstrict-prototypes
 
@@ -154,15 +155,15 @@ $(RE_OBJ): $(RE_SRC)
 
 $(IGFD_OBJ): $(IGFD_SRC)
 	@echo "++ $< (External IGFD)"
-	@g++ -O2 -c $< -o $@ -I$(CIMGUI_DIR)/imgui
+	@$(C++) -O2 -c $< -o $@ -I$(CIMGUI_DIR)/imgui
 
 $(BUILD_DIR)/$(CIMGUI_DIR)/%.o: $(CIMGUI_DIR)/%.cpp
 	@echo "++ $< (External CImgui)"
-	@g++ -O2 -c $< -o $@ -I$(CIMGUI_DIR)/imgui $(SDL_INC) '-DIMGUI_IMPL_API=extern "C"'
+	@$(C++) -O2 -c $< -o $@ -I$(CIMGUI_DIR)/imgui $(SDL_INC) '-DIMGUI_IMPL_API=extern "C"'
 
 $(TRIANG_OBJ): $(TRIANG_SRC)
 	@echo "++ $< (External Triangulate)"
-	@g++ -O2 -c $< -o $@ $(EARCUT_INC)
+	@$(C++) -O2 -c $< -o $@ $(EARCUT_INC)
 
 .PHONY: clean echo
 clean:
