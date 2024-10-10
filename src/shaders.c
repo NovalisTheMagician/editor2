@@ -2,7 +2,7 @@
 
 #include "resources/resources.h"
 
-static bool CompileShader(const char *shaderScr, GLuint *shader)
+static bool CompileShader(const char *shaderScr, GLuint *shader, char *error, size_t errorSize)
 {
     int success;
     char infoLog[512];
@@ -13,14 +13,14 @@ static bool CompileShader(const char *shaderScr, GLuint *shader)
     if(!success)
     {
         glGetShaderInfoLog(*shader, sizeof infoLog, NULL, infoLog);
-        printf("Failed to compile Shader: %s\n", infoLog);
+        snprintf(error, errorSize, "Failed to compile Shader: %s\n", infoLog);
         return false;
     };
 
     return true;
 }
 
-static bool LinkProgram(GLuint vertexShader, GLuint fragmentShader, GLuint *program)
+static bool LinkProgram(GLuint vertexShader, GLuint fragmentShader, GLuint *program, char *error, size_t errorSize)
 {
     int success;
     char infoLog[512];
@@ -32,33 +32,33 @@ static bool LinkProgram(GLuint vertexShader, GLuint fragmentShader, GLuint *prog
     if(!success)
     {
         glGetProgramInfoLog(*program, sizeof infoLog, NULL, infoLog);
-        printf("Failed to link Program: %s\n", infoLog);
+        snprintf(error, errorSize, "Failed to link Program: %s\n", infoLog);
         return false;
     }
 
     return true;
 }
 
-static bool InitBackground(EdState *state)
+static bool InitBackground(EdState *state, char *error, size_t errorSize)
 {
     GLuint hVertShader = glCreateShader(GL_VERTEX_SHADER);
-    if(!CompileShader(gBackH_vsData, &hVertShader))
+    if(!CompileShader(gBackH_vsData, &hVertShader, error, errorSize))
         return false;
 
     GLuint vVertShader = glCreateShader(GL_VERTEX_SHADER);
-    if(!CompileShader(gBackV_vsData, &vVertShader))
+    if(!CompileShader(gBackV_vsData, &vVertShader, error, errorSize))
         return false;
 
     GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-    if(!CompileShader(gBack_fsData, &fragShader))
+    if(!CompileShader(gBack_fsData, &fragShader, error, errorSize))
         return false;
 
     GLuint hProg = glCreateProgram();
-    if(!LinkProgram(hVertShader, fragShader, &hProg))
+    if(!LinkProgram(hVertShader, fragShader, &hProg, error, errorSize))
         return false;
 
     GLuint vProg = glCreateProgram();
-    if(!LinkProgram(vVertShader, fragShader, &vProg))
+    if(!LinkProgram(vVertShader, fragShader, &vProg, error, errorSize))
         return false;
 
     glDeleteShader(hVertShader);
@@ -88,18 +88,18 @@ static bool InitBackground(EdState *state)
     return true;
 }
 
-static bool InitVertex(EdState *state)
+static bool InitVertex(EdState *state, char *error, size_t errorSize)
 {
     GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
-    if(!CompileShader(gVertex_vsData, &vertShader))
+    if(!CompileShader(gVertex_vsData, &vertShader, error, errorSize))
         return false;
 
     GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-    if(!CompileShader(gVertex_fsData, &fragShader))
+    if(!CompileShader(gVertex_fsData, &fragShader, error, errorSize))
         return false;
 
     GLuint program = glCreateProgram();
-    if(!LinkProgram(vertShader, fragShader, &program))
+    if(!LinkProgram(vertShader, fragShader, &program, error, errorSize))
         return false;
 
     glDeleteShader(vertShader);
@@ -110,18 +110,18 @@ static bool InitVertex(EdState *state)
     return true;
 }
 
-static bool InitLines(EdState *state)
+static bool InitLines(EdState *state, char *error, size_t errorSize)
 {
     GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
-    if(!CompileShader(gLine_vsData, &vertShader))
+    if(!CompileShader(gLine_vsData, &vertShader, error, errorSize))
         return false;
 
     GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-    if(!CompileShader(gLine_fsData, &fragShader))
+    if(!CompileShader(gLine_fsData, &fragShader, error, errorSize))
         return false;
 
     GLuint program = glCreateProgram();
-    if(!LinkProgram(vertShader, fragShader, &program))
+    if(!LinkProgram(vertShader, fragShader, &program, error, errorSize))
         return false;
 
     glDeleteShader(vertShader);
@@ -132,18 +132,18 @@ static bool InitLines(EdState *state)
     return true;
 }
 
-static bool InitSectors(EdState *state)
+static bool InitSectors(EdState *state, char *error, size_t errorSize)
 {
     GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
-    if(!CompileShader(gSector_vsData, &vertShader))
+    if(!CompileShader(gSector_vsData, &vertShader, error, errorSize))
         return false;
 
     GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-    if(!CompileShader(gSector_fsData, &fragShader))
+    if(!CompileShader(gSector_fsData, &fragShader, error, errorSize))
         return false;
 
     GLuint program = glCreateProgram();
-    if(!LinkProgram(vertShader, fragShader, &program))
+    if(!LinkProgram(vertShader, fragShader, &program, error, errorSize))
         return false;
 
     glDeleteShader(vertShader);
@@ -154,18 +154,18 @@ static bool InitSectors(EdState *state)
     return true;
 }
 
-bool LoadShaders(EdState *state)
+bool LoadShaders(EdState *state, char *error, size_t errorSize)
 {
-    if(!InitBackground(state))
+    if(!InitBackground(state, error, errorSize))
         return false;
 
-    if(!InitVertex(state))
+    if(!InitVertex(state, error, errorSize))
         return false;
 
-    if(!InitLines(state))
+    if(!InitLines(state, error, errorSize))
         return false;
 
-    if(!InitSectors(state))
+    if(!InitSectors(state, error, errorSize))
         return false;
 
     return true;

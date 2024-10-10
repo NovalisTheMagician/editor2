@@ -55,12 +55,15 @@ static void message_callback(GLenum source, GLenum type, GLuint id, GLenum sever
     printf("%s, %s, %s, %u: %s\n", src_str, type_str, severity_str, id, message);
 }
 
-bool InitEditor(EdState *state)
+bool InitEditor(EdState *state, char *error, size_t errorSize)
 {
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE);
     glDebugMessageCallback(message_callback, NULL);
+
+    if(!LoadShaders(state, error, errorSize))
+        return false;
 
     glCreateFramebuffers(1, &state->gl.editorFramebuffer);
     glCreateFramebuffers(1, &state->gl.editorFramebufferMS);
@@ -124,9 +127,6 @@ bool InitEditor(EdState *state)
     state->data.autoScrollLogs = true;
 
     state->data.selectedElements = calloc(SELECTION_CAPACITY, sizeof *state->data.selectedElements);
-
-    if(!LoadShaders(state))
-        return false;
 
     return true;
 }

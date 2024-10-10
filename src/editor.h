@@ -259,11 +259,11 @@ bool LoadSettings(const char *settingsPath, EdSettings *settings);
 void SaveSettings(const char *settingsPath, const EdSettings *settings);
 void FreeSettings(EdSettings *settings);
 
-bool LoadShaders(EdState *state);
+bool LoadShaders(EdState *state, char *error, size_t errorSize);
 
 void ChangeMode(EdState *state, enum SelectionMode mode);
 
-bool InitEditor(EdState *state);
+bool InitEditor(EdState *state, char *error, size_t errorSize);
 void DestroyEditor(EdState *state);
 
 void ResizeEditorView(EdState *state, int width, int height);
