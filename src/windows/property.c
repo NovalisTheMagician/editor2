@@ -4,6 +4,8 @@
 #include "cimgui.h"
 #include "memory.h"
 
+#include "texture_collection.h"
+
 static void SelectElement(EdState *state, void *element, int selectMode)
 {
     state->data.numSelectedElements = 1;
@@ -169,8 +171,9 @@ static void SectorProperties(EdState *state)
             if(payload)
             {
                 string_free(selectedSector->data.floorTex);
-                Texture tex = *(Texture*)payload->Data;
-                selectedSector->data.floorTex = string_copy(tex.name);
+                Texture *tex = *(Texture**)payload->Data;
+                selectedSector->data.floorTex = string_copy(tex->name);
+                tc_active(&state->textures, tex);
             }
             igEndDragDropTarget();
         }
@@ -196,8 +199,8 @@ static void SectorProperties(EdState *state)
             if(payload)
             {
                 string_free(selectedSector->data.ceilTex);
-                Texture tex = *(Texture*)payload->Data;
-                selectedSector->data.ceilTex = string_copy(tex.name);
+                Texture *tex = *(Texture**)payload->Data;
+                selectedSector->data.ceilTex = string_copy(tex->name);
             }
             igEndDragDropTarget();
         }

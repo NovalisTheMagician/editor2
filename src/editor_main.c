@@ -134,7 +134,11 @@ int EditorMain(int argc, char *argv[])
     NewMap(&state->map);
     HandleArguments(argc, argv, state);
 
-    if(!InitEditor(state)) return EXIT_FAILURE;
+    if(!InitEditor(state))
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Failed to init Editor", "Failed to init Editor", window);
+        return EXIT_FAILURE;
+    }
 
     if(!ScriptInit(&state->script, state))
     {

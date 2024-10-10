@@ -30,7 +30,7 @@ static void TextureIteration(Texture *texture, size_t idx, void *user)
     if(igBeginDragDropSource(ImGuiDragDropFlags_SourceNoDisableHover))
     {
         igImage((void*)(intptr_t)texture->texture1, size, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 1 });
-        igSetDragDropPayload("TextureDnD", texture, sizeof *texture, ImGuiCond_Once);
+        igSetDragDropPayload("TextureDnD", &texture, sizeof texture, ImGuiCond_Once);
         igEndDragDropSource();
     }
 

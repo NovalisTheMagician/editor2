@@ -8,7 +8,7 @@
 
 bool PointInSector(MapSector *sector, vec2s point)
 {
-    return PointInPolygon(sector->numOuterLines, sector->vertices, point);
+    return PointInPolygon(sector->numOuterLines, sector->edData.vertices, point);
 }
 
 bool PointInPolygon(size_t numVertices, vec2s vertices[static numVertices], vec2s point)

@@ -4,6 +4,8 @@
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #include "cimgui.h"
 
+#include "vertex_types.h"
+
 #include "map.h"
 #include "project.h"
 #include "network.h"
@@ -119,15 +121,6 @@ typedef struct EditorShaderData
     vec2s coordOffset;
 } EditorShaderData;
 
-typedef struct EditorVertexType
-{
-    vec2s position;
-    vec4s color;
-    vec2s texCoord;
-} EditorVertexType;
-
-typedef uint32_t Index_t;
-
 typedef struct EdState
 {
     EdSettings settings;
@@ -176,6 +169,10 @@ typedef struct EdState
         GLuint backgroundLinesBuffer;
 
         GLuint whiteTexture;
+        GLuint64 whiteTextureHandle;
+
+        GLuint textureBuffer;
+        uint64_t *textureBufferMap;
 
         GLuint editorVertexFormat;
         GLuint editorVertexBuffer, editorIndexBuffer, editorShaderDataBuffer;

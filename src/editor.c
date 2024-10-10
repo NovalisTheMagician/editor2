@@ -6,8 +6,12 @@
 #include "logging.h"
 #include "utils.h"
 
+#include "texture_collection.h"
+
 #define SELECTION_CAPACITY 10000
 #define BUFFER_SIZE (1<<20)
+#define TEXTURE_SET_SIZE 8192
+#define WHITE_TEXTURE (TEXTURE_SET_SIZE - 1)
 
 static void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
 {
@@ -70,6 +74,8 @@ bool InitEditor(EdState *state)
     glTextureParameteri(state->gl.whiteTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTextureParameteri(state->gl.whiteTexture, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTextureParameteri(state->gl.whiteTexture, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    state->gl.whiteTextureHandle = glGetTextureHandleARB(state->gl.whiteTexture);
+    glMakeTextureHandleResidentARB(state->gl.whiteTextureHandle);
 
     state->data.gridSize = 32;
     state->data.zoomLevel = 1.0f;
@@ -95,17 +101,25 @@ bool InitEditor(EdState *state)
     glEnableVertexArrayAttrib(state->gl.editorVertexFormat, 0);
     glEnableVertexArrayAttrib(state->gl.editorVertexFormat, 1);
     glEnableVertexArrayAttrib(state->gl.editorVertexFormat, 2);
+    glEnableVertexArrayAttrib(state->gl.editorVertexFormat, 3);
     glVertexArrayAttribFormat(state->gl.editorVertexFormat, 0, 2, GL_FLOAT, GL_FALSE, offsetof(EditorVertexType, position));
     glVertexArrayAttribFormat(state->gl.editorVertexFormat, 1, 4, GL_FLOAT, GL_FALSE, offsetof(EditorVertexType, color));
     glVertexArrayAttribFormat(state->gl.editorVertexFormat, 2, 2, GL_FLOAT, GL_FALSE, offsetof(EditorVertexType, texCoord));
+    glVertexArrayAttribIFormat(state->gl.editorVertexFormat, 3, 1, GL_UNSIGNED_INT, offsetof(EditorVertexType, texId));
     glVertexArrayAttribBinding(state->gl.editorVertexFormat, 0, 0);
     glVertexArrayAttribBinding(state->gl.editorVertexFormat, 1, 0);
     glVertexArrayAttribBinding(state->gl.editorVertexFormat, 2, 0);
+    glVertexArrayAttribBinding(state->gl.editorVertexFormat, 3, 0);
     glVertexArrayVertexBuffer(state->gl.editorVertexFormat, 0, state->gl.editorVertexBuffer, 0, sizeof(EditorVertexType));
     glVertexArrayElementBuffer(state->gl.editorVertexFormat, state->gl.editorIndexBuffer);
 
     glCreateBuffers(1, &state->gl.editorShaderDataBuffer);
     glNamedBufferStorage(state->gl.editorShaderDataBuffer, sizeof(EditorShaderData), NULL, GL_DYNAMIC_STORAGE_BIT);
+
+    size_t textureBufferSize = TEXTURE_SET_SIZE * sizeof(GLuint64);
+    glCreateBuffers(1, &state->gl.textureBuffer);
+    glNamedBufferStorage(state->gl.textureBuffer, textureBufferSize, NULL, storage_flags);
+    state->gl.textureBufferMap = glMapNamedBufferRange(state->gl.textureBuffer, 0, textureBufferSize, mapping_flags);
 
     state->data.autoScrollLogs = true;
 
@@ -123,7 +137,7 @@ void DestroyEditor(EdState *state)
     glDeleteFramebuffers(COUNT_OF(framebuffers), framebuffers);
     GLuint textures[] = { state->gl.editorColorTexture, state->gl.editorColorTextureMS, state->gl.realtimeColorTexture, state->gl.realtimeDepthTexture, state->gl.whiteTexture };
     glDeleteTextures(COUNT_OF(textures), textures);
-    GLuint buffer[] = { state->gl.editorVertexBuffer, state->gl.editorIndexBuffer, state->gl.editorShaderDataBuffer, state->gl.backgroundLinesBuffer };
+    GLuint buffer[] = { state->gl.editorVertexBuffer, state->gl.editorIndexBuffer, state->gl.editorShaderDataBuffer, state->gl.backgroundLinesBuffer, state->gl.textureBuffer };
     glDeleteBuffers(COUNT_OF(buffer), buffer);
     GLuint formats[] = { state->gl.editorBackProg.backVertexFormat, state->gl.editorVertexFormat };
     glDeleteVertexArrays(COUNT_OF(formats), formats);
@@ -319,11 +333,15 @@ static size_t CollectSectors(const EdState *state, size_t vertexOffset, size_t i
         inds += data.numIndices;
 
         size_t offsetIndex = verts + vertexOffset;
-        for(size_t i = 0; i < sector->numOuterLines; i++)
+        for(size_t i = 0; i < data.numVertices; i++)
         {
-            state->gl.editorVertexMap[i + offsetIndex] = (EditorVertexType){ .position = sector->vertices[i], .color = state->settings.colors[colorIdx] };
+            const vec2s position = data.vertices[i];
+            const vec2s texcoord = data.vertices[i];
+            const Texture *texture = tc_get((TextureCollection*)&state->textures, sector->data.floorTex);
+            uint64_t texId = texture ? texture->activeIndex != -1 ? texture->activeIndex : WHITE_TEXTURE : WHITE_TEXTURE;
+            state->gl.editorVertexMap[i + offsetIndex] = (EditorVertexType){ .position = position, .texCoord = texcoord, .color = state->settings.colors[colorIdx], .texId = texId };
         }
-        verts += sector->numOuterLines;
+        verts += data.numVertices;
     }
     *numIndices = inds;
     return verts;
@@ -355,6 +373,12 @@ static size_t CollectEditData(const EdState *state, size_t vertexOffset)
         return state->data.editVertexBufferSize + 1;
     }
     return 0;
+}
+
+static void setTexture(Texture *texture, size_t index, void *user)
+{
+    uint64_t *buffer = user;
+    buffer[index] = texture->textureHandle;
 }
 
 void RenderEditorView(EdState *state)
@@ -396,10 +420,11 @@ void RenderEditorView(EdState *state)
     if(editStart + editLength == 0) // dont issue draw calls if we dont have anything to draw
         return;
 
+    tc_iterate_active(&state->textures, setTexture, state->gl.textureBufferMap);
+    state->gl.textureBufferMap[TEXTURE_SET_SIZE-1] = state->gl.whiteTextureHandle;
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, state->gl.textureBuffer);
+
     glUseProgram(state->gl.editorSector.program);
-    glUniform1i(0, 0);
-    if(!state->data.showSectorTextures)
-        glBindTextureUnit(0, state->gl.whiteTexture);
     // handle real texture here
     glDrawElementsBaseVertex(GL_TRIANGLES, sectorIndexLength, GL_UNSIGNED_INT, 0, sectorStart);
 

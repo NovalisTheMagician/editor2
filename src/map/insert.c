@@ -267,7 +267,7 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
                     vec2s u = glms_vec2_sub(major.b, major.a);
                     vec2s v = glms_vec2_sub(minor.b, minor.a);
                     float dot = glms_vec2_dot(u, v);
-                    if(dot > 0) // they do infact overlap
+                    if(dot > 0) // they do overlap
                     {
                         float t = LineGetPointFactor(major, minor.b);
                         if(t > 1)

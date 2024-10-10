@@ -103,13 +103,14 @@ void FreeMapLine(MapLine *line)
 void FreeMapSector(MapSector *sector)
 {
     FreeSectorData(sector->data);
-    free(sector->vertices);
 
     free(sector->outerLines);
     for(size_t i = 0; i < sector->numInnerLines; ++i)
         free(sector->innerLines[i]);
     free(sector->innerLines);
 
+    free(sector->edData.vertices);
+    free(sector->edData.texcoords);
     free(sector->edData.indices);
 
     free(sector->contains);

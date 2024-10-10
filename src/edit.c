@@ -254,8 +254,11 @@ MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLin
 
     struct Polygon *polygon = PolygonFromMapLines(numLines, lines, lineFronts);
 
-    sector->vertices = calloc(polygon->length, sizeof *sector->vertices);
-    memcpy(sector->vertices, polygon->vertices, polygon->length * sizeof *polygon->vertices);
+    TriangleData *td = &sector->edData;
+
+    td->numVertices = polygon->length;
+    td->vertices = calloc(td->numVertices, sizeof *td->vertices);
+    memcpy(td->vertices, polygon->vertices, td->numVertices * sizeof *polygon->vertices);
 
     unsigned int *indices = NULL;
     size_t numIndices = triangulate(polygon, NULL, 0, &indices);
@@ -264,9 +267,11 @@ MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLin
     memcpy(sector->edData.indices, indices, numIndices * sizeof *indices);
     sector->edData.numIndices = numIndices;
     free(indices);
-
-    sector->bb = BoundingBoxFromVertices(polygon->length, sector->vertices);
     free(polygon);
+
+    td->texcoords = calloc(td->numVertices, sizeof *td->texcoords);
+
+    sector->bb = BoundingBoxFromVertices(td->numVertices, td->vertices);
 
     return sector;
 }

@@ -25,9 +25,11 @@
 #include "utils.h"
 #include "utils/hash.h"
 
+#define TEXTURE_SET_SIZE 8192
+
 static size_t Partition(Texture **arr, size_t lo, size_t hi)
 {
-    size_t pivIdx = floor((hi - lo) / 2) + lo;
+    size_t pivIdx = floor((hi - lo) / 2.0f) + lo;
     Texture *pivot = arr[pivIdx];
     size_t i = lo - 1;
     size_t j = hi + 1;
@@ -62,12 +64,14 @@ void tc_init(TextureCollection *tc)
 {
     tc->slots = calloc(NUM_SLOTS, sizeof *tc->slots);
     tc->order = calloc(NUM_BUCKETS * NUM_SLOTS, sizeof *tc->order);
+    tc->activeSet = calloc(TEXTURE_SET_SIZE, sizeof *tc->activeSet);
 }
 
 void tc_destroy(TextureCollection *tc)
 {
     free(tc->slots);
     free(tc->order);
+    free(tc->activeSet);
 }
 
 bool tc_load(TextureCollection *tc, pstring name, pstring path, time_t mtime)
@@ -89,13 +93,22 @@ bool tc_load(TextureCollection *tc, pstring name, pstring path, time_t mtime)
     glGenerateTextureMipmap(texId);
     glTextureParameteri(texId, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
     glTextureParameteri(texId, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTextureParameteri(texId, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTextureParameteri(texId, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    GLuint64 handle = glGetTextureHandleARB(texId);
 
     stbi_image_free(pixels);
 
     if(existing)
     {
+        if(existing->activeIndex != -1)
+        {
+            glMakeTextureHandleNonResidentARB(existing->textureHandle);
+            glMakeTextureHandleResidentARB(handle);
+        }
         glDeleteTextures(1, &existing->texture1);
         existing->texture1 = texId;
+        existing->textureHandle = handle;
         existing->width = width;
         existing->height = height;
         existing->flags = TF_NONE;
@@ -112,11 +125,13 @@ bool tc_load(TextureCollection *tc, pstring name, pstring path, time_t mtime)
         Texture *texture = &tc->slots[nameHash].textures[size];
 
         texture->texture1 = texId;
+        texture->textureHandle = handle;
         texture->width = width;
         texture->height = height;
         texture->flags = TF_NONE;
         texture->name = string_copy(name);
         texture->modTime = mtime;
+        texture->activeIndex = -1;
 
         size_t orderIdx = tc->size++;
         texture->orderIdx = orderIdx;
@@ -146,13 +161,22 @@ bool tc_load_mem(TextureCollection *tc, pstring name, uint8_t *data, size_t data
     glGenerateTextureMipmap(texId);
     glTextureParameteri(texId, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
     glTextureParameteri(texId, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTextureParameteri(texId, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTextureParameteri(texId, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    GLuint64 handle = glGetTextureHandleARB(texId);
 
     stbi_image_free(pixels);
 
     if(existing)
     {
+        if(existing->activeIndex != -1)
+        {
+            glMakeTextureHandleNonResidentARB(existing->textureHandle);
+            glMakeTextureHandleResidentARB(handle);
+        }
         glDeleteTextures(1, &existing->texture1);
         existing->texture1 = texId;
+        existing->textureHandle = handle;
         existing->width = width;
         existing->height = height;
         existing->flags = TF_NONE;
@@ -169,11 +193,13 @@ bool tc_load_mem(TextureCollection *tc, pstring name, uint8_t *data, size_t data
         Texture *texture = &tc->slots[nameHash].textures[size];
 
         texture->texture1 = texId;
+        texture->textureHandle = handle;
         texture->width = width;
         texture->height = height;
         texture->flags = TF_NONE;
         texture->name = string_copy(name);
         texture->modTime = mtime;
+        texture->activeIndex = -1;
 
         size_t orderIdx = tc->size++;
         texture->orderIdx = orderIdx;
@@ -207,6 +233,20 @@ void tc_iterate_filter(TextureCollection *tc, tc_itearte_cb cb, pstring filter, 
     }
 }
 
+void tc_iterate_active(TextureCollection *tc, tc_itearte_cb cb, void *user)
+{
+    size_t num = 0;
+    for(size_t i = 0; i < TEXTURE_SET_SIZE; ++i)
+    {
+        if(num >= tc->numActive) break;
+        if(tc->activeSet[i])
+        {
+            cb(tc->activeSet[i], i, user);
+            num++;
+        }
+    }
+}
+
 void tc_unload(TextureCollection *tc, pstring name)
 {
     if(name == NULL) return;
@@ -218,6 +258,7 @@ void tc_unload(TextureCollection *tc, pstring name)
         Texture *texture = &tc->slots[nameHash].textures[i];
         if(strcmp(name, texture->name) == 0)
         {
+            tc_inactive(tc, texture);
             glDeleteTextures(1, &texture->texture1);
             string_free(texture->name);
 
@@ -241,6 +282,7 @@ void tc_unload_all(TextureCollection *tc)
     for(size_t i = 0; i < tc->size; ++i)
     {
         Texture *texture = tc->order[i];
+        tc_inactive(tc, texture);
         glDeleteTextures(1, &texture->texture1);
         string_free(texture->name);
     }
@@ -332,4 +374,35 @@ bool tc_is_newer(TextureCollection *tc, pstring name, time_t newTime)
         return texture->modTime < newTime;
     }
     return true;
+}
+
+void tc_active(TextureCollection *tc, Texture *texture)
+{
+    if(texture->activeIndex == -1)
+    {
+        for(size_t i = 0; i < TEXTURE_SET_SIZE; ++i)
+        {
+            if(tc->activeSet[i] == NULL)
+            {
+                if(!glIsTextureHandleResidentARB(texture->textureHandle))
+                    glMakeTextureHandleResidentARB(texture->textureHandle);
+                tc->activeSet[i] = texture;
+                texture->activeIndex = i;
+                tc->numActive++;
+                break;
+            }
+        }
+    }
+}
+
+void tc_inactive(TextureCollection *tc, Texture *texture)
+{
+    if(texture->activeIndex != -1)
+    {
+        if(glIsTextureHandleResidentARB(texture->textureHandle))
+            glMakeTextureHandleNonResidentARB(texture->textureHandle);
+        tc->activeSet[texture->activeIndex] = NULL;
+        texture->activeIndex = -1;
+        tc->numActive--;
+    }
 }
