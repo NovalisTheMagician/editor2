@@ -110,6 +110,14 @@ int EditorMain(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
+    if(!GLAD_GL_ARB_bindless_texture)
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", "GL_ARB_bindless_texture extension is not supported!", window);
+        SDL_GL_DeleteContext(glContext);
+        SDL_DestroyWindow(window);
+        return EXIT_FAILURE;
+    }
+
     if(!InitImgui(window, glContext, errorBuffer, sizeof errorBuffer))
     {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Failed to initialize ImGui", errorBuffer, window);
@@ -124,6 +132,14 @@ int EditorMain(int argc, char *argv[])
     InitState(state);
     LogInit(&state->log);
 
+    if(!InitEditor(state))
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Failed to init Editor", "Failed to init Editor", window);
+        SDL_GL_DeleteContext(glContext);
+        SDL_DestroyWindow(window);
+        return EXIT_FAILURE;
+    }
+
     LogInfo("OpenGL Version %s", glGetString(GL_VERSION));
     LogInfo("OpenGL Renderer %s", glGetString(GL_RENDERER));
     LogInfo("OpenGL Vendor %s", glGetString(GL_VENDOR));
@@ -133,12 +149,6 @@ int EditorMain(int argc, char *argv[])
     NewProject(&state->project);
     NewMap(&state->map);
     HandleArguments(argc, argv, state);
-
-    if(!InitEditor(state))
-    {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Failed to init Editor", "Failed to init Editor", window);
-        return EXIT_FAILURE;
-    }
 
     if(!ScriptInit(&state->script, state))
     {
