@@ -148,21 +148,13 @@ static void SectorProperties(EdState *state)
 
         Texture *floorTexture = tc_get(&state->textures, selectedSector->data.floorTex);
         igText("Floor");
-        if(floorTexture)
+        GLuint texId = floorTexture ? floorTexture->texture1 : state->defaultTextures.missingTexture;
+        ImVec2 size = floorTexture ? (ImVec2){ floorTexture->width, floorTexture->height } : (ImVec2){ state->defaultTextures.missingTextureWidth, state->defaultTextures.missingTextureHeight };
+        igImageButton("floorTexture", (ImTextureID)(intptr_t)texId, size, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1, }, (ImVec4){ 0, 0, 0, 0 }, (ImVec4){ 1, 1, 1, 1 });
+        if(igIsItemHovered(0) && igIsMouseReleased_Nil(ImGuiMouseButton_Right) && floorTexture)
         {
-            if(igImageButton("floorTexture", (ImTextureID)(intptr_t)floorTexture->texture1, (ImVec2){ floorTexture->width, floorTexture->height }, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1, }, (ImVec4){ 0, 0, 0, 0 }, (ImVec4){ 1, 1, 1, 1 }))
-            {
-
-            }
-            if(igIsItemHovered(0) && igIsMouseReleased_Nil(ImGuiMouseButton_Right))
-            {
-                string_free(selectedSector->data.floorTex);
-                selectedSector->data.floorTex = NULL;
-            }
-        }
-        else
-        {
-            igButton("Select Texture##floor", (ImVec2){ 0, 0 });
+            string_free(selectedSector->data.floorTex);
+            selectedSector->data.floorTex = NULL;
         }
 
         if(igBeginDragDropTarget())
@@ -180,17 +172,13 @@ static void SectorProperties(EdState *state)
 
         Texture *ceilTexture = tc_get(&state->textures, selectedSector->data.ceilTex);
         igText("Ceiling");
-        if(ceilTexture)
+        texId = ceilTexture ? ceilTexture->texture1 : state->defaultTextures.missingTexture;
+        size = ceilTexture ? (ImVec2){ ceilTexture->width, ceilTexture->height } : (ImVec2){ state->defaultTextures.missingTextureWidth, state->defaultTextures.missingTextureHeight };
+        igImageButton("ceilTexture", (ImTextureID)(intptr_t)texId, size, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1, }, (ImVec4){ 0, 0, 0, 0 }, (ImVec4){ 1, 1, 1, 1 });
+        if(igIsItemHovered(0) && igIsMouseReleased_Nil(ImGuiMouseButton_Right) && ceilTexture)
         {
-            if(igImageButton("ceilTexture", (ImTextureID)(intptr_t)ceilTexture->texture1, (ImVec2){ ceilTexture->width, ceilTexture->height }, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1, }, (ImVec4){ 0, 0, 0, 0 }, (ImVec4){ 1, 1, 1, 1 }))
-            {
-                string_free(selectedSector->data.ceilTex);
-                selectedSector->data.ceilTex = NULL;
-            }
-        }
-        else
-        {
-            igButton("Select Texture##ceil", (ImVec2){ 0, 0 });
+            string_free(selectedSector->data.floorTex);
+            selectedSector->data.floorTex = NULL;
         }
 
         if(igBeginDragDropTarget())

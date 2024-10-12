@@ -248,7 +248,10 @@ typedef struct EdState
     struct
     {
         GLuint missingIcon;
+        GLuint64 missingIconHandle;
         GLuint missingTexture;
+        GLuint64 missingTextureHandle;
+        int missingTextureWidth, missingTextureHeight;
     } defaultTextures;
 } EdState;
 

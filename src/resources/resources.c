@@ -3,6 +3,8 @@
 //INCBIN(Font, "UbuntuMono-Regular.ttf");
 INCBIN(Font, "LiberationMono-Regular.ttf");
 
+INCBIN(DefaultTexture, "default.png");
+
 INCTXT(BackH_vs, "backH.vs");
 INCTXT(BackV_vs, "backV.vs");
 INCTXT(Back_fs, "back.fs");

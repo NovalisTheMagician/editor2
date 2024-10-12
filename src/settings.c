@@ -9,6 +9,7 @@ const char* ColorIndexToString(enum Colors color)
     case COL_LOG_INFO: return "Log Info Text";
     case COL_LOG_WARN: return "Log Warning Text";
     case COL_LOG_ERRO: return "Log Error Text";
+    case COL_LOG_DEBU: return "Log Debug Text";
     case COL_WORKSPACE_BACK: return "Workspace Background";
     case COL_BACKGROUND: return "Editor Background";
     case COL_RTBACKGROUND: return "3D View Background";
@@ -46,7 +47,7 @@ void ResetSettings(EdSettings *settings)
 
     settings->colors[COL_VERTEX] = (Color){ .r = 0.7f, .g = 0.7f, .b = 0.7f, .a = 1.00f };
     settings->colors[COL_LINE] = (Color){ .r = 0.8f, .g = 0.8f, .b = 0.8f, .a = 1.00f };
-    settings->colors[COL_SECTOR] = (Color){ .r = 0.3f, .g = 0.8f, .b = 0.3f, .a = 0.7f };
+    settings->colors[COL_SECTOR] = (Color){ .r = 1.0f, .g = 1.0f, .b = 1.0f, .a = 1.0f };
 
     settings->colors[COL_ACTIVE_EDIT] = (Color){ .r = 0.8f, .g = 0.8f, .b = 0.3f, .a = 1.0f };
 
@@ -56,8 +57,8 @@ void ResetSettings(EdSettings *settings)
     settings->colors[COL_LINE_HOVER] = (Color){ .r = 1.0f, .g = 1.0f, .b = 1.0f, .a = 1.00f };
     settings->colors[COL_LINE_SELECT] = (Color){ .r = 1.0f, .g = 1.0f, .b = 0.0f, .a = 1.00f };
 
-    settings->colors[COL_SECTOR_HOVER] = (Color){ .r = 0.4f, .g = 0.9f, .b = 0.4f, .a = 1.00f };
-    settings->colors[COL_SECTOR_SELECT] = (Color){ .r = 1.0f, .g = 1.0f, .b = 0.0f, .a = 1.00f };
+    settings->colors[COL_SECTOR_HOVER] = (Color){ .r = 0.8f, .g = 0.8f, .b = 0.8f, .a = 1.00f };
+    settings->colors[COL_SECTOR_SELECT] = (Color){ .r = 0.8f, .g = 0.3f, .b = 0.3f, .a = 1.00f };
 
     settings->colors[COL_LINE_INNER] = (Color){ .r = 0.6f, .g = 0.6f, .b = 0.6f, .a = 1.00f };
 

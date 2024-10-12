@@ -2,11 +2,12 @@
 
 #include <string.h>
 #include <tgmath.h>
+#include <stb/stb_image.h>
 
 #include "logging.h"
 #include "utils.h"
-
 #include "texture_collection.h"
+#include "resources/resources.h"
 
 #define SELECTION_CAPACITY 10000
 #define BUFFER_SIZE (1<<20)
@@ -64,6 +65,27 @@ bool InitEditor(EdState *state, char *error, size_t errorSize)
 
     if(!LoadShaders(state, error, errorSize))
         return false;
+
+    int w, h, c;
+    uint8_t *pixels = stbi_load_from_memory(gDefaultTextureData, gDefaultTextureSize, &w, &h, &c, 4);
+    if(!pixels)
+    {
+        snprintf(error, errorSize, "failed to load the default texture");
+        return false;
+    }
+    size_t numMipLevels = log2(max(w, h)) + 1;
+    glCreateTextures(GL_TEXTURE_2D, 1, &state->defaultTextures.missingTexture);
+    glTextureStorage2D(state->defaultTextures.missingTexture, numMipLevels, GL_RGBA8, w, h);
+    glTextureSubImage2D(state->defaultTextures.missingTexture, 0, 0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    glGenerateTextureMipmap(state->defaultTextures.missingTexture);
+    glTextureParameteri(state->defaultTextures.missingTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    glTextureParameteri(state->defaultTextures.missingTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTextureParameteri(state->defaultTextures.missingTexture, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTextureParameteri(state->defaultTextures.missingTexture, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    state->defaultTextures.missingTextureHandle = glGetTextureHandleARB(state->defaultTextures.missingTexture);
+    state->defaultTextures.missingTextureWidth = state->defaultTextures.missingTextureHeight = 64;
+    glMakeTextureHandleResidentARB(state->defaultTextures.missingTextureHandle);
+    free(pixels);
 
     glCreateFramebuffers(1, &state->gl.editorFramebuffer);
     glCreateFramebuffers(1, &state->gl.editorFramebufferMS);
@@ -135,7 +157,7 @@ void DestroyEditor(EdState *state)
 {
     GLuint framebuffers[] = { state->gl.editorFramebuffer, state->gl.editorFramebufferMS, state->gl.realtimeFramebuffer };
     glDeleteFramebuffers(COUNT_OF(framebuffers), framebuffers);
-    GLuint textures[] = { state->gl.editorColorTexture, state->gl.editorColorTextureMS, state->gl.realtimeColorTexture, state->gl.realtimeDepthTexture, state->gl.whiteTexture };
+    GLuint textures[] = { state->gl.editorColorTexture, state->gl.editorColorTextureMS, state->gl.realtimeColorTexture, state->gl.realtimeDepthTexture, state->gl.whiteTexture, state->defaultTextures.missingTexture };
     glDeleteTextures(COUNT_OF(textures), textures);
     GLuint buffer[] = { state->gl.editorVertexBuffer, state->gl.editorIndexBuffer, state->gl.editorShaderDataBuffer, state->gl.backgroundLinesBuffer, state->gl.textureBuffer };
     glDeleteBuffers(COUNT_OF(buffer), buffer);
@@ -421,14 +443,14 @@ void RenderEditorView(EdState *state)
         return;
 
     tc_iterate_active(&state->textures, setTexture, state->gl.textureBufferMap);
-    state->gl.textureBufferMap[TEXTURE_SET_SIZE-1] = state->gl.whiteTextureHandle;
+    state->gl.textureBufferMap[TEXTURE_SET_SIZE-1] = state->defaultTextures.missingTextureHandle;
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, state->gl.textureBuffer);
 
     glUseProgram(state->gl.editorSector.program);
     // handle real texture here
     glDrawElementsBaseVertex(GL_TRIANGLES, sectorIndexLength, GL_UNSIGNED_INT, 0, sectorStart);
 
-    glLineWidth(2);
+    glLineWidth(1.5f);
     glUseProgram(state->gl.editorLine.program);
     glDrawArrays(GL_LINES, lineStart, lineLength);
 

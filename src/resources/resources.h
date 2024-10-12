@@ -4,6 +4,8 @@
 
 INCBIN_EXTERN(Font);
 
+INCBIN_EXTERN(DefaultTexture);
+
 INCTXT_EXTERN(BackH_vs);
 INCTXT_EXTERN(BackV_vs);
 INCTXT_EXTERN(Back_fs);
