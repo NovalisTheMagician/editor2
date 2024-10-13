@@ -155,7 +155,7 @@ $(RE_OBJ): $(RE_SRC)
 
 $(IGFD_OBJ): $(IGFD_SRC)
 	@echo "++ $< (External IGFD)"
-	@$(C++) -O2 -c $< -o $@ -I$(CIMGUI_DIR)/imgui
+	@$(C++) -O2 -c $< -o $@ -I$(CIMGUI_DIR)/imgui -DUSE_PLACES_FEATURE -DUSE_PLACES_DEVICES -DUSE_PLACES_BOOKMARKS
 
 $(BUILD_DIR)/$(CIMGUI_DIR)/%.o: $(CIMGUI_DIR)/%.cpp
 	@echo "++ $< (External CImgui)"
