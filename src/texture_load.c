@@ -7,8 +7,10 @@
 #include <ftplib.h>
 #include <pthread.h>
 
+#include "logging.h"
 #include "memory.h" // IWYU pragma: keep
 #include "async_load.h"
+#include "utils/pstring.h"
 
 static bool ReadFromFs(pstring path, uint8_t **buffer, size_t *size, void *unused)
 {
@@ -119,14 +121,15 @@ static size_t CollectTexturesFtp(TextureCollection *tc, FetchLocation **location
         stringtok *tok = stringtok_start(buffer);
         char *perm = stringtok_next(tok, " ", &numChars);
         bool isDir = perm[0] == 'd';
-        stringtok_next(tok, " ", &numChars); // inode refs
-        stringtok_next(tok, " ", &numChars); // user
-        stringtok_next(tok, " ", &numChars); // group
-        stringtok_next(tok, " ", &numChars); // size?
-        stringtok_next(tok, " ", &numChars); // day
-        stringtok_next(tok, " ", &numChars); // month
-        stringtok_next(tok, " ", &numChars); // time
-        char *fn = stringtok_next(tok, " ", &numChars);
+        char *fn = NULL, *last = NULL;
+        while((last = stringtok_next(tok, " ", &numChars))) fn = last;
+        if(fn == NULL)
+        {
+            LogWarning("failed to parse the filename out of a directory listing `%s`", buffer);
+            stringtok_end(tok);
+            continue;
+        }
+
         if(fn[numChars-1] == '\n') numChars--;
         pstring fileName = string_cstr_size(numChars, fn);
         pstring filePath = string_alloc(256);
