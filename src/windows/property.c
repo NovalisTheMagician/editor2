@@ -201,7 +201,6 @@ static void SectorProperties(EdState *state)
 
 void PropertyWindow(bool *p_open, EdState *state)
 {
-    igSetNextWindowSize((ImVec2){ 300, 600 }, ImGuiCond_FirstUseEver);
     if(igBegin("Properties", p_open, 0))
     {
         if(state->data.numSelectedElements == 0)

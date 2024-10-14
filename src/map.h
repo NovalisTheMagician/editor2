@@ -17,7 +17,6 @@ typedef enum SectorType
 typedef struct TriangleData
 {
     vec2s *vertices;
-    vec2s *texcoords;
     size_t numVertices;
     uint32_t *indices;
     size_t numIndices;

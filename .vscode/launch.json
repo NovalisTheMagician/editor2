@@ -13,6 +13,16 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "build"
+        },
+        {
+            "name": "editor2 no project",
+            "type": "by-gdb",
+            "request": "launch",
+            "program": "${workspaceFolder}/editor2",
+            "programArgs": "",
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "build"
         }
     ]
 }

@@ -6,12 +6,27 @@
 
 #include "utils.h"
 
+#include "vertex_types.h"
+
 bool PointInSector(MapSector *sector, vec2s point)
 {
-    return PointInPolygon(sector->numOuterLines, sector->edData.vertices, point);
+    return PointInPolygonVector(sector->numOuterLines, sector->edData.vertices, point);
 }
 
-bool PointInPolygon(size_t numVertices, vec2s vertices[static numVertices], vec2s point)
+bool PointInSector2(MapSector *sector, vec2s point)
+{
+    bool inside = PointInSector(sector, point);
+    for(size_t i = 0; i < sector->numContains; ++i)
+        inside &= !PointInSector(sector->contains[i], point);
+    return inside;
+}
+
+bool PointInPolygon(struct Polygon *polygon, vec2s point)
+{
+    return PointInPolygonVector(polygon->length, (vec2s*)polygon->vertices, point);
+}
+
+bool PointInPolygonVector(size_t numVertices, vec2s vertices[static numVertices], vec2s point)
 {
     bool inside = false;
     for(size_t i = 0; i < numVertices; ++i)

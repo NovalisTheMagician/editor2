@@ -110,7 +110,6 @@ void FreeMapSector(MapSector *sector)
     free(sector->innerLines);
 
     free(sector->edData.vertices);
-    free(sector->edData.texcoords);
     free(sector->edData.indices);
 
     free(sector->contains);

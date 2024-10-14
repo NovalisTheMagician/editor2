@@ -5,6 +5,7 @@
 #include "../edit.h"
 #include "map.h"
 #include "remove.h"
+#include "triangulate.h"
 
 SplitResult SplitMapLine(Map *map, MapLine *line, MapVertex *vertex)
 {
@@ -61,6 +62,30 @@ struct Polygon* PolygonFromMapLines(size_t numLines, MapLine *lines[static numLi
         }
     }
 
+    return polygon;
+}
+
+struct Polygon* PolygonFromVertices(size_t numVertices, EditorVertexType vertices[static numVertices])
+{
+    struct Polygon *polygon = calloc(1, sizeof *polygon + numVertices * sizeof *polygon->vertices);
+    polygon->length = numVertices;
+    for(size_t i = 0; i < numVertices; ++i)
+    {
+        polygon->vertices[i][0] = vertices[i].position.x;
+        polygon->vertices[i][1] = vertices[i].position.y;
+    }
+    return polygon;
+}
+
+struct Polygon* PolygonFromVectors(size_t numVectors, vec2s vectors[static numVectors])
+{
+    struct Polygon *polygon = calloc(1, sizeof *polygon + numVectors * sizeof *polygon->vertices);
+    polygon->length = numVectors;
+    for(size_t i = 0; i < numVectors; ++i)
+    {
+        polygon->vertices[i][0] = vectors[i].x;
+        polygon->vertices[i][1] = vectors[i].y;
+    }
     return polygon;
 }
 

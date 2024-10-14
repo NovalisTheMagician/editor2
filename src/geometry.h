@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "map.h"
+#include "triangulate.h"
 
 #define PI 3.14159265359
 #define PI2 (PI * 2.0)
@@ -48,7 +49,9 @@ static inline bool LineEq(line_t a, line_t b)
 }
 
 bool PointInSector(MapSector *sector, vec2s point);
-bool PointInPolygon(size_t numVertices, vec2s vertices[static numVertices], vec2s point);
+bool PointInSector2(MapSector *sector, vec2s point);
+bool PointInPolygonVector(size_t numVertices, vec2s vertices[static numVertices], vec2s point);
+bool PointInPolygon(struct Polygon *polygon, vec2s point);
 float MinDistToLine(vec2s a, vec2s b, vec2s point);
 
 bool LineIsCollinear(line_t a, line_t b);

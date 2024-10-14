@@ -142,6 +142,23 @@ void RemoveSector(Map *map, MapSector *sector)
             if(line->backSector == sector) line->backSector = NULL;
         }
     }
+
+    for(size_t i = 0; i < sector->numContains; ++i)
+        sector->contains[i]->containedBy = NULL;
+
+    if(sector->containedBy != NULL)
+    {
+        for(size_t i = 0; i < sector->containedBy->numContains; ++i)
+        {
+            if(sector->containedBy->contains[i] == sector)
+            {
+                memmove(sector->containedBy->contains + i, sector->containedBy->contains + i + 1, (sector->containedBy->numContains - i - 1) * sizeof *sector->containedBy->contains);
+                sector->containedBy->numContains--;
+                sector->containedBy->contains = realloc(sector->containedBy->contains, sector->containedBy->numContains * sizeof *sector->containedBy->contains);
+            }
+        }
+    }
+
     FreeMapSector(sector);
 
     map->numSectors--;

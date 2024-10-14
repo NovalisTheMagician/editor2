@@ -254,22 +254,68 @@ MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLin
 
     struct Polygon *polygon = PolygonFromMapLines(numLines, lines, lineFronts);
 
+    size_t numInnerPolygons = 0, sizeInnerPolygons = 0;
+    struct Polygon **innerPolygons = NULL;
+
+    for(MapSector *msector = map->headSector; msector; msector = msector->next)
+    {
+        if(msector == sector) continue;
+        if(msector->containedBy != NULL) continue;
+
+        bool allPointsInSector = true;
+        for(size_t i = 0; i < msector->numOuterLines; ++i)
+        {
+            allPointsInSector &= PointInPolygon(polygon, msector->edData.vertices[i]);
+        }
+
+        if(allPointsInSector)
+        {
+            sector->numContains++;
+            sector->contains = realloc(sector->contains, sector->numContains * sizeof *sector->contains);
+            sector->contains[sector->numContains-1] = msector;
+            msector->containedBy = sector;
+
+            if(sizeInnerPolygons == 0)
+            {
+                sizeInnerPolygons = 32;
+                innerPolygons = calloc(sizeInnerPolygons, sizeof *innerPolygons);
+            }
+
+            innerPolygons[numInnerPolygons++] = PolygonFromVectors(msector->numOuterLines, msector->edData.vertices);
+            if(numInnerPolygons >= sizeInnerPolygons)
+            {
+                sizeInnerPolygons *= 2;
+                innerPolygons = realloc(innerPolygons, sizeInnerPolygons * sizeof *innerPolygons);
+            }
+        }
+    }
+
     TriangleData *td = &sector->edData;
 
-    td->numVertices = polygon->length;
-    td->vertices = calloc(td->numVertices, sizeof *td->vertices);
-    memcpy(td->vertices, polygon->vertices, td->numVertices * sizeof *polygon->vertices);
-
     unsigned int *indices = NULL;
-    size_t numIndices = triangulate(polygon, NULL, 0, &indices);
+    size_t numIndices = triangulate(polygon, innerPolygons, numInnerPolygons, &indices);
 
-    sector->edData.indices = malloc(numIndices * sizeof *indices);
-    memcpy(sector->edData.indices, indices, numIndices * sizeof *indices);
-    sector->edData.numIndices = numIndices;
+    td->indices = malloc(numIndices * sizeof *indices);
+    memcpy(td->indices, indices, numIndices * sizeof *indices);
+    td->numIndices = numIndices;
     free(indices);
-    free(polygon);
 
-    td->texcoords = calloc(td->numVertices, sizeof *td->texcoords);
+    td->numVertices = polygon->length;
+    for(size_t i = 0; i < numInnerPolygons; ++i)
+        td->numVertices += innerPolygons[i]->length;
+    td->vertices = calloc(td->numVertices, sizeof *td->vertices);
+    memcpy(td->vertices, polygon->vertices, polygon->length * sizeof *polygon->vertices);
+    size_t offset = polygon->length;
+    for(size_t i = 0; i < numInnerPolygons; ++i)
+    {
+        memcpy(td->vertices + offset, innerPolygons[i]->vertices, innerPolygons[i]->length * sizeof *(innerPolygons[i]->vertices));
+        offset += innerPolygons[i]->length;
+    }
+
+    free(polygon);
+    for(size_t i = 0; i < numInnerPolygons; ++i)
+        free(innerPolygons[i]);
+    free(innerPolygons);
 
     sector->bb = BoundingBoxFromVertices(td->numVertices, td->vertices);
 
@@ -291,30 +337,9 @@ MapSector* EditGetSector(Map *map, vec2s pos)
 {
     for(MapSector *sector = map->headSector; sector; sector = sector->next)
     {
-        struct
-        {
-            MapSector *s[1000];
-            int top;
-        } stack = { .s = { sector }, .top = 0 };
-
-        while(stack.top >= 0)
-        {
-            MapSector *sectorToCheck = stack.s[stack.top--];
-            if(sectorToCheck->numContains > 0)
-            {
-                stack.s[++stack.top] = sectorToCheck;
-                for(size_t i = 0; i < sectorToCheck->numContains; ++i)
-                {
-                    stack.s[++stack.top] = sectorToCheck->contains[i];
-                }
-                continue;
-            }
-
-            if(PointInSector(sectorToCheck, pos))
-                return sectorToCheck;
-        }
+        bool isIn = PointInSector2(sector, pos);
+        if(isIn) return sector;
     }
-
     return NULL;
 }
 
