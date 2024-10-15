@@ -91,30 +91,39 @@ static void AddEditVertex(EdState *state, vec2s v)
 
 void EditorWindow(bool *p_open, EdState *state)
 {
+    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_C, ImGuiInputFlags_RouteGlobal))
+        EditCopy(state);
+    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_V, ImGuiInputFlags_RouteGlobal))
+        EditPaste(state);
+    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_X, ImGuiInputFlags_RouteGlobal))
+        EditCut(state);
+    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_Z, ImGuiInputFlags_RouteGlobal))
+        LogDebug("Undo!");
+    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_Y, ImGuiInputFlags_RouteGlobal))
+        LogDebug("Redo!");
+
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
     if(state->map.dirty)
         flags |= ImGuiWindowFlags_UnsavedDocument;
 
+    if(igShortcut_Nil(ImGuiKey_V, ImGuiInputFlags_RouteGlobal))
+    {
+        ChangeMode(state, MODE_VERTEX);
+        igSetWindowFocus_Str("Editor");
+    }
+    if(igShortcut_Nil(ImGuiKey_L, ImGuiInputFlags_RouteGlobal))
+    {
+        ChangeMode(state, MODE_LINE);
+        igSetWindowFocus_Str("Editor");
+    }
+    if(igShortcut_Nil(ImGuiKey_S, ImGuiInputFlags_RouteGlobal))
+    {
+        ChangeMode(state, MODE_SECTOR);
+        igSetWindowFocus_Str("Editor");
+    }
+
     if(igBegin("Editor", p_open, flags))
     {
-        if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_C, 0))
-            EditCopy(state);
-        if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_V, 0))
-            EditPaste(state);
-        if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_X, 0))
-            EditCut(state);
-        if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_Z, 0))
-            LogDebug("Undo!");
-        if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_Y, 0))
-            LogDebug("Redo!");
-
-        if(igShortcut_Nil(ImGuiKey_V, 0))
-            ChangeMode(state, MODE_VERTEX);
-        if(igShortcut_Nil(ImGuiKey_L, 0))
-            ChangeMode(state, MODE_LINE);
-        if(igShortcut_Nil(ImGuiKey_S, 0))
-            ChangeMode(state, MODE_SECTOR);
-
         igPushItemWidth(80);
         static const char *modeNames[] = { "Vertex", "Line", "Sector", "Things" };
         static const size_t numModes = COUNT_OF(modeNames);
