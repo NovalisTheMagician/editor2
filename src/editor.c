@@ -416,6 +416,7 @@ void RenderEditorView(EdState *state)
         GLenum ret;
         while((ret = glClientWaitSync(state->gl.editorBufferFence[state->gl.currentBuffer], 0, 100)) == GL_TIMEOUT_EXPIRED);
         if(ret == GL_WAIT_FAILED) LogError("Fence wait failed\n");
+        glDeleteSync(state->gl.editorBufferFence[state->gl.currentBuffer]);
     }
 
     glBindVertexArray(state->gl.editorVertexFormat);
@@ -450,7 +451,7 @@ void RenderEditorView(EdState *state)
     // handle real texture here
     glDrawElementsBaseVertex(GL_TRIANGLES, sectorIndexLength, GL_UNSIGNED_INT, 0, sectorStart);
 
-    glLineWidth(1.5f);
+    glLineWidth(2);
     glUseProgram(state->gl.editorLine.program);
     glDrawArrays(GL_LINES, lineStart, lineLength);
 
