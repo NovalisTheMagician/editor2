@@ -164,6 +164,10 @@ void DestroyEditor(EdState *state)
     GLuint formats[] = { state->gl.editorBackProg.backVertexFormat, state->gl.editorVertexFormat };
     glDeleteVertexArrays(COUNT_OF(formats), formats);
 
+    for(size_t i = 0; i < NUM_BUFFERS; ++i)
+        if(state->gl.editorBufferFence[i] != NULL)
+            glDeleteSync(state->gl.editorBufferFence[i]);
+
     glDeleteProgram(state->gl.editorBackProg.hProgram);
     glDeleteProgram(state->gl.editorBackProg.vProgram);
     glDeleteProgram(state->gl.editorVertex.program);
@@ -416,7 +420,6 @@ void RenderEditorView(EdState *state)
         GLenum ret;
         while((ret = glClientWaitSync(state->gl.editorBufferFence[state->gl.currentBuffer], 0, 100)) == GL_TIMEOUT_EXPIRED);
         if(ret == GL_WAIT_FAILED) LogError("Fence wait failed\n");
-        glDeleteSync(state->gl.editorBufferFence[state->gl.currentBuffer]);
     }
 
     glBindVertexArray(state->gl.editorVertexFormat);
@@ -468,6 +471,7 @@ void RenderEditorView(EdState *state)
 
     glLineWidth(1);
 
+    if(state->gl.editorBufferFence[state->gl.currentBuffer] != NULL) glDeleteSync(state->gl.editorBufferFence[state->gl.currentBuffer]);
     state->gl.editorBufferFence[state->gl.currentBuffer] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
     state->gl.currentBuffer = (state->gl.currentBuffer + 1) % NUM_BUFFERS;
 }

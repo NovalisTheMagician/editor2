@@ -275,6 +275,13 @@ MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLin
             sector->contains[sector->numContains-1] = msector;
             msector->containedBy = sector;
 
+            for(size_t i = 0; i < msector->numOuterLines; ++i)
+            {
+                MapLine *line = msector->outerLines[i];
+                if(line->frontSector == NULL) line->frontSector = sector;
+                if(line->backSector == NULL) line->backSector = sector;
+            }
+
             if(sizeInnerPolygons == 0)
             {
                 sizeInnerPolygons = 32;
