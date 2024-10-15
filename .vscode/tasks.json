@@ -21,6 +21,16 @@
 			],
 			"group": "build"
 		},
+        {
+			"type": "shell",
+			"label": "build release",
+			"command": "make -B CONFIG=release",
+			"args": [],
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": "build"
+		},
 		{
 			"type": "shell",
 			"label": "clean",
