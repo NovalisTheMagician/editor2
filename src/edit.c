@@ -78,13 +78,13 @@ void EditRemoveVertices(Map *map, size_t num, MapVertex *vertices[static num])
     for(size_t i = 0; i < num; ++i)
     {
         MapVertex *vertex = vertices[i];
-        for(size_t i = 0; i < vertex->numAttachedLines; ++i)
+        for(size_t j = 0; j < vertex->numAttachedLines; ++j)
         {
             bool lineIsInSet = false;
-            MapLine *attLine = vertex->attachedLines[i];
-            for(size_t j = 0; j < numPotentialLines; ++j)
+            MapLine *attLine = vertex->attachedLines[j];
+            for(size_t k = 0; k < numPotentialLines; ++k)
             {
-                lineIsInSet |= potentialLines[j] == attLine;
+                lineIsInSet |= potentialLines[k] == attLine;
                 if(lineIsInSet) break;
             }
 

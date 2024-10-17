@@ -8,58 +8,90 @@
 #include "remove.h"
 #include "util.h"
 
+typedef struct Path
+{
+    MapLine *line;
+    MapVertex *nextVertex;
+    float relativeAngle;
+} Path;
+
+typedef struct PathStack
+{
+    Path paths[100];
+    size_t numPaths;
+    MapVertex *vertex;
+} PathStack;
+
+static int angleSort(const void *a, const void *b)
+{
+    const Path *aPath = a;
+    const Path *bPath = b;
+    if(aPath->relativeAngle > bPath->relativeAngle) return -1;
+    if(aPath->relativeAngle < bPath->relativeAngle) return 1;
+    return 0;
+}
+
+static void insertPath(PathStack *pathStack, MapLine *line, MapVertex *nextVertex, MapVertex *vertex)
+{
+    pathStack->vertex = nextVertex;
+    for(size_t i = 0; i < nextVertex->numAttachedLines; ++i)
+    {
+        MapLine *attLine = nextVertex->attachedLines[i];
+        if(attLine == line) continue;
+
+        MapVertex *otherVertex = nextVertex == attLine->a ? attLine->b : attLine->a;
+        float angle = PI2 - AngleOfLines((line_t){ .a = nextVertex->pos, .b = vertex->pos }, (line_t){ .a = nextVertex->pos, .b = otherVertex->pos });
+
+        Path *path = &pathStack->paths[pathStack->numPaths++];
+        path->line = attLine;
+        path->relativeAngle = angle;
+        path->nextVertex = attLine->a == nextVertex ? attLine->b : attLine->a;
+    }
+    qsort(pathStack->paths, pathStack->numPaths, sizeof *pathStack->paths, angleSort);
+}
+
 MapSector* MakeMapSector(Map *map, MapLine *startLine, bool front, SectorData data)
 {
     // front means natural direction
-    MapLine *sectorLines[1024] = {0};
-    bool lineFront[1024] = {0};
-    size_t numLines = 0;
+    MapLine *sectorLines[1024] = { startLine };
+    bool lineFront[1024] = { front };
+    size_t numLines = 1;
 
-    MapLine *mapLine = startLine;
-    MapVertex *mapVertexForNext = front ? mapLine->b : mapLine->a, *mapVertex = front ? mapLine->a : mapLine->b;
-    while(true)
+    MapVertex *mapVertexForNext = front ? startLine->b : startLine->a, *mapVertex = front ? startLine->a : startLine->b;
+    PathStack *pathStack = calloc(1024, sizeof *pathStack);
+    size_t pathTop = 0;
+    insertPath(&pathStack[pathTop++], startLine, mapVertexForNext, mapVertex);
+
+    while(pathTop > 0)
     {
-        LogDebug("Iteration");
-        // add current line to list
-        sectorLines[numLines] = mapLine;
-        lineFront[numLines++] = IsLineFront(mapVertex, mapLine);
-        LogDebug("Is line front %d", lineFront[numLines-1]);
+        PathStack *pathElement = &pathStack[pathTop-1];
 
-        // get the next line with the smallest angle
-        MapLine *nextMapLine = NULL;
-        float smallestAngle = FLT_MAX;
-        for(size_t i = 0; i < mapVertexForNext->numAttachedLines; ++i)
+        // dead-end, go back
+        if(pathElement->numPaths == 0)
         {
-            MapLine *attLine = mapVertexForNext->attachedLines[i];
-            if(attLine == mapLine) continue;
-
-            MapVertex *otherVertex = mapVertexForNext == attLine->a ? attLine->b : attLine->a;
-            float angle = PI2 - AngleOfLines((line_t){ .a = mapVertexForNext->pos, .b = mapVertex->pos }, (line_t){ .a = mapVertexForNext->pos, .b = otherVertex->pos });
-            if(angle < smallestAngle)
-            {
-                smallestAngle = angle;
-                nextMapLine = attLine;
-            }
-            LogDebug("Line: %d, Angle: %f", attLine->idx, rad2deg(angle));
+            pathTop--;
+            numLines--;
+            continue;
         }
 
-        // line ends here
-        if(nextMapLine == NULL)
-        {
-            LogDebug("Line ends, cant create sector!");
-            return NULL;
-        }
+        Path path = pathElement->paths[--pathElement->numPaths];
+        MapLine *mapLine = path.line;
+        MapVertex *mapVertex = pathElement->vertex;
 
-        // we found a loop
-        if(nextMapLine == startLine)
-        {
+        // found a loop
+        if(mapLine == startLine)
             break;
-        }
 
-        mapLine = nextMapLine;
-        mapVertex = mapVertexForNext;
-        mapVertexForNext = mapLine->a == mapVertex ? mapLine->b : mapLine->a;
+        // add current line to list
+        size_t idx = numLines++;
+        sectorLines[idx] = mapLine;
+        lineFront[idx] = IsLineFront(mapVertex, mapLine);
+
+        PathStack *stackPush = &pathStack[pathTop++];
+        insertPath(stackPush, mapLine, path.nextVertex, pathElement->vertex);
     }
+
+    free(pathStack);
 
     LogDebug("Found a loop with %d lines", numLines);
     return EditAddSector(map, numLines, sectorLines, lineFront, data);

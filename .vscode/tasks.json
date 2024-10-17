@@ -24,7 +24,7 @@
         {
 			"type": "shell",
 			"label": "build release",
-			"command": "make -B CONFIG=release",
+			"command": "make -B -j10 CONFIG=release",
 			"args": [],
 			"problemMatcher": [
 				"$gcc"
