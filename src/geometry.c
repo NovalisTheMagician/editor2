@@ -6,8 +6,6 @@
 
 #include "utils.h"
 
-#include "vertex_types.h"
-
 bool PointInSector(MapSector *sector, vec2s point)
 {
     return PointInPolygonVector(sector->numOuterLines, sector->edData.vertices, point);
@@ -34,13 +32,13 @@ bool PointInPolygonVector(size_t numVertices, vec2s vertices[static numVertices]
         vec2s A = vertices[i];
         vec2s B = vertices[(i+1) % numVertices];
 
-        if ((point.x == A.x && point.y == A.y) || (point.x == B.x && point.y == B.y)) break;
-        if (A.y == B.y && point.y == A.y && between(point.x, A.x, B.x)) break;
+        if ((eqv(point.x, A.x) && eqv(point.y, A.y)) || (eqv(point.x, B.x) && eqv(point.y, B.y))) break;
+        if (eqv(A.y, B.y) && eqv(point.y, A.y) && between(point.x, A.x, B.x)) break;
 
         if (between(point.y, A.y, B.y))
         { // if P inside the vertical range
             // filter out "ray pass vertex" problem by treating the line a little lower
-            if ((point.y == A.y && B.y >= A.y) || (point.y == B.y && A.y >= B.y)) continue;
+            if ((eqv(point.y, A.y) && B.y >= A.y) || (eqv(point.y, B.y) && A.y >= B.y)) continue;
             // calc cross product `PA X PB`, P lays on left side of AB if c > 0
             float c = (A.x - point.x) * (B.y - point.y) - (B.x - point.x) * (A.y - point.y);
             if (c == 0) break;
@@ -53,7 +51,7 @@ bool PointInPolygonVector(size_t numVertices, vec2s vertices[static numVertices]
 float MinDistToLine(vec2s a, vec2s b, vec2s point)
 {
     float l2 = glms_vec2_distance2(a, b);
-    if(l2 == 0) return glms_vec2_distance2(point, a);
+    if(eqv(l2, 0)) return glms_vec2_distance2(point, a);
     float t = ((point.x - a.x) * (b.x - a.x) + (point.y - a.y) * (b.y - a.y)) / l2;
     t = max(0, min(1, t));
     vec2s tmp = { .x = a.x + t * (b.x - a.x), .y = a.y + t * (b.y - a.y) };
