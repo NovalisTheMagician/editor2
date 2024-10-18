@@ -13,7 +13,7 @@ LIB_DIRS :=
 CC := gcc
 C++ := g++
 
-CCFLAGS := -Wall -std=gnu23 -Wstrict-prototypes
+CCFLAGS := -Wall -Wextra -std=gnu23 -Wstrict-prototypes
 
 LD := $(CC)
 LDFLAGS := -pthread

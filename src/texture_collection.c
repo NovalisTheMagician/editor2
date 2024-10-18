@@ -52,7 +52,7 @@ static size_t Partition(Texture **arr, size_t lo, size_t hi)
 
 static void Quicksort(Texture **arr, size_t lo, size_t hi)
 {
-    if(lo >= 0 && hi >= 0 && lo < hi)
+    if(lo < hi)
     {
         size_t p = Partition(arr, lo, hi);
         Quicksort(arr, lo, p);
