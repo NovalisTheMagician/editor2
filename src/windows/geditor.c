@@ -4,6 +4,7 @@
 #include <string.h>
 #include "cimgui.h"
 
+#include "logging.h"
 #include "utils.h"
 #include "../edit.h"
 
@@ -15,10 +16,14 @@ static void SubmitEditData(EdState *state, bool isLoop)
 {
     LogDebug("Edit Done with %d vertices", state->data.editVertexBufferSize);
 
+    bool res;
     if(isLoop)
-        EditApplySector(state, state->data.editVertexBufferSize, state->data.editVertexBuffer);
+        res = EditApplySector(state, state->data.editVertexBufferSize, state->data.editVertexBuffer);
     else
-        EditApplyLines(state, state->data.editVertexBufferSize, state->data.editVertexBuffer);
+        res = EditApplyLines(state, state->data.editVertexBufferSize, state->data.editVertexBuffer);
+
+    if(!res)
+        LogWarning("Failed to insert all lines, too many intersections");
 
     state->data.editVertexBufferSize = 0;
 }

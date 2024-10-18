@@ -1,3 +1,4 @@
+#include "logging.h"
 #include "scripts.h"
 
 #include "cglm/types-struct.h"
@@ -160,10 +161,14 @@ static int insertlines_(lua_State *L)
         lua_pop(L, 1);
     }
 
+    bool res;
     if(isLoop)
-        EditApplySector(state, numVertices, vertices);
+        res = EditApplySector(state, numVertices, vertices);
     else
-        EditApplyLines(state, numVertices, vertices);
+        res = EditApplyLines(state, numVertices, vertices);
+
+    if(!res)
+        LogWarning("Failed too insert all lines, queue full. Added too many intersecting lines?");
 
     return 0;
 }

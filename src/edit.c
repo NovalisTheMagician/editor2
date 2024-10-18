@@ -350,16 +350,14 @@ MapSector* EditGetSector(Map *map, vec2s pos)
     return NULL;
 }
 
-MapLine* EditApplyLines(EdState *state, size_t num, vec2s points[static num])
+bool EditApplyLines(EdState *state, size_t num, vec2s points[static num])
 {
     Map *map = &state->map;
-    InsertLinesIntoMap(map, num, points, false);
-    return NULL;
+    return InsertLinesIntoMap(map, num, points, false);
 }
 
-MapSector* EditApplySector(EdState *state, size_t num, vec2s points[static num])
+bool EditApplySector(EdState *state, size_t num, vec2s points[static num])
 {
     Map *map = &state->map;
-    InsertLinesIntoMap(map, num, points, true);
-    return NULL;
+    return InsertLinesIntoMap(map, num, points, true);
 }

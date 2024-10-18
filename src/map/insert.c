@@ -5,7 +5,6 @@
 #include "../edit.h"
 #include "../geometry.h"
 #include "map.h"
-#include "map/create.h"
 #include "remove.h"
 #include "util.h"
 
@@ -112,12 +111,13 @@ typedef struct LineQueue
     size_t head, tail, numLines;
 } LineQueue;
 
-static inline void Enqueue(LineQueue *queue, line_t line, bool potentialStart)
+static inline bool Enqueue(LineQueue *queue, line_t line, bool potentialStart)
 {
     queue->elements[queue->tail] = (QueueElement){ .line = line, .potentialStart = potentialStart };
     queue->tail = (queue->tail + 1) % QUEUE_SIZE;
     queue->numLines++;
-    assert(queue->numLines < QUEUE_SIZE);
+    //assert(queue->numLines < QUEUE_SIZE);
+    return queue->numLines < QUEUE_SIZE;
 }
 
 static inline QueueElement Dequeue(LineQueue *queue)
@@ -266,7 +266,7 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
         vec2s a = vertices[i];
         vec2s b = vertices[(i+1) % numVerts];
 
-        Enqueue(&queue, (line_t){ .a = a, .b = b }, i == 0);
+        if(!Enqueue(&queue, (line_t){ .a = a, .b = b }, i == 0)) return false;
     }
 
     while(queue.numLines > 0)
@@ -295,8 +295,8 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
                 {
                     MapVertex *splitVertex = EditAddVertex(map, result.intersection.splitPoint);
                     DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
-                    Enqueue(&queue, result.intersection.splitLine1, true);
-                    Enqueue(&queue, result.intersection.splitLine2, true);
+                    if(!Enqueue(&queue, result.intersection.splitLine1, true)) return false;
+                    if(!Enqueue(&queue, result.intersection.splitLine2, true)) return false;
                     mapLine = NULL;
                 }
                 break;
@@ -304,14 +304,14 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
                 {
                     MapVertex *splitVertex = EditAddVertex(map, result.touch.splitPoint);
                     DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
-                    Enqueue(&queue, line, true);
+                    if(!Enqueue(&queue, line, true)) return false;
                     mapLine = NULL;
                 }
                 break;
             case TOUCH_REVERSE:
                 {
-                    Enqueue(&queue, (line_t){ .a = line.a, .b = result.touch.splitPoint }, true);
-                    Enqueue(&queue, (line_t){ .a = result.touch.splitPoint, .b = line.b }, true);
+                    if(!Enqueue(&queue, (line_t){ .a = line.a, .b = result.touch.splitPoint }, true)) return false;
+                    if(!Enqueue(&queue, (line_t){ .a = result.touch.splitPoint, .b = line.b }, true)) return false;
                     mapLine = NULL;
                 }
                 break;
@@ -319,7 +319,7 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
                 {
                     MapVertex *splitVertex = EditAddVertex(map, result.overlap.splitPoint);
                     DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
-                    Enqueue(&queue, result.overlap.line, true);
+                    if(!Enqueue(&queue, result.overlap.line, true)) return false;
                     mapLine = NULL;
                 }
                 break;
@@ -332,7 +332,7 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
                 break;
             case SIMPLE_OVERLAP_OUTER:
                 {
-                    Enqueue(&queue, result.overlap.line, false);
+                    if(!Enqueue(&queue, result.overlap.line, false)) return false;
                     mapLine = NULL;
                 }
                 break;
@@ -346,8 +346,8 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
                 break;
             case OUTER_CONTAINMENT:
                 {
-                    Enqueue(&queue, result.outerContainment.line1, true);
-                    Enqueue(&queue, result.outerContainment.line2, true);
+                    if(!Enqueue(&queue, result.outerContainment.line1, true)) return false;
+                    if(!Enqueue(&queue, result.outerContainment.line2, true)) return false;
                     mapLine = NULL;
                 }
                 break;

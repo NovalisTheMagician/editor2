@@ -26,5 +26,5 @@ MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLin
 void EditRemoveSectors(Map *map, size_t num, MapSector *sectors[static num]);
 MapSector* EditGetSector(Map *map, vec2s pos);
 
-MapLine* EditApplyLines(EdState *state, size_t num, vec2s points[static num]);
-MapSector* EditApplySector(EdState *state, size_t num, vec2s points[static num]);
+bool EditApplyLines(EdState *state, size_t num, vec2s points[static num]);
+bool EditApplySector(EdState *state, size_t num, vec2s points[static num]);

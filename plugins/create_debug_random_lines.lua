@@ -1,5 +1,5 @@
 local function execfunc()
-    local range = 2048
+    local range = 5000
     local vertices = {}
     for i=1,100 do
         local x = math.random(-range, range)
