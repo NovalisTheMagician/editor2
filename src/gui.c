@@ -587,12 +587,14 @@ static void HandleShortcuts(EdState *state)
 static void DoNewMap(EdState *state)
 {
     state->data.editVertexBufferSize = 0;
+    state->data.numSelectedElements = 0;
     NewMap(&state->map);
 }
 
 static void DoLoadMap(EdState *state)
 {
     state->data.editVertexBufferSize = 0;
+    state->data.numSelectedElements = 0;
     OpenMapDialog(&state->map);
 }
 
