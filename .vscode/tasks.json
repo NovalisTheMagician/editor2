@@ -6,9 +6,19 @@
 			"label": "build",
 			"command": "make",
 			"args": [],
-			"problemMatcher": [
-				"$gcc"
-			],
+			"problemMatcher": [{
+                "owner": "c",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "source": "gcc",
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            }],
 			"group": "build"
 		},
 		{
@@ -16,9 +26,19 @@
 			"label": "rebuild",
 			"command": "make -B",
 			"args": [],
-			"problemMatcher": [
-				"$gcc"
-			],
+			"problemMatcher": [{
+                "owner": "c",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "source": "gcc",
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            }],
 			"group": "build"
 		},
         {
@@ -26,9 +46,19 @@
 			"label": "build release",
 			"command": "make -B -j10 CONFIG=release",
 			"args": [],
-			"problemMatcher": [
-				"$gcc"
-			],
+			"problemMatcher": [{
+                "owner": "c",
+                "fileLocation": ["relative", "${workspaceFolder}"],
+                "source": "gcc",
+                "pattern": {
+                    "regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error):\\s+(.*)$",
+                    "file": 1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5
+                }
+            }],
 			"group": "build"
 		},
 		{
@@ -36,9 +66,6 @@
 			"label": "clean",
 			"command": "make clean",
 			"args": [],
-			"problemMatcher": [
-				"$gcc"
-			],
 			"group": "build"
 		}
 	]
