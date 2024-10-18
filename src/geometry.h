@@ -51,7 +51,6 @@ typedef struct classify_res_t
         {
             vec2s splitPoint;
             line_t splitLine1, splitLine2;
-            bool hasLine1, hasLine2, hasSplit;
         } intersection;
         struct
         {

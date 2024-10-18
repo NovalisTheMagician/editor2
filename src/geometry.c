@@ -277,37 +277,6 @@ classify_res_t ClassifyLines(line_t a, line_t b)
             return (classify_res_t){ .type = NO_RELATION };
     }
 
-    float aOrient = (a.b.x - a.a.x) * (a.b.y + a.a.y);
-    float bOrient = (b.b.x - b.a.x) * (b.b.y + b.a.y);
-    line_t lineCorrected = b;
-    if(signbit(aOrient) != signbit(bOrient))
-    {
-        lineCorrected.a = b.b;
-        lineCorrected.b = b.a;
-    }
-
-    intersection_res_t intersection = { 0 };
-    if(LineIntersection(a, b, &intersection))
-    {
-        classify_res_t res = { .type = INTERSECTION };
-        if(!glms_vec2_eqv_eps(a.a, intersection.p0) && !glms_vec2_eqv_eps(a.b, intersection.p0))
-        {
-            res.intersection.hasSplit = true;
-            res.intersection.splitPoint = intersection.p0;
-        }
-        if(!glms_vec2_eqv_eps(b.a, intersection.p0))
-        {
-            res.intersection.hasLine1 = true;
-            res.intersection.splitLine1 = (line_t){ .a = b.a, .b = intersection.p0 };
-        }
-        if(!glms_vec2_eqv_eps(intersection.p0, b.b))
-        {
-            res.intersection.hasLine2 = true;
-            res.intersection.splitLine2 = (line_t){ .a = intersection.p0, .b = b.b };
-        }
-        return res;
-    }
-
     if(isBetween(b.a, a))
     {
         vec2s splitPoint = glms_vec2_add(a.a, glms_vec2_scale(glms_vec2_sub(a.b, a.a), (glms_vec2_distance(a.a, b.a) / glms_vec2_distance(a.a, a.b))));
@@ -332,6 +301,22 @@ classify_res_t ClassifyLines(line_t a, line_t b)
         return (classify_res_t){ .type = TOUCH_REVERSE, .touch = { .splitPoint = splitPoint } };
     }
 
+    intersection_res_t intersection = { 0 };
+    if(LineIntersection(a, b, &intersection))
+    {
+        line_t line1 = { .a = b.a, .b = intersection.p0 };
+        line_t line2 = { .a = intersection.p0, .b = b.b };
+        return (classify_res_t){ .type = INTERSECTION, .intersection = { .splitPoint = intersection.p0, .splitLine1 = line1, .splitLine2 = line2 } };
+    }
+
+    float aOrient = (a.b.x - a.a.x) * (a.b.y + a.a.y);
+    float bOrient = (b.b.x - b.a.x) * (b.b.y + b.a.y);
+    line_t lineCorrected = b;
+    if(signbit(aOrient) != signbit(bOrient))
+    {
+        lineCorrected.a = b.b;
+        lineCorrected.b = b.a;
+    }
     if(LineOverlap(a, lineCorrected, &intersection))
     {
         if(eqv(intersection.t0, 0) && eqv(intersection.t1, 1))

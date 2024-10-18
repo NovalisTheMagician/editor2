@@ -114,7 +114,7 @@ typedef struct LineQueue
 
 static inline void Enqueue(LineQueue *queue, line_t line, bool potentialStart)
 {
-    queue->elements[queue->tail] = (typeof(queue->elements[queue->tail])){ .line = line, .potentialStart = potentialStart };
+    queue->elements[queue->tail] = (QueueElement){ .line = line, .potentialStart = potentialStart };
     queue->tail = (queue->tail + 1) % QUEUE_SIZE;
     queue->numLines++;
     assert(queue->numLines < QUEUE_SIZE);
@@ -293,13 +293,10 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
                 break;
             case INTERSECTION:
                 {
-                    if(result.intersection.hasSplit)
-                    {
-                        MapVertex *splitVertex = EditAddVertex(map, result.intersection.splitPoint);
-                        DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
-                    }
-                    if(result.intersection.hasLine1) Enqueue(&queue, result.intersection.splitLine1, true);
-                    if(result.intersection.hasLine2) Enqueue(&queue, result.intersection.splitLine2, true);
+                    MapVertex *splitVertex = EditAddVertex(map, result.intersection.splitPoint);
+                    DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
+                    Enqueue(&queue, result.intersection.splitLine1, true);
+                    Enqueue(&queue, result.intersection.splitLine2, true);
                     mapLine = NULL;
                 }
                 break;
