@@ -74,16 +74,8 @@ void tc_destroy(TextureCollection *tc)
     free(tc->activeSet);
 }
 
-bool tc_load(TextureCollection *tc, pstring name, pstring path, time_t mtime)
+static GLuint createTexture(int width, int height, const uint8_t *pixels)
 {
-    Texture *existing = tc_get(tc, name);
-
-    if(existing && existing->modTime >= mtime) return true;
-
-    int width, height, comp;
-    uint8_t *pixels = stbi_load(path, &width, &height, &comp, 4);
-    if(!pixels) return false;
-
     size_t numMipLevels = log2(max(width, height)) + 1;
 
     GLuint texId;
@@ -95,6 +87,21 @@ bool tc_load(TextureCollection *tc, pstring name, pstring path, time_t mtime)
     glTextureParameteri(texId, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTextureParameteri(texId, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTextureParameteri(texId, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+    return texId;
+}
+
+bool tc_load(TextureCollection *tc, pstring name, pstring path, time_t mtime)
+{
+    Texture *existing = tc_get(tc, name);
+
+    if(existing && existing->modTime >= mtime) return true;
+
+    int width, height, comp;
+    uint8_t *pixels = stbi_load(path, &width, &height, &comp, 4);
+    if(!pixels) return false;
+
+    GLuint texId = createTexture(width, height, pixels);
     GLuint64 handle = glGetTextureHandleARB(texId);
 
     stbi_image_free(pixels);
@@ -152,17 +159,7 @@ bool tc_load_mem(TextureCollection *tc, pstring name, uint8_t *data, size_t data
     uint8_t *pixels = stbi_load_from_memory(data, dataSize, &width, &height, &comp, 4);
     if(!pixels) return false;
 
-    size_t numMipLevels = log2(max(width, height)) + 1;
-
-    GLuint texId;
-    glCreateTextures(GL_TEXTURE_2D, 1, &texId);
-    glTextureStorage2D(texId, numMipLevels, GL_RGBA8, width, height);
-    glTextureSubImage2D(texId, 0, 0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-    glGenerateTextureMipmap(texId);
-    glTextureParameteri(texId, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-    glTextureParameteri(texId, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTextureParameteri(texId, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTextureParameteri(texId, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    GLuint texId = createTexture(width, height, pixels);
     GLuint64 handle = glGetTextureHandleARB(texId);
 
     stbi_image_free(pixels);

@@ -18,7 +18,7 @@ static FILE *logFile;
 static size_t getNextIndex(LogBuffer *logBuffer)
 {
     size_t idx = 0;
-    if(logBuffer->length < logBuffer->capacity)
+    if(logBuffer->length < (size_t)logBuffer->capacity)
     {
         idx = logBuffer->length;
         logBuffer->length++;
@@ -60,7 +60,7 @@ void LogInit(LogBuffer *logBuffer)
 
 void LogDestroy(LogBuffer *logBuffer)
 {
-    for(size_t i = 0; i < logBuffer->capacity; ++i)
+    for(size_t i = 0; i < (size_t)logBuffer->capacity; ++i)
         string_free(logBuffer->lines[i]);
     free(logBuffer->lines);
     free(logBuffer->severities);

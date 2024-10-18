@@ -22,7 +22,7 @@ static const char* selectionModeToString(int selectionMode)
 
 static void fillMapVertices(lua_State *L, MapVertex **vertices, size_t numVertices)
 {
-    for(int i = 0; i < numVertices; ++i)
+    for(size_t i = 0; i < numVertices; ++i)
     {
         ScriptCreateVec2(L, vertices[i]->pos.x, vertices[i]->pos.y);
         lua_rawseti(L, -2, i+1);
@@ -53,7 +53,7 @@ static void fillSideData(lua_State *L, Side side)
 
 static void fillMapLines(lua_State *L, MapLine **lines, size_t numLines)
 {
-    for(int i = 0; i < numLines; ++i)
+    for(size_t i = 0; i < numLines; ++i)
     {
         MapLine *line = lines[i];
         lua_newtable(L);
@@ -85,7 +85,7 @@ static void fillMapLines(lua_State *L, MapLine **lines, size_t numLines)
 
 static void fillMapSectors(lua_State *L, MapSector **sectors, size_t numSectors)
 {
-    for(int i = 0; i < numSectors; ++i)
+    for(size_t i = 0; i < numSectors; ++i)
     {
         lua_pushlightuserdata(L, sectors[i]);
 
@@ -121,7 +121,7 @@ static int checkselection_(lua_State *L)
     EdState *state = lua_touserdata(L, lua_upvalueindex(1));
 
     const char *mode = luaL_checkstring(L, 1);
-    int numSelected = luaL_checkinteger(L, 2);
+    size_t numSelected = (size_t)luaL_checkinteger(L, 2);
     bool exact = false;
     if(!lua_isnoneornil(L, 3))
         exact = lua_toboolean(L, 3);

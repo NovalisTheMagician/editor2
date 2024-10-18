@@ -19,7 +19,7 @@ static void luaError(lua_State *L)
     LogError("[script] %s", lua_tostring(L, -1));
 }
 
-static void luaWarningFunc(void *user, const char *msg, int tocont)
+static void luaWarningFunc(void *, const char *msg, int)
 {
     LogWarning("[Script] %s", msg);
 }

@@ -248,7 +248,7 @@ static int new_(lua_State *L)
     return 1;
 }
 
-void ScriptRegisterVecMath(lua_State *L, EdState *state)
+void ScriptRegisterVecMath(lua_State *L, EdState *)
 {
     luaL_newmetatable(L, "Vec2");
     lua_pushstring(L, "__add");

@@ -284,7 +284,7 @@ static size_t CollectTexturesFs(TextureCollection *tc, FetchLocation **locations
     return size;
 }
 
-static void BatchCallback(Batch batch, bool lastBatch, void *handle, void *user)
+static void BatchCallback(Batch batch, bool lastBatch, void *, void *user)
 {
     EdState *state = user;
     TextureCollection *tc = &state->textures;
@@ -305,7 +305,7 @@ static void BatchCallback(Batch batch, bool lastBatch, void *handle, void *user)
     }
 }
 
-static void FinalizeFtpCallback(void *handle, void *user)
+static void FinalizeFtpCallback(void *handle, void *)
 {
     FtpQuit(handle);
 }

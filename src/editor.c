@@ -14,7 +14,7 @@
 #define TEXTURE_SET_SIZE 8192
 #define WHITE_TEXTURE (TEXTURE_SET_SIZE - 1)
 
-static void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
+static void message_callback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei, GLchar const* message, void const*)
 {
     const char *src_str = ({
         char *v = "";
@@ -217,7 +217,7 @@ void ResizeEditorView(EdState *state, int width, int height)
 
 void ChangeMode(EdState *state, enum SelectionMode mode)
 {
-    if(state->data.selectionMode != mode)
+    if(state->data.selectionMode != (int)mode)
     {
         state->data.selectionMode = mode;
         state->data.numSelectedElements = 0;

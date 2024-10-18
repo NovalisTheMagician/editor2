@@ -114,7 +114,7 @@ size_t string_vformat(pstring into, const char *format, va_list args)
     int ret = vsnprintf(into, header->size, format, args);
     if(ret > 0)
     {
-        header->length = ret < header->size ? ret : header->size;
+        header->length = ret < (int)header->size ? ret : (int)header->size;
     }
     return ret;
 }
@@ -137,7 +137,7 @@ size_t string_vformat_offset(pstring into, size_t offset, const char *format, va
     int ret = vsnprintf(into + offset, header->size - offset, format, args);
     if(ret > 0)
     {
-        header->length = ret < header->size ? ret : header->size;
+        header->length = ret < (int)header->size ? ret : (int)header->size;
     }
     return ret;
 }

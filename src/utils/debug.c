@@ -1,5 +1,6 @@
 #include "debug.h"
 
+#include <stdint.h>
 #include <stdio.h>
 #include <assert.h>
 
@@ -39,14 +40,14 @@ struct Alloc
 {
     struct Alloc *next;
     AllocType type;
-    void *address;
+    uintptr_t address;
     const char *origin;
     int line;
 } *allocStart = NULL;
 
 static FILE *debugLogFile;
 
-static void insertAlloc(void *address, enum AllocType type, const char *origin, int line)
+static void insertAlloc(uintptr_t address, enum AllocType type, const char *origin, int line)
 {
     if(allocStart == NULL)
     {
@@ -68,7 +69,7 @@ static void insertAlloc(void *address, enum AllocType type, const char *origin, 
     }
 }
 
-static void removeAlloc(void *address)
+static void removeAlloc(uintptr_t address)
 {
     struct Alloc *alloc = allocStart, *prev = NULL;
     while(alloc)
@@ -101,7 +102,7 @@ static void removeAlloc(void *address)
     //assert(false && "address not found");
 }
 
-static void updateAlloc(void *oldAddress, void *newAddress, const char *origin, int line)
+static void updateAlloc(uintptr_t oldAddress, uintptr_t newAddress, const char *origin, int line)
 {
     struct Alloc *alloc = allocStart;
     while(alloc)
@@ -129,7 +130,7 @@ void debug_finish(void)
     struct Alloc *alloc = allocStart;
     while(alloc)
     {
-        fprintf(debugLogFile, "Address: %p | Type: %s | From: %s:%d\n", alloc->address, typeToString(alloc->type), alloc->origin, alloc->line);
+        fprintf(debugLogFile, "Address: %p | Type: %s | From: %s:%d\n", (void*)alloc->address, typeToString(alloc->type), alloc->origin, alloc->line);
         struct Alloc *toFree = alloc;
         alloc = alloc->next;
         free(toFree);
@@ -141,79 +142,77 @@ void debug_finish(void)
 void* debug_malloc(size_t size, const char *file, int line)
 {
     void *address = malloc(size);
-    insertAlloc(address, AC_MALLOC, file, line);
+    insertAlloc((uintptr_t)address, AC_MALLOC, file, line);
     return address;
 }
 
 void* debug_calloc(size_t num, size_t size, const char *file, int line)
 {
     void *address = calloc(num, size);
-    insertAlloc(address, AC_MALLOC, file, line);
+    insertAlloc((uintptr_t)address, AC_MALLOC, file, line);
     return address;
 }
 
 void* debug_realloc(void *ptr, size_t size, const char *file, int line)
 {
+    uintptr_t oldAddress = (uintptr_t)ptr;
     void *address = realloc(ptr, size);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wuse-after-free"
-    updateAlloc(ptr, address, file, line);
-#pragma GCC diagnostic pop
+    updateAlloc(oldAddress, (uintptr_t)address, file, line);
     return address;
 }
 
-void debug_free(void *ptr, const char *file, int line)
+void debug_free(void *ptr, const char *, int)
 {
     if(!ptr) return;
-    removeAlloc(ptr);
+    removeAlloc((uintptr_t)ptr);
     free(ptr);
 }
 
 pstring debug_pstr_alloc(size_t len, const char *file, int line)
 {
     pstring string = string_alloc(len);
-    insertAlloc(string, AC_STRING, file, line);
+    insertAlloc((uintptr_t)string, AC_STRING, file, line);
     return string;
 }
 
 pstring debug_pstr_cstr(const char *cstr, const char *file, int line)
 {
     pstring string = string_cstr(cstr);
-    insertAlloc(string, AC_STRING, file, line);
+    insertAlloc((uintptr_t)string, AC_STRING, file, line);
     return string;
 }
 
 pstring debug_pstr_cstr_alloc(const char *cstr, size_t size, const char *file, int line)
 {
     pstring string = string_cstr_alloc(cstr, size);
-    insertAlloc(string, AC_STRING, file, line);
+    insertAlloc((uintptr_t)string, AC_STRING, file, line);
     return string;
 }
 
 pstring debug_pstr_cstr_size(size_t size, const char *cstr, const char *file, int line)
 {
     pstring string = string_cstr_size(size, cstr);
-    insertAlloc(string, AC_STRING, file, line);
+    insertAlloc((uintptr_t)string, AC_STRING, file, line);
     return string;
 }
 
-pstring debug_pstr_copy(pstring string, const char *file, int line, const char *varname)
+pstring debug_pstr_copy(pstring string, const char *file, int line, const char *)
 {
     pstring copy = string_copy(string);
-    insertAlloc(copy, AC_STRING, file, line);
+    insertAlloc((uintptr_t)copy, AC_STRING, file, line);
     return copy;
 }
 
-void debug_pstr_free(pstring str, const char *file, int line, const char *varname)
+void debug_pstr_free(pstring str, const char *, int, const char *)
 {
     if(!str) return;
-    removeAlloc(str);
+    removeAlloc((uintptr_t)str);
     string_free(str);
 }
 
 pstring debug_pstr_substring(pstring str, size_t start, ssize_t end, const char *file, int line)
 {
     pstring substr = string_substring(str, start, end);
-    insertAlloc(substr, AC_STRING, file, line);
+    insertAlloc((uintptr_t)substr, AC_STRING, file, line);
     return substr;
 }
