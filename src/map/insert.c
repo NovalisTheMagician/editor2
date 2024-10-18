@@ -5,6 +5,7 @@
 #include "../edit.h"
 #include "../geometry.h"
 #include "map.h"
+#include "map/create.h"
 #include "remove.h"
 #include "util.h"
 
@@ -116,6 +117,7 @@ static inline void Enqueue(LineQueue *queue, line_t line, bool potentialStart)
     queue->elements[queue->tail] = (typeof(queue->elements[queue->tail])){ .line = line, .potentialStart = potentialStart };
     queue->tail = (queue->tail + 1) % QUEUE_SIZE;
     queue->numLines++;
+    assert(queue->numLines < QUEUE_SIZE);
 }
 
 static inline QueueElement Dequeue(LineQueue *queue)
@@ -133,7 +135,6 @@ typedef struct SectorUpdate
         MapLine *line;
         SectorData sectorData;
         bool front;
-        bool valid;
     } data[QUEUE_SIZE];
     size_t length;
 } SectorUpdate;
@@ -141,7 +142,7 @@ typedef struct SectorUpdate
 static inline void InsertSectorUpdate(SectorUpdate *sectorUpdate, MapLine *line, SectorData sectorData, bool front)
 {
     assert(sectorUpdate->length <= QUEUE_SIZE);
-    sectorUpdate->data[sectorUpdate->length++] = (typeof(sectorUpdate->data[0])){ .line = line, .sectorData = sectorData, .valid = true, .front = front };
+    sectorUpdate->data[sectorUpdate->length++] = (typeof(sectorUpdate->data[0])){ .line = line, .sectorData = sectorData, .front = front };
 }
 
 static void RemoveSectorUpdate(SectorUpdate *sectorUpdate, MapLine *line)
@@ -150,9 +151,9 @@ static void RemoveSectorUpdate(SectorUpdate *sectorUpdate, MapLine *line)
     {
         if(sectorUpdate->data[i].line == line)
         {
-            sectorUpdate->data[i].valid = false;
-            sectorUpdate->data[i].line = NULL;
             FreeSectorData(sectorUpdate->data[i].sectorData);
+            sectorUpdate->data[i] = sectorUpdate->data[sectorUpdate->length-1];
+            sectorUpdate->length--;
             break;
         }
     }
@@ -257,7 +258,7 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
     MapLine *startLines[QUEUE_SIZE];
     size_t numStartLines = 0;
 
-    SectorUpdate sectorsToUpdate = {0};
+    SectorUpdate sectorsToUpdate = { 0 };
 
     // insert the drawn lines into queue
     for(size_t i = 0; i < end; ++i)
@@ -266,8 +267,6 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
         vec2s b = vertices[(i+1) % numVerts];
 
         Enqueue(&queue, (line_t){ .a = a, .b = b }, i == 0);
-
-        assert(queue.tail != queue.head);
     }
 
     while(queue.numLines > 0)
@@ -277,134 +276,90 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
         bool potentialStart = el.potentialStart;
 
         bool canInsertLine = true;
-        bool intersect;
         MapLine *mapLine = map->headLine;
         while(mapLine != NULL)
         {
             line_t mline = { .a = mapLine->a->pos, .b = mapLine->b->pos };
-            if(LineEq(mline, line)) //line already exists, discard it
+
+            classify_res_t result = ClassifyLines(mline, line);
+            switch(result.type)
             {
-                canInsertLine = false;
+            case NO_RELATION:
+                break;
+            case SAME_LINES:
+                {
+                    mapLine = NULL;
+                }
+                break;
+            case INTERSECTION:
+                {
+                    if(result.intersection.hasSplit)
+                    {
+                        MapVertex *splitVertex = EditAddVertex(map, result.intersection.splitPoint);
+                        DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
+                    }
+                    if(result.intersection.hasLine1) Enqueue(&queue, result.intersection.splitLine1, true);
+                    if(result.intersection.hasLine2) Enqueue(&queue, result.intersection.splitLine2, true);
+                    mapLine = NULL;
+                }
+                break;
+            case TOUCH:
+                {
+                    MapVertex *splitVertex = EditAddVertex(map, result.touch.splitPoint);
+                    DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
+                    Enqueue(&queue, line, true);
+                    mapLine = NULL;
+                }
+                break;
+            case TOUCH_REVERSE:
+                {
+                    Enqueue(&queue, (line_t){ .a = line.a, .b = result.touch.splitPoint }, true);
+                    Enqueue(&queue, (line_t){ .a = result.touch.splitPoint, .b = line.b }, true);
+                    mapLine = NULL;
+                }
+                break;
+            case OVERLAP:
+                {
+                    MapVertex *splitVertex = EditAddVertex(map, result.overlap.splitPoint);
+                    DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
+                    Enqueue(&queue, result.overlap.line, true);
+                    mapLine = NULL;
+                }
+                break;
+            case SIMPLE_OVERLAP_INNER:
+                {
+                    MapVertex *splitVertex = EditAddVertex(map, result.overlap.splitPoint);
+                    DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
+                    mapLine = NULL;
+                }
+                break;
+            case SIMPLE_OVERLAP_OUTER:
+                {
+                    Enqueue(&queue, result.overlap.line, false);
+                    mapLine = NULL;
+                }
+                break;
+            case INNER_CONTAINMENT:
+                {
+                    MapVertex *splitVertexA = EditAddVertex(map, result.innerContainment.split1);
+                    MapVertex *splitVertexB = EditAddVertex(map, result.innerContainment.split2);
+                    DoSplit2(map, &sectorsToUpdate, mapLine, splitVertexA, splitVertexB);
+                    mapLine = NULL;
+                }
+                break;
+            case OUTER_CONTAINMENT:
+                {
+                    Enqueue(&queue, result.outerContainment.line1, true);
+                    Enqueue(&queue, result.outerContainment.line2, true);
+                    mapLine = NULL;
+                }
                 break;
             }
 
-            if(glms_vec2_eqv_eps(mline.a, line.a) || glms_vec2_eqv_eps(mline.b, line.a) || glms_vec2_eqv_eps(mline.b, line.b) || glms_vec2_eqv_eps(mline.a, line.b)) // line shares one of the points with the mapline
-            {
-                if(LineIsParallel(mline, line)) // overlap
-                {
-                    vec2s commonPoint = LineGetCommonPoint(mline, line);
-                    line_t major = { .a = commonPoint, .b = glms_vec2_eqv_eps(commonPoint, mline.a) ? mline.b : mline.a };
-                    line_t minor = { .a = commonPoint, .b = glms_vec2_eqv_eps(commonPoint, line.a) ? line.b : line.a };
-
-                    vec2s u = glms_vec2_sub(major.b, major.a);
-                    vec2s v = glms_vec2_sub(minor.b, minor.a);
-                    float dot = glms_vec2_dot(u, v);
-                    if(dot > 0) // they do overlap
-                    {
-                        float t = LineGetPointFactor(major, minor.b);
-                        if(t > 1)
-                        {
-                            Enqueue(&queue, (line_t){ .a = major.b, .b = minor.b}, false);
-
-                            assert(queue.numLines < QUEUE_SIZE);
-                        }
-                        else
-                        {
-                            MapVertex *splitVertex = EditAddVertex(map, minor.b);
-                            MapLine *lineToSplit = mapLine;
-                            DoSplit(map, &sectorsToUpdate, lineToSplit, splitVertex);
-                            mapLine = NULL; // since we are splitting the line here we should stop iterating through the rest of the map lines
-                        }
-                        canInsertLine = false;
-                        break;
-                    }
-                }
-                else // cant overlap or intersect line
-                {
-                    mapLine = mapLine->next;
-                    continue;
-                }
-            }
-
-            float mlOrient = (mline.b.x - mline.a.x) * (mline.b.y + mline.a.y);
-            float lOrient = (line.b.x - line.a.x) * (line.b.y + line.a.y);
-
-            line_t lineCorrected = line;
-            if(signbit(mlOrient) != signbit(lOrient))
-            {
-                lineCorrected.a = line.b;
-                lineCorrected.b = line.a;
-            }
-
-            intersection_res_t result = {0};
-            if((intersect = LineIntersection(mline, line, &result)))
-            {
-                if(!glms_vec2_eqv_eps(mline.a, result.p0) && !glms_vec2_eqv_eps(mline.b, result.p0))
-                {
-                    MapVertex *splitVertex = EditAddVertex(map, result.p0);
-                    MapLine *lineToSplit = mapLine;
-                    DoSplit(map, &sectorsToUpdate, lineToSplit, splitVertex);
-                }
-
-                if(!glms_vec2_eqv_eps(line.a, result.p0))
-                {
-                    Enqueue(&queue, (line_t){ line.a, result.p0 }, true);
-                }
-
-                if(!glms_vec2_eqv_eps(result.p0, line.b))
-                {
-                    Enqueue(&queue, (line_t){ result.p0, line.b }, true);
-                }
-
-                mapLine = NULL;
-
-                assert(queue.numLines < QUEUE_SIZE);
-            }
-            else if((intersect = LineOverlap(mline, lineCorrected, &result)))
-            {
-                if(result.t0 == 0 && result.t1 == 1)
-                {
-                    MapVertex *splitVertexA = EditAddVertex(map, result.p0);
-                    MapVertex *splitVertexB = EditAddVertex(map, result.p1);
-                    MapLine *lineToSplit = mapLine;
-                    mapLine = NULL;
-                    DoSplit2(map, &sectorsToUpdate, lineToSplit, splitVertexA, splitVertexB);
-                }
-                else if(result.t0 == 0)
-                {
-                    MapVertex *splitVertex = EditAddVertex(map, result.p0);
-                    MapLine *lineToSplit = mapLine;
-                    mapLine = NULL;
-                    DoSplit(map, &sectorsToUpdate, lineToSplit, splitVertex);
-
-                    Enqueue(&queue, (line_t){ mline.b, lineCorrected.b }, true);
-
-                    assert(queue.numLines < QUEUE_SIZE);
-                }
-                else if(result.t1 == 0)
-                {
-                    MapVertex *splitVertex = EditAddVertex(map, result.p1);
-                    MapLine *lineToSplit = mapLine;
-                    mapLine = NULL;
-                    DoSplit(map, &sectorsToUpdate, lineToSplit, splitVertex);
-
-                    Enqueue(&queue, (line_t){ mline.a, lineCorrected.a }, true);
-
-                    assert(queue.numLines < QUEUE_SIZE);
-                }
-                else
-                {
-                    Enqueue(&queue, (line_t){ mline.b, lineCorrected.b }, true);
-                    Enqueue(&queue, (line_t){ lineCorrected.a, mline.a }, true);
-
-                    mapLine = NULL;
-
-                    assert(queue.numLines < QUEUE_SIZE);
-                }
-            }
-            else
+            if(mapLine)
                 mapLine = mapLine->next;
-            canInsertLine &= !intersect;
+            else
+                canInsertLine = false;
         }
 
         if(canInsertLine)
@@ -413,10 +368,10 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
             MapVertex *mvb = EditAddVertex(map, line.b);
             if(!mva || !mvb) return false;
 
-            MapLine *line = EditAddLine(map, mva, mvb, DefaultLineData());
-            if(!line) return false;
+            MapLine *newMapLine = EditAddLine(map, mva, mvb, DefaultLineData());
+            if(!newMapLine) return false;
 
-            if(potentialStart) startLines[numStartLines++] = line;
+            if(potentialStart) startLines[numStartLines++] = newMapLine;
         }
 
         didIntersect |= !canInsertLine;
@@ -424,7 +379,6 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
 
     for(size_t i = 0; i < sectorsToUpdate.length; ++i)
     {
-        if(!sectorsToUpdate.data[i].valid) continue;
         bool front = sectorsToUpdate.data[i].front;
         MapLine *line = sectorsToUpdate.data[i].line;
         SectorData data = sectorsToUpdate.data[i].sectorData;

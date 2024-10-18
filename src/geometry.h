@@ -30,12 +30,48 @@ typedef struct intersection_res_t
     vec2s p0, p1;
 } intersection_res_t;
 
-typedef enum intersection_type_t
+typedef struct classify_res_t
 {
-    NO_INTERSECTION,
-    INTERSECTION,
-    OVERLAP
-} intersection_type_t;
+    enum
+    {
+        NO_RELATION,
+        SAME_LINES,
+        INTERSECTION,
+        TOUCH,
+        TOUCH_REVERSE,
+        INNER_CONTAINMENT,
+        OUTER_CONTAINMENT,
+        SIMPLE_OVERLAP_INNER,
+        SIMPLE_OVERLAP_OUTER,
+        OVERLAP
+    } type;
+    union
+    {
+        struct
+        {
+            vec2s splitPoint;
+            line_t splitLine1, splitLine2;
+            bool hasLine1, hasLine2, hasSplit;
+        } intersection;
+        struct
+        {
+            vec2s split1, split2;
+        } innerContainment;
+        struct
+        {
+            line_t line1, line2;
+        } outerContainment;
+        struct
+        {
+            vec2s splitPoint;
+            line_t line;
+        } overlap;
+        struct
+        {
+            vec2s splitPoint;
+        } touch;
+    };
+} classify_res_t;
 
 typedef enum orientation_t
 {
@@ -45,7 +81,12 @@ typedef enum orientation_t
 
 static inline bool LineEq(line_t a, line_t b)
 {
-    return (glms_vec2_eqv(a.a, b.a) && glms_vec2_eqv(a.b, b.b)) || (glms_vec2_eqv(a.a, b.b) && glms_vec2_eqv(a.b, b.a));
+    return (glms_vec2_eqv_eps(a.a, b.a) && glms_vec2_eqv_eps(a.b, b.b)) || (glms_vec2_eqv_eps(a.a, b.b) && glms_vec2_eqv_eps(a.b, b.a));
+}
+
+static inline bool LineShare(line_t a, line_t b)
+{
+    return (glms_vec2_eqv_eps(a.a, b.a) || glms_vec2_eqv_eps(a.b, b.a) || glms_vec2_eqv_eps(a.b, b.b) || glms_vec2_eqv_eps(a.a, b.b));
 }
 
 bool PointInSector(MapSector *sector, vec2s point);
@@ -61,6 +102,7 @@ bool LineIsParallel(line_t a, line_t b);
 vec2s LineGetCommonPoint(line_t major, line_t support);
 float LineGetPointFactor(line_t line, vec2s point);
 
+classify_res_t ClassifyLines(line_t a, line_t b);
 bool LineOverlap(line_t a, line_t b, intersection_res_t *res);
 bool LineIntersection(line_t a, line_t b, intersection_res_t *res);
 enum orientation_t LineLoopOrientation(size_t numVertices, vec2s vertices[static numVertices]);

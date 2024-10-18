@@ -24,8 +24,10 @@ void StatsWindow(bool *p_open, EdState *state)
         {
             igText("%s (%s)", state->script.plugins[i].name, state->script.plugins[i].file);
             igSameLine(0, 4);
+            igPushID_Int(i);
             if(igButton("Reload", (ImVec2){ 0 }))
                 ScriptReloadPlugin(&state->script, i);
+            igPopID();
         }
     }
     igEnd();

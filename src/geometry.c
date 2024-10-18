@@ -186,25 +186,6 @@ angle_t AngleOf(vec2s a, vec2s b, vec2s c)
     return rs;
 }
 
-bool inSegment(vec2s p, line_t s)
-{
-    if(s.a.x != s.b.x)
-    {
-        if(s.a.x <= p.x && p.x <= s.b.x)
-            return true;
-        if(s.a.x >= p.x && p.x >= s.b.x)
-            return true;
-    }
-    else
-    {
-        if(s.a.y <= p.y && p.y <= s.b.y)
-            return true;
-        if(s.a.y >= p.y && p.y >= s.b.y)
-            return true;
-    }
-    return false;
-}
-
 bool LineIsCollinear(line_t la, line_t lb)
 {
     vec2s u = glms_vec2_sub(la.b, la.a);
@@ -245,6 +226,137 @@ float LineGetPointFactor(line_t line, vec2s point)
     return glms_vec2_distance(line.a, point) / len;
 }
 
+static bool isBetween(vec2s p, line_t l)
+{
+    //return eqv(glms_vec2_distance(l.a, p) + glms_vec2_distance(p, l.b), glms_vec2_distance(l.a, l.b));
+    float crossproduct = (p.y - l.a.y) * (l.b.x - l.a.x) - (p.x - l.a.x) * (l.b.y - l.a.y);
+
+    // compare versus epsilon for floating point values, or != 0 if using integers
+    if(!eqv(crossproduct, 0))
+        return false;
+
+    float dotproduct = (p.x - l.a.x) * (l.b.x - l.a.x) + (p.y - l.a.y)*(l.b.y - l.a.y);
+    if(dotproduct < 0)
+        return false;
+
+    float squaredlengthba = (l.b.x - l.a.x)*(l.b.x - l.a.x) + (l.b.y - l.a.y)*(l.b.y - l.a.y);
+    if(dotproduct > squaredlengthba)
+        return false;
+
+    return true;
+}
+
+classify_res_t ClassifyLines(line_t a, line_t b)
+{
+    if(LineEq(a, b))
+        return (classify_res_t){ .type = SAME_LINES };
+
+    if(LineShare(a, b))
+    {
+        if(LineIsParallel(a, b))
+        {
+            vec2s commonPoint = LineGetCommonPoint(a, b);
+            line_t major = { .a = commonPoint, .b = glms_vec2_eqv_eps(commonPoint, a.a) ? a.b : a.a };
+            line_t minor = { .a = commonPoint, .b = glms_vec2_eqv_eps(commonPoint, b.a) ? b.b : b.a };
+
+            vec2s u = glms_vec2_sub(major.b, major.a);
+            vec2s v = glms_vec2_sub(minor.b, minor.a);
+            float dot = glms_vec2_dot(u, v);
+            if(dot > 0) // they do overlap
+            {
+                float t = LineGetPointFactor(major, minor.b);
+                if(t > 1)
+                    return (classify_res_t){ .type = SIMPLE_OVERLAP_OUTER, .overlap = { .line = { .a = major.b, .b = minor.b } } };
+                else
+                    return (classify_res_t){ .type = SIMPLE_OVERLAP_INNER, .overlap = { .splitPoint = minor.b } };
+            }
+            else
+                return (classify_res_t){ .type = NO_RELATION };
+        }
+        else
+            return (classify_res_t){ .type = NO_RELATION };
+    }
+
+    float aOrient = (a.b.x - a.a.x) * (a.b.y + a.a.y);
+    float bOrient = (b.b.x - b.a.x) * (b.b.y + b.a.y);
+    line_t lineCorrected = b;
+    if(signbit(aOrient) != signbit(bOrient))
+    {
+        lineCorrected.a = b.b;
+        lineCorrected.b = b.a;
+    }
+
+    intersection_res_t intersection = { 0 };
+    if(LineIntersection(a, b, &intersection))
+    {
+        classify_res_t res = { .type = INTERSECTION };
+        if(!glms_vec2_eqv_eps(a.a, intersection.p0) && !glms_vec2_eqv_eps(a.b, intersection.p0))
+        {
+            res.intersection.hasSplit = true;
+            res.intersection.splitPoint = intersection.p0;
+        }
+        if(!glms_vec2_eqv_eps(b.a, intersection.p0))
+        {
+            res.intersection.hasLine1 = true;
+            res.intersection.splitLine1 = (line_t){ .a = b.a, .b = intersection.p0 };
+        }
+        if(!glms_vec2_eqv_eps(intersection.p0, b.b))
+        {
+            res.intersection.hasLine2 = true;
+            res.intersection.splitLine2 = (line_t){ .a = intersection.p0, .b = b.b };
+        }
+        return res;
+    }
+
+    if(isBetween(b.a, a))
+    {
+        vec2s splitPoint = glms_vec2_add(a.a, glms_vec2_scale(glms_vec2_sub(a.b, a.a), (glms_vec2_distance(a.a, b.a) / glms_vec2_distance(a.a, a.b))));
+        return (classify_res_t){ .type = TOUCH, .touch = { .splitPoint = splitPoint } };
+    }
+
+    if(isBetween(b.b, a))
+    {
+        vec2s splitPoint = glms_vec2_add(a.a, glms_vec2_scale(glms_vec2_sub(a.b, a.a), (glms_vec2_distance(a.a, b.b) / glms_vec2_distance(a.a, a.b))));
+        return (classify_res_t){ .type = TOUCH, .touch = { .splitPoint = splitPoint } };
+    }
+
+    if(isBetween(a.a, b))
+    {
+        vec2s splitPoint = glms_vec2_add(b.a, glms_vec2_scale(glms_vec2_sub(b.b, b.a), (glms_vec2_distance(b.a, a.a) / glms_vec2_distance(b.a, b.b))));
+        return (classify_res_t){ .type = TOUCH_REVERSE, .touch = { .splitPoint = splitPoint } };
+    }
+
+    if(isBetween(a.b, b))
+    {
+        vec2s splitPoint = glms_vec2_add(b.a, glms_vec2_scale(glms_vec2_sub(b.b, b.a), (glms_vec2_distance(b.a, a.b) / glms_vec2_distance(b.a, b.b))));
+        return (classify_res_t){ .type = TOUCH_REVERSE, .touch = { .splitPoint = splitPoint } };
+    }
+
+    if(LineOverlap(a, lineCorrected, &intersection))
+    {
+        if(eqv(intersection.t0, 0) && eqv(intersection.t1, 1))
+        {
+            return (classify_res_t){ .type = INNER_CONTAINMENT, .innerContainment = { .split1 = intersection.p0, .split2 = intersection.p1 } };
+        }
+        else if(eqv(intersection.t0, 0))
+        {
+            return (classify_res_t){ .type = OVERLAP, .overlap = { .splitPoint = intersection.p0, .line = { a.b, lineCorrected.b } } };
+        }
+        else if(eqv(intersection.t1, 1))
+        {
+            return (classify_res_t){ .type = OVERLAP, .overlap = { .splitPoint = intersection.p1, .line = { a.a, lineCorrected.a } } };
+        }
+        else
+        {
+            line_t line1 = { a.b, lineCorrected.b };
+            line_t line2 = { lineCorrected.a, a.a };
+            return (classify_res_t){ .type = OUTER_CONTAINMENT, .outerContainment = { .line1 = line1, .line2 = line2 } };
+        }
+    }
+
+    return (classify_res_t){ .type = NO_RELATION };
+}
+
 bool LineOverlap(line_t la, line_t lb, intersection_res_t *res)
 {
     vec2s u = glms_vec2_sub(la.b, la.a);
@@ -283,7 +395,7 @@ bool LineOverlap(line_t la, line_t lb, intersection_res_t *res)
 
     float t0, t1;
     vec2s w2 = glms_vec2_sub(la.b, lb.a);
-    if(v.x != 0)
+    if(!eqv(v.x, 0))
     {
         t0 = w.x / v.x;
         t1 = w2.x / v.x;
@@ -306,7 +418,7 @@ bool LineOverlap(line_t la, line_t lb, intersection_res_t *res)
 
     t0 = max(t0, 0);
     t1 = min(t1, 1);
-    if(t0 == t1)
+    if(eqv(t0, t1))
     {
         if(res)
         {
@@ -340,11 +452,11 @@ bool LineIntersection(line_t la, line_t lb, intersection_res_t *res)
     }
 
     float sI = glms_vec2_cross(v, w) / D;
-    if (sI < 0 || sI > 1)
+    if (sI <= 0 || sI >= 1)
         return false;
 
     float tI = glms_vec2_cross(u, w) / D;
-    if(tI < 0 || tI > 1)
+    if(tI <= 0 || tI >= 1)
         return false;
 
     if(res)
