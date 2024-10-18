@@ -1,6 +1,8 @@
 #include "map.h"
 
+#include "logging.h"
 #include "memory.h" // IWYU pragma: keep
+#include <string.h>
 
 static void FreeVertList(MapVertex *head)
 {
@@ -147,10 +149,59 @@ bool LoadMap(Map *map)
     return false;
 }
 
+static char* getTextureName(pstring texname)
+{
+    return texname ? texname : "NULL";
+}
+
 void SaveMap(Map *map)
 {
     if(map->file == NULL) return;
 
+    FILE *saveFile = fopen(map->file, "w");
+    if(!saveFile)
+    {
+        LogError("Failed to create map file: %s", strerror(errno));
+        return;
+    }
+    fprintf(saveFile, "{\n");
+
+    fprintf(saveFile, "\tversion = %d\n", MAP_VERSION);
+    fprintf(saveFile, "\teditor = editor2\n");
+    fprintf(saveFile, "\tgravity = %f\n", map->gravity);
+    fprintf(saveFile, "\ttextureScale = %d\n", map->textureScale);
+
+    fprintf(saveFile, "\tvertices = {\n");
+    for(MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
+    {
+        fprintf(saveFile, "\t\t%zu %.4f %.4f\n", vertex->idx, vertex->pos.x, vertex->pos.y);
+    }
+    fprintf(saveFile, "\t}\n");
+
+    fprintf(saveFile, "\tlines = {\n");
+    for(MapLine *line = map->headLine; line; line = line->next)
+    {
+        fprintf(saveFile, "\t\t%zu %zu %zu %u ", line->idx, line->a->idx, line->b->idx, line->data.type);
+        fprintf(saveFile, "%s %s %s ", getTextureName(line->data.front.lowerTex), getTextureName(line->data.front.middleTex), getTextureName(line->data.front.upperTex));
+        fprintf(saveFile, "%s %s %s\n", getTextureName(line->data.front.lowerTex), getTextureName(line->data.front.middleTex), getTextureName(line->data.front.upperTex));
+    }
+    fprintf(saveFile, "\t}\n");
+
+    fprintf(saveFile, "\tsectors = {\n");
+    for(MapSector *sector = map->headSector; sector; sector = sector->next)
+    {
+        fprintf(saveFile, "\t\t%zu %zu ", sector->idx, sector->numOuterLines);
+        for(size_t i = 0; i < sector->numOuterLines; ++i)
+        {
+            fprintf(saveFile, "%zu ", sector->outerLines[i]->idx);
+        }
+        fprintf(saveFile, "%d %d %u ", sector->data.floorHeight, sector->data.ceilHeight, sector->data.type);
+        fprintf(saveFile, "%s %s\n", getTextureName(sector->data.floorTex), getTextureName(sector->data.ceilTex));
+    }
+    fprintf(saveFile, "\t}\n");
+
+    fprintf(saveFile, "}\n");
+    fclose(saveFile);
     map->dirty = false;
 }
 

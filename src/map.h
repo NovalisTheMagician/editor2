@@ -4,6 +4,8 @@
 #include "cglm/struct.h" // IWYU pragma: keep
 #include "memory.h"
 
+#define MAP_VERSION 1
+
 typedef enum LineType
 {
     LT_NORMAL

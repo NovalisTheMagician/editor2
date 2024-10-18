@@ -3,8 +3,10 @@
 *.exe
 *.dll
 *.so
+
 *.ini
 *.epr
+*.map
 
 *.log
 
