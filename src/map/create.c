@@ -13,11 +13,9 @@ CreateResult CreateVertex(Map *map, vec2s pos)
         }
     }
 
-    static size_t vertexIndex = 0;
-
     MapVertex *vertex = calloc(1, sizeof *vertex);
     vertex->pos = pos;
-    vertex->idx = vertexIndex++;
+    vertex->idx = map->vertexIdx++;
     vertex->prev = map->tailVertex;
 
     if(map->headVertex == NULL)
@@ -53,12 +51,10 @@ CreateResult CreateLine(Map *map, MapVertex *v0, MapVertex *v1, LineData data)
         }
     }
 
-    static size_t lineIndex = 0;
-
     MapLine *line = calloc(1, sizeof *line);
     line->a = v0;
     line->b = v1;
-    line->idx = lineIndex++;
+    line->idx = map->lineIdx++;
     line->prev = map->tailLine;
     line->data = CopyLineData(data);
 
@@ -90,7 +86,7 @@ CreateResult CreateLine(Map *map, MapVertex *v0, MapVertex *v1, LineData data)
     return (CreateResult){ .mapElement = line, .created = true };
 }
 
-CreateResult CreateSector(Map *map, size_t numLines, MapLine *lines[static numLines], bool lineFronts[static numLines], SectorData data)
+CreateResult CreateSector(Map *map, size_t numLines, MapLine *lines[static numLines], bool *lineFronts, SectorData data)
 {
     for(MapSector *sector = map->headSector; sector; sector = sector->next)
     {
@@ -119,13 +115,11 @@ CreateResult CreateSector(Map *map, size_t numLines, MapLine *lines[static numLi
             return (CreateResult){ .mapElement = sector, .created = false };
     }
 
-    static size_t sectorIndex = 0;
-
     MapSector *sector = calloc(1, sizeof *sector);
     sector->numOuterLines = numLines;
     sector->outerLines = malloc(sector->numOuterLines * sizeof *sector->outerLines);
     memcpy(sector->outerLines, lines, sector->numOuterLines * sizeof *sector->outerLines);
-    sector->idx = sectorIndex++;
+    sector->idx = map->sectorIdx++;
     sector->prev = map->tailSector;
     sector->data = CopySectorData(data);
 

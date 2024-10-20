@@ -118,6 +118,8 @@ typedef struct Map
 
     int textureScale;
     float gravity;
+
+    size_t vertexIdx, lineIdx, sectorIdx;
 } Map;
 
 LineData DefaultLineData(void);

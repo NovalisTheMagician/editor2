@@ -1,6 +1,7 @@
 -Wall
--std=gnu2x
+-Wextra
 -Wstrict-prototypes
+-std=gnu23
 -D_XOPEN_SOURCE
 -D_GNU_SOURCE
 -Isrc
