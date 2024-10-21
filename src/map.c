@@ -11,6 +11,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <errno.h>
+#include <strings.h>
 
 static void FreeVertList(MapVertex *head)
 {
@@ -332,33 +334,33 @@ bool LoadMap(Map *map)
 
             if(mode != PARSE_PROPS)
             {
-                if(strcmpi(value, "{") == 0)
+                if(strcasecmp(value, "{") == 0)
                 {
                     inBlock = true;
                     continue;
                 }
             }
 
-            if(strcmpi(key, "vertices") == 0)
+            if(strcasecmp(key, "vertices") == 0)
             {
                 mode = PARSE_VERTICES;
-                inBlock = strcmpi(value, "{") == 0;
+                inBlock = strcasecmp(value, "{") == 0;
                 continue;
             }
-            if(strcmpi(key, "lines") == 0)
+            if(strcasecmp(key, "lines") == 0)
             {
                 mode = PARSE_LINES;
-                inBlock = strcmpi(value, "{") == 0;
+                inBlock = strcasecmp(value, "{") == 0;
                 continue;
             }
-            if(strcmpi(key, "sectors") == 0)
+            if(strcasecmp(key, "sectors") == 0)
             {
                 mode = PARSE_SECTORS;
-                inBlock = strcmpi(value, "{") == 0;
+                inBlock = strcasecmp(value, "{") == 0;
                 continue;
             }
 
-            if(strcmpi(key, "version") == 0)
+            if(strcasecmp(key, "version") == 0)
             {
                 char *end;
                 errno = 0;
@@ -378,7 +380,7 @@ bool LoadMap(Map *map)
                 }
             }
 
-            if(strcmpi(key, "gravity") == 0)
+            if(strcasecmp(key, "gravity") == 0)
             {
                 errno = 0;
                 char *end;
@@ -392,7 +394,7 @@ bool LoadMap(Map *map)
                 map->gravity = gravity;
             }
 
-            if(strcmpi(key, "textureScale") == 0)
+            if(strcasecmp(key, "textureScale") == 0)
             {
                 errno = 0;
                 char *end;
@@ -408,7 +410,7 @@ bool LoadMap(Map *map)
         }
         else
         {
-            if(strcmpi(line, "}") == 0)
+            if(strcasecmp(line, "}") == 0)
             {
                 inBlock = false;
                 mode = PARSE_PROPS;
