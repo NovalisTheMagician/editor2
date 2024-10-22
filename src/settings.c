@@ -1,6 +1,9 @@
 #include "editor.h"
+#include "logging.h"
 
-#include <string.h> // IWYU pragma: keep
+#include <string.h>
+#include "serialization.h"
+#include "utils/pstring.h"
 
 const char* ColorIndexToString(enum Colors color)
 {
@@ -78,51 +81,39 @@ void ResetSettings(EdSettings *settings)
 
 bool LoadSettings(const char *settingsPath, EdSettings *settings)
 {
-    FILE *settingsFile = fopen(settingsPath, "r");
-    if(settingsFile)
+    FILE *file = fopen(settingsPath, "r");
+    if(file)
     {
-        fseek(settingsFile, 0, SEEK_END);
-        long size = ftell(settingsFile);
-        rewind(settingsFile);
 
-        pstring buffer = string_alloc(size);
-        fread(buffer, 1, size, settingsFile);
-        string_recalc(buffer);
-
-        stringtok *tokenizer = stringtok_start(buffer);
-        while(!stringtok_done(tokenizer))
+        int lineNr = 0;
+        char lineRaw[1024] = { 0 };
+        while(fgets(lineRaw, sizeof lineRaw, file))
         {
-            size_t size;
-            char *strline = stringtok_next(tokenizer, "\n", &size);
-            pstring line = string_cstr_size(size+1, strline);
+            lineNr++;
+            char *line = Trim(lineRaw);
+            if(line[0] == '/' && line[1] == '/') continue; // comment
 
-            ssize_t idx = string_first_index_of(line, 0, "=");
-            if(idx == -1 || idx == 0)
-            {
-                string_free(line);
-                continue;
-            }
+            char *delim = strchr(line, '=');
+            if(!delim || delim == line)
+                goto parseError;
 
-            pstring key = string_substring(line, 0, idx);
-            pstring value = string_substring(line, idx + 1, -1);
+            *delim = '\0';
+            char *key = Trim(line);
+            char *value = Trim(delim+1);
 
-            if(strcasecmp(key, "theme") == 0) settings->theme = atoi(value);
-            else if(strcasecmp(key, "vertex_point_size") == 0) settings->vertexPointSize = (float)atof(value);
-            else if(strcasecmp(key, "show_grid_lines") == 0) settings->showGridLines = atoi(value);
-            else if(strcasecmp(key, "show_major_axis") == 0) settings->showMajorAxis = atoi(value);
-            else if(strcasecmp(key, "preview_fov") == 0) settings->realtimeFov = atoi(value);
-            else if(strcasecmp(key, "game_path") == 0) string_copy_into(settings->gamePath, value);
-            else if(strcasecmp(key, "launch_arguments") == 0) string_copy_into(settings->launchArguments, value);
-
-            string_free(key);
-            string_free(value);
-            string_free(line);
+            if(strcasecmp(key, "theme") == 0) { if(ParseInt(value, &settings->theme)) continue; }
+            else if(strcasecmp(key, "vertex_point_size") == 0) { if(ParseFloat(value, &settings->vertexPointSize)) continue; }
+            else if(strcasecmp(key, "show_grid_lines") == 0) { if(ParseBool(value, &settings->showGridLines)) continue; }
+            else if(strcasecmp(key, "show_major_axis") == 0) { if(ParseBool(value, &settings->showMajorAxis)) continue; }
+            else if(strcasecmp(key, "show_line_dir") == 0) { if(ParseBool(value, &settings->showLineDir)) continue; }
+            else if(strcasecmp(key, "preview_fov") == 0) { if(ParseInt(value, &settings->realtimeFov)) continue; }
+            else if(strcasecmp(key, "game_path") == 0) { string_copy_into_cstr(settings->gamePath, value); continue; }
+            else if(strcasecmp(key, "launch_arguments") == 0) { string_copy_into_cstr(settings->launchArguments, value); continue; }
+parseError:
+            LogWarning("Failed to parse `%s` on line: %d", settingsPath, lineNr);
         }
 
-        stringtok_end(tokenizer);
-        string_free(buffer);
-
-        fclose(settingsFile);
+        fclose(file);
         return true;
     }
     return false;
@@ -130,17 +121,25 @@ bool LoadSettings(const char *settingsPath, EdSettings *settings)
 
 void SaveSettings(const char *settingsPath, const EdSettings *settings)
 {
-    FILE *settingsFile = fopen(settingsPath, "w+");
-    if(settingsFile)
+    FILE *file = fopen(settingsPath, "w+");
+    if(file)
     {
-        fprintf(settingsFile, "theme=%d\n", settings->theme);
-        fprintf(settingsFile, "vertex_point_size=%.2f\n", settings->vertexPointSize);
-        fprintf(settingsFile, "show_grid_lines=%d\n", settings->showGridLines);
-        fprintf(settingsFile, "show_major_axis=%d\n", settings->showMajorAxis);
-        fprintf(settingsFile, "preview_fov=%d\n", settings->realtimeFov);
-        fprintf(settingsFile, "game_path=%s\n", settings->gamePath);
-        fprintf(settingsFile, "launch_arguments=%s\n", settings->launchArguments);
-        fclose(settingsFile);
+        fprintf(file, "// Themes\n");
+        fprintf(file, "theme=%d\n", settings->theme);
+
+        fprintf(file, "// Editor\n");
+        fprintf(file, "vertex_point_size=%.2f\n", settings->vertexPointSize);
+        fprintf(file, "show_grid_lines=%d\n", settings->showGridLines);
+        fprintf(file, "show_major_axis=%d\n", settings->showMajorAxis);
+        fprintf(file, "show_line_dir=%d\n", settings->showLineDir);
+
+        fprintf(file, "// 3D View\n");
+        fprintf(file, "preview_fov=%d\n", settings->realtimeFov);
+
+        fprintf(file, "// Base\n");
+        fprintf(file, "game_path=%s\n", settings->gamePath);
+        fprintf(file, "launch_arguments=%s\n", settings->launchArguments);
+        fclose(file);
     }
 }
 

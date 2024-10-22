@@ -4,9 +4,9 @@
 #include "map/create.h"
 #include "map/query.h"
 #include "memory.h"
+#include "serialization.h"
 #include "utils/pstring.h"
 
-#include <ctype.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -155,25 +155,6 @@ void NewMap(Map *map)
     map->gravity = 9.80f;
 }
 
-static char* ltrim(char *s)
-{
-    while(isspace(*s)) s++;
-    return s;
-}
-
-static char* rtrim(char *s)
-{
-    char* back = s + strlen(s);
-    while(isspace(*--back));
-    *(back+1) = '\0';
-    return s;
-}
-
-static char* trim(char *s)
-{
-    return rtrim(ltrim(s));
-}
-
 enum ParseMode
 {
     PARSE_PROPS,
@@ -182,115 +163,18 @@ enum ParseMode
     PARSE_SECTORS
 };
 
-static char* parseIndex(char *line, size_t *idx)
-{
-    char *delim = strchr(line, ' ');
-    if(!delim)
-    {
-        return NULL;
-    }
-    *delim = '\0';
-    errno = 0;
-    char *end;
-    *idx = strtoull(line, &end, 10);
-    if(line == end)
-    {
-        LogError("Failed to parse index");
-        return NULL;
-    }
-    return delim+1;
-}
-
-static char* parseUint(char *line, uint32_t *i)
-{
-    char *delim = strchr(line, ' ');
-    if(!delim)
-    {
-        return NULL;
-    }
-    *delim = '\0';
-    errno = 0;
-    char *end;
-    *i = strtoul(line, &end, 10);
-    if(line == end)
-    {
-        LogError("Failed to parse uint");
-        return NULL;
-    }
-    return delim+1;
-}
-
-static char* parseInt(char *line, int *i)
-{
-    char *delim = strchr(line, ' ');
-    if(!delim)
-    {
-        return NULL;
-    }
-    *delim = '\0';
-    errno = 0;
-    char *end;
-    *i = strtol(line, &end, 10);
-    if(line == end)
-    {
-        LogError("Failed to parse int");
-        return NULL;
-    }
-    return delim+1;
-}
-
-static char* parseFloat(char *line, float *f)
-{
-    char *delim = strchr(line, ' ');
-    if(!delim)
-    {
-        return NULL;
-    }
-    *delim = '\0';
-    errno = 0;
-    char *end;
-    *f = strtof(line, &end);
-    if(line == end)
-    {
-        LogError("Failed to parse float");
-        return NULL;
-    }
-    return delim+1;
-}
-
-static char* parseString(char *line, char **str)
-{
-    char *delim = strchr(line, ' ');
-    if(!delim)
-    {
-        return NULL;
-    }
-    *delim = '\0';
-    *str = line;
-    return delim+1;
-}
-
-static char* parseTexture(char *line, char **texture)
-{
-    line = parseString(line, texture);
-    if(!line) return NULL;
-    if(strcmp(*texture, "NULL"))
-        *texture = NULL;
-    return line;
-}
-
 static char* parseSide(char *line, Side *side)
 {
     char *tex;
-    line = parseString(line, &tex);
+    line = ParseLineString(line, &tex);
     if(!line) return NULL;
     if(strcmp(tex, "NULL") != 0)
         side->lowerTex = string_cstr(tex);
-    line = parseString(line, &tex);
+    line = ParseLineString(line, &tex);
     if(!line) return NULL;
     if(strcmp(tex, "NULL") != 0)
         side->middleTex = string_cstr(tex);
-    line = parseString(line, &tex);
+    line = ParseLineString(line, &tex);
     if(!line) return NULL;
     if(strcmp(tex, "NULL") != 0)
         side->upperTex = string_cstr(tex);
@@ -315,22 +199,21 @@ bool LoadMap(Map *map)
     enum ParseMode mode = PARSE_PROPS;
     char readline[1024] = { 0 };
     int lineNr = 1;
-    while(fgets(readline, sizeof readline, file) != NULL)
+    while(fgets(readline, sizeof readline, file))
     {
-        char *line = trim(readline);
+        char *line = Trim(readline);
         if(!inBlock)
         {
             char *delim = strchr(line, '=');
-            if(!delim)
+            if(!delim || delim == line)
             {
                 LogError("Failed to parse map file %s: Error on line %d", map->file, lineNr);
                 break;
             }
 
-            ptrdiff_t delimPos = delim - line;
-            line[delimPos] = '\0';
-            char *key = trim(line);
-            char *value = trim(line + delimPos + 1);
+            *delim = '\0';
+            char *key = Trim(line);
+            char *value = Trim(delim + 1);
 
             if(mode != PARSE_PROPS)
             {
@@ -370,13 +253,10 @@ bool LoadMap(Map *map)
                     LogError("Failed to parse the version: %s", strerror(errno));
                     break;
                 }
-                else
+                else if(version > MAP_VERSION)
                 {
-                    if(version > MAP_VERSION)
-                    {
-                        LogError("Map format version too new (%d > %d)", version, MAP_VERSION);
-                        break;
-                    }
+                    LogError("Map format version too new (%d > %d)", version, MAP_VERSION);
+                    break;
                 }
             }
 
@@ -422,12 +302,12 @@ bool LoadMap(Map *map)
             case PARSE_VERTICES:
                 {
                     size_t idx;
-                    line = parseIndex(line, &idx);
+                    line = ParseLineIndex(line, &idx);
                     if(!line) continue;
                     vec2s pos;
-                    line = parseFloat(line, &pos.x);
+                    line = ParseLineFloat(line, &pos.x);
                     if(!line) continue;
-                    line = parseFloat(line, &pos.y);
+                    line = ParseLineFloat(line, &pos.y);
 
                     CreateResult res = CreateVertex(map, pos);
                     MapVertex *vertex = res.mapElement;
@@ -441,15 +321,15 @@ bool LoadMap(Map *map)
                     LineData data = { 0 };
 
                     size_t idx;
-                    line = parseIndex(line, &idx);
+                    line = ParseLineIndex(line, &idx);
                     if(!line) continue;
                     size_t vertexA;
-                    line = parseIndex(line, &vertexA);
+                    line = ParseLineIndex(line, &vertexA);
                     if(!line) continue;
                     size_t vertexB;
-                    line = parseIndex(line, &vertexB);
+                    line = ParseLineIndex(line, &vertexB);
                     if(!line) continue;
-                    line = parseUint(line, &data.type);
+                    line = ParseLineUint(line, &data.type);
                     if(!line) continue;
                     line = parseSide(line, &data.front);
                     if(!line) continue;
@@ -474,36 +354,36 @@ bool LoadMap(Map *map)
                     SectorData data = { 0 };
 
                     size_t idx;
-                    line = parseIndex(line, &idx);
+                    line = ParseLineIndex(line, &idx);
                     if(!line) continue;
                     size_t numOuterLines;
-                    line = parseIndex(line, &numOuterLines);
+                    line = ParseLineIndex(line, &numOuterLines);
                     if(!line) continue;
 
                     MapLine *outerLines[numOuterLines];
                     for(size_t i = 0; i < numOuterLines; ++i)
                     {
                         size_t lineIdx;
-                        line = parseIndex(line, &lineIdx);
+                        line = ParseLineIndex(line, &lineIdx);
                         if(!line) goto nextLine;
                         MapLine *mapLine = GetLine(map, lineIdx);
                         if(!mapLine) goto nextLine;
                         outerLines[i] = mapLine;
                     }
 
-                    line = parseInt(line, &data.floorHeight);
+                    line = ParseLineInt(line, &data.floorHeight);
                     if(!line) continue;
-                    line = parseInt(line, &data.ceilHeight);
+                    line = ParseLineInt(line, &data.ceilHeight);
                     if(!line) continue;
-                    line = parseUint(line, &data.type);
+                    line = ParseLineUint(line, &data.type);
 
                     char *floorTexture;
-                    line = parseTexture(line, &floorTexture);
+                    line = ParseLineTexture(line, &floorTexture);
                     if(!line) continue;
                     if(floorTexture)
                         data.floorTex = string_cstr(floorTexture);
                     char *ceilTexture;
-                    line = parseTexture(line, &ceilTexture);
+                    line = ParseLineTexture(line, &ceilTexture);
                     if(!line) continue;
                     if(ceilTexture)
                         data.ceilTex = string_cstr(ceilTexture);
