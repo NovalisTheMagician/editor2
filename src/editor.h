@@ -97,6 +97,8 @@ typedef struct EdSettings
     Color colors[NUM_COLORS];
     int theme;
 
+    bool showLineDir;
+
     float vertexPointSize;
     bool showGridLines, showMajorAxis;
     int realtimeFov;

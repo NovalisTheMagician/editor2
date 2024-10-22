@@ -33,6 +33,7 @@ void SettingsWindow(bool *p_open, EdState *state)
                 igDragFloat("Vertex Point Size", &state->settings.vertexPointSize, 0.1f, MIN_VERTEXPOINTSIZE, MAX_VERTEXPOINTSIZE, "%.1f", 0);
                 igCheckbox("Show Grid", &state->settings.showGridLines);
                 igCheckbox("Show Major Axis", &state->settings.showMajorAxis);
+                igCheckbox("Show Line direction", &state->settings.showLineDir);
                 igEndTabItem();
             }
 

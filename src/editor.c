@@ -4,10 +4,14 @@
 #include <tgmath.h>
 #include <stb/stb_image.h>
 
+#include "cglm/struct/vec2.h"
+#include "cglm/struct/vec3.h"
 #include "logging.h"
+#include "map.h"
 #include "utils.h"
 #include "texture_collection.h"
 #include "resources/resources.h"
+#include "vertex_types.h"
 
 #define SELECTION_CAPACITY 10000
 #define BUFFER_SIZE (1<<20)
@@ -316,22 +320,76 @@ static size_t CollectLines(const EdState *state, size_t vertexOffset)
     for(const MapLine *line = state->map.headLine; line; line = line->next)
     {
         int colorIdx = COL_LINE;
-        if(state->data.numSelectedElements > 0 && includes(state->data.selectedElements, state->data.numSelectedElements, line))
-        {
-            colorIdx = COL_LINE_SELECT;
-        }
-        else if(line == state->data.hoveredElement)
-        {
-            colorIdx = COL_LINE_HOVER;
-        }
-        else if(line->frontSector && line->backSector)
+        if(line->frontSector && line->backSector)
         {
             colorIdx = COL_LINE_INNER;
         }
+        if(state->data.selectionMode == MODE_LINE)
+        {
+            if(state->data.numSelectedElements > 0 && includes(state->data.selectedElements, state->data.numSelectedElements, line))
+            {
+                colorIdx = COL_LINE_SELECT;
+            }
+            else if(line == state->data.hoveredElement)
+            {
+                colorIdx = COL_LINE_HOVER;
+            }
+        }
+        else if(state->data.selectionMode == MODE_SECTOR)
+        {
+            if(state->data.hoveredElement)
+            {
+                MapSector *sector = state->data.hoveredElement;
+                if(includes((void**)sector->outerLines, sector->numOuterLines, line))
+                {
+                    colorIdx = COL_LINE_HOVER;
+                    goto foundColIdx;
+                }
+            }
+            for(size_t i = 0; i < state->data.numSelectedElements; ++i)
+            {
+                MapSector *sector = state->data.selectedElements[i];
+                if(includes((void**)sector->outerLines, sector->numOuterLines, line))
+                {
+                    colorIdx = COL_LINE_SELECT;
+                    break;
+                }
+            }
+foundColIdx:
+        }
 
-        state->gl.editorVertexMap[verts + vertexOffset + 0] = (EditorVertexType){ .position = line->a->pos, .color = state->settings.colors[colorIdx] };
-        state->gl.editorVertexMap[verts + vertexOffset + 1] = (EditorVertexType){ .position = line->b->pos, .color = state->settings.colors[colorIdx] };
-        verts += 2;
+        vec4s color = state->settings.colors[colorIdx];
+        size_t relVertIdx = 0;
+        state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = line->a->pos, .color = color };
+        state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = line->b->pos, .color = color };
+
+        vec2s dir = glms_vec2_sub(line->b->pos, line->a->pos);
+        vec2s normalStart = glms_vec2_add(line->a->pos, glms_vec2_scale(dir, 0.5f));
+        vec2s perpDir = glms_vec2_normalize((vec2s){ .x = -dir.y, .y = dir.x });
+
+        float inverseZoom = 1.0f / (state->data.zoomLevel);
+        float normalLength = 6;
+        vec2s normalEnd = glms_vec2_add(normalStart, glms_vec2_scale(perpDir, normalLength * inverseZoom));
+
+        state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = normalStart, .color = color };
+        state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = normalEnd, .color = color };
+
+        if(state->settings.showLineDir)
+        {
+            float arrowHeadThickness = 6;
+            float arrowHeadHeight = 8;
+            vec2s endPoint = glms_vec2_sub(line->b->pos, glms_vec2_scale(glms_vec2_normalize(dir), arrowHeadHeight));
+            vec2s invPerpDir = { .x = -perpDir.x, .y = -perpDir.y };
+            vec2s arrowHeadLeft = glms_vec2_add(endPoint, glms_vec2_scale(invPerpDir, arrowHeadThickness));
+            vec2s arrowHeadRight = glms_vec2_add(endPoint, glms_vec2_scale(perpDir, arrowHeadThickness));
+
+            state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = line->b->pos, .color = color };
+            state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = arrowHeadLeft, .color = color };
+
+            state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = line->b->pos, .color = color };
+            state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = arrowHeadRight, .color = color };
+        }
+        verts += relVertIdx;
     }
     return verts;
 }
@@ -342,11 +400,12 @@ static size_t CollectSectors(const EdState *state, size_t vertexOffset, size_t i
     for(const MapSector *sector = state->map.headSector; sector; sector = sector->next)
     {
         int colorIdx = COL_SECTOR;
+        /*
         if(state->data.numSelectedElements > 0 && includes(state->data.selectedElements, state->data.numSelectedElements, sector))
         {
             colorIdx = COL_SECTOR_SELECT;
         }
-        else if(sector == state->data.hoveredElement)
+        else*/ if(sector == state->data.hoveredElement)
         {
             colorIdx = COL_SECTOR_HOVER;
         }
