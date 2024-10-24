@@ -45,14 +45,15 @@ bool LoadProject(Project *project)
         char *line = Trim(lineRaw);
         if(line[0] == '/' && line[1] == '/') continue; // comment
         char *delim = strchr(line, '=');
-        if(!delim || delim == line)
+        if(!delim) continue;
+        if(delim == line)
         {
             LogError("Malformed line at %d", lineNr);
             goto errorParse;
         }
         *delim = '\0';
-        char *key = line;
-        char *value = delim+1;
+        char *key = Trim(line);
+        char *value = Trim(delim+1);
 
         if(strcasecmp(key, "version") == 0)
         {

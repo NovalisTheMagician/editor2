@@ -10,9 +10,9 @@
 #include "logging.h"
 #include "memory.h" // IWYU pragma: keep
 #include "async_load.h"
-#include "utils/pstring.h"
+#include "utils/string.h"
 
-static bool ReadFromFs(pstring path, uint8_t **buffer, size_t *size, void *unused)
+static bool ReadFromFs(const char *path, uint8_t **buffer, size_t *size, void *unused)
 {
     (void)unused;
 
@@ -35,7 +35,7 @@ static bool ReadFromFs(pstring path, uint8_t **buffer, size_t *size, void *unuse
     return true;
 }
 
-static bool ReadFromFtp(pstring path, uint8_t **buffer, size_t *size, void *ftpHandle)
+static bool ReadFromFtp(const char *path, uint8_t **buffer, size_t *size, void *ftpHandle)
 {
     uint32_t fileSize = 0;
     if(!FtpSize(path, &fileSize, FTPLIB_BINARY, ftpHandle))
@@ -63,7 +63,7 @@ static bool ReadFromFtp(pstring path, uint8_t **buffer, size_t *size, void *ftpH
     return true;
 }
 
-static netbuf* ConnectToFtp(pstring url, pstring user, pstring pass)
+static netbuf* ConnectToFtp(const char *url, const char *user, const char *pass)
 {
     netbuf *handle;
     if(!FtpConnect(url, &handle))
@@ -85,7 +85,7 @@ static netbuf* ConnectToFtp(pstring url, pstring user, pstring pass)
 static pthread_mutex_t collectMutex = PTHREAD_MUTEX_INITIALIZER;
 static bool cancelRequest;
 
-static size_t CollectTexturesFtp(TextureCollection *tc, FetchLocation **locations, size_t size, size_t *capacity, pstring folder, pstring baseFolder, netbuf *ftpHandle)
+static size_t CollectTexturesFtp(TextureCollection *tc, FetchLocation **locations, size_t size, size_t *capacity, char *folder, char *baseFolder, netbuf *ftpHandle)
 {
     netbuf *dirHandle;
     if(!FtpAccess(folder, FTPLIB_DIR_VERBOSE, FTPLIB_ASCII, ftpHandle, &dirHandle))
@@ -98,45 +98,42 @@ static size_t CollectTexturesFtp(TextureCollection *tc, FetchLocation **location
     size_t cap = 4096;
     struct
     {
-        pstring filePath;
-        pstring fileName;
+        char *filePath;
+        char *fileName;
         bool isDir;
     } *files = calloc(cap, sizeof *files);
 
     bool stopRequest = false;
 
-    pstring buffer = string_alloc(1024);
+    char buffer[1024] = { 0 };
     size_t numFiles = 0;
     ssize_t readLen;
-    while((readLen = FtpRead(buffer, string_size(buffer), dirHandle)) > 0)
+    while((readLen = FtpRead(buffer, sizeof buffer, dirHandle)) > 0)
     {
-        string_recalc(buffer);
-
         pthread_mutex_lock(&collectMutex);
         stopRequest = cancelRequest;
         pthread_mutex_unlock(&collectMutex);
         if(stopRequest) break;
 
-        size_t numChars;
-        stringtok *tok = stringtok_start(buffer);
-        char *perm = stringtok_next(tok, " ", &numChars);
+        char *delim = strchr(buffer, ' ');
+        *delim = '\0';
+        char *perm = buffer;
         bool isDir = perm[0] == 'd';
-        char *fn = NULL, *last = NULL;
-        while((last = stringtok_next(tok, " ", &numChars))) fn = last;
+        char *fn = NULL;
+        while((delim = strchr(delim+1, ' ')) != NULL) fn = delim+1;
         if(fn == NULL)
         {
             LogWarning("failed to parse the filename out of a directory listing `%s`", buffer);
-            stringtok_end(tok);
             continue;
         }
 
-        if(fn[numChars-1] == '\n') numChars--;
-        pstring fileName = string_cstr_size(numChars, fn);
-        pstring filePath = string_alloc(256);
-        string_format(filePath, "%s/%s", folder, fileName);
-        stringtok_end(tok);
+        size_t fnLen = strlen(fn);
+        if(fn[fnLen-1] == '\n') fn[fnLen-1] = '\0';
+        char *fileName = fn;
+        char filePath[256] = { 0 };
+        snprintf(filePath, sizeof filePath, "%s/%s", folder, fileName);
 
-        files[numFiles++] = (typeof(*files)){ .fileName = fileName, .filePath = filePath, .isDir = isDir };
+        files[numFiles++] = (typeof(*files)){ .fileName = CopyString(fileName), .filePath = CopyString(filePath), .isDir = isDir };
     }
     FtpClose(dirHandle);
 
@@ -159,15 +156,16 @@ static size_t CollectTexturesFtp(TextureCollection *tc, FetchLocation **location
         }
         else
         {
-            ssize_t extIdx = string_last_index_of(files[i].filePath, 0, ".");
-            if(extIdx == -1) continue;
-            pstring name = string_substring(files[i].filePath, string_length(baseFolder)+1, extIdx);
+            char *name = CopyString(files[i].filePath);
+            char *ext = strrchr(name, '.');
+            if(!ext) goto skipLocation;
+            *ext = '\0';
 
             char timeBuffer[128] = { 0 };
             if(!FtpModDate(files[i].filePath, timeBuffer, sizeof timeBuffer, ftpHandle))
             {
                 LogError("%s", FtpLastResponse(ftpHandle));
-                continue;
+                goto skipLocation;
             }
 
             struct tm tm = { .tm_isdst = -1 };
@@ -181,11 +179,11 @@ static size_t CollectTexturesFtp(TextureCollection *tc, FetchLocation **location
 
             if(!tc_is_newer(tc, name, timestamp))
             {
-                continue;
+                goto skipLocation;
             }
 
             size_t idx = size++;
-            (*locations)[idx] = (FetchLocation){ .name = string_copy(name), .path = string_copy(files[i].filePath), .mtime = timestamp };
+            (*locations)[idx] = (FetchLocation){ .name = CopyString(name), .path = CopyString(files[i].filePath), .mtime = timestamp };
 
             if(size >= *capacity)
             {
@@ -195,21 +193,21 @@ static size_t CollectTexturesFtp(TextureCollection *tc, FetchLocation **location
                 memset((*locations) + oldCapacity, 0, (*capacity) - oldCapacity);
             }
 
-            string_free(name);
+skipLocation:
+            free(name);
         }
     }
 
     for(size_t i = 0; i < numFiles; ++i)
     {
-        string_free(files[i].filePath);
-        string_free(files[i].fileName);
+        free(files[i].filePath);
+        free(files[i].fileName);
     }
     free(files);
-    string_free(buffer);
     return size;
 }
 
-static size_t CollectTexturesFs(TextureCollection *tc, FetchLocation **locations, size_t size, size_t *capacity, pstring folder, pstring baseFolder)
+static size_t CollectTexturesFs(TextureCollection *tc, FetchLocation **locations, size_t size, size_t *capacity, char *folder, char *baseFolder)
 {
     DIR *dp = opendir(folder);
     if(!dp)
@@ -230,15 +228,14 @@ static size_t CollectTexturesFs(TextureCollection *tc, FetchLocation **locations
         char *fileName = entry->d_name;
         if(strcmp(fileName, ".") == 0 || strcmp(fileName, "..") == 0) continue;
 
-        pstring filePath = string_alloc(256);
-        string_format(filePath, "%s/%s", folder, fileName);
+        char filePath[256] = { 0 };
+        snprintf(filePath, sizeof filePath, "%s/%s", folder, fileName);
 
         struct stat buf;
         int r = stat(filePath, &buf);
         if(r == -1)
         {
             perror("stat");
-            string_free(filePath);
             continue;
         }
 
@@ -256,14 +253,15 @@ static size_t CollectTexturesFs(TextureCollection *tc, FetchLocation **locations
         else if(S_ISREG(buf.st_mode))
         {
             time_t timestamp = buf.st_mtime;
-            ssize_t extIdx = string_last_index_of(filePath, 0, ".");
-            if(extIdx != -1)
+            char *name = CopyString(filePath);
+            char *ext = strrchr(name, '.');
+            if(ext)
             {
-                pstring name = string_substring(filePath, string_length(baseFolder)+1, extIdx);
-                if(!tc_is_newer(tc, name, timestamp)) continue;
+                *ext = '\0';
+                if(!tc_is_newer(tc, name, timestamp)) goto skipLocation;
 
                 size_t idx = size++;
-                (*locations)[idx] = (FetchLocation){ .name = string_copy(name), .path = string_copy(filePath), .mtime = timestamp };
+                (*locations)[idx] = (FetchLocation){ .name = CopyString(name), .path = CopyString(filePath), .mtime = timestamp };
 
                 if(size >= *capacity)
                 {
@@ -272,12 +270,10 @@ static size_t CollectTexturesFs(TextureCollection *tc, FetchLocation **locations
                     *locations = realloc(*locations, (*capacity) * sizeof **locations);
                     memset((*locations) + oldCapacity, 0, (*capacity) - oldCapacity);
                 }
-
-                string_free(name);
             }
+skipLocation:
+            free(name);
         }
-
-        string_free(filePath);
     }
     closedir(dp);
 
@@ -313,15 +309,15 @@ static void FinalizeFtpCallback(void *handle, void *)
 typedef struct ThreadData
 {
     EdState *state;
-    pstring folder;
+    char *folder;
 } ThreadData;
 
 static void freeFetches(FetchLocation *locations, size_t num)
 {
     for(size_t i = 0; i < num; ++i)
     {
-        string_free(locations[i].name);
-        string_free(locations[i].path);
+        free(locations[i].name);
+        free(locations[i].path);
     }
 }
 
@@ -331,7 +327,7 @@ void* LoadThread(void *user)
     Project *project = &data->state->project;
     TextureCollection *tc = &data->state->textures;
     AsyncJob *async = &data->state->async;
-    pstring textureFolder = data->folder;
+    char *textureFolder = data->folder;
 
     size_t capacity = 1024;
     FetchLocation *locations = calloc(capacity, sizeof *locations);
@@ -373,7 +369,7 @@ void* LoadThread(void *user)
         free(locations);
     }
 
-    string_free(textureFolder);
+    free(textureFolder);
     free(data);
 
     return NULL;
@@ -394,12 +390,12 @@ void LoadTextures(EdState *state, bool refresh)
 
     Async_AbortJob(async);
 
-    pstring textureFolder = string_alloc(256);
+    char *textureFolder = calloc(256, sizeof *textureFolder);
 
-    if(string_length(project->basePath.fs.path) == 0)
-        string_format(textureFolder, "%s", project->texturesPath);
+    if(strlen(project->basePath.fs.path) == 0)
+        strncpy(textureFolder, project->texturesPath, 256);
     else
-        string_format(textureFolder, "%s/%s", project->basePath.fs.path, project->texturesPath);
+        snprintf(textureFolder, 256, "%s/%s", project->basePath.fs.path, project->texturesPath);
 
     ThreadData *data = calloc(1, sizeof *data);
     *data = (ThreadData){ .state = state, .folder = textureFolder };

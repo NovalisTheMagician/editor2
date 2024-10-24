@@ -5,7 +5,6 @@
 #include <assert.h>
 
 #include "logging.h"
-#include "utils/pstring.h"
 
 #undef malloc
 #undef calloc
@@ -166,53 +165,4 @@ void debug_free(void *ptr, const char *, int)
     if(!ptr) return;
     removeAlloc((uintptr_t)ptr);
     free(ptr);
-}
-
-pstring debug_pstr_alloc(size_t len, const char *file, int line)
-{
-    pstring string = string_alloc(len);
-    insertAlloc((uintptr_t)string, AC_STRING, file, line);
-    return string;
-}
-
-pstring debug_pstr_cstr(const char *cstr, const char *file, int line)
-{
-    pstring string = string_cstr(cstr);
-    insertAlloc((uintptr_t)string, AC_STRING, file, line);
-    return string;
-}
-
-pstring debug_pstr_cstr_alloc(const char *cstr, size_t size, const char *file, int line)
-{
-    pstring string = string_cstr_alloc(cstr, size);
-    insertAlloc((uintptr_t)string, AC_STRING, file, line);
-    return string;
-}
-
-pstring debug_pstr_cstr_size(size_t size, const char *cstr, const char *file, int line)
-{
-    pstring string = string_cstr_size(size, cstr);
-    insertAlloc((uintptr_t)string, AC_STRING, file, line);
-    return string;
-}
-
-pstring debug_pstr_copy(pstring string, const char *file, int line, const char *)
-{
-    pstring copy = string_copy(string);
-    insertAlloc((uintptr_t)copy, AC_STRING, file, line);
-    return copy;
-}
-
-void debug_pstr_free(pstring str, const char *, int, const char *)
-{
-    if(!str) return;
-    removeAlloc((uintptr_t)str);
-    string_free(str);
-}
-
-pstring debug_pstr_substring(pstring str, size_t start, ssize_t end, const char *file, int line)
-{
-    pstring substr = string_substring(str, start, end);
-    insertAlloc((uintptr_t)substr, AC_STRING, file, line);
-    return substr;
 }

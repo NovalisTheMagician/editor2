@@ -15,7 +15,7 @@ typedef struct Batch
 } Batch;
 
 typedef void (*batch_finish_cb)(Batch batch, bool lastBatch, void *handle, void *user);
-typedef bool (*read_cb)(char*, uint8_t**, size_t*, void*);
+typedef bool (*read_cb)(const char*, uint8_t**, size_t*, void*);
 typedef void (*finalize_cb)(void *handle, void *user);
 
 typedef struct FetchLocation
