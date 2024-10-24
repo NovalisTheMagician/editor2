@@ -7,7 +7,7 @@ SRC_SUBDIRS := windows dialogs utils map scripts
 DEFINES := __USE_XOPEN _GNU_SOURCE
 INC_DIRS := $(SRC_DIR)
 
-LIBS := m SDL2 ftp json-c stdc++ lua
+LIBS := m SDL2 ftp stdc++ lua
 LIB_DIRS :=
 
 CC := gcc

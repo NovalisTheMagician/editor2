@@ -1,8 +1,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <stddef.h>
-#include "memory.h"
 
 #define MAX_ASSETPATH_LEN 256
 
@@ -19,15 +17,15 @@ typedef struct AssetPath
     {
         struct
         {
-            pstring path;
+            char path[MAX_ASSETPATH_LEN];
         } fs;
 
         struct
         {
-            pstring path;
-            pstring url;
-            pstring login;
-            pstring password;
+            char path[MAX_ASSETPATH_LEN];
+            char url[MAX_ASSETPATH_LEN];
+            char login[MAX_ASSETPATH_LEN];
+            char password[MAX_ASSETPATH_LEN];
         } ftp;
     };
 } AssetPath;
@@ -35,10 +33,10 @@ typedef struct AssetPath
 typedef struct Project
 {
     AssetPath basePath;
-    pstring texturesPath;
-    pstring thingsFile;
+    char texturesPath[MAX_ASSETPATH_LEN];
+    char thingsFile[MAX_ASSETPATH_LEN];
     bool dirty;
-    pstring file;
+    char *file;
 } Project;
 
 void NewProject(Project *project);

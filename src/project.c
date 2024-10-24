@@ -1,195 +1,133 @@
 #include "project.h"
 
-#include <stdio.h>
-#include <json-c/json.h>
-#include "logging.h"
-
 #include "memory.h" // IWYU pragma: keep
 
-#define PROJECT_VERSION 1
+#include <stdio.h>
+#include <string.h>
+
+#include "logging.h"
+#include "serialization.h"
+
+#define PROJECT_VERSION 2
 
 void NewProject(Project *project)
 {
-    string_free(project->file);
-    string_free(project->thingsFile);
-    string_free(project->texturesPath);
-    string_free(project->basePath.ftp.path);
-    string_free(project->basePath.ftp.url);
-    string_free(project->basePath.ftp.login);
-    string_free(project->basePath.ftp.password);
+    free(project->file);
+    project->file = NULL;
 
-    project->basePath.ftp.path = string_alloc(MAX_ASSETPATH_LEN);
-    project->basePath.ftp.url = string_alloc(MAX_ASSETPATH_LEN);
-    project->basePath.ftp.login = string_alloc(MAX_ASSETPATH_LEN);
-    project->basePath.ftp.password = string_alloc(MAX_ASSETPATH_LEN);
+    memset(project->basePath.ftp.path, 0, sizeof project->basePath.ftp.path);
+    memset(project->basePath.ftp.url, 0, sizeof project->basePath.ftp.url);
+    memset(project->basePath.ftp.login, 0, sizeof project->basePath.ftp.login);
+    memset(project->basePath.ftp.password, 0, sizeof project->basePath.ftp.password);
 
-    project->file = string_alloc(1);
-    project->texturesPath = string_cstr_alloc("textures", MAX_ASSETPATH_LEN);
-    project->thingsFile = string_cstr_alloc("things.txt", MAX_ASSETPATH_LEN);
+    strncpy(project->texturesPath, "textures", sizeof project->texturesPath);
+    strncpy(project->thingsFile, "things.txt", sizeof project->thingsFile);
 
     project->dirty = false;
 }
 
 bool LoadProject(Project *project)
 {
-    json_object *root = json_object_from_file(project->file);
-    if(!root)
+    if(!project->file) return false;
+    FILE *file = fopen(project->file, "r");
+    if(!file)
     {
+        LogError("Failed to load project file %s: %s", project->file, strerror(errno));
         return false;
     }
 
-    bool success = true;
-
-    json_object *versionObj, *typeObj, *texturesPathObj, *thingsObj, *baseObj;
-    if(!json_object_object_get_ex(root, "version", &versionObj))
+    char lineRaw[1024] = { 0 };
+    int version = -1;
+    int lineNr = 0;
+    while(fgets(lineRaw, sizeof lineRaw, file) != NULL)
     {
-        success = false;
-        LogError("unknown json format");
-        goto cleanup;
-    }
-
-    if(!json_object_object_get_ex(root, "type", &typeObj))
-    {
-        success = false;
-        LogError("unknown json format");
-        goto cleanup;
-    }
-
-    if(!json_object_object_get_ex(root, "textures", &texturesPathObj))
-    {
-        success = false;
-        LogError("unknown json format");
-        goto cleanup;
-    }
-
-    if(!json_object_object_get_ex(root, "things", &thingsObj))
-    {
-        success = false;
-        LogError("unknown json format");
-        goto cleanup;
-    }
-
-    if(!json_object_object_get_ex(root, "base", &baseObj))
-    {
-        success = false;
-        LogError("unknown json format");
-        goto cleanup;
-    }
-
-    int version = json_object_get_int(versionObj);
-    if(version != PROJECT_VERSION)
-    {
-        success = false;
-        LogError("project version mismatch");
-        goto cleanup;
-    }
-
-    project->basePath.type = json_object_get_int(typeObj);
-    if(project->basePath.type != ASSPATH_FS && project->basePath.type != ASSPATH_FTP)
-    {
-        success = false;
-        LogError("invalid base type");
-        goto cleanup;
-    }
-
-    string_copy_into_cstr(project->texturesPath, json_object_get_string(texturesPathObj));
-    string_copy_into_cstr(project->thingsFile, json_object_get_string(thingsObj));
-
-    if(project->basePath.type == ASSPATH_FS)
-    {
-        json_object *pathObj;
-        if(!json_object_object_get_ex(baseObj, "path", &pathObj))
+        lineNr++;
+        char *line = Trim(lineRaw);
+        if(line[0] == '/' && line[1] == '/') continue; // comment
+        char *delim = strchr(line, '=');
+        if(!delim || delim == line)
         {
-            success = false;
-            LogError("unknown json format");
-            goto cleanup;
+            LogError("Malformed line at %d", lineNr);
+            goto errorParse;
         }
+        *delim = '\0';
+        char *key = line;
+        char *value = delim+1;
 
-        string_copy_into_cstr(project->basePath.fs.path, json_object_get_string(pathObj));
+        if(strcasecmp(key, "version") == 0)
+        {
+            if(ParseInt(value, &version))
+            {
+                if(version != PROJECT_VERSION)
+                {
+                    LogError("Unsupported project version on line %d (got %d | expected %d)", lineNr, version, PROJECT_VERSION);
+                    goto errorParse;
+                }
+                continue;
+            }
+        }
+        if(strcasecmp(key, "textures_path") == 0) { strncpy(project->texturesPath, value, sizeof project->texturesPath); continue; }
+        if(strcasecmp(key, "things_file") == 0) { strncpy(project->thingsFile, value, sizeof project->thingsFile); continue; }
+        if(strcasecmp(key, "source_type") == 0) { if(ParseUint(value, &project->basePath.type)) continue; }
+        if(strcasecmp(key, "source_path") == 0) { strncpy(project->basePath.ftp.path, value, sizeof project->basePath.ftp.path); continue; }
+        if(strcasecmp(key, "source_url") == 0) { strncpy(project->basePath.ftp.url, value, sizeof project->basePath.ftp.url); continue; }
+        if(strcasecmp(key, "source_login") == 0) { strncpy(project->basePath.ftp.login, value, sizeof project->basePath.ftp.login); continue; }
+        if(strcasecmp(key, "source_password") == 0) { strncpy(project->basePath.ftp.password, value, sizeof project->basePath.ftp.password); continue; }
+
+        LogError("Failed to parse line %d", lineNr);
+        goto errorParse;
     }
-    else
+
+    if(version == -1)
     {
-        json_object *pathObj, *urlObj, *loginObj, *passObj;
-        if(!json_object_object_get_ex(baseObj, "path", &pathObj))
-        {
-            success = false;
-            LogError("unknown json format");
-            goto cleanup;
-        }
-
-        if(!json_object_object_get_ex(baseObj, "url", &urlObj))
-        {
-            success = false;
-            LogError("unknown json format");
-            goto cleanup;
-        }
-
-        if(!json_object_object_get_ex(baseObj, "login", &loginObj))
-        {
-            success = false;
-            LogError("unknown json format");
-            goto cleanup;
-        }
-
-        if(!json_object_object_get_ex(baseObj, "password", &passObj))
-        {
-            success = false;
-            LogError("unknown json format");
-            goto cleanup;
-        }
-
-        string_copy_into_cstr(project->basePath.ftp.path, json_object_get_string(pathObj));
-        string_copy_into_cstr(project->basePath.ftp.url, json_object_get_string(urlObj));
-        string_copy_into_cstr(project->basePath.ftp.login, json_object_get_string(loginObj));
-        string_copy_into_cstr(project->basePath.ftp.password, json_object_get_string(passObj));
+        LogError("No version key found");
+        goto errorParse;
     }
 
-cleanup:
-    json_object_put(root);
+    fclose(file);
     project->dirty = false;
-    return success;
+    return true;
+
+errorParse:
+    fclose(file);
+    LogError("Failed to load project file %s", project->file);
+    NewProject(project);
+    return false;
 }
 
 void SaveProject(Project *project)
 {
-    json_object *root = json_object_new_object();
+    if(!project->file) return;
+    FILE *file = fopen(project->file, "w");
+    if(!file)
+    {
+        LogError("Failed to save project file %s: %s", project->file, strerror(errno));
+        return;
+    }
 
-    json_object_object_add(root, "version", json_object_new_int(PROJECT_VERSION));
-    json_object_object_add(root, "type", json_object_new_int(project->basePath.type));
-    json_object_object_add(root, "textures", json_object_new_string_len(project->texturesPath, string_length(project->texturesPath)));
-    json_object_object_add(root, "things", json_object_new_string_len(project->thingsFile, string_length(project->thingsFile)));
-
-    json_object *base = json_object_new_object();
+    fprintf(file, "version = %d\n", PROJECT_VERSION);
+    fprintf(file, "textures_path = %s\n", project->texturesPath);
+    fprintf(file, "things_file = %s\n", project->thingsFile);
+    fprintf(file, "source_type = %d\n", project->basePath.type);
+    fprintf(file, "\n");
     if(project->basePath.type == ASSPATH_FS)
     {
-        json_object_object_add(base, "path", json_object_new_string_len(project->basePath.fs.path, string_length(project->basePath.fs.path)));
+        fprintf(file, "source_path = %s\n", project->basePath.fs.path);
     }
     else
     {
-        json_object_object_add(base, "url", json_object_new_string_len(project->basePath.ftp.url, string_length(project->basePath.ftp.url)));
-        json_object_object_add(base, "login", json_object_new_string_len(project->basePath.ftp.login, string_length(project->basePath.ftp.login)));
-        json_object_object_add(base, "password", json_object_new_string_len(project->basePath.ftp.password, string_length(project->basePath.ftp.password)));
-        json_object_object_add(base, "path", json_object_new_string_len(project->basePath.ftp.path, string_length(project->basePath.ftp.path)));
+        fprintf(file, "source_url = %s\n", project->basePath.ftp.url);
+        fprintf(file, "source_login = %s\n", project->basePath.ftp.login);
+        fprintf(file, "source_password = %s\n", project->basePath.ftp.password);
+        fprintf(file, "source_path = %s\n", project->basePath.ftp.path);
     }
 
-    json_object_object_add(root, "base", base);
-
-    FILE *file = fopen(project->file, "w");
-    fprintf(file, "%s", json_object_to_json_string_ext(root, JSON_C_TO_STRING_PRETTY));
     fclose(file);
-
-    json_object_put(root);
     project->dirty = false;
 }
 
 void FreeProject(Project *project)
 {
-    string_free(project->file);
+    free(project->file);
     project->file = NULL;
-    string_free(project->thingsFile);
-    string_free(project->texturesPath);
-    string_free(project->basePath.ftp.path);
-    string_free(project->basePath.ftp.url);
-    string_free(project->basePath.ftp.login);
-    string_free(project->basePath.ftp.password);
 }
