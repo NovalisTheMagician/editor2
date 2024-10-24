@@ -32,7 +32,6 @@ char* ParseLineIndex(char *line, size_t *idx)
         return NULL;
     }
     *delim = '\0';
-    errno = 0;
     char *end;
     *idx = strtoull(line, &end, 10);
     if(line == end)
@@ -50,7 +49,6 @@ char* ParseLineUint(char *line, uint32_t *i)
         return NULL;
     }
     *delim = '\0';
-    errno = 0;
     char *end;
     *i = strtoul(line, &end, 10);
     if(line == end)
@@ -68,7 +66,6 @@ char* ParseLineInt(char *line, int *i)
         return NULL;
     }
     *delim = '\0';
-    errno = 0;
     char *end;
     *i = strtol(line, &end, 10);
     if(line == end)
@@ -86,7 +83,6 @@ char* ParseLineFloat(char *line, float *f)
         return NULL;
     }
     *delim = '\0';
-    errno = 0;
     char *end;
     *f = strtof(line, &end);
     if(line == end)
