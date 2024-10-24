@@ -228,7 +228,7 @@ static size_t CollectTexturesFs(TextureCollection *tc, FetchLocation **locations
         char *fileName = entry->d_name;
         if(strcmp(fileName, ".") == 0 || strcmp(fileName, "..") == 0) continue;
 
-        char filePath[256] = { 0 };
+        char filePath[512] = { 0 };
         snprintf(filePath, sizeof filePath, "%s/%s", folder, fileName);
 
         struct stat buf;
@@ -390,12 +390,12 @@ void LoadTextures(EdState *state, bool refresh)
 
     Async_AbortJob(async);
 
-    char *textureFolder = calloc(256, sizeof *textureFolder);
+    char *textureFolder = calloc(512, sizeof *textureFolder);
 
     if(strlen(project->basePath.fs.path) == 0)
         strncpy(textureFolder, project->texturesPath, 256);
     else
-        snprintf(textureFolder, 256, "%s/%s", project->basePath.fs.path, project->texturesPath);
+        snprintf(textureFolder, 512, "%s/%s", project->basePath.fs.path, project->texturesPath);
 
     ThreadData *data = calloc(1, sizeof *data);
     *data = (ThreadData){ .state = state, .folder = textureFolder };

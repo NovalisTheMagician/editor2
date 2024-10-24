@@ -2,6 +2,10 @@
 
 #include "glad/gl.h"
 
+#include <stddef.h>
+#include <sys/types.h>
+#include <time.h>
+
 typedef enum TextureFlags
 {
     TF_NONE,
