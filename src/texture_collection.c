@@ -1,6 +1,7 @@
 #include "texture_collection.h"
 
 #include "re.h"
+#include "utils/string.h"
 
 #if defined(_DEBUG)
 #pragma push_macro("malloc")
@@ -91,7 +92,7 @@ static GLuint createTexture(int width, int height, const uint8_t *pixels)
     return texId;
 }
 
-bool tc_load(TextureCollection *tc, pstring name, pstring path, time_t mtime)
+bool tc_load(TextureCollection *tc, const char *name, const char *path, time_t mtime)
 {
     Texture *existing = tc_get(tc, name);
 
@@ -121,8 +122,8 @@ bool tc_load(TextureCollection *tc, pstring name, pstring path, time_t mtime)
         existing->flags = TF_NONE;
         existing->modTime = mtime;
 
-        string_free(existing->name);
-        existing->name = string_copy(name);
+        free(existing->name);
+        existing->name = CopyString(name);
     }
     else
     {
@@ -136,7 +137,7 @@ bool tc_load(TextureCollection *tc, pstring name, pstring path, time_t mtime)
         texture->width = width;
         texture->height = height;
         texture->flags = TF_NONE;
-        texture->name = string_copy(name);
+        texture->name = CopyString(name);
         texture->modTime = mtime;
         texture->activeIndex = -1;
 
@@ -149,7 +150,7 @@ bool tc_load(TextureCollection *tc, pstring name, pstring path, time_t mtime)
     return true;
 }
 
-bool tc_load_mem(TextureCollection *tc, pstring name, uint8_t *data, size_t dataSize, time_t mtime)
+bool tc_load_mem(TextureCollection *tc, const char *name, uint8_t *data, size_t dataSize, time_t mtime)
 {
     Texture *existing = tc_get(tc, name);
 
@@ -179,8 +180,8 @@ bool tc_load_mem(TextureCollection *tc, pstring name, uint8_t *data, size_t data
         existing->flags = TF_NONE;
         existing->modTime = mtime;
 
-        string_free(existing->name);
-        existing->name = string_copy(name);
+        free(existing->name);
+        existing->name = CopyString(name);
     }
     else
     {
@@ -194,7 +195,7 @@ bool tc_load_mem(TextureCollection *tc, pstring name, uint8_t *data, size_t data
         texture->width = width;
         texture->height = height;
         texture->flags = TF_NONE;
-        texture->name = string_copy(name);
+        texture->name = CopyString(name);
         texture->modTime = mtime;
         texture->activeIndex = -1;
 
@@ -216,7 +217,7 @@ void tc_iterate(TextureCollection *tc, tc_itearte_cb cb, void *user)
     }
 }
 
-void tc_iterate_filter(TextureCollection *tc, tc_itearte_cb cb, pstring filter, void *user)
+void tc_iterate_filter(TextureCollection *tc, tc_itearte_cb cb, const char *filter, void *user)
 {
     struct regex_t *regex = re_compile(filter);
 
@@ -244,7 +245,7 @@ void tc_iterate_active(TextureCollection *tc, tc_itearte_cb cb, void *user)
     }
 }
 
-void tc_unload(TextureCollection *tc, pstring name)
+void tc_unload(TextureCollection *tc, const char *name)
 {
     if(name == NULL) return;
     uint64_t nameHash = hash(name) % NUM_SLOTS;
@@ -257,7 +258,7 @@ void tc_unload(TextureCollection *tc, pstring name)
         {
             tc_inactive(tc, texture);
             glDeleteTextures(1, &texture->texture1);
-            string_free(texture->name);
+            free(texture->name);
 
             if(i < NUM_BUCKETS - 1)
                 memmove(tc->slots[nameHash].textures + i, tc->slots[nameHash].textures + i + 1, size - 1 - i);
@@ -281,7 +282,7 @@ void tc_unload_all(TextureCollection *tc)
         Texture *texture = tc->order[i];
         tc_inactive(tc, texture);
         glDeleteTextures(1, &texture->texture1);
-        string_free(texture->name);
+        free(texture->name);
     }
 
     for(size_t i = 0; i < NUM_SLOTS; ++i)
@@ -292,7 +293,7 @@ void tc_unload_all(TextureCollection *tc)
     tc->size = 0;
 }
 
-bool tc_has(TextureCollection *tc, pstring name)
+bool tc_has(TextureCollection *tc, const char *name)
 {
     if(name == NULL) return false;
     uint64_t nameHash = hash(name) % NUM_SLOTS;
@@ -306,7 +307,7 @@ bool tc_has(TextureCollection *tc, pstring name)
     return false;
 }
 
-Texture* tc_get(TextureCollection *tc, pstring name)
+Texture* tc_get(TextureCollection *tc, const char *name)
 {
     if(name == NULL) return NULL;
     uint64_t nameHash = hash(name) % NUM_SLOTS;
@@ -321,17 +322,17 @@ Texture* tc_get(TextureCollection *tc, pstring name)
     return NULL;
 }
 
-bool tc_set(TextureCollection *tc, pstring name, Texture texture)
+bool tc_set(TextureCollection *tc, const char *name, Texture texture)
 {
     if(name == NULL) return false;
     Texture *existing = tc_get(tc, name);
     if(existing)
     {
         size_t orderNum = existing->orderIdx;
-        string_free(existing->name);
+        free(existing->name);
         *existing = texture;
         existing->orderIdx = orderNum;
-        existing->name = string_copy(name);
+        existing->name = CopyString(name);
 
         return false;
     }
@@ -342,7 +343,7 @@ bool tc_set(TextureCollection *tc, pstring name, Texture texture)
     Texture *tex = &tc->slots[nameHash].textures[size];
 
     *tex = texture;
-    existing->name = string_copy(name);
+    tex->name = CopyString(name);
 
     size_t orderIdx = tc->size++;
     tex->orderIdx = orderIdx;
@@ -363,7 +364,7 @@ void tc_sort(TextureCollection *tc)
         Quicksort(tc->order, 0, tc->size-1);
 }
 
-bool tc_is_newer(TextureCollection *tc, pstring name, time_t newTime)
+bool tc_is_newer(TextureCollection *tc, const char *name, time_t newTime)
 {
     Texture *texture = tc_get(tc, name);
     if(texture)

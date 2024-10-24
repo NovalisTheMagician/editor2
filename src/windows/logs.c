@@ -43,11 +43,11 @@ void LogsWindow(bool *p_open, EdState *state)
             size_t numLogs = LogLength(log);
             for(size_t i = 0; i < numLogs; ++i)
             {
-                pstring str = LogGet(log, i);
+                char *str = LogGet(log, i);
                 LogSeverity severity = LogGetSeverity(log, i);
                 igPushStyleColor_Vec4(ImGuiCol_Text, severityToColor(state, severity));
                 const char *start = str;
-                const char *end = str + string_length(str);
+                const char *end = str + strlen(str);
                 igTextUnformatted(start, end);
                 igPopStyleColor(1);
             }

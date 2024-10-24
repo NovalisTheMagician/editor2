@@ -61,7 +61,7 @@ void LogInit(LogBuffer *logBuffer)
 void LogDestroy(LogBuffer *logBuffer)
 {
     for(size_t i = 0; i < (size_t)logBuffer->capacity; ++i)
-        string_free(logBuffer->lines[i]);
+        free(logBuffer->lines[i]);
     free(logBuffer->lines);
     free(logBuffer->severities);
     logBuffer_ = NULL;
@@ -75,7 +75,7 @@ static void freeStrings(LogBuffer *logBuffer)
 {
     for(size_t i = 0; i < logBuffer->length; ++i)
     {
-        string_free(logBuffer->lines[i]);
+        free(logBuffer->lines[i]);
         logBuffer->lines[i] = NULL;
     }
 }
@@ -93,7 +93,7 @@ size_t LogLength(LogBuffer *logBuffer)
     return logBuffer->length;
 }
 
-pstring LogGet(LogBuffer *logBuffer, size_t idx)
+char* LogGet(LogBuffer *logBuffer, size_t idx)
 {
     idx += logBuffer->start;
     return logBuffer->lines[idx % logBuffer->capacity];
@@ -111,19 +111,19 @@ void LogClear(LogBuffer *logBuffer)
     logBuffer->length = 0;
 }
 
-void LogString(LogBuffer *logBuffer, LogSeverity severity, pstring str)
+void LogString(LogBuffer *logBuffer, LogSeverity severity, const char *str)
 {
     size_t idx = getNextIndex(logBuffer);
-    pstring lineStr = logBuffer->lines[idx];
+    char *lineStr = logBuffer->lines[idx];
     if(lineStr == NULL)
-        lineStr = string_alloc(LOGBUFFER_LINE_LEN);
+        lineStr = calloc(LOGBUFFER_LINE_LEN, sizeof *lineStr);
 
     char timeBuffer[9] = { 0 };
     time_t timer = time(NULL);
     struct tm *tm_info = localtime(&timer);
     strftime(timeBuffer, sizeof timeBuffer, "%H:%M:%S", tm_info);
 
-    string_format(lineStr, "[%s](%s): {%s}", timeBuffer, severityToString(severity), str);
+    snprintf(lineStr, LOGBUFFER_LINE_LEN, "[%s](%s): {%s}", timeBuffer, severityToString(severity), str);
 
     logBuffer->lines[idx] = lineStr;
     logBuffer->severities[idx] = severity;
@@ -132,18 +132,17 @@ void LogString(LogBuffer *logBuffer, LogSeverity severity, pstring str)
 static void LogFormatV(LogBuffer *logBuffer, LogSeverity severity, const char *format, va_list args)
 {
     size_t idx = getNextIndex(logBuffer);
-    pstring lineStr = logBuffer->lines[idx];
+    char *lineStr = logBuffer->lines[idx];
     if(lineStr == NULL)
-        lineStr = string_alloc(LOGBUFFER_LINE_LEN);
+        lineStr = calloc(LOGBUFFER_LINE_LEN, sizeof *lineStr);
 
     char timeBuffer[9] = { 0 };
     time_t timer = time(NULL);
     struct tm *tm_info = localtime(&timer);
     strftime(timeBuffer, sizeof timeBuffer, "%H:%M:%S", tm_info);
-    size_t prefixSize = string_format(lineStr, "[%s](%s): ", timeBuffer, severityToString(severity));
-    string_vformat_offset(lineStr, prefixSize, format, args);
+    size_t prefixSize = snprintf(lineStr, LOGBUFFER_LINE_LEN, "[%s](%s): ", timeBuffer, severityToString(severity));
+    vsnprintf(lineStr + prefixSize, LOGBUFFER_LINE_LEN - prefixSize, format, args);
 
-    string_recalc(lineStr);
     logBuffer->lines[idx] = lineStr;
     logBuffer->severities[idx] = severity;
 }

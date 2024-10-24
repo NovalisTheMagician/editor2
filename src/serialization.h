@@ -16,5 +16,6 @@ char* ParseLineTexture(char *line, char **texture);
 
 bool ParseBool(char *str, bool *val);
 bool ParseInt(char *str, int *val);
+bool ParseUint(char *str, uint32_t *val);
 bool ParseFloat(char *str, float *val);
 bool ParseVec4(char *str, vec4s *val);

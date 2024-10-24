@@ -11,19 +11,19 @@ typedef struct Batch
 {
     uint8_t *buffers[BATCH_SIZE];
     size_t bufferSizes[BATCH_SIZE];
-    pstring names[BATCH_SIZE];
+    char *names[BATCH_SIZE];
     time_t mtimes[BATCH_SIZE];
     size_t numBuffers;
 } Batch;
 
 typedef void (*batch_finish_cb)(Batch batch, bool lastBatch, void *handle, void *user);
-typedef bool (*read_cb)(pstring, uint8_t**, size_t*, void*);
+typedef bool (*read_cb)(char*, uint8_t**, size_t*, void*);
 typedef void (*finalize_cb)(void *handle, void *user);
 
 typedef struct FetchLocation
 {
-    pstring path;
-    pstring name;
+    char *path;
+    char *name;
     time_t mtime;
 } FetchLocation;
 

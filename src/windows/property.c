@@ -5,6 +5,7 @@
 #include "memory.h"
 
 #include "texture_collection.h"
+#include "utils/string.h"
 
 static void SelectElement(EdState *state, void *element, int selectMode)
 {
@@ -153,7 +154,7 @@ static void SectorProperties(EdState *state)
         igImageButton("floorTexture", (ImTextureID)(intptr_t)texId, size, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1, }, (ImVec4){ 0, 0, 0, 0 }, (ImVec4){ 1, 1, 1, 1 });
         if(igIsItemHovered(0) && igIsMouseReleased_Nil(ImGuiMouseButton_Right) && floorTexture)
         {
-            string_free(selectedSector->data.floorTex);
+            free(selectedSector->data.floorTex);
             selectedSector->data.floorTex = NULL;
         }
 
@@ -162,9 +163,9 @@ static void SectorProperties(EdState *state)
             const ImGuiPayload *payload = igAcceptDragDropPayload("TextureDnD", 0);
             if(payload)
             {
-                string_free(selectedSector->data.floorTex);
+                free(selectedSector->data.floorTex);
                 Texture *tex = *(Texture**)payload->Data;
-                selectedSector->data.floorTex = string_copy(tex->name);
+                selectedSector->data.floorTex = CopyString(tex->name);
                 tc_active(&state->textures, tex);
             }
             igEndDragDropTarget();
@@ -177,7 +178,7 @@ static void SectorProperties(EdState *state)
         igImageButton("ceilTexture", (ImTextureID)(intptr_t)texId, size, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1, }, (ImVec4){ 0, 0, 0, 0 }, (ImVec4){ 1, 1, 1, 1 });
         if(igIsItemHovered(0) && igIsMouseReleased_Nil(ImGuiMouseButton_Right) && ceilTexture)
         {
-            string_free(selectedSector->data.floorTex);
+            free(selectedSector->data.floorTex);
             selectedSector->data.floorTex = NULL;
         }
 
@@ -186,9 +187,9 @@ static void SectorProperties(EdState *state)
             const ImGuiPayload *payload = igAcceptDragDropPayload("TextureDnD", 0);
             if(payload)
             {
-                string_free(selectedSector->data.ceilTex);
+                free(selectedSector->data.ceilTex);
                 Texture *tex = *(Texture**)payload->Data;
-                selectedSector->data.ceilTex = string_copy(tex->name);
+                selectedSector->data.ceilTex = CopyString(tex->name);
             }
             igEndDragDropTarget();
         }

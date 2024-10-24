@@ -127,6 +127,13 @@ bool ParseInt(char *str, int *val)
     return !(str == end);
 }
 
+bool ParseUint(char *str, uint32_t *val)
+{
+    char *end;
+    *val = strtoul(str, &end, 10);
+    return !(str == end);
+}
+
 bool ParseFloat(char *str, float *val)
 {
     char *end;

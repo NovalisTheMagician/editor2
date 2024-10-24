@@ -63,7 +63,7 @@ void TexturesWindow(bool *p_open, EdState *state)
             igEndMenuBar();
         }
 
-        if(igInputText("Filter", state->data.textureFilter, string_size(state->data.textureFilter), 0, NULL, NULL)) string_recalc(state->data.textureFilter);
+        igInputText("Filter", state->data.textureFilter, sizeof state->data.textureFilter, 0, NULL, NULL);
         igSameLine(0, 16);
         igText("%d Textures Found", tc_size(&state->textures));
 

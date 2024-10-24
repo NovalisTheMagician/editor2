@@ -2,7 +2,6 @@
 
 #include <stddef.h>
 #include "cglm/struct.h" // IWYU pragma: keep
-#include "memory.h"
 
 #define MAP_VERSION 1
 
@@ -46,9 +45,9 @@ typedef struct MapVertex
 
 typedef struct Side
 {
-    pstring upperTex;
-    pstring middleTex;
-    pstring lowerTex;
+    char *upperTex;
+    char *middleTex;
+    char *lowerTex;
 } Side;
 
 typedef struct LineData
@@ -76,8 +75,8 @@ typedef struct SectorData
     int32_t floorHeight;
     int32_t ceilHeight;
 
-    pstring floorTex;
-    pstring ceilTex;
+    char *floorTex;
+    char *ceilTex;
 } SectorData;
 
 typedef struct MapSector
@@ -114,7 +113,7 @@ typedef struct Map
     size_t numSectors;
 
     bool dirty;
-    pstring file;
+    char *file;
 
     int textureScale;
     float gravity;

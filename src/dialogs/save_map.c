@@ -1,11 +1,12 @@
 #include "../dialogs.h"
 #include "ImGuiFileDialog.h"
+#include "utils/string.h"
 
 static void SaveMapCallback(const char *path, void *data)
 {
     Map *map = data;
-    string_free(map->file);
-    map->file = string_cstr(path);
+    free(map->file);
+    map->file = CopyString(path);
     SaveMap(map);
 }
 

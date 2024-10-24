@@ -15,8 +15,8 @@ typedef enum PluginFlags
 
 typedef struct Plugin
 {
-    pstring name;
-    pstring file;
+    char *name;
+    char *file;
     PluginFlags flags;
 } Plugin;
 

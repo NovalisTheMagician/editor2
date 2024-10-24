@@ -5,7 +5,6 @@
 #include "map/query.h"
 #include "memory.h"
 #include "serialization.h"
-#include "utils/pstring.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -61,17 +60,35 @@ LineData CopyLineData(LineData data)
 {
     LineData copy = data;
     if(data.front.lowerTex)
-        copy.front.lowerTex = string_copy(data.front.lowerTex);
+    {
+        copy.front.lowerTex = malloc(strlen(data.front.lowerTex)+1);
+        strcpy(copy.front.lowerTex, data.front.lowerTex);
+    }
     if(data.front.middleTex)
-        copy.front.middleTex = string_copy(data.front.middleTex);
+    {
+        copy.front.middleTex = malloc(strlen(data.front.middleTex)+1);
+        strcpy(copy.front.middleTex, data.front.middleTex);
+    }
     if(data.front.upperTex)
-        copy.front.upperTex = string_copy(data.front.upperTex);
+    {
+        copy.front.upperTex = malloc(strlen(data.front.upperTex)+1);
+        strcpy(copy.front.upperTex, data.front.upperTex);
+    }
     if(data.back.lowerTex)
-        copy.back.lowerTex = string_copy(data.back.lowerTex);
+    {
+        copy.back.lowerTex = malloc(strlen(data.back.lowerTex)+1);
+        strcpy(copy.back.lowerTex, data.back.lowerTex);
+    }
     if(data.back.middleTex)
-        copy.back.middleTex = string_copy(data.back.middleTex);
+    {
+        copy.back.middleTex = malloc(strlen(data.back.middleTex)+1);
+        strcpy(copy.back.middleTex, data.back.middleTex);
+    }
     if(data.back.upperTex)
-        copy.back.upperTex = string_copy(data.back.upperTex);
+    {
+        copy.back.upperTex = malloc(strlen(data.back.upperTex)+1);
+        strcpy(copy.back.upperTex, data.back.upperTex);
+    }
     return copy;
 }
 
@@ -79,26 +96,32 @@ SectorData CopySectorData(SectorData data)
 {
     SectorData copy = data;
     if(data.ceilTex)
-        copy.ceilTex = string_copy(data.ceilTex);
+    {
+        copy.ceilTex = malloc(strlen(data.ceilTex)+1);
+        strcpy(copy.ceilTex, data.ceilTex);
+    }
     if(data.floorTex)
-        copy.floorTex = string_copy(data.floorTex);
+    {
+        copy.floorTex = malloc(strlen(data.floorTex)+1);
+        strcpy(copy.floorTex, data.floorTex);
+    }
     return copy;
 }
 
 void FreeLineData(LineData data)
 {
-    string_free(data.front.lowerTex);
-    string_free(data.front.middleTex);
-    string_free(data.front.upperTex);
-    string_free(data.back.lowerTex);
-    string_free(data.back.middleTex);
-    string_free(data.back.upperTex);
+    free(data.front.lowerTex);
+    free(data.front.middleTex);
+    free(data.front.upperTex);
+    free(data.back.lowerTex);
+    free(data.back.middleTex);
+    free(data.back.upperTex);
 }
 
 void FreeSectorData(SectorData data)
 {
-    string_free(data.ceilTex);
-    string_free(data.floorTex);
+    free(data.ceilTex);
+    free(data.floorTex);
 }
 
 void FreeMapVertex(MapVertex *vertex)
@@ -146,8 +169,8 @@ void NewMap(Map *map)
     map->numSectors = 0;
     map->sectorIdx = 0;
 
-    string_free(map->file);
-    map->file = string_alloc(1);
+    free(map->file);
+    map->file = NULL;
 
     map->dirty = false;
 
@@ -169,15 +192,24 @@ static char* parseSide(char *line, Side *side)
     line = ParseLineString(line, &tex);
     if(!line) return NULL;
     if(strcmp(tex, "NULL") != 0)
-        side->lowerTex = string_cstr(tex);
+    {
+        side->lowerTex = malloc(strlen(tex)+1);
+        strcpy(side->lowerTex, tex);
+    }
     line = ParseLineString(line, &tex);
     if(!line) return NULL;
     if(strcmp(tex, "NULL") != 0)
-        side->middleTex = string_cstr(tex);
+    {
+        side->middleTex = malloc(strlen(tex)+1);
+        strcpy(side->middleTex, tex);
+    }
     line = ParseLineString(line, &tex);
     if(!line) return NULL;
     if(strcmp(tex, "NULL") != 0)
-        side->upperTex = string_cstr(tex);
+    {
+        side->upperTex = malloc(strlen(tex)+1);
+        strcpy(side->upperTex, tex);
+    }
     return line;
 }
 
@@ -381,12 +413,18 @@ bool LoadMap(Map *map)
                     line = ParseLineTexture(line, &floorTexture);
                     if(!line) continue;
                     if(floorTexture)
-                        data.floorTex = string_cstr(floorTexture);
+                    {
+                        data.floorTex = malloc(strlen(floorTexture)+1);
+                        strcpy(data.floorTex, floorTexture);
+                    }
                     char *ceilTexture;
                     line = ParseLineTexture(line, &ceilTexture);
                     if(!line) continue;
                     if(ceilTexture)
-                        data.ceilTex = string_cstr(ceilTexture);
+                    {
+                        data.ceilTex = malloc(strlen(ceilTexture)+1);
+                        strcpy(data.ceilTex, ceilTexture);
+                    }
 
                     CreateResult res = CreateSector(map, numOuterLines, outerLines, NULL, data);
                     MapSector *sector = res.mapElement;
@@ -408,22 +446,22 @@ nextLine:
 
     fclose(file);
     map->dirty = false;
-    return false;
+    return true;
 }
 
-static char* getTextureName(pstring texname)
+static char* getTextureName(char *texname)
 {
     return texname ? texname : "NULL";
 }
 
 void SaveMap(Map *map)
 {
-    if(map->file == NULL) return;
+    if(!map->file) return;
 
     FILE *file = fopen(map->file, "w");
     if(!file)
     {
-        LogError("Failed to create map file %s: %s", map->file, strerror(errno));
+        LogError("Failed to save map file %s: %s", map->file, strerror(errno));
         return;
     }
 
@@ -471,7 +509,7 @@ void FreeMap(Map *map)
     FreeLineList(map->headLine);
     FreeSectorList(map->headSector);
 
-    string_free(map->file);
+    free(map->file);
     map->file = NULL;
 }
 

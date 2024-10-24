@@ -22,7 +22,7 @@ void EditRemoveLines(Map *map, size_t num, MapLine *lines[static num]);
 // MapLine* EditGetLine(Map *map, Vertex pos);
 MapLine* EditGetClosestLine(Map *map, vec2s pos, float maxDist);
 
-MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLines], bool lineFront[static numLines], SectorData data);
+MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLines], bool lineFronts[static numLines], size_t numInnerLines, size_t numInnerLinesNum[static numInnerLines], MapLine ***innerLines, bool **innerLinesFront, SectorData data);
 void EditRemoveSectors(Map *map, size_t num, MapSector *sectors[static num]);
 MapSector* EditGetSector(Map *map, vec2s pos);
 

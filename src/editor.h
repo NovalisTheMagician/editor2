@@ -103,8 +103,8 @@ typedef struct EdSettings
     bool showGridLines, showMajorAxis;
     int realtimeFov;
 
-    pstring gamePath;
-    pstring launchArguments;
+    char gamePath[MAX_GAMEPATH_LEN];
+    char launchArguments[MAX_GAMEARGUMENTS_LEN];
 } EdSettings;
 
 typedef struct BackgroundShaderData
@@ -227,7 +227,7 @@ typedef struct EdState
         int mx, my, mtx, mty;
 #endif
 
-        pstring textureFilter;
+        char textureFilter[TEXTURE_FILTER_LEN];
 
         float realtimeFov;
 

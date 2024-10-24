@@ -13,7 +13,7 @@ typedef enum LogSeverity
 
 typedef struct LogBuffer
 {
-    pstring *lines;
+    char **lines;
     LogSeverity *severities;
     size_t start, length;
 
@@ -25,10 +25,10 @@ void LogDestroy(LogBuffer *logBuffer);
 void LogResizeBuffer(LogBuffer *logBuffer);
 
 size_t LogLength(LogBuffer *logBuffer);
-pstring LogGet(LogBuffer *logBuffer, size_t idx);
+char* LogGet(LogBuffer *logBuffer, size_t idx);
 LogSeverity LogGetSeverity(LogBuffer *logBuffer, size_t idx);
 void LogClear(LogBuffer *logBuffer);
-void LogString(LogBuffer *logBuffer, LogSeverity severity, pstring str);
+void LogString(LogBuffer *logBuffer, LogSeverity severity, const char *str);
 void LogFormat(LogBuffer *logBuffer, LogSeverity severity, const char *format, ...);
 
 void LogInfo(const char *format, ...);

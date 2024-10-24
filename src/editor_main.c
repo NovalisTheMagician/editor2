@@ -1,5 +1,6 @@
 #include "logging.h"
 #include "script.h"
+#include "utils/string.h"
 #include <SDL2/SDL_video.h>
 #include <time.h>
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
@@ -50,20 +51,16 @@ static void HandleArguments(int argc, char *argv[], EdState *state)
             settingsPath = optarg;
             break;
         case 'p':
-            string_free(state->project.file);
-            state->project.file = string_cstr(optarg);
+            state->project.file = CopyString(optarg);
             if(!LoadProject(&state->project))
             {
-                LogWarning("failed to load project %s", optarg);
                 NewProject(&state->project);
             }
             break;
         case 'm':
-            string_free(state->map.file);
-            state->map.file = string_cstr(optarg);
+            state->map.file = CopyString(optarg);
             if(!LoadMap(&state->map))
             {
-                LogWarning("failed to load map %s", optarg);
                 NewMap(&state->map);
             }
             break;
@@ -148,7 +145,7 @@ int EditorMain(int argc, char *argv[])
     }
 
     tc_init(&state->textures);
-    if(string_length(state->project.file) > 0)
+    if(state->project.file)
     {
         LoadTextures(state, true);
     }

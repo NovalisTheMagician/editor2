@@ -85,8 +85,8 @@ static void freeFetches(FetchLocation *locations, size_t num)
 {
     for(size_t i = 0; i < num; ++i)
     {
-        string_free(locations[i].name);
-        string_free(locations[i].path);
+        free(locations[i].name);
+        free(locations[i].path);
     }
 }
 

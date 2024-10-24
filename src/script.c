@@ -13,6 +13,7 @@
 #include "memory.h"
 
 #include "scripts/scripts.h"
+#include "utils/string.h"
 
 static void luaError(lua_State *L)
 {
@@ -100,7 +101,7 @@ static size_t addPlugin(Script *script, size_t len, const char name[static len])
 
     script->numPlugins++;
     script->plugins = realloc(script->plugins, sizeof *script->plugins * script->numPlugins);
-    script->plugins[script->numPlugins-1] = (Plugin){ .name = string_cstr_size(len, name), .flags = 0 };
+    script->plugins[script->numPlugins-1] = (Plugin){ .name = CopyStringLen(name, len), .flags = 0 };
     return script->numPlugins-1;
 }
 
@@ -232,9 +233,9 @@ void ScriptLoadScripts(Script *script)
         struct dirent *dent = readdir(dir);
         if(!dent) break;
 
-        pstring filename = string_cstr(dent->d_name);
-        ssize_t idx = string_last_index_of(filename, 0, ".");
-        if(idx != -1 && (strcmp(filename + idx, ".lua") == 0))
+        char *filename = dent->d_name;
+        char *ext = strrchr(filename, '.');
+        if(ext && (strcmp(ext, ".lua") == 0))
         {
             char filepath[512] = { 0 };
             snprintf(filepath, sizeof filepath, "%s/%s", "./plugins", filename);
@@ -248,11 +249,10 @@ void ScriptLoadScripts(Script *script)
             {
                 if(cacheSize != script->numPlugins) // plugin has been added
                 {
-                    script->plugins[script->numPlugins-1].file = string_cstr(filepath);
+                    script->plugins[script->numPlugins-1].file = CopyString(filepath);
                 }
             }
         }
-        string_free(filename);
     }
     closedir(dir);
 }
@@ -262,8 +262,8 @@ void ScriptDestroy(Script *script)
     lua_close(script->state);
     for(size_t i = 0; i < script->numPlugins; ++i)
     {
-        string_free(script->plugins[i].name);
-        string_free(script->plugins[i].file);
+        free(script->plugins[i].name);
+        free(script->plugins[i].file);
     }
     free(script->plugins);
 }
@@ -287,8 +287,8 @@ void ScriptReloadAll(Script *script)
 {
     for(size_t i = 0; i < script->numPlugins; ++i)
     {
-        string_free(script->plugins[i].name);
-        string_free(script->plugins[i].file);
+        free(script->plugins[i].name);
+        free(script->plugins[i].file);
     }
     free(script->plugins);
     script->numPlugins = 0;

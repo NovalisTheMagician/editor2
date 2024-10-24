@@ -24,7 +24,7 @@ typedef struct FileDialogAction
 
 extern ImGuiFileDialog *cfileDialog;
 
-void OpenFolderDialog(pstring folderPath);
+void OpenFolderDialog(char *folderPath);
 void SaveMapDialog(Map *map, bool quitRequest);
 void SaveProjectDialog(Project *project, bool quitRequest);
 void OpenMapDialog(Map *map);

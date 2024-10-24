@@ -291,7 +291,7 @@ static void MainMenuBar(bool *doQuit, EdState *state)
             if(igMenuItem_Bool("Open Project", "", false, allowFileOps)) { if(state->project.dirty) { openProjectPopup = true; modalAction = SMA_OPEN; } else OpenProjectDialog(&state->project); }
             if(igMenuItem_Bool("Save Project", "", false, state->project.dirty && allowFileOps))
             {
-                if(string_length(state->project.file) == 0)
+                if(!state->project.file)
                     SaveProjectDialog(&state->project, false);
                 else
                     SaveProject(&state->project);
@@ -301,7 +301,7 @@ static void MainMenuBar(bool *doQuit, EdState *state)
             if(igMenuItem_Bool("Open Map", "Ctrl+O", false, allowFileOps)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_OPEN; } else DoLoadMap(state); }
             if(igMenuItem_Bool("Save Map", "Ctrl+S", false, state->map.dirty && allowFileOps))
             {
-                if(string_length(state->map.file) == 0)
+                if(!state->map.file)
                     SaveMapDialog(&state->map, false);
                 else
                     SaveMap(&state->map);
@@ -428,7 +428,7 @@ static void ProjectSavePopup(EdState *state, bool *quitRequest)
         igText("You have unsaved changes to the Project.\nDo you want to save them?");
         if(igButton("Yes", (ImVec2){ 64, 0 }))
         {
-            if(string_length(state->project.file) > 0)
+            if(state->project.file)
                 SaveProject(&state->project);
 
             switch(modalAction)
@@ -470,7 +470,7 @@ static void MapSavePopup(EdState *state, bool *quitRequest)
         igText("You have unsaved changes to the Map.\nDo you want to save them?");
         if(igButton("Yes", (ImVec2){ 64, 0 }))
         {
-            if(string_length(state->map.file) > 0)
+            if(state->map.file)
                 SaveMap(&state->map);
 
             switch(modalAction)
@@ -555,7 +555,7 @@ static void HandleShortcuts(EdState *state)
     {
         if(state->map.dirty)
         {
-            if(string_length(state->map.file) == 0)
+            if(!state->map.file)
                 SaveMapDialog(&state->map, false);
             else
                 SaveMap(&state->map);

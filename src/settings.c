@@ -3,7 +3,7 @@
 
 #include <string.h>
 #include "serialization.h"
-#include "utils/pstring.h"
+#include "utils/string.h"
 
 const char* ColorIndexToString(enum Colors color)
 {
@@ -65,10 +65,8 @@ void ResetSettings(EdSettings *settings)
 
     settings->colors[COL_LINE_INNER] = (Color){ .r = 0.6f, .g = 0.6f, .b = 0.6f, .a = 1.00f };
 
-    string_free(settings->gamePath);
-    string_free(settings->launchArguments);
-    settings->gamePath = string_alloc(MAX_GAMEPATH_LEN);
-    settings->launchArguments = string_cstr_alloc("-debug -map %1", MAX_GAMEPATH_LEN);
+    memset(settings->gamePath, 0, sizeof settings->gamePath);
+    strncpy(settings->launchArguments, "-debug -map %1", MAX_GAMEPATH_LEN);
 
     settings->theme = 0;
 
@@ -107,8 +105,8 @@ bool LoadSettings(const char *settingsPath, EdSettings *settings)
             else if(strcasecmp(key, "show_major_axis") == 0) { if(ParseBool(value, &settings->showMajorAxis)) continue; }
             else if(strcasecmp(key, "show_line_dir") == 0) { if(ParseBool(value, &settings->showLineDir)) continue; }
             else if(strcasecmp(key, "preview_fov") == 0) { if(ParseInt(value, &settings->realtimeFov)) continue; }
-            else if(strcasecmp(key, "game_path") == 0) { string_copy_into_cstr(settings->gamePath, value); continue; }
-            else if(strcasecmp(key, "launch_arguments") == 0) { string_copy_into_cstr(settings->launchArguments, value); continue; }
+            else if(strcasecmp(key, "game_path") == 0) { strncpy(settings->gamePath, value, sizeof settings->gamePath); continue; }
+            else if(strcasecmp(key, "launch_arguments") == 0) { strncpy(settings->launchArguments, value, sizeof settings->launchArguments); continue; }
 parseError:
             LogWarning("Failed to parse `%s` on line: %d", settingsPath, lineNr);
         }
@@ -143,8 +141,6 @@ void SaveSettings(const char *settingsPath, const EdSettings *settings)
     }
 }
 
-void FreeSettings(EdSettings *settings)
+void FreeSettings(EdSettings *)
 {
-    string_free(settings->gamePath);
-    string_free(settings->launchArguments);
 }

@@ -246,7 +246,7 @@ MapLine* EditGetClosestLine(Map *map, vec2s pos, float maxDist)
     return closestLine;
 }
 
-MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLines], bool lineFronts[static numLines], SectorData data)
+MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLines], bool lineFronts[static numLines], size_t numInnerLines, size_t numInnerLinesNum[static numInnerLines], MapLine ***innerLines, bool **innerLinesFront, SectorData data)
 {
     CreateResult result = CreateSector(map, numLines, lines, lineFronts, data);
     if(!result.created) return result.mapElement;
@@ -254,53 +254,14 @@ MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLin
 
     struct Polygon *polygon = PolygonFromMapLines(numLines, lines, lineFronts);
 
-    size_t numInnerPolygons = 0, sizeInnerPolygons = 0;
-    struct Polygon **innerPolygons = NULL;
-
-    for(MapSector *msector = map->headSector; msector; msector = msector->next)
-    {
-        if(msector == sector) continue;
-        if(msector->containedBy != NULL) continue;
-
-        bool allPointsInSector = true;
-        for(size_t i = 0; i < msector->numOuterLines; ++i)
-        {
-            allPointsInSector &= PointInPolygon(polygon, msector->edData.vertices[i]);
-        }
-
-        if(allPointsInSector)
-        {
-            sector->numContains++;
-            sector->contains = realloc(sector->contains, sector->numContains * sizeof *sector->contains);
-            sector->contains[sector->numContains-1] = msector;
-            msector->containedBy = sector;
-
-            for(size_t i = 0; i < msector->numOuterLines; ++i)
-            {
-                MapLine *line = msector->outerLines[i];
-                if(line->frontSector == NULL) line->frontSector = sector;
-                if(line->backSector == NULL) line->backSector = sector;
-            }
-
-            if(sizeInnerPolygons == 0)
-            {
-                sizeInnerPolygons = 32;
-                innerPolygons = calloc(sizeInnerPolygons, sizeof *innerPolygons);
-            }
-
-            innerPolygons[numInnerPolygons++] = PolygonFromVectors(msector->numOuterLines, msector->edData.vertices);
-            if(numInnerPolygons >= sizeInnerPolygons)
-            {
-                sizeInnerPolygons *= 2;
-                innerPolygons = realloc(innerPolygons, sizeInnerPolygons * sizeof *innerPolygons);
-            }
-        }
-    }
+    struct Polygon **innerPolygons = calloc(numInnerLines, sizeof *innerPolygons);
+    for(size_t i = 0; i < numInnerLines; ++i)
+        innerPolygons[i] = PolygonFromMapLines(numInnerLinesNum[i], innerLines[i], innerLinesFront[i]);
 
     TriangleData *td = &sector->edData;
 
     unsigned int *indices = NULL;
-    size_t numIndices = triangulate(polygon, innerPolygons, numInnerPolygons, &indices);
+    size_t numIndices = triangulate(polygon, innerPolygons, numInnerLines, &indices);
 
     td->indices = malloc(numIndices * sizeof *indices);
     memcpy(td->indices, indices, numIndices * sizeof *indices);
@@ -308,19 +269,19 @@ MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLin
     free(indices);
 
     td->numVertices = polygon->length;
-    for(size_t i = 0; i < numInnerPolygons; ++i)
+    for(size_t i = 0; i < numInnerLines; ++i)
         td->numVertices += innerPolygons[i]->length;
     td->vertices = calloc(td->numVertices, sizeof *td->vertices);
     memcpy(td->vertices, polygon->vertices, polygon->length * sizeof *polygon->vertices);
     size_t offset = polygon->length;
-    for(size_t i = 0; i < numInnerPolygons; ++i)
+    for(size_t i = 0; i < numInnerLines; ++i)
     {
         memcpy(td->vertices + offset, innerPolygons[i]->vertices, innerPolygons[i]->length * sizeof *(innerPolygons[i]->vertices));
         offset += innerPolygons[i]->length;
     }
 
     free(polygon);
-    for(size_t i = 0; i < numInnerPolygons; ++i)
+    for(size_t i = 0; i < numInnerLines; ++i)
         free(innerPolygons[i]);
     free(innerPolygons);
 

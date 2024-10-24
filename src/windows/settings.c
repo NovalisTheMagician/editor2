@@ -15,8 +15,8 @@ void SettingsWindow(bool *p_open, EdState *state)
             if(igBeginTabItem("General", NULL, 0))
             {
                 igSeparatorText("Game");
-                if(igInputText("Gamepath", state->settings.gamePath, string_size(state->settings.gamePath), 0, NULL, NULL)) string_recalc(state->settings.gamePath);
-                if(igInputText("Launch Arguments", state->settings.launchArguments, string_size(state->settings.launchArguments), 0, NULL, NULL)) string_recalc(state->settings.launchArguments);
+                igInputText("Gamepath", state->settings.gamePath, sizeof state->settings.gamePath, 0, NULL, NULL);
+                igInputText("Launch Arguments", state->settings.launchArguments, sizeof state->settings.launchArguments, 0, NULL, NULL);
                 igSeparatorText("Other");
                 if(igInputInt("Logs Scrollback Size", &state->log.capacity, 1, 10, 0))
                 {

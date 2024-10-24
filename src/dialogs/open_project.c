@@ -1,11 +1,12 @@
 #include "../dialogs.h"
 #include "ImGuiFileDialog.h"
+#include "utils/string.h"
 
 static void OpenProjectCallback(const char *path, void *data)
 {
     Project *project = data;
-    string_free(project->file);
-    project->file = string_cstr(path);
+    free(project->file);
+    project->file = CopyString(path);
     LoadProject(project);
 }
 
