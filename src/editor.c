@@ -5,7 +5,6 @@
 #include <stb/stb_image.h>
 
 #include "cglm/struct/vec2.h"
-#include "cglm/struct/vec3.h"
 #include "logging.h"
 #include "map.h"
 #include "utils.h"

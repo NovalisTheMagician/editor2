@@ -2,8 +2,6 @@
 
 #include <lua.h>
 
-#include "memory.h"
-
 typedef struct EdState EdState;
 
 typedef enum PluginFlags

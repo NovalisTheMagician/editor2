@@ -3,8 +3,6 @@
 #include <stdint.h>
 #include <pthread.h>
 
-#include "memory.h"
-
 #define BATCH_SIZE 10
 
 typedef struct Batch

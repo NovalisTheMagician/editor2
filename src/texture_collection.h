@@ -2,8 +2,6 @@
 
 #include "glad/gl.h"
 
-#include "memory.h"
-
 typedef enum TextureFlags
 {
     TF_NONE,

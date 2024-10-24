@@ -10,7 +10,6 @@
 
 #include "editor.h"
 #include "logging.h"
-#include "memory.h"
 
 #include "scripts/scripts.h"
 #include "utils/string.h"

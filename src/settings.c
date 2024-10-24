@@ -3,7 +3,6 @@
 
 #include <string.h>
 #include "serialization.h"
-#include "utils/string.h"
 
 const char* ColorIndexToString(enum Colors color)
 {

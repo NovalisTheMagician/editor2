@@ -3,7 +3,6 @@
 #include "logging.h"
 #include "map/create.h"
 #include "map/query.h"
-#include "memory.h"
 #include "serialization.h"
 
 #include <string.h>
