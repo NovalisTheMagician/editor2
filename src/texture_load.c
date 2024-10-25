@@ -156,9 +156,13 @@ static size_t CollectTexturesFtp(TextureCollection *tc, FetchLocation **location
         }
         else
         {
-            char *name = CopyString(files[i].filePath);
-            char *ext = strrchr(name, '.');
+            char *path = CopyString(NormalizePath(files[i].filePath));
+            char *ext = strrchr(path, '.');
+            char *name = strstr(path, baseFolder);
+            if(!name) goto skipLocation;
             if(!ext) goto skipLocation;
+            name += strlen(baseFolder);
+            if(name[0] == '/') name++;
             *ext = '\0';
 
             char timeBuffer[128] = { 0 };
@@ -194,7 +198,7 @@ static size_t CollectTexturesFtp(TextureCollection *tc, FetchLocation **location
             }
 
 skipLocation:
-            free(name);
+            free(path);
         }
     }
 
@@ -253,26 +257,29 @@ static size_t CollectTexturesFs(TextureCollection *tc, FetchLocation **locations
         else if(S_ISREG(buf.st_mode))
         {
             time_t timestamp = buf.st_mtime;
-            char *name = CopyString(filePath);
-            char *ext = strrchr(name, '.');
-            if(ext)
+            char *path = CopyString(NormalizePath(filePath));
+            char *ext = strrchr(path, '.');
+            char *name = strstr(path, baseFolder);
+            if(!name) goto skipLocation;
+            if(!ext) goto skipLocation;
+            name += strlen(baseFolder);
+            if(name[0] == '/') name++;
+            *ext = '\0';
+
+            if(!tc_is_newer(tc, name, timestamp)) goto skipLocation;
+
+            size_t idx = size++;
+            (*locations)[idx] = (FetchLocation){ .name = CopyString(name), .path = CopyString(filePath), .mtime = timestamp };
+
+            if(size >= *capacity)
             {
-                *ext = '\0';
-                if(!tc_is_newer(tc, name, timestamp)) goto skipLocation;
-
-                size_t idx = size++;
-                (*locations)[idx] = (FetchLocation){ .name = CopyString(name), .path = CopyString(filePath), .mtime = timestamp };
-
-                if(size >= *capacity)
-                {
-                    size_t oldCapacity = *capacity;
-                    *capacity = (*capacity) * 2;
-                    *locations = realloc(*locations, (*capacity) * sizeof **locations);
-                    memset((*locations) + oldCapacity, 0, (*capacity) - oldCapacity);
-                }
+                size_t oldCapacity = *capacity;
+                *capacity = (*capacity) * 2;
+                *locations = realloc(*locations, (*capacity) * sizeof **locations);
+                memset((*locations) + oldCapacity, 0, (*capacity) - oldCapacity);
             }
 skipLocation:
-            free(name);
+            free(path);
         }
     }
     closedir(dp);
@@ -396,6 +403,8 @@ void LoadTextures(EdState *state, bool refresh)
         strncpy(textureFolder, project->texturesPath, 256);
     else
         snprintf(textureFolder, 512, "%s/%s", project->basePath.fs.path, project->texturesPath);
+
+    NormalizePath(textureFolder);
 
     ThreadData *data = calloc(1, sizeof *data);
     *data = (ThreadData){ .state = state, .folder = textureFolder };

@@ -1,18 +1,13 @@
 #include "../dialogs.h"
 #include "ImGuiFileDialog.h"
 
-#include "../utils.h"
+#include "../project.h"
 
 #include <string.h>
 
 static void OpenFolderCallback(const char *path, void *data)
 {
-    char *str = data;
-    size_t pathLen = strlen(path)+1;
-    size_t dataLen = strlen(str)+1;
-    size_t len = min(pathLen, dataLen);
-    memset(str, 0, dataLen);
-    memcpy(str, path, len);
+    strncpy(data, path, MAX_ASSETPATH_LEN);
 }
 
 void OpenFolderDialog(char *folderPath)

@@ -147,7 +147,7 @@ void SaveSettings(const char *settingsPath, const EdSettings *settings)
 
         fprintf(file, "// Base\n");
         fprintf(file, KEY_GAMEPATH"=%s\n", settings->gamePath);
-        fprintf(file, KEY_LAUNCHARGS"s=%s\n", settings->launchArguments);
+        fprintf(file, KEY_LAUNCHARGS"=%s\n", settings->launchArguments);
         fclose(file);
     }
 }

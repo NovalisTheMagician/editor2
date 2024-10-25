@@ -17,3 +17,14 @@ char* CopyStringLen(const char *string, size_t len)
     strncpy(copy, string, len+1);
     return copy;
 }
+
+char* NormalizePath(char *path)
+{
+    char *slash = path;
+    while((slash = strchr(slash, '\\')))
+    {
+        *slash = '/';
+        slash++;
+    }
+    return path;
+}

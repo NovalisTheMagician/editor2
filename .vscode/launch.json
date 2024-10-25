@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "editor2",
+            "name": "editor2 ftp",
             "type": "by-gdb",
             "request": "launch",
             "program": "${workspaceFolder}/editor2",
@@ -15,7 +15,17 @@
             "preLaunchTask": "build"
         },
         {
-            "name": "editor2 no project",
+            "name": "editor2 fs",
+            "type": "by-gdb",
+            "request": "launch",
+            "program": "${workspaceFolder}/editor2",
+            "programArgs": "-p debugProjectFs.epr",
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "build"
+        },
+        {
+            "name": "editor2",
             "type": "by-gdb",
             "request": "launch",
             "program": "${workspaceFolder}/editor2",
