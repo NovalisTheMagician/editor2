@@ -10,8 +10,8 @@
 #include "logging.h"
 #include "memory.h" // IWYU pragma: keep
 #include "async_load.h"
-#include "texture_load_fs.h"
-#include "texture_load_ftp.h"
+#include "asset_sources/texture_load_fs.h"
+#include "asset_sources/texture_load_ftp.h"
 #include "utils/string.h"
 
 pthread_mutex_t collectMutex = PTHREAD_MUTEX_INITIALIZER;

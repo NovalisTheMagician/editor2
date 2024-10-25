@@ -2,7 +2,7 @@ APPLICATION := editor2
 
 BUILD_DIR := build
 SRC_DIR := src
-SRC_SUBDIRS := windows dialogs utils map scripts
+SRC_SUBDIRS := windows dialogs utils map scripts asset_sources
 
 DEFINES := __USE_XOPEN _GNU_SOURCE
 INC_DIRS := $(SRC_DIR)

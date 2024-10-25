@@ -7,7 +7,7 @@ int EditorMain(int argc, char *argv[]);
 #define NOMINMAX
 #endif
 #include <Windows.h>
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
     int argc = __argc;
     char **argv = __argv;
