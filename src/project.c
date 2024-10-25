@@ -11,6 +11,17 @@
 
 #define PROJECT_VERSION 2
 
+#define KEY_VERSION "version"
+#define KEY_TEXTURESPATH "textures_path"
+#define KEY_THINGSFILE "things_file"
+#define KEY_SOURCETYPE "source_type"
+#define KEY_SOURCEPATH "source_path"
+#define KEY_SOURCELOGIN "source_login"
+#define KEY_SOURCEPASS "source_password"
+#define KEY_SOURCEURL "source_url"
+
+#define KEY_IS(k) strcasecmp(key, k) == 0
+
 void NewProject(Project *project)
 {
     free(project->file);
@@ -56,7 +67,7 @@ bool LoadProject(Project *project)
         char *key = Trim(line);
         char *value = Trim(delim+1);
 
-        if(strcasecmp(key, "version") == 0)
+        if(KEY_IS(KEY_VERSION))
         {
             if(ParseInt(value, &version))
             {
@@ -68,13 +79,13 @@ bool LoadProject(Project *project)
                 continue;
             }
         }
-        if(strcasecmp(key, "textures_path") == 0) { strncpy(project->texturesPath, value, sizeof project->texturesPath); continue; }
-        if(strcasecmp(key, "things_file") == 0) { strncpy(project->thingsFile, value, sizeof project->thingsFile); continue; }
-        if(strcasecmp(key, "source_type") == 0) { if(ParseUint(value, &project->basePath.type)) continue; }
-        if(strcasecmp(key, "source_path") == 0) { strncpy(project->basePath.ftp.path, value, sizeof project->basePath.ftp.path); continue; }
-        if(strcasecmp(key, "source_url") == 0) { strncpy(project->basePath.ftp.url, value, sizeof project->basePath.ftp.url); continue; }
-        if(strcasecmp(key, "source_login") == 0) { strncpy(project->basePath.ftp.login, value, sizeof project->basePath.ftp.login); continue; }
-        if(strcasecmp(key, "source_password") == 0) { strncpy(project->basePath.ftp.password, value, sizeof project->basePath.ftp.password); continue; }
+        if(KEY_IS(KEY_TEXTURESPATH)) { strncpy(project->texturesPath, value, sizeof project->texturesPath); continue; }
+        if(KEY_IS(KEY_THINGSFILE)) { strncpy(project->thingsFile, value, sizeof project->thingsFile); continue; }
+        if(KEY_IS(KEY_SOURCETYPE)) { if(ParseUint(value, &project->basePath.type)) continue; }
+        if(KEY_IS(KEY_SOURCEPATH)) { strncpy(project->basePath.ftp.path, value, sizeof project->basePath.ftp.path); continue; }
+        if(KEY_IS(KEY_SOURCEURL)) { strncpy(project->basePath.ftp.url, value, sizeof project->basePath.ftp.url); continue; }
+        if(KEY_IS(KEY_SOURCELOGIN)) { strncpy(project->basePath.ftp.login, value, sizeof project->basePath.ftp.login); continue; }
+        if(KEY_IS(KEY_SOURCEPASS)) { strncpy(project->basePath.ftp.password, value, sizeof project->basePath.ftp.password); continue; }
 
         LogError("Failed to parse line %d", lineNr);
         goto errorParse;
@@ -107,21 +118,21 @@ void SaveProject(Project *project)
         return;
     }
 
-    fprintf(file, "version = %d\n", PROJECT_VERSION);
-    fprintf(file, "textures_path = %s\n", project->texturesPath);
-    fprintf(file, "things_file = %s\n", project->thingsFile);
-    fprintf(file, "source_type = %d\n", project->basePath.type);
+    fprintf(file, KEY_VERSION" = %d\n", PROJECT_VERSION);
+    fprintf(file, KEY_TEXTURESPATH" = %s\n", project->texturesPath);
+    fprintf(file, KEY_THINGSFILE" = %s\n", project->thingsFile);
+    fprintf(file, KEY_SOURCETYPE" = %d\n", project->basePath.type);
     fprintf(file, "\n");
     if(project->basePath.type == ASSPATH_FS)
     {
-        fprintf(file, "source_path = %s\n", project->basePath.fs.path);
+        fprintf(file, KEY_SOURCEPATH" = %s\n", project->basePath.fs.path);
     }
     else
     {
-        fprintf(file, "source_url = %s\n", project->basePath.ftp.url);
-        fprintf(file, "source_login = %s\n", project->basePath.ftp.login);
-        fprintf(file, "source_password = %s\n", project->basePath.ftp.password);
-        fprintf(file, "source_path = %s\n", project->basePath.ftp.path);
+        fprintf(file, KEY_SOURCEURL" = %s\n", project->basePath.ftp.url);
+        fprintf(file, KEY_SOURCELOGIN" = %s\n", project->basePath.ftp.login);
+        fprintf(file, KEY_SOURCEPASS" = %s\n", project->basePath.ftp.password);
+        fprintf(file, KEY_SOURCEPATH" = %s\n", project->basePath.ftp.path);
     }
 
     fclose(file);

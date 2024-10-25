@@ -12,6 +12,16 @@
 #include <errno.h>
 #include <strings.h>
 
+#define KEY_VERSION "version"
+#define KEY_EDITOR "editor"
+#define KEY_GRAVITY "gravity"
+#define KEY_TEXTURESCALE "texture_scale"
+#define KEY_VERTICES "vertices"
+#define KEY_LINES "lines"
+#define KEY_SECTORS "sectors"
+
+#define KEY_IS(k) strcasecmp(key, k) == 0
+
 static void FreeVertList(MapVertex *head)
 {
     while(head)
@@ -248,40 +258,38 @@ bool LoadMap(Map *map)
 
             if(mode != PARSE_PROPS)
             {
-                if(strcasecmp(value, "{") == 0)
+                if(strcmp(value, "{") == 0)
                 {
                     inBlock = true;
                     continue;
                 }
             }
 
-            if(strcasecmp(key, "vertices") == 0)
+            if(KEY_IS(KEY_VERTICES))
             {
                 mode = PARSE_VERTICES;
-                inBlock = strcasecmp(value, "{") == 0;
+                inBlock = strcmp(value, "{") == 0;
                 continue;
             }
-            if(strcasecmp(key, "lines") == 0)
+            if(KEY_IS(KEY_LINES))
             {
                 mode = PARSE_LINES;
-                inBlock = strcasecmp(value, "{") == 0;
+                inBlock = strcmp(value, "{") == 0;
                 continue;
             }
-            if(strcasecmp(key, "sectors") == 0)
+            if(KEY_IS(KEY_SECTORS))
             {
                 mode = PARSE_SECTORS;
-                inBlock = strcasecmp(value, "{") == 0;
+                inBlock = strcmp(value, "{") == 0;
                 continue;
             }
 
-            if(strcasecmp(key, "version") == 0)
+            if(KEY_IS(KEY_VERSION))
             {
-                char *end;
-                errno = 0;
-                int version = strtol(value, &end, 10);
-                if(end == value)
+                int version;
+                if(!ParseInt(key, &version))
                 {
-                    LogError("Failed to parse the version: %s", strerror(errno));
+                    LogError("Failed to parse the version");
                     break;
                 }
                 else if(version > MAP_VERSION)
@@ -291,37 +299,29 @@ bool LoadMap(Map *map)
                 }
             }
 
-            if(strcasecmp(key, "gravity") == 0)
+            if(KEY_IS(KEY_GRAVITY))
             {
-                errno = 0;
-                char *end;
-                float gravity = strtof(value, &end);
-                if(end == value)
+                if(!ParseFloat(value, &map->gravity))
                 {
-                    LogWarning("Failed to parse the gravity: %s", strerror(errno));
+                    LogWarning("Failed to parse the gravity");
                     LogWarning("Using default gravity");
-                    gravity = 9.8f;
+                    map->gravity = 9.8f;
                 }
-                map->gravity = gravity;
             }
 
-            if(strcasecmp(key, "textureScale") == 0)
+            if(KEY_IS(KEY_TEXTURESCALE))
             {
-                errno = 0;
-                char *end;
-                int textureScale = strtol(value, &end, 10);
-                if(end == value)
+                if(ParseInt(value, &map->textureScale))
                 {
-                    LogWarning("Failed to parse the textureScale: %s", strerror(errno));
+                    LogWarning("Failed to parse the textureScale");
                     LogWarning("Using default textureScale");
-                    textureScale = 1;
+                    map->textureScale = 1;
                 }
-                map->textureScale = textureScale;
             }
         }
         else
         {
-            if(strcasecmp(line, "}") == 0)
+            if(strcmp(line, "}") == 0)
             {
                 inBlock = false;
                 mode = PARSE_PROPS;

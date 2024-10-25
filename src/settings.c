@@ -4,6 +4,17 @@
 #include <string.h>
 #include "serialization.h"
 
+#define KEY_THEME "theme"
+#define KEY_VERTEXPOINTSIZE "vertex_point_size"
+#define KEY_SHOWGRIDLINES "show_grid_lines"
+#define KEY_SHOWMAJORAXIS "show_major_axis"
+#define KEY_SHOWLINEDIR "show_line_dir"
+#define KEY_3DFOV "preview_fov"
+#define KEY_GAMEPATH "game_path"
+#define KEY_LAUNCHARGS "launch_arguments"
+
+#define KEY_IS(k) strcasecmp(key, k) == 0
+
 const char* ColorIndexToString(enum Colors color)
 {
     switch(color)
@@ -91,21 +102,22 @@ bool LoadSettings(const char *settingsPath, EdSettings *settings)
             if(line[0] == '/' && line[1] == '/') continue; // comment
 
             char *delim = strchr(line, '=');
-            if(!delim || delim == line)
+            if(!delim) continue;
+            if(delim == line)
                 goto parseError;
 
             *delim = '\0';
             char *key = Trim(line);
             char *value = Trim(delim+1);
 
-            if(strcasecmp(key, "theme") == 0) { if(ParseInt(value, &settings->theme)) continue; }
-            else if(strcasecmp(key, "vertex_point_size") == 0) { if(ParseFloat(value, &settings->vertexPointSize)) continue; }
-            else if(strcasecmp(key, "show_grid_lines") == 0) { if(ParseBool(value, &settings->showGridLines)) continue; }
-            else if(strcasecmp(key, "show_major_axis") == 0) { if(ParseBool(value, &settings->showMajorAxis)) continue; }
-            else if(strcasecmp(key, "show_line_dir") == 0) { if(ParseBool(value, &settings->showLineDir)) continue; }
-            else if(strcasecmp(key, "preview_fov") == 0) { if(ParseInt(value, &settings->realtimeFov)) continue; }
-            else if(strcasecmp(key, "game_path") == 0) { strncpy(settings->gamePath, value, sizeof settings->gamePath); continue; }
-            else if(strcasecmp(key, "launch_arguments") == 0) { strncpy(settings->launchArguments, value, sizeof settings->launchArguments); continue; }
+            if(KEY_IS(KEY_THEME)) { if(ParseInt(value, &settings->theme)) continue; }
+            if(KEY_IS(KEY_VERTEXPOINTSIZE)) { if(ParseFloat(value, &settings->vertexPointSize)) continue; }
+            if(KEY_IS(KEY_SHOWGRIDLINES)) { if(ParseBool(value, &settings->showGridLines)) continue; }
+            if(KEY_IS(KEY_SHOWMAJORAXIS)) { if(ParseBool(value, &settings->showMajorAxis)) continue; }
+            if(KEY_IS(KEY_SHOWLINEDIR)) { if(ParseBool(value, &settings->showLineDir)) continue; }
+            if(KEY_IS(KEY_3DFOV)) { if(ParseInt(value, &settings->realtimeFov)) continue; }
+            if(KEY_IS(KEY_GAMEPATH)) { strncpy(settings->gamePath, value, sizeof settings->gamePath); continue; }
+            if(KEY_IS(KEY_LAUNCHARGS)) { strncpy(settings->launchArguments, value, sizeof settings->launchArguments); continue; }
 parseError:
             LogWarning("Failed to parse `%s` on line: %d", settingsPath, lineNr);
         }
@@ -122,20 +134,20 @@ void SaveSettings(const char *settingsPath, const EdSettings *settings)
     if(file)
     {
         fprintf(file, "// Themes\n");
-        fprintf(file, "theme=%d\n", settings->theme);
+        fprintf(file, KEY_THEME"=%d\n", settings->theme);
 
         fprintf(file, "// Editor\n");
-        fprintf(file, "vertex_point_size=%.2f\n", settings->vertexPointSize);
-        fprintf(file, "show_grid_lines=%d\n", settings->showGridLines);
-        fprintf(file, "show_major_axis=%d\n", settings->showMajorAxis);
-        fprintf(file, "show_line_dir=%d\n", settings->showLineDir);
+        fprintf(file, KEY_VERTEXPOINTSIZE"=%.2f\n", settings->vertexPointSize);
+        fprintf(file, KEY_SHOWGRIDLINES"=%d\n", settings->showGridLines);
+        fprintf(file, KEY_SHOWMAJORAXIS"=%d\n", settings->showMajorAxis);
+        fprintf(file, KEY_SHOWLINEDIR"=%d\n", settings->showLineDir);
 
         fprintf(file, "// 3D View\n");
-        fprintf(file, "preview_fov=%d\n", settings->realtimeFov);
+        fprintf(file, KEY_3DFOV"=%d\n", settings->realtimeFov);
 
         fprintf(file, "// Base\n");
-        fprintf(file, "game_path=%s\n", settings->gamePath);
-        fprintf(file, "launch_arguments=%s\n", settings->launchArguments);
+        fprintf(file, KEY_GAMEPATH"=%s\n", settings->gamePath);
+        fprintf(file, KEY_LAUNCHARGS"s=%s\n", settings->launchArguments);
         fclose(file);
     }
 }
