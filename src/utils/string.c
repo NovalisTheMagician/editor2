@@ -14,6 +14,6 @@ char* CopyString(const char *string)
 char* CopyStringLen(const char *string, size_t len)
 {
     char *copy = malloc(len + 1);
-    strncpy(copy, string, len);
+    strncpy(copy, string, len+1);
     return copy;
 }
