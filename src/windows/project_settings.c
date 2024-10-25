@@ -5,6 +5,13 @@
 #include <ftplib.h>
 #include <string.h>
 
+static void clearSourceFields(AssetPath *source)
+{
+    uint32_t type = source->type;
+    memset(source, 0, sizeof *source);
+    source->type = type;
+}
+
 static void BaseFsFields(EdState *state)
 {
     if(igInputText("Path", state->project.basePath.fs.path, sizeof state->project.basePath.fs.path, 0, NULL, NULL))
@@ -88,7 +95,11 @@ void ProjectSettingsWindow(bool *p_open, EdState *state)
         igSeparatorText("Base");
         bool isFtp = state->project.basePath.type == ASSPATH_FTP;
         bool resetCheck = false;
-        if(igCheckbox("FTP", &isFtp)) resetCheck = true;
+        if(igCheckbox("FTP", &isFtp))
+        {
+            //clearSourceFields(&state->project.basePath);
+            resetCheck = true;
+        }
         state->project.basePath.type = isFtp ? ASSPATH_FTP : ASSPATH_FS;
 
         if(isFtp)

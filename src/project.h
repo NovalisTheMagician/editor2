@@ -7,7 +7,9 @@
 typedef enum AssetPathType
 {
     ASSPATH_FS,
-    ASSPATH_FTP
+    ASSPATH_FTP,
+    ASSPATH_SFTP,
+    ASSPATH_WEBDAV,
 } AssetPathType;
 
 typedef struct AssetPath
