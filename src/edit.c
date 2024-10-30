@@ -247,13 +247,39 @@ MapLine* EditGetClosestLine(Map *map, vec2s pos, float maxDist)
     return closestLine;
 }
 
+static bool includes(size_t num, void *elements[static num], void *element)
+{
+    for(size_t i = 0; i < num; ++i)
+    {
+        if(elements[i] == element)
+            return true;
+    }
+    return false;
+}
+
 static void setLineSector(size_t numLines, MapLine *lines[static numLines], bool firstFront, MapSector *sector)
 {
     MapVertex *nextVertex = firstFront ? lines[0]->b : lines[0]->a;
     if(firstFront)
+    {
         lines[0]->frontSector = sector;
+        if(lines[0]->backSector && !includes(sector->numContains, (void**)sector->contains, lines[0]->backSector))
+        {
+            size_t idx = sector->numContains++;
+            sector->contains = realloc(sector->contains, sector->numContains * sizeof *sector->contains);
+            sector->contains[idx] = lines[0]->backSector;
+        }
+    }
     else
+    {
         lines[0]->backSector = sector;
+        if(lines[0]->frontSector && !includes(sector->numContains, (void**)sector->contains, lines[0]->frontSector))
+        {
+            size_t idx = sector->numContains++;
+            sector->contains = realloc(sector->contains, sector->numContains * sizeof *sector->contains);
+            sector->contains[idx] = lines[0]->frontSector;
+        }
+    }
 
     for(size_t i = 1; i < numLines; ++i)
     {
@@ -261,11 +287,23 @@ static void setLineSector(size_t numLines, MapLine *lines[static numLines], bool
         if(line->a == nextVertex)
         {
             line->frontSector = sector;
+            if(line->backSector && !includes(sector->numContains, (void**)sector->contains, line->backSector))
+            {
+                size_t idx = sector->numContains++;
+                sector->contains = realloc(sector->contains, sector->numContains * sizeof *sector->contains);
+                sector->contains[idx] = line->backSector;
+            }
             nextVertex = line->b;
         }
         else
         {
             line->backSector = sector;
+            if(line->frontSector && !includes(sector->numContains, (void**)sector->contains, line->frontSector))
+            {
+                size_t idx = sector->numContains++;
+                sector->contains = realloc(sector->contains, sector->numContains * sizeof *sector->contains);
+                sector->contains[idx] = line->frontSector;
+            }
             nextVertex = line->a;
         }
     }
