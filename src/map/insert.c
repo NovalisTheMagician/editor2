@@ -2,6 +2,7 @@
 
 #include <assert.h>
 
+#include "../memory.h"
 #include "../edit.h"
 #include "../geometry.h"
 #include "../map.h"
@@ -12,23 +13,45 @@
 
 #define MAX_LINES_PER_SECTOR 1024
 
-MapSector* MakeMapSector(Map *map, MapLine *startLine, bool front, SectorData data)
+static bool includes(size_t num, void *elements[static num], void *v)
 {
+    for(size_t i = 0; i < num; ++i)
+    {
+        if(elements[i] == v)
+            return true;
+    }
+    return false;
+}
+
+static void insert(size_t size, size_t *num, void *elements[static size], void *element)
+{
+    if(!includes(*num, elements, element))
+    {
+        assert(*num+1 < size);
+        elements[(*num)++] = element;
+    }
+}
+
+MapSector* MakeMapSector(Map *map, MapLine *startLine, SectorData data)
+{
+    arena_t arena = arena_create(512 * 1024);
+
     // front means natural direction
     MapLine *sectorLines[MAX_LINES_PER_SECTOR] = { 0 };
-    bool lineFront[MAX_LINES_PER_SECTOR] = { 0 };
-    size_t numLines = FindOuterLineLoop(startLine, front, sectorLines, lineFront, MAX_LINES_PER_SECTOR);
-    struct Polygon *poly = PolygonFromMapLines(numLines, sectorLines, lineFront);
+    size_t numLines = FindOuterLineLoop(startLine, sectorLines, MAX_LINES_PER_SECTOR);
+    struct Polygon *poly = PolygonFromMapLines(numLines, sectorLines);
 
-    size_t numInnerLineLoops = 0, sizeInnerLineLoops = 8, usedLinesTop = 0, usedLinesSize = 1024, numPotentialLines = 0, sizePotentialLines = 1024;
-    MapLine ***innerLines = calloc(sizeInnerLineLoops, sizeof *innerLines);
-    bool **innerLinesFront = calloc(sizeInnerLineLoops, sizeof *innerLinesFront);
-    size_t *innerLinesNum = calloc(sizeInnerLineLoops, sizeof *innerLinesNum);
-    MapLine **usedLines = calloc(usedLinesSize, sizeof *usedLines);
-    MapLine **potentialLines = calloc(sizePotentialLines, sizeof *potentialLines);
+    size_t numInnerLineLoops = 0, sizeInnerLineLoops = MAX_LINES_PER_SECTOR, usedLinesTop = 0, usedLinesSize = 1024, numPotentialLines = 0, sizePotentialLines = 1024;
+    MapLine ***innerLines = arena_calloc(&arena, sizeInnerLineLoops, sizeof *innerLines);
+    size_t *innerLinesNum = arena_calloc(&arena, sizeInnerLineLoops, sizeof *innerLinesNum);
+    MapLine **usedLines = arena_calloc(&arena, usedLinesSize, sizeof *usedLines);
+    MapLine **potentialLines = arena_calloc(&arena, sizePotentialLines, sizeof *potentialLines);
 
     for(MapLine *line = map->headLine; line; line = line->next)
     {
+        if(includes(numLines, (void**)sectorLines, line))
+            continue;
+
         bool aIn = PointInPolygon(poly, line->a->pos);
         bool bIn = PointInPolygon(poly, line->b->pos);
         if(aIn && bIn)
@@ -38,27 +61,37 @@ MapSector* MakeMapSector(Map *map, MapLine *startLine, bool front, SectorData da
     while(numPotentialLines > 0)
     {
         size_t id = numInnerLineLoops++;
-        innerLines[id] = calloc(MAX_LINES_PER_SECTOR, sizeof **innerLines);
-        innerLinesFront[id] = calloc(MAX_LINES_PER_SECTOR, sizeof **innerLinesFront);
-        size_t n = FindInnerLineLoop(potentialLines[0], true, innerLines[numInnerLineLoops-1], innerLinesFront[numInnerLineLoops-1], MAX_LINES_PER_SECTOR);
+        innerLines[id] = arena_calloc(&arena, MAX_LINES_PER_SECTOR, sizeof **innerLines);
+        size_t n = FindInnerLineLoop(potentialLines[numPotentialLines-1], innerLines[id], MAX_LINES_PER_SECTOR);
         if(n == 0) // couldnt find a loop
         {
-
+            numInnerLineLoops--;
+            insert(usedLinesSize, &usedLinesTop, (void**)usedLines, potentialLines[numPotentialLines-1]);
         }
+        else
+        {
+            for(size_t i = 0; i < n; ++i)
+            {
+                MapLine *line = innerLines[id][i];
+                if(includes(usedLinesTop, (void**)usedLines, line))
+                {
+                    numInnerLineLoops--;
+                    goto nextIteration;
+                }
+                else
+                    insert(usedLinesSize, &usedLinesTop, (void**)usedLines, potentialLines[numPotentialLines-1]);
+            }
+            innerLinesNum[id] = n;
+        }
+nextIteration:
+        numPotentialLines--;
     }
 
     free(poly);
-    MapSector *sector = EditAddSector(map, numLines, sectorLines, lineFront, numInnerLineLoops, innerLinesNum, innerLines, innerLinesFront, data);
-    free(usedLines);
-    free(potentialLines);
-    for(size_t i = 0; i < numInnerLineLoops; ++i)
-    {
-        free(innerLines[i]);
-        free(innerLinesFront[i]);
-    }
-    free(innerLinesNum);
-    free(innerLines);
-    free(innerLinesFront);
+    MapSector *sector = EditAddSector(map, numLines, sectorLines, numInnerLineLoops, innerLinesNum, innerLines, data);
+
+    arena_destroy(&arena);
+
     return sector;
 }
 
@@ -346,7 +379,7 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
         SectorData data = sectorsToUpdate.data[i].sectorData;
         if(front && line->frontSector != NULL) continue;
         if(!front && line->backSector != NULL) continue;
-        MakeMapSector(map, line, front, data);
+        MakeMapSector(map, line, data);
         FreeSectorData(data);
     }
 
@@ -358,14 +391,14 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
             MapLine *l = GetMapLine(map, (line_t){ .a = vertices[0], .b = vertices[1] });
             assert(l);
             if(!(l->frontSector != NULL && l->backSector != NULL))
-                MakeMapSector(map, l, l->frontSector == NULL, DefaultSectorData());
+                MakeMapSector(map, l, DefaultSectorData());
         }
         else
         {
             for(size_t i = 0; i < numStartLines; ++i)
             {
                 if(startLines[i]->frontSector == NULL)
-                    MakeMapSector(map, startLines[i], true, DefaultSectorData());
+                    MakeMapSector(map, startLines[i], DefaultSectorData());
             }
         }
     }

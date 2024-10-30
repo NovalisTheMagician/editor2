@@ -1,6 +1,8 @@
 #include "create.h"
 #include "map.h"
 
+#include "memory.h"
+
 #include <string.h>
 
 CreateResult CreateVertex(Map *map, vec2s pos)
@@ -86,7 +88,7 @@ CreateResult CreateLine(Map *map, MapVertex *v0, MapVertex *v1, LineData data)
     return (CreateResult){ .mapElement = line, .created = true };
 }
 
-CreateResult CreateSector(Map *map, size_t numLines, MapLine *lines[static numLines], bool *lineFronts, SectorData data)
+CreateResult CreateSector(Map *map, size_t numLines, MapLine *lines[static numLines], SectorData data)
 {
     for(MapSector *sector = map->headSector; sector; sector = sector->next)
     {
@@ -138,6 +140,7 @@ CreateResult CreateSector(Map *map, size_t numLines, MapLine *lines[static numLi
     }
     map->tailSector = sector;
 
+    /*
     for(size_t i = 0; i < numLines; ++i)
     {
         MapLine *line = lines[i];
@@ -146,6 +149,7 @@ CreateResult CreateSector(Map *map, size_t numLines, MapLine *lines[static numLi
         else
             line->backSector = sector;
     }
+    */
     map->numSectors++;
 
     map->dirty = true;

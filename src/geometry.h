@@ -104,7 +104,7 @@ float LineGetPointFactor(line_t line, vec2s point);
 classify_res_t ClassifyLines(line_t a, line_t b);
 bool LineOverlap(line_t a, line_t b, intersection_res_t *res);
 bool LineIntersection(line_t a, line_t b, intersection_res_t *res);
-enum orientation_t LineLoopOrientation(size_t numVertices, vec2s vertices[static numVertices]);
+orientation_t LineLoopOrientation(size_t numVertices, vec2s vertices[static numVertices]);
 
 BoundingBox BoundingBoxFromVertices(size_t numVertices, vec2s vertices[static numVertices]);
 bool BoundingBoxIntersect(BoundingBox a, BoundingBox b);

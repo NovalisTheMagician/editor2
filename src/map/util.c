@@ -42,24 +42,23 @@ SplitResult SplitMapLine2(Map *map, MapLine *line, MapVertex *vertexA, MapVertex
     return (SplitResult){ .left = newStart, .middle = newMiddle, .right = newEnd };
 }
 
-struct Polygon* PolygonFromMapLines(size_t numLines, MapLine *lines[static numLines], bool lineFronts[static numLines])
+struct Polygon* PolygonFromMapLines(size_t numLines, MapLine *lines[static numLines])
 {
     struct Polygon *polygon = calloc(1, sizeof *polygon + numLines * sizeof *polygon->vertices);
     polygon->length = numLines;
 
-    for(size_t i = 0; i < numLines; ++i)
+    MapVertex *vertex = lines[0]->a, *nextVertex = lines[0]->b;
+    polygon->vertices[0][0] = vertex->pos.x;
+    polygon->vertices[0][1] = vertex->pos.y;
+    for(size_t i = 1; i < numLines; ++i)
     {
         MapLine *mapLine = lines[i];
-        if(lineFronts[i])
-        {
-            polygon->vertices[i][0] = mapLine->a->pos.x;
-            polygon->vertices[i][1] = mapLine->a->pos.y;
-        }
-        else
-        {
-            polygon->vertices[i][0] = mapLine->b->pos.x;
-            polygon->vertices[i][1] = mapLine->b->pos.y;
-        }
+        bool front = mapLine->a == nextVertex;
+        vertex = front ? mapLine->a : mapLine->b;
+        nextVertex = front ? mapLine->b : mapLine->a;
+
+        polygon->vertices[i][0] = vertex->pos.x;
+        polygon->vertices[i][1] = vertex->pos.y;
     }
 
     return polygon;

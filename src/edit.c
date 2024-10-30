@@ -246,17 +246,47 @@ MapLine* EditGetClosestLine(Map *map, vec2s pos, float maxDist)
     return closestLine;
 }
 
-MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLines], bool lineFronts[static numLines], size_t numInnerLines, size_t numInnerLinesNum[static numInnerLines], MapLine ***innerLines, bool **innerLinesFront, SectorData data)
+static void setLineSector(size_t numLines, MapLine *lines[static numLines], bool firstFront, MapSector *sector)
 {
-    CreateResult result = CreateSector(map, numLines, lines, lineFronts, data);
+    MapVertex *nextVertex = firstFront ? lines[0]->b : lines[0]->a;
+    if(firstFront)
+        lines[0]->frontSector = sector;
+    else
+        lines[0]->backSector = sector;
+
+    for(size_t i = 1; i < numLines; ++i)
+    {
+        MapLine *line = lines[i];
+        if(line->a == nextVertex)
+        {
+            line->frontSector = sector;
+            nextVertex = line->b;
+        }
+        else
+        {
+            line->backSector = sector;
+            nextVertex = line->a;
+        }
+    }
+}
+
+MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLines], size_t numInnerLines, size_t numInnerLinesNum[static numInnerLines], MapLine ***innerLines, SectorData data)
+{
+    CreateResult result = CreateSector(map, numLines, lines, data);
     if(!result.created) return result.mapElement;
     MapSector *sector = result.mapElement;
 
-    struct Polygon *polygon = PolygonFromMapLines(numLines, lines, lineFronts);
+    struct Polygon *polygon = PolygonFromMapLines(numLines, lines);
+    orientation_t orientation = LineLoopOrientation(polygon->length, (vec2s*)polygon->vertices);
+    setLineSector(numLines, lines, orientation == CW_ORIENT, sector);
 
     struct Polygon **innerPolygons = calloc(numInnerLines, sizeof *innerPolygons);
     for(size_t i = 0; i < numInnerLines; ++i)
-        innerPolygons[i] = PolygonFromMapLines(numInnerLinesNum[i], innerLines[i], innerLinesFront[i]);
+    {
+        innerPolygons[i] = PolygonFromMapLines(numInnerLinesNum[i], innerLines[i]);
+        orientation = LineLoopOrientation(innerPolygons[i]->length, (vec2s*)innerPolygons[i]->vertices);
+        setLineSector(numInnerLinesNum[i], innerLines[i], orientation == CCW_ORIENT, sector);
+    }
 
     TriangleData *td = &sector->edData;
 

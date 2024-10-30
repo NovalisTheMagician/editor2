@@ -80,16 +80,15 @@ static void insertPath(PathStack *pathStack, MapLine *line, MapVertex *nextVerte
     qsort(pathStack->paths, pathStack->numPaths, sizeof *pathStack->paths, cmpFunc);
 }
 
-size_t FindLineLoop(MapLine *startLine, bool front, MapLine **sectorLines, bool *lineFront, size_t maxLoopLength, int(*cmpFunc)(const void*, const void*))
+size_t FindLineLoop(MapLine *startLine, MapLine **sectorLines, size_t maxLoopLength, int(*cmpFunc)(const void*, const void*))
 {
     assert(maxLoopLength > 0);
 
     // front means natural direction
     sectorLines[0] = startLine;
-    lineFront[0] = front;
     size_t numLines = 1;
 
-    MapVertex *mapVertexForNext = front ? startLine->b : startLine->a, *mapVertex = front ? startLine->a : startLine->b;
+    MapVertex *mapVertexForNext = startLine->b, *mapVertex = startLine->a;
     PathStack *pathStack = calloc(1024, sizeof *pathStack);
     size_t pathTop = 0;
     insertPath(&pathStack[pathTop++], startLine, mapVertexForNext, mapVertex, cmpFunc);
@@ -108,7 +107,6 @@ size_t FindLineLoop(MapLine *startLine, bool front, MapLine **sectorLines, bool 
 
         Path path = pathElement->paths[--pathElement->numPaths];
         MapLine *mapLine = path.line;
-        MapVertex *mapVertex = pathElement->vertex;
 
         // found a loop
         if(mapLine == startLine)
@@ -117,7 +115,6 @@ size_t FindLineLoop(MapLine *startLine, bool front, MapLine **sectorLines, bool 
         // add current line to list
         size_t idx = numLines++;
         sectorLines[idx] = mapLine;
-        lineFront[idx] = IsLineFront(mapVertex, mapLine);
 
         PathStack *stackPush = &pathStack[pathTop++];
         insertPath(stackPush, mapLine, path.nextVertex, pathElement->vertex, cmpFunc);

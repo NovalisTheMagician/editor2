@@ -4,6 +4,7 @@
 #include "map/create.h"
 #include "map/query.h"
 #include "serialization.h"
+#include "memory.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -425,7 +426,7 @@ bool LoadMap(Map *map)
                         strcpy(data.ceilTex, ceilTexture);
                     }
 
-                    CreateResult res = CreateSector(map, numOuterLines, outerLines, NULL, data);
+                    CreateResult res = CreateSector(map, numOuterLines, outerLines, data);
                     MapSector *sector = res.mapElement;
                     sector->idx = idx;
 
