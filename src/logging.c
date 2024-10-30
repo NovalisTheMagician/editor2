@@ -5,6 +5,8 @@
 #include <tgmath.h>
 #include <time.h>
 
+#include "memory.h" // IWYU pragma: keep
+
 #define LOGBUFFER_CAPACITY 1024
 #define LOGBUFFER_LINE_LEN 512
 

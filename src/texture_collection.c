@@ -25,6 +25,7 @@
 
 #include "utils.h"
 #include "utils/hash.h"
+#include "memory.h" // IWYU pragma: keep
 
 #define TEXTURE_SET_SIZE 8192
 

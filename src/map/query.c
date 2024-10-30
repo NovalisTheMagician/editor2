@@ -1,7 +1,8 @@
 #include "query.h"
-#include "util.h"
 #include "../map.h"
 #include "../geometry.h"
+
+#include "memory.h" // IWYU pragma: keep
 
 #include <assert.h>
 

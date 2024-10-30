@@ -2,6 +2,7 @@
 #include "ImGuiFileDialog.h"
 
 #include "../project.h"
+#include "memory.h" // IWYU pragma: keep
 
 #include <string.h>
 

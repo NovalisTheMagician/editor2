@@ -2,6 +2,8 @@
 #include "ImGuiFileDialog.h"
 #include "utils/string.h"
 
+#include "memory.h" // IWYU pragma: keep
+
 static void OpenProjectCallback(const char *path, void *data)
 {
     Project *project = data;

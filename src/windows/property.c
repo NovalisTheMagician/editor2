@@ -6,6 +6,8 @@
 #include "texture_collection.h"
 #include "utils/string.h"
 
+#include "memory.h" // IWYU pragma: keep
+
 static void SelectElement(EdState *state, void *element, int selectMode)
 {
     state->data.numSelectedElements = 1;

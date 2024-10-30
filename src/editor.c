@@ -11,6 +11,7 @@
 #include "texture_collection.h"
 #include "resources/resources.h"
 #include "vertex_types.h"
+#include "memory.h" // IWYU pragma: keep
 
 #define SELECTION_CAPACITY 10000
 #define BUFFER_SIZE (1<<20)

@@ -1,7 +1,7 @@
 #include "create.h"
 #include "map.h"
 
-#include "memory.h"
+#include "memory.h" // IWYU pragma: keep
 
 #include <string.h>
 
@@ -140,16 +140,6 @@ CreateResult CreateSector(Map *map, size_t numLines, MapLine *lines[static numLi
     }
     map->tailSector = sector;
 
-    /*
-    for(size_t i = 0; i < numLines; ++i)
-    {
-        MapLine *line = lines[i];
-        if(lineFronts[i])
-            line->frontSector = sector;
-        else
-            line->backSector = sector;
-    }
-    */
     map->numSectors++;
 
     map->dirty = true;

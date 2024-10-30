@@ -15,6 +15,8 @@
 
 #include "script.h"
 
+#include "memory.h" // IWYU pragma: keep
+
 static void SetValveStyle(ImGuiStyle *style)
 {
     ImVec4* colors = style->Colors;
