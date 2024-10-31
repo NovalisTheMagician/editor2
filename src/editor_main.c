@@ -1,7 +1,9 @@
+#include "SDL2/SDL_surface.h"
 #include "logging.h"
 #include "script.h"
 #include "utils/string.h"
 #include <SDL2/SDL_video.h>
+#include <string.h>
 #include <time.h>
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #define CIMGUI_USE_OPENGL3
@@ -18,6 +20,8 @@
 
 #include <ftplib.h>
 #include <unistd.h>
+
+#include <stb/stb_image.h>
 
 #include "editor.h"
 #include "map.h"
@@ -81,6 +85,17 @@ static void InitState(EdState *state)
     state->ui.showProperties = true;
 }
 
+static void setWindowIcon(SDL_Window *window)
+{
+    int w, h, c;
+    uint8_t *pixels = stbi_load_from_memory(gIconData, gIconSize, &w, &h, &c, 4);
+    SDL_Surface *surface = SDL_CreateRGBSurface(0, w, h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+    memcpy(surface->pixels, pixels, w * h * 4);
+    SDL_SetWindowIcon(window, surface);
+    SDL_FreeSurface(surface);
+    free(pixels);
+}
+
 int EditorMain(int argc, char *argv[])
 {
 #if defined(_DEBUG)
@@ -98,6 +113,7 @@ int EditorMain(int argc, char *argv[])
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Failed to create window", errorBuffer, NULL);
         return EXIT_FAILURE;
     }
+    setWindowIcon(window);
 
     SDL_GLContext glContext = InitOpenGL(window, errorBuffer, sizeof errorBuffer);
     if(!glContext)

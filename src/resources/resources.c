@@ -17,3 +17,5 @@ INCTXT(Line_fs, "line.fs");
 
 INCTXT(Sector_vs, "sector.vs");
 INCTXT(Sector_fs, "sector.fs");
+
+INCBIN(Icon, "editor2.png");

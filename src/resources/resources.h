@@ -18,3 +18,5 @@ INCTXT_EXTERN(Line_fs);
 
 INCTXT_EXTERN(Sector_vs);
 INCTXT_EXTERN(Sector_fs);
+
+INCBIN_EXTERN(Icon);

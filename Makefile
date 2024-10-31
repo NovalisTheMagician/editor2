@@ -10,6 +10,8 @@ INC_DIRS := $(SRC_DIR)
 LIBS := m SDL2 ftp stdc++ lua
 LIB_DIRS :=
 
+RES := windres
+
 CC := gcc
 C++ := g++
 
@@ -127,13 +129,20 @@ INC_DIRS += $(CGLM_DIR)/include
 CPPFLAGS := $(addprefix -I,$(INC_DIRS)) $(addprefix -D,$(DEFINES)) -MMD -MP
 LIB_FLAGS := $(addprefix -L,$(LIB_DIRS)) $(addprefix -l,$(LIBS))
 
+RC_SRC :=
+RC_OBJ :=
+ifeq ($(OS),Windows_NT)
+    RC_SRC += $(SRC_DIR)/$(RES_DIR)/resource.rc
+    RC_OBJ += $(BUILD_DIR)/$(RES_DIR)/resource.o
+endif
+
 all: $(BUILD_DIRS) $(APPLICATION)
 
 $(BUILD_DIRS):
 	@echo "MD $@"
 	@mkdir -p $@
 
-$(APPLICATION): $(OBJS) $(RES_OBJ) $(GLAD_OBJ) $(RE_OBJ) $(IGFD_OBJ) $(CIMGUI_OBJS) $(TRIANG_OBJ)
+$(APPLICATION): $(OBJS) $(RES_OBJ) $(RC_OBJ) $(GLAD_OBJ) $(RE_OBJ) $(IGFD_OBJ) $(CIMGUI_OBJS) $(TRIANG_OBJ)
 	@echo "LD $@"
 	@$(LD) $(LDFLAGS) -o $@ $^ $(LIB_FLAGS)
 
@@ -144,6 +153,10 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c Makefile
 $(RES_OBJ): $(RES_SRC) $(RESOURCES) Makefile
 	@echo "CC $< (Resources)"
 	@$(CC) $(CPPFLAGS) $(CCFLAGS) -I$(RES_PATH) -c $< -o $@
+
+$(RC_OBJ): $(RC_SRC)
+	@echo "RES $<"
+	@$(RES) $< $@
 
 $(GLAD_OBJ): $(GLAD_SRC)
 	@echo "CC $< (External GLAD)"
