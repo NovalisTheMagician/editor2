@@ -166,7 +166,10 @@ void* debug_realloc(void *ptr, size_t size, const char *file, int line)
 {
     uintptr_t oldAddress = (uintptr_t)ptr;
     void *address = realloc(ptr, size);
-    updateAlloc(oldAddress, (uintptr_t)address, file, line);
+    if(oldAddress == 0)
+        insertAlloc((uintptr_t)address, AC_MALLOC, file, line);
+    else
+        updateAlloc(oldAddress, (uintptr_t)address, file, line);
     return address;
 }
 
