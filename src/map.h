@@ -88,10 +88,6 @@ typedef struct MapSector
     size_t *numInnerLinesNum;
     size_t numInnerLines;
 
-    struct MapSector *containedBy;
-    struct MapSector **contains;
-    size_t numContains;
-
     SectorData data;
 
     BoundingBox bb;

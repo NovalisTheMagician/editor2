@@ -1,6 +1,7 @@
 #include "SDL2/SDL_surface.h"
 #include "logging.h"
 #include "script.h"
+#include "utils/debug.h"
 #include "utils/string.h"
 #include <SDL2/SDL_video.h>
 #include <string.h>
@@ -89,6 +90,9 @@ static void setWindowIcon(SDL_Window *window)
 {
     int w, h, c;
     uint8_t *pixels = stbi_load_from_memory(gIconData, gIconSize, &w, &h, &c, 4);
+#ifdef _DEBUG
+    debug_insertAddress(pixels, __FILE__, __LINE__);
+#endif
     SDL_Surface *surface = SDL_CreateRGBSurface(0, w, h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
     memcpy(surface->pixels, pixels, w * h * 4);
     SDL_SetWindowIcon(window, surface);

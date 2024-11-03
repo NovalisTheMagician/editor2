@@ -34,14 +34,15 @@ static void insert(size_t size, size_t *num, void *elements[static size], void *
 
 MapSector* MakeMapSector(Map *map, MapLine *startLine, SectorData data)
 {
-    arena_t arena = arena_create(512 * 1024);
+    arena_t arena = arena_create(5 * 1024 * 1024); // 5 megs
 
     // front means natural direction
     MapLine *sectorLines[MAX_LINES_PER_SECTOR] = { 0 };
     size_t numLines = FindOuterLineLoop(startLine, sectorLines, MAX_LINES_PER_SECTOR);
+    if(FindEquvivalentSector(map, numLines, sectorLines)) return NULL;
     struct Polygon *poly = PolygonFromMapLines(numLines, sectorLines);
 
-    size_t numInnerLineLoops = 0, sizeInnerLineLoops = MAX_LINES_PER_SECTOR, usedLinesTop = 0, usedLinesSize = 1024, numPotentialLines = 0, sizePotentialLines = 1024;
+    size_t numInnerLineLoops = 0, sizeInnerLineLoops = MAX_LINES_PER_SECTOR, usedLinesTop = 0, usedLinesSize = 2048, numPotentialLines = 0, sizePotentialLines = 1024;
     MapLine ***innerLines = arena_calloc(&arena, sizeInnerLineLoops, sizeof *innerLines);
     size_t *innerLinesNum = arena_calloc(&arena, sizeInnerLineLoops, sizeof *innerLinesNum);
     MapLine **usedLines = arena_calloc(&arena, usedLinesSize, sizeof *usedLines);
@@ -58,15 +59,18 @@ MapSector* MakeMapSector(Map *map, MapLine *startLine, SectorData data)
             potentialLines[numPotentialLines++] = line;
     }
 
-    while(numPotentialLines > 0)
+    if(numPotentialLines >= 3)
+    while(numPotentialLines > 0) // need at least 3 lines to form a sector
     {
         size_t id = numInnerLineLoops++;
         innerLines[id] = arena_calloc(&arena, MAX_LINES_PER_SECTOR, sizeof **innerLines);
-        size_t n = FindInnerLineLoop(potentialLines[numPotentialLines-1], innerLines[id], MAX_LINES_PER_SECTOR);
+        MapLine *potentialLine = potentialLines[numPotentialLines-1];
+        if(!potentialLine) goto nextIteration;
+        size_t n = FindInnerLineLoop(potentialLine, innerLines[id], MAX_LINES_PER_SECTOR);
         if(n == 0) // couldnt find a loop
         {
             numInnerLineLoops--;
-            insert(usedLinesSize, &usedLinesTop, (void**)usedLines, potentialLines[numPotentialLines-1]);
+            insert(usedLinesSize, &usedLinesTop, (void**)usedLines, potentialLine);
         }
         else
         {
@@ -79,11 +83,12 @@ MapSector* MakeMapSector(Map *map, MapLine *startLine, SectorData data)
                     goto nextIteration;
                 }
                 else
-                    insert(usedLinesSize, &usedLinesTop, (void**)usedLines, potentialLines[numPotentialLines-1]);
+                    insert(usedLinesSize, &usedLinesTop, (void**)usedLines, potentialLine);
             }
             innerLinesNum[id] = n;
         }
 nextIteration:
+        arena_reset_last_alloc(&arena);
         numPotentialLines--;
     }
 
@@ -254,7 +259,7 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
     LineQueue queue = { 0 };
 
     MapLine *startLines[QUEUE_SIZE];
-    size_t numStartLines = 0;
+    size_t numStartLines = 0, numNewLines = 0;
 
     SectorUpdate sectorsToUpdate = { 0 };
 
@@ -366,6 +371,7 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
             MapLine *newMapLine = EditAddLine(map, mva, mvb, DefaultLineData());
             if(!newMapLine) return false;
 
+            numNewLines++;
             if(potentialStart) startLines[numStartLines++] = newMapLine;
         }
 
@@ -386,7 +392,7 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
     // create sectors from the new lines
     if(isLoop)
     {
-        if(numStartLines == 0) // no lines were added, possibly filling an empty space surrounded by existing lines
+        if(numNewLines == 0) // no lines were added, possibly filling an empty space surrounded by existing lines
         {
             MapLine *l = GetMapLine(map, (line_t){ .a = vertices[0], .b = vertices[1] });
             assert(l);

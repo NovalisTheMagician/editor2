@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <assert.h>
+#include <pthread.h>
 
 #include "logging.h"
 
@@ -10,14 +11,6 @@
 #undef calloc
 #undef free
 #undef realloc
-
-#undef string_alloc
-#undef string_cstr
-#undef string_cstr_size
-#undef string_cstr_alloc
-#undef string_copy
-#undef string_free
-#undef string_substring
 
 typedef enum AllocType
 {
@@ -44,10 +37,13 @@ struct Alloc
     int line;
 } *allocStart = NULL;
 
+static pthread_mutex_t debugMutex = PTHREAD_MUTEX_INITIALIZER;
+
 static FILE *debugLogFile;
 
 static void insertAlloc(uintptr_t address, enum AllocType type, const char *origin, int line)
 {
+    pthread_mutex_lock(&debugMutex);
     if(allocStart == NULL)
     {
         allocStart = calloc(1, sizeof *allocStart);
@@ -66,11 +62,13 @@ static void insertAlloc(uintptr_t address, enum AllocType type, const char *orig
         alloc->next = allocStart;
         allocStart = alloc;
     }
+    pthread_mutex_unlock(&debugMutex);
 }
 
 static void removeAlloc(uintptr_t address)
 {
     struct Alloc *alloc = allocStart, *prev = NULL;
+    pthread_mutex_lock(&debugMutex);
     while(alloc)
     {
         if(alloc->address == address)
@@ -93,17 +91,20 @@ static void removeAlloc(uintptr_t address)
                 prev->next = alloc->next;
             }
             free(toFree);
+            pthread_mutex_unlock(&debugMutex);
             return;
         }
         prev = alloc;
         alloc = alloc->next;
     }
-    //assert(false && "address not found");
+    pthread_mutex_unlock(&debugMutex);
+    assert(false && "address not found");
 }
 
 static void updateAlloc(uintptr_t oldAddress, uintptr_t newAddress, const char *origin, int line)
 {
     struct Alloc *alloc = allocStart;
+    pthread_mutex_lock(&debugMutex);
     while(alloc)
     {
         if(alloc->address == oldAddress)
@@ -111,10 +112,12 @@ static void updateAlloc(uintptr_t oldAddress, uintptr_t newAddress, const char *
             alloc->address = newAddress;
             alloc->origin = origin;
             alloc->line = line;
+            pthread_mutex_unlock(&debugMutex);
             break;
         }
         alloc = alloc->next;
     }
+    pthread_mutex_unlock(&debugMutex);
 }
 
 void debug_init(const char *file)
@@ -127,6 +130,7 @@ void debug_init(const char *file)
 void debug_finish(void)
 {
     struct Alloc *alloc = allocStart;
+    pthread_mutex_lock(&debugMutex);
     while(alloc)
     {
         fprintf(debugLogFile, "Address: %p | Type: %s | From: %s:%d\n", (void*)alloc->address, typeToString(alloc->type), alloc->origin, alloc->line);
@@ -134,8 +138,14 @@ void debug_finish(void)
         alloc = alloc->next;
         free(toFree);
     }
+    pthread_mutex_unlock(&debugMutex);
 
     fclose(debugLogFile);
+}
+
+void debug_insertAddress(void *ptr, const char *file, int line)
+{
+    insertAlloc((uintptr_t)ptr, AC_MALLOC, file, line);
 }
 
 void* debug_malloc(size_t size, const char *file, int line)

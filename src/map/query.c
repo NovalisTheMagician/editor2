@@ -30,6 +30,37 @@ MapSector* GetSector(Map *map, size_t idx)
     return NULL;
 }
 
+MapSector* FindEquvivalentSector(Map *map, size_t numLines, MapLine *lines[static numLines])
+{
+    for(MapSector *sector = map->headSector; sector; sector = sector->next)
+    {
+        if(sector->numOuterLines != numLines) continue;
+
+        bool allSame = true;
+        for(size_t i = 0; i < numLines; ++i)
+        {
+            bool sharesALine = false;
+            for(size_t j = 0; j < sector->numOuterLines; ++j)
+            {
+                if(lines[i] == sector->outerLines[j])
+                {
+                    sharesALine = true;
+                    break;
+                }
+            }
+            if(!sharesALine)
+            {
+                allSame = false;
+                break;
+            }
+        }
+
+        if(allSame)
+            return sector;
+    }
+    return NULL;
+}
+
 typedef struct Path
 {
     MapLine *line;
@@ -94,6 +125,7 @@ size_t FindLineLoop(MapLine *startLine, MapLine **sectorLines, size_t maxLoopLen
     size_t pathTop = 0;
     insertPath(&pathStack[pathTop++], startLine, mapVertexForNext, mapVertex, cmpFunc);
 
+    bool foundLoop = false;
     while(pathTop > 0)
     {
         PathStack *pathElement = &pathStack[pathTop-1];
@@ -111,7 +143,10 @@ size_t FindLineLoop(MapLine *startLine, MapLine **sectorLines, size_t maxLoopLen
 
         // found a loop
         if(mapLine == startLine)
+        {
+            foundLoop = true;
             break;
+        }
 
         // add current line to list
         size_t idx = numLines++;
@@ -123,6 +158,6 @@ size_t FindLineLoop(MapLine *startLine, MapLine **sectorLines, size_t maxLoopLen
 
     free(pathStack);
 
-    if(numLines < 3) numLines = 0;
+    if(!foundLoop) numLines = 0;
     return numLines;
 }

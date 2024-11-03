@@ -27,88 +27,82 @@ char* Trim(char *s)
 char* ParseLineIndex(char *line, size_t *idx)
 {
     char *delim = strchr(line, ' ');
-    if(!delim)
-    {
-        return NULL;
-    }
-    *delim = '\0';
+    if(!delim) // end of line
+        delim = line;
+    else
+        *delim = '\0';
     char *end;
     *idx = strtoull(line, &end, 10);
     if(line == end)
     {
         return NULL;
     }
-    return delim+1;
+    return delim == line ? NULL : delim+1;
 }
 
 char* ParseLineUint(char *line, uint32_t *i)
 {
     char *delim = strchr(line, ' ');
-    if(!delim)
-    {
-        return NULL;
-    }
-    *delim = '\0';
+    if(!delim) // end of line
+        delim = line;
+    else
+        *delim = '\0';
     char *end;
     *i = strtoul(line, &end, 10);
     if(line == end)
     {
         return NULL;
     }
-    return delim+1;
+    return delim == line ? NULL : delim+1;
 }
 
 char* ParseLineInt(char *line, int *i)
 {
     char *delim = strchr(line, ' ');
-    if(!delim)
-    {
-        return NULL;
-    }
-    *delim = '\0';
+    if(!delim) // end of line
+        delim = line;
+    else
+        *delim = '\0';
     char *end;
     *i = strtol(line, &end, 10);
     if(line == end)
     {
         return NULL;
     }
-    return delim+1;
+    return delim == line ? NULL : delim+1;
 }
 
 char* ParseLineFloat(char *line, float *f)
 {
     char *delim = strchr(line, ' ');
-    if(!delim)
-    {
-        return NULL;
-    }
-    *delim = '\0';
+    if(!delim) // end of line
+        delim = line;
+    else
+        *delim = '\0';
     char *end;
     *f = strtof(line, &end);
     if(line == end)
     {
         return NULL;
     }
-    return delim+1;
+    return delim == line ? NULL : delim+1;
 }
 
 char* ParseLineString(char *line, char **str)
 {
     char *delim = strchr(line, ' ');
-    if(!delim)
-    {
-        return NULL;
-    }
-    *delim = '\0';
+    if(!delim) // end of line
+        delim = line;
+    else
+        *delim = '\0';
     *str = line;
-    return delim+1;
+    return delim == line ? NULL : delim+1;
 }
 
 char* ParseLineTexture(char *line, char **texture)
 {
     line = ParseLineString(line, texture);
-    if(!line) return NULL;
-    if(strcmp(*texture, "NULL"))
+    if(strcmp(*texture, "NULL") == 0)
         *texture = NULL;
     return line;
 }

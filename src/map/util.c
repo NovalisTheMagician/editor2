@@ -46,6 +46,7 @@ SplitResult SplitMapLine2(Map *map, MapLine *line, MapVertex *vertexA, MapVertex
 
 struct Polygon* PolygonFromMapLines(size_t numLines, MapLine *lines[static numLines])
 {
+    assert(numLines >= 3);
     struct Polygon *polygon = calloc(1, sizeof *polygon + numLines * sizeof *polygon->vertices);
     polygon->length = numLines;
 

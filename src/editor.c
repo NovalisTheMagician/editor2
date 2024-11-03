@@ -10,6 +10,7 @@
 #include "utils.h"
 #include "texture_collection.h"
 #include "resources/resources.h"
+#include "utils/debug.h"
 #include "vertex_types.h"
 #include "memory.h" // IWYU pragma: keep
 
@@ -72,6 +73,9 @@ bool InitEditor(EdState *state, char *error, size_t errorSize)
 
     int w, h, c;
     uint8_t *pixels = stbi_load_from_memory(gDefaultTextureData, gDefaultTextureSize, &w, &h, &c, 4);
+#ifdef _DEBUG
+    debug_insertAddress(pixels, __FILE__, __LINE__);
+#endif
     if(!pixels)
     {
         snprintf(error, errorSize, "failed to load the default texture");

@@ -1,7 +1,7 @@
 #include "map.h"
 
+#include "edit.h"
 #include "logging.h"
-#include "map/create.h"
 #include "map/query.h"
 #include "serialization.h"
 #include "memory.h"
@@ -157,8 +157,6 @@ void FreeMapSector(MapSector *sector)
     free(sector->edData.vertices);
     free(sector->edData.indices);
 
-    free(sector->contains);
-
     free(sector);
 }
 
@@ -288,7 +286,7 @@ bool LoadMap(Map *map)
             if(KEY_IS(KEY_VERSION))
             {
                 int version;
-                if(!ParseInt(key, &version))
+                if(!ParseInt(value, &version))
                 {
                     LogError("Failed to parse the version");
                     break;
@@ -341,8 +339,7 @@ bool LoadMap(Map *map)
                     if(!line) continue;
                     line = ParseLineFloat(line, &pos.y);
 
-                    CreateResult res = CreateVertex(map, pos);
-                    MapVertex *vertex = res.mapElement;
+                    MapVertex *vertex = EditAddVertex(map, pos);;
                     vertex->idx = idx;
 
                     if(idx > map->vertexIdx) map->vertexIdx = idx;
@@ -366,14 +363,12 @@ bool LoadMap(Map *map)
                     line = parseSide(line, &data.front);
                     if(!line) continue;
                     line = parseSide(line, &data.back);
-                    //if(!line) continue;
 
                     MapVertex *vA = GetVertex(map, vertexA);
                     if(!vA) continue;
                     MapVertex *vB = GetVertex(map, vertexB);
                     if(!vB) continue;
-                    CreateResult res = CreateLine(map, vA, vB, data);
-                    MapLine *mapLine = res.mapElement;
+                    MapLine *mapLine = EditAddLine(map, vA, vB, data);
                     mapLine->idx = idx;
 
                     if(idx > map->lineIdx) map->lineIdx = idx;
@@ -419,15 +414,13 @@ bool LoadMap(Map *map)
                     }
                     char *ceilTexture;
                     line = ParseLineTexture(line, &ceilTexture);
-                    if(!line) continue;
                     if(ceilTexture)
                     {
                         data.ceilTex = malloc(strlen(ceilTexture)+1);
                         strcpy(data.ceilTex, ceilTexture);
                     }
 
-                    CreateResult res = CreateSector(map, numOuterLines, outerLines, data);
-                    MapSector *sector = res.mapElement;
+                    MapSector *sector = EditAddSector(map, numOuterLines, outerLines, 0, (size_t[0]){}, (MapLine**[0]){}, data);
                     sector->idx = idx;
 
                     if(idx > map->lineIdx) map->lineIdx = idx;

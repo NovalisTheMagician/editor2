@@ -4,7 +4,10 @@
 #include <tgmath.h>
 #include <limits.h>
 
+#include "map/util.h"
 #include "utils.h"
+
+#include "memory.h"
 
 bool PointInSector(MapSector *sector, vec2s point)
 {
@@ -14,8 +17,12 @@ bool PointInSector(MapSector *sector, vec2s point)
 bool PointInSector2(MapSector *sector, vec2s point)
 {
     bool inside = PointInSector(sector, point);
-    for(size_t i = 0; i < sector->numContains; ++i)
-        inside &= !PointInSector(sector->contains[i], point);
+    for(size_t i = 0; i < sector->numInnerLines; ++i)
+    {
+        struct Polygon *poly = PolygonFromMapLines(sector->numInnerLinesNum[i], sector->innerLines[i]);
+        inside &= !PointInPolygon(poly, point);
+        free(poly);
+    }
     return inside;
 }
 

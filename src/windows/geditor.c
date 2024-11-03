@@ -397,6 +397,7 @@ void EditorWindow(bool *p_open, EdState *state)
                         case MODE_SECTOR: EditRemoveSectors(map, state->data.numSelectedElements, (MapSector**)state->data.selectedElements); break;
                         }
                         state->data.numSelectedElements = 0;
+                        state->data.hoveredElement = NULL;
                     }
                 }
 
