@@ -22,14 +22,14 @@ static void TextureIteration(Texture *texture, size_t idx, void *user)
     else
         data->occupiedX = 0;
 
-    if(igImageButton(texture->name, (void*)(intptr_t)texture->texture1, size, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 1 }))
+    if(igImageButton(texture->name, (ImTextureID)(intptr_t)texture->texture1, size, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 1 }))
     {
         data->selected = texture;
     }
 
     if(igBeginDragDropSource(ImGuiDragDropFlags_SourceNoDisableHover))
     {
-        igImage((void*)(intptr_t)texture->texture1, size, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 1 });
+        igImage((ImTextureID)(intptr_t)texture->texture1, size, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 1 });
         igSetDragDropPayload("TextureDnD", &texture, sizeof texture, 0);
         igEndDragDropSource();
     }
