@@ -1,6 +1,6 @@
 #pragma once
 
-#include "incbin.h"
+#include "incbin.h" // IWYU pragma: export
 
 INCBIN_EXTERN(Font);
 
@@ -18,5 +18,8 @@ INCTXT_EXTERN(Line_fs);
 
 INCTXT_EXTERN(Sector_vs);
 INCTXT_EXTERN(Sector_fs);
+
+INCTXT_EXTERN(Realtime_vs);
+INCTXT_EXTERN(Realtime_fs);
 
 INCBIN_EXTERN(Icon);

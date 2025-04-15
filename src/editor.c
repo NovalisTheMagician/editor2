@@ -4,7 +4,6 @@
 #include <tgmath.h>
 #include <stb/stb_image.h>
 
-#include "cglm/struct/vec2.h"
 #include "logging.h"
 #include "map.h"
 #include "utils.h"
@@ -144,6 +143,22 @@ bool InitEditor(EdState *state, char *error, size_t errorSize)
     glVertexArrayVertexBuffer(state->gl.editorVertexFormat, 0, state->gl.editorVertexBuffer, 0, sizeof(EditorVertexType));
     glVertexArrayElementBuffer(state->gl.editorVertexFormat, state->gl.editorIndexBuffer);
 
+    glCreateVertexArrays(1, &state->gl.realtimeVertexFormat);
+    glEnableVertexArrayAttrib(state->gl.realtimeVertexFormat, 0);
+    glEnableVertexArrayAttrib(state->gl.realtimeVertexFormat, 1);
+    glEnableVertexArrayAttrib(state->gl.realtimeVertexFormat, 2);
+    glEnableVertexArrayAttrib(state->gl.realtimeVertexFormat, 3);
+    glVertexArrayAttribFormat(state->gl.realtimeVertexFormat, 0, 3, GL_FLOAT, GL_FALSE, offsetof(RealtimeVertexType, position));
+    glVertexArrayAttribFormat(state->gl.realtimeVertexFormat, 1, 4, GL_FLOAT, GL_FALSE, offsetof(RealtimeVertexType, color));
+    glVertexArrayAttribFormat(state->gl.realtimeVertexFormat, 2, 2, GL_FLOAT, GL_FALSE, offsetof(RealtimeVertexType, texCoord));
+    glVertexArrayAttribIFormat(state->gl.realtimeVertexFormat, 3, 1, GL_UNSIGNED_INT, offsetof(RealtimeVertexType, texId));
+    glVertexArrayAttribBinding(state->gl.realtimeVertexFormat, 0, 0);
+    glVertexArrayAttribBinding(state->gl.realtimeVertexFormat, 1, 0);
+    glVertexArrayAttribBinding(state->gl.realtimeVertexFormat, 2, 0);
+    glVertexArrayAttribBinding(state->gl.realtimeVertexFormat, 3, 0);
+
+
+
     glCreateBuffers(1, &state->gl.editorShaderDataBuffer);
     glNamedBufferStorage(state->gl.editorShaderDataBuffer, sizeof(EditorShaderData), NULL, GL_DYNAMIC_STORAGE_BIT);
 
@@ -167,7 +182,7 @@ void DestroyEditor(EdState *state)
     glDeleteTextures(COUNT_OF(textures), textures);
     GLuint buffer[] = { state->gl.editorVertexBuffer, state->gl.editorIndexBuffer, state->gl.editorShaderDataBuffer, state->gl.backgroundLinesBuffer, state->gl.textureBuffer };
     glDeleteBuffers(COUNT_OF(buffer), buffer);
-    GLuint formats[] = { state->gl.editorBackProg.backVertexFormat, state->gl.editorVertexFormat };
+    GLuint formats[] = { state->gl.editorBackProg.backVertexFormat, state->gl.editorVertexFormat, state->gl.realtimeVertexFormat };
     glDeleteVertexArrays(COUNT_OF(formats), formats);
 
     for(size_t i = 0; i < NUM_BUFFERS; ++i)
@@ -179,6 +194,7 @@ void DestroyEditor(EdState *state)
     glDeleteProgram(state->gl.editorVertex.program);
     glDeleteProgram(state->gl.editorLine.program);
     glDeleteProgram(state->gl.editorSector.program);
+    glDeleteProgram(state->gl.realtimeProgram.program);
 
     free(state->data.selectedElements);
 }
@@ -422,7 +438,7 @@ static size_t CollectSectors(const EdState *state, size_t vertexOffset, size_t i
         {
             const vec2s position = data.vertices[i];
             const vec2s texcoord = data.vertices[i];
-            const Texture *texture = tc_get((TextureCollection*)&state->textures, sector->data.floorTex);
+            const Texture *texture = tc_get(&state->textures, sector->data.floorTex);
             uint64_t texId = texture ? texture->activeIndex != -1 ? texture->activeIndex : WHITE_TEXTURE : WHITE_TEXTURE;
             state->gl.editorVertexMap[i + offsetIndex] = (EditorVertexType){ .position = position, .texCoord = texcoord, .color = state->settings.colors[colorIdx], .texId = texId };
         }

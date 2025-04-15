@@ -209,7 +209,7 @@ bool tc_load_mem(TextureCollection *tc, const char *name, uint8_t *data, size_t 
     return true;
 }
 
-void tc_iterate(TextureCollection *tc, tc_itearte_cb cb, void *user)
+void tc_iterate(const TextureCollection *tc, tc_itearte_cb cb, void *user)
 {
     for(size_t i = 0; i < tc->size; ++i)
     {
@@ -218,7 +218,7 @@ void tc_iterate(TextureCollection *tc, tc_itearte_cb cb, void *user)
     }
 }
 
-void tc_iterate_filter(TextureCollection *tc, tc_itearte_cb cb, const char *filter, void *user)
+void tc_iterate_filter(const TextureCollection *tc, tc_itearte_cb cb, const char *filter, void *user)
 {
     struct regex_t *regex = re_compile(filter);
 
@@ -232,7 +232,7 @@ void tc_iterate_filter(TextureCollection *tc, tc_itearte_cb cb, const char *filt
     }
 }
 
-void tc_iterate_active(TextureCollection *tc, tc_itearte_cb cb, void *user)
+void tc_iterate_active(const TextureCollection *tc, tc_itearte_cb cb, void *user)
 {
     size_t num = 0;
     for(size_t i = 0; i < TEXTURE_SET_SIZE; ++i)
@@ -294,7 +294,7 @@ void tc_unload_all(TextureCollection *tc)
     tc->size = 0;
 }
 
-bool tc_has(TextureCollection *tc, const char *name)
+bool tc_has(const TextureCollection *tc, const char *name)
 {
     if(name == NULL) return false;
     uint64_t nameHash = hash(name) % NUM_SLOTS;
@@ -308,7 +308,7 @@ bool tc_has(TextureCollection *tc, const char *name)
     return false;
 }
 
-Texture* tc_get(TextureCollection *tc, const char *name)
+Texture* tc_get(const TextureCollection *tc, const char *name)
 {
     if(name == NULL) return NULL;
     uint64_t nameHash = hash(name) % NUM_SLOTS;
@@ -365,7 +365,7 @@ void tc_sort(TextureCollection *tc)
         Quicksort(tc->order, 0, tc->size-1);
 }
 
-bool tc_is_newer(TextureCollection *tc, const char *name, time_t newTime)
+bool tc_is_newer(const TextureCollection *tc, const char *name, time_t newTime)
 {
     Texture *texture = tc_get(tc, name);
     if(texture)

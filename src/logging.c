@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <tgmath.h>
 #include <time.h>
+#include <stdio.h>
 
 #include "memory.h" // IWYU pragma: keep
 
@@ -13,7 +14,6 @@
 static LogBuffer *logBuffer_;
 
 #ifdef _DEBUG
-#include <stdio.h>
 static FILE *logFile;
 #endif
 

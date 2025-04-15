@@ -95,33 +95,39 @@ void EditRemoveVertices(Map *map, size_t num, MapVertex *vertices[static num])
         RemoveVertex(map, vertex);
     }
 
-    MapSector *potentialSectors[4096] = { 0 };
-    size_t numPotentialSectors = 0;
+    MapSector *deletedSectors[4096] = { 0 };
+    size_t numDeletedSectors = 0;
 
     for(size_t i = 0; i < numPotentialLines; ++i)
     {
         MapLine *line = potentialLines[i];
         if(!line->a || !line->b)
         {
-            bool isFrontInSet = line->frontSector == NULL;
-            bool isBackInSet = line->backSector == NULL;
-            for(size_t s = 0; s < numPotentialSectors; ++s)
+            MapSector *frontSector = line->frontSector;
+            MapSector *backSector = line->backSector;
+            bool canDeleteFront = frontSector != NULL, canDeleteBack = backSector != NULL;
+            for(size_t s = 0; s < numDeletedSectors; ++s)
             {
-                if(!isFrontInSet) isFrontInSet = potentialSectors[s] == line->frontSector;
-                if(!isBackInSet) isBackInSet = potentialSectors[s] == line->backSector;
-                if(isFrontInSet && isBackInSet) break;
+                if(!canDeleteFront && !canDeleteBack)
+                    break;
+                if(frontSector == deletedSectors[s])
+                    canDeleteFront = false;
+                if(backSector == deletedSectors[s])
+                    canDeleteBack = false;
             }
-            if(!isFrontInSet) potentialSectors[numPotentialSectors++] = line->frontSector;
-            if(!isBackInSet) potentialSectors[numPotentialSectors++] = line->backSector;
+            if(canDeleteFront)
+            {
+                RemoveSector(map, frontSector);
+                deletedSectors[numDeletedSectors++] = frontSector;
+            }
+            if(canDeleteBack)
+            {
+                RemoveSector(map, backSector);
+                deletedSectors[numDeletedSectors++] = backSector;
+            }
 
             RemoveLine(map, line);
         }
-    }
-
-    for(size_t i = 0; i < numPotentialSectors; ++i)
-    {
-        MapSector *sector = potentialSectors[i];
-        RemoveSector(map, sector);
     }
 
     map->dirty = true;
@@ -184,9 +190,9 @@ MapLine* EditAddLine(Map *map, MapVertex *v0, MapVertex *v1, LineData data)
 void EditRemoveLines(Map *map, size_t num, MapLine *lines[static num])
 {
     MapVertex *potentialVertices[4096] = { 0 };
-    MapSector *potentialSectors[4096] = { 0 };
+    MapSector *deletedSectors[4096] = { 0 };
     size_t numPotentialVertices = 0;
-    size_t numPotentialSectors = 0;
+    size_t numDeletedSectors = 0;
 
     for(size_t i = 0; i < num; ++i)
     {
@@ -203,16 +209,28 @@ void EditRemoveLines(Map *map, size_t num, MapLine *lines[static num])
         if(!isAInSet) potentialVertices[numPotentialVertices++] = line->a;
         if(!isBInSet) potentialVertices[numPotentialVertices++] = line->b;
 
-        bool isFrontInSet = line->frontSector == NULL;
-        bool isBackInSet = line->backSector == NULL;
-        for(size_t s = 0; s < numPotentialSectors; ++s)
+        MapSector *frontSector = line->frontSector;
+        MapSector *backSector = line->backSector;
+        bool canDeleteFront = frontSector != NULL, canDeleteBack = backSector != NULL;
+        for(size_t s = 0; s < numDeletedSectors; ++s)
         {
-            if(!isFrontInSet) isFrontInSet = potentialSectors[s] == line->frontSector;
-            if(!isBackInSet) isBackInSet = potentialSectors[s] == line->backSector;
-            if(isFrontInSet && isBackInSet) break;
+            if(!canDeleteFront && !canDeleteBack)
+                break;
+            if(frontSector == deletedSectors[s])
+                canDeleteFront = false;
+            if(backSector == deletedSectors[s])
+                canDeleteBack = false;
         }
-        if(!isFrontInSet) potentialSectors[numPotentialSectors++] = line->frontSector;
-        if(!isBackInSet) potentialSectors[numPotentialSectors++] = line->backSector;
+        if(canDeleteFront)
+        {
+            RemoveSector(map, frontSector);
+            deletedSectors[numDeletedSectors++] = frontSector;
+        }
+        if(canDeleteBack)
+        {
+            RemoveSector(map, backSector);
+            deletedSectors[numDeletedSectors++] = backSector;
+        }
 
         RemoveLine(map, line);
     }
@@ -221,12 +239,6 @@ void EditRemoveLines(Map *map, size_t num, MapLine *lines[static num])
     {
         MapVertex *vertex = potentialVertices[i];
         if(vertex->numAttachedLines == 0) RemoveVertex(map, vertex);
-    }
-
-    for(size_t i = 0; i < numPotentialSectors; ++i)
-    {
-        MapSector *sector = potentialSectors[i];
-        RemoveSector(map, sector);
     }
 
     map->dirty = true;

@@ -168,6 +168,8 @@ typedef struct EdState
         GLuint realtimeColorTexture;
         GLuint realtimeDepthTexture;
 
+        GLuint realtimeVertexFormat;
+
         GLuint backgroundLinesBuffer;
 
         GLuint whiteTexture;
@@ -209,6 +211,11 @@ typedef struct EdState
         {
             GLuint program;
         } editorSector;
+
+        struct
+        {
+            GLuint program;
+        } realtimeProgram;
     } gl;
 
     struct
@@ -229,10 +236,7 @@ typedef struct EdState
 
         char textureFilter[TEXTURE_FILTER_LEN];
 
-        float realtimeFov;
-
         mat4s editorProjection;
-        mat4s realtimeProjection;
 
         bool isDragging;
         vec2s startDrag, endDrag;
@@ -246,6 +250,12 @@ typedef struct EdState
         size_t numSelectedElements;
         void *hoveredElement;
     } data;
+
+    struct {
+        vec3s cameraPosition, cameraDirection;
+        mat4s realtimeProjection;
+        float realtimeFov;
+    } realtime;
 
     struct
     {

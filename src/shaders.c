@@ -154,6 +154,28 @@ static bool InitSectors(EdState *state, char *error, size_t errorSize)
     return true;
 }
 
+static bool InitRealtime(EdState *state, char *error, size_t errorSize)
+{
+    GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
+    if(!CompileShader(gRealtime_vsData, &vertShader, error, errorSize))
+        return false;
+
+    GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+    if(!CompileShader(gRealtime_fsData, &fragShader, error, errorSize))
+        return false;
+
+    GLuint program = glCreateProgram();
+    if(!LinkProgram(vertShader, fragShader, &program, error, errorSize))
+        return false;
+
+    glDeleteShader(vertShader);
+    glDeleteShader(fragShader);
+
+    state->gl.realtimeProgram.program = program;
+
+    return true;
+}
+
 bool LoadShaders(EdState *state, char *error, size_t errorSize)
 {
     if(!InitBackground(state, error, errorSize))
@@ -166,6 +188,9 @@ bool LoadShaders(EdState *state, char *error, size_t errorSize)
         return false;
 
     if(!InitSectors(state, error, errorSize))
+        return false;
+
+    if(!InitRealtime(state, error, errorSize))
         return false;
 
     return true;
