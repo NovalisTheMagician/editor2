@@ -1,10 +1,13 @@
 #include "../gwindows.h"
 #include "cimgui.h"
 
+static vec3s screenToWorld(vec2s screenCoord)
+{
+    return (vec3s){ 0 };
+}
+
 void RealtimeWindow(bool *p_open, EdState *state)
 {
-    igSetNextWindowSize((ImVec2){ 800, 600 }, ImGuiCond_FirstUseEver);
-
     if(igBegin("3D View", p_open, ImGuiWindowFlags_NoScrollbar))
     {
         if(igBeginChild_ID(1000, (ImVec2){ 0, 0 }, false, ImGuiWindowFlags_NoMove))
@@ -27,7 +30,13 @@ void RealtimeWindow(bool *p_open, EdState *state)
 
             if(hovored)
             {
+                bool shiftDown = igGetIO_Nil()->KeyShift;
+                bool altDown = igGetIO_Nil()->KeyAlt;
 
+                if(igIsMouseDragging(ImGuiMouseButton_Right, 2))
+                {
+
+                }
             }
 
             if(focused)
@@ -36,7 +45,7 @@ void RealtimeWindow(bool *p_open, EdState *state)
             }
 
             ResizeRealtimeView(state, clientArea.x, clientArea.y);
-            igImage((ImTextureID)(intptr_t)state->gl.realtimeColorTexture, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 0 });
+            igImage((ImTextureID)(intptr_t)state->gl.realtimeColorTexture, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 });
         }
         igEndChild();
 

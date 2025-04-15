@@ -198,8 +198,8 @@ void EditorWindow(bool *p_open, EdState *state)
                 state->data.mty = edSY;
 #endif
 
-                bool shiftDown = igGetIO()->KeyShift;
-                bool altDown = igGetIO()->KeyAlt;
+                bool shiftDown = igGetIO_Nil()->KeyShift;
+                bool altDown = igGetIO_Nil()->KeyAlt;
 
                 vec2s mouseVertex = { {edX, edY} };
                 state->data.editVertexMouse = (vec2s){ .x = edSX, .y = edSY };
@@ -422,7 +422,7 @@ void EditorWindow(bool *p_open, EdState *state)
             }
 
             ResizeEditorView(state, clientArea.x, clientArea.y);
-            igImage((ImTextureID)(intptr_t)state->gl.editorColorTexture, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 }, (ImVec4){ 1, 1, 1, 1 }, (ImVec4){ 1, 1, 1, 0 });
+            igImage((ImTextureID)(intptr_t)state->gl.editorColorTexture, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 });
 
             static bool firstTime = true;
             if(firstTime)

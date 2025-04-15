@@ -171,7 +171,7 @@ int EditorMain(int argc, char *argv[])
     }
 
     SetStyle(state->settings.theme);
-    ImGuiIO *ioptr = igGetIO();
+    ImGuiIO *ioptr = igGetIO_Nil();
 
     SDL_Event e;
     bool quit = false;
@@ -313,7 +313,7 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context, char *error, si
 {
     igCreateContext(NULL);
 
-    ImGuiIO *ioptr = igGetIO();
+    ImGuiIO *ioptr = igGetIO_Nil();
     ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_DockingEnable;
 
     ImFontConfig *config = ImFontConfig_ImFontConfig();

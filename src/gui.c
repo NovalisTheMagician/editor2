@@ -403,7 +403,7 @@ static void MainMenuBar(bool *doQuit, EdState *state)
         }
 
         char buffer[64];
-        float framerate = igGetIO()->Framerate;
+        float framerate = igGetIO_Nil()->Framerate;
         snprintf(buffer, sizeof buffer, "%d FPS (%.4f ms)", (int)round(framerate), 1.0f / framerate);
         ImVec2 textSize;
         igCalcTextSize(&textSize, buffer, buffer + strlen(buffer) + 1, false, 0);
@@ -511,7 +511,7 @@ static void MapSavePopup(EdState *state, bool *quitRequest)
 
 static void FileDialog(bool *doQuit)
 {
-    ImGuiIO* ioptr = igGetIO();
+    ImGuiIO* ioptr = igGetIO_Nil();
     ImVec2 maxSize;
     maxSize.x = ioptr->DisplaySize.x * 0.8f;
     maxSize.y = ioptr->DisplaySize.y * 0.8f;
