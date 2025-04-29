@@ -1,8 +1,6 @@
 #include "create.h"
 #include "map.h"
 
-#include "memory.h" // IWYU pragma: keep
-
 #include <string.h>
 
 CreateResult CreateVertex(Map *map, vec2s pos)

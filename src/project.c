@@ -1,7 +1,5 @@
 #include "project.h"
 
-#include "memory.h" // IWYU pragma: keep
-
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>

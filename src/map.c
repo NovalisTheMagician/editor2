@@ -4,7 +4,6 @@
 #include "logging.h"
 #include "map/query.h"
 #include "serialization.h"
-#include "memory.h"
 
 #include <string.h>
 #include <stdio.h>

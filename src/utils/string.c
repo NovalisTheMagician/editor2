@@ -1,8 +1,7 @@
 #include "string.h"
 
 #include <string.h>
-
-#include "../memory.h" // IWYU pragma: keep
+#include <memory.h>
 
 char* CopyString(const char *string)
 {

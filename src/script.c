@@ -14,8 +14,6 @@
 #include "scripts/scripts.h"
 #include "utils/string.h"
 
-#include "memory.h" // IWYU pragma: keep
-
 static void luaError(lua_State *L)
 {
     LogError("[script] %s", lua_tostring(L, -1));

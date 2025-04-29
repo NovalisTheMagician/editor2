@@ -7,8 +7,6 @@
 #include "map/util.h"
 #include "utils.h"
 
-#include "memory.h"
-
 bool PointInSector(MapSector *sector, vec2s point)
 {
     return PointInPolygonVector(sector->numOuterLines, sector->edData.vertices, point);

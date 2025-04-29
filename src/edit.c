@@ -13,7 +13,6 @@
 #include "map/util.h"
 #include "map/insert.h"
 #include "map/create.h"
-#include "memory.h" // IWYU pragma: keep
 
 void ScreenToEditorSpace(const EdState *state, int32_t *x, int32_t *y)
 {

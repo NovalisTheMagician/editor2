@@ -1,8 +1,7 @@
 #include "async_load.h"
 
+#include <memory.h>
 #include <tgmath.h>
-
-#include "memory.h" // IWYU pragma: keep
 
 static pthread_mutex_t threadMutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_mutex_t batchMutex = PTHREAD_MUTEX_INITIALIZER;

@@ -25,7 +25,6 @@
 
 #include "utils.h"
 #include "utils/hash.h"
-#include "memory.h" // IWYU pragma: keep
 
 static size_t Partition(Texture **arr, size_t lo, size_t hi)
 {

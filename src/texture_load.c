@@ -8,7 +8,6 @@
 #include <pthread.h>
 
 #include "logging.h"
-#include "memory.h" // IWYU pragma: keep
 #include "async_load.h"
 #include "asset_sources/texture_load_fs.h"
 #include "asset_sources/texture_load_ftp.h"

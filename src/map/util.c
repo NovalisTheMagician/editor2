@@ -7,8 +7,6 @@
 #include "remove.h"
 #include "triangulate.h"
 
-#include "memory.h" // IWYU pragma: keep
-
 SplitResult SplitMapLine(Map *map, MapLine *line, MapVertex *vertex)
 {
     LineData dataCopy = CopyLineData(line->data);
