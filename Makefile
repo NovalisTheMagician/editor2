@@ -49,7 +49,7 @@ else
     ifeq ($(UNAME_S),Linux)
         LIBS += GL dl
         CCFLAGS += $(shell pkg-config --cflags sdl2 lua) -fsanitize=address
-        LDFLAGS += $(shell pkg-config --libs sdl2 lua) -fsanitize=address -static-libasan
+        LDFLAGS += $(shell pkg-config --libs sdl2 lua) -fsanitize=address
         SDL_INC += $(shell pkg-config --cflags sdl2)
         DEFINES +=
     endif

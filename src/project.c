@@ -54,7 +54,7 @@ bool LoadProject(Project *project)
     while(fgets(lineRaw, sizeof lineRaw, file) != NULL)
     {
         lineNr++;
-        char *line = Trim(lineRaw);
+         char *line = Trim(lineRaw);
         if(line[0] == '/' && line[1] == '/') continue; // comment
         char *delim = strchr(line, '=');
         if(!delim) continue;

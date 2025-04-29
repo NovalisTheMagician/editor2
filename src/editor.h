@@ -175,9 +175,6 @@ typedef struct EdState
         GLuint whiteTexture;
         GLuint64 whiteTextureHandle;
 
-        GLuint textureBuffer;
-        uint64_t *textureBufferMap;
-
         GLuint editorVertexFormat;
         GLuint editorVertexBuffer, editorIndexBuffer, editorShaderDataBuffer;
         EditorVertexType *editorVertexMap;

@@ -89,9 +89,7 @@ bool InitEditor(EdState *state, char *error, size_t errorSize)
     glTextureParameteri(state->defaultTextures.missingTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTextureParameteri(state->defaultTextures.missingTexture, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTextureParameteri(state->defaultTextures.missingTexture, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    state->defaultTextures.missingTextureHandle = glGetTextureHandleARB(state->defaultTextures.missingTexture);
     state->defaultTextures.missingTextureWidth = state->defaultTextures.missingTextureHeight = 64;
-    glMakeTextureHandleResidentARB(state->defaultTextures.missingTextureHandle);
     free(pixels);
 
     glCreateFramebuffers(1, &state->gl.editorFramebuffer);
@@ -106,8 +104,6 @@ bool InitEditor(EdState *state, char *error, size_t errorSize)
     glTextureParameteri(state->gl.whiteTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTextureParameteri(state->gl.whiteTexture, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTextureParameteri(state->gl.whiteTexture, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    state->gl.whiteTextureHandle = glGetTextureHandleARB(state->gl.whiteTexture);
-    glMakeTextureHandleResidentARB(state->gl.whiteTextureHandle);
 
     state->data.gridSize = 32;
     state->data.zoomLevel = 1.0f;
@@ -131,15 +127,12 @@ bool InitEditor(EdState *state, char *error, size_t errorSize)
     glEnableVertexArrayAttrib(state->gl.editorVertexFormat, 0);
     glEnableVertexArrayAttrib(state->gl.editorVertexFormat, 1);
     glEnableVertexArrayAttrib(state->gl.editorVertexFormat, 2);
-    glEnableVertexArrayAttrib(state->gl.editorVertexFormat, 3);
     glVertexArrayAttribFormat(state->gl.editorVertexFormat, 0, 2, GL_FLOAT, GL_FALSE, offsetof(EditorVertexType, position));
     glVertexArrayAttribFormat(state->gl.editorVertexFormat, 1, 4, GL_FLOAT, GL_FALSE, offsetof(EditorVertexType, color));
     glVertexArrayAttribFormat(state->gl.editorVertexFormat, 2, 2, GL_FLOAT, GL_FALSE, offsetof(EditorVertexType, texCoord));
-    glVertexArrayAttribIFormat(state->gl.editorVertexFormat, 3, 1, GL_UNSIGNED_INT, offsetof(EditorVertexType, texId));
     glVertexArrayAttribBinding(state->gl.editorVertexFormat, 0, 0);
     glVertexArrayAttribBinding(state->gl.editorVertexFormat, 1, 0);
     glVertexArrayAttribBinding(state->gl.editorVertexFormat, 2, 0);
-    glVertexArrayAttribBinding(state->gl.editorVertexFormat, 3, 0);
     glVertexArrayVertexBuffer(state->gl.editorVertexFormat, 0, state->gl.editorVertexBuffer, 0, sizeof(EditorVertexType));
     glVertexArrayElementBuffer(state->gl.editorVertexFormat, state->gl.editorIndexBuffer);
 
@@ -147,25 +140,15 @@ bool InitEditor(EdState *state, char *error, size_t errorSize)
     glEnableVertexArrayAttrib(state->gl.realtimeVertexFormat, 0);
     glEnableVertexArrayAttrib(state->gl.realtimeVertexFormat, 1);
     glEnableVertexArrayAttrib(state->gl.realtimeVertexFormat, 2);
-    glEnableVertexArrayAttrib(state->gl.realtimeVertexFormat, 3);
     glVertexArrayAttribFormat(state->gl.realtimeVertexFormat, 0, 3, GL_FLOAT, GL_FALSE, offsetof(RealtimeVertexType, position));
     glVertexArrayAttribFormat(state->gl.realtimeVertexFormat, 1, 4, GL_FLOAT, GL_FALSE, offsetof(RealtimeVertexType, color));
     glVertexArrayAttribFormat(state->gl.realtimeVertexFormat, 2, 2, GL_FLOAT, GL_FALSE, offsetof(RealtimeVertexType, texCoord));
-    glVertexArrayAttribIFormat(state->gl.realtimeVertexFormat, 3, 1, GL_UNSIGNED_INT, offsetof(RealtimeVertexType, texId));
     glVertexArrayAttribBinding(state->gl.realtimeVertexFormat, 0, 0);
     glVertexArrayAttribBinding(state->gl.realtimeVertexFormat, 1, 0);
     glVertexArrayAttribBinding(state->gl.realtimeVertexFormat, 2, 0);
-    glVertexArrayAttribBinding(state->gl.realtimeVertexFormat, 3, 0);
-
-
 
     glCreateBuffers(1, &state->gl.editorShaderDataBuffer);
     glNamedBufferStorage(state->gl.editorShaderDataBuffer, sizeof(EditorShaderData), NULL, GL_DYNAMIC_STORAGE_BIT);
-
-    size_t textureBufferSize = TEXTURE_SET_SIZE * sizeof(GLuint64);
-    glCreateBuffers(1, &state->gl.textureBuffer);
-    glNamedBufferStorage(state->gl.textureBuffer, textureBufferSize, NULL, storage_flags);
-    state->gl.textureBufferMap = glMapNamedBufferRange(state->gl.textureBuffer, 0, textureBufferSize, mapping_flags);
 
     state->data.autoScrollLogs = true;
 
@@ -180,7 +163,7 @@ void DestroyEditor(EdState *state)
     glDeleteFramebuffers(COUNT_OF(framebuffers), framebuffers);
     GLuint textures[] = { state->gl.editorColorTexture, state->gl.editorColorTextureMS, state->gl.realtimeColorTexture, state->gl.realtimeDepthTexture, state->gl.whiteTexture, state->defaultTextures.missingTexture };
     glDeleteTextures(COUNT_OF(textures), textures);
-    GLuint buffer[] = { state->gl.editorVertexBuffer, state->gl.editorIndexBuffer, state->gl.editorShaderDataBuffer, state->gl.backgroundLinesBuffer, state->gl.textureBuffer };
+    GLuint buffer[] = { state->gl.editorVertexBuffer, state->gl.editorIndexBuffer, state->gl.editorShaderDataBuffer, state->gl.backgroundLinesBuffer };
     glDeleteBuffers(COUNT_OF(buffer), buffer);
     GLuint formats[] = { state->gl.editorBackProg.backVertexFormat, state->gl.editorVertexFormat, state->gl.realtimeVertexFormat };
     glDeleteVertexArrays(COUNT_OF(formats), formats);
@@ -410,9 +393,19 @@ foundColIdx:
     return verts;
 }
 
-static size_t CollectSectors(const EdState *state, size_t vertexOffset, size_t indexOffset, size_t *numIndices)
+typedef struct RenderData
 {
-    size_t verts = 0, inds = 0;
+    GLuint texture;
+    size_t vertexOffset;
+    size_t indexOffset;
+    size_t indexCount;
+} RenderData;
+
+static size_t CollectSectors(const EdState *state, size_t vertexOffset, size_t indexOffset, RenderData *renderData, size_t renderDataSize, size_t *numTextures)
+{
+    size_t verts = 0, inds = 0, currentRenderData = 0;
+    GLuint currentTexture = 0;
+    RenderData *rd = &renderData[0];
     for(const MapSector *sector = state->map.headSector; sector; sector = sector->next)
     {
         int colorIdx = COL_SECTOR;
@@ -425,6 +418,18 @@ static size_t CollectSectors(const EdState *state, size_t vertexOffset, size_t i
         {
             colorIdx = COL_SECTOR_HOVER;
         }
+        const Texture *texture = tc_get(&state->textures, sector->data.floorTex);
+        GLuint texId = texture ? texture->texture1 : state->defaultTextures.missingTexture;
+        if(texId != currentTexture)
+        {
+            currentRenderData++;
+            assert(currentRenderData < renderDataSize);
+            currentTexture = texId;
+            rd = &renderData[currentRenderData-1];
+            rd->indexOffset = indexOffset + inds;
+            rd->vertexOffset = vertexOffset + verts;
+            rd->texture = texId;
+        }
 
         const TriangleData data = sector->edData;
         for(size_t i = 0; i < data.numIndices; ++i)
@@ -432,19 +437,19 @@ static size_t CollectSectors(const EdState *state, size_t vertexOffset, size_t i
             state->gl.editorIndexMap[indexOffset + inds + i] = data.indices[i] + verts;
         }
         inds += data.numIndices;
+        rd->indexCount += data.numIndices;
 
         size_t offsetIndex = verts + vertexOffset;
         for(size_t i = 0; i < data.numVertices; i++)
         {
             const vec2s position = data.vertices[i];
             const vec2s texcoord = data.vertices[i];
-            const Texture *texture = tc_get(&state->textures, sector->data.floorTex);
-            uint64_t texId = texture ? texture->activeIndex != -1 ? texture->activeIndex : WHITE_TEXTURE : WHITE_TEXTURE;
-            state->gl.editorVertexMap[i + offsetIndex] = (EditorVertexType){ .position = position, .texCoord = texcoord, .color = state->settings.colors[colorIdx], .texId = texId };
+            
+            state->gl.editorVertexMap[i + offsetIndex] = (EditorVertexType){ .position = position, .texCoord = texcoord, .color = state->settings.colors[colorIdx] };
         }
         verts += data.numVertices;
     }
-    *numIndices = inds;
+    *numTextures = currentRenderData;
     return verts;
 }
 
@@ -476,12 +481,6 @@ static size_t CollectEditData(const EdState *state, size_t vertexOffset)
     return 0;
 }
 
-static void setTexture(Texture *texture, size_t index, void *user)
-{
-    uint64_t *buffer = user;
-    buffer[index] = texture->textureHandle;
-}
-
 void RenderEditorView(EdState *state)
 {
     RenderBackground(state);
@@ -511,8 +510,10 @@ void RenderEditorView(EdState *state)
     size_t vertLength = CollectVertices(state, vertStart);
     size_t lineStart = vertStart + vertLength;
     size_t lineLength = CollectLines(state, lineStart);
-    size_t sectorStart = lineStart + lineLength, sectorIndexStart = state->gl.currentBuffer * state->gl.editorMaxBufferCount, sectorIndexLength;
-    size_t sectorLength = CollectSectors(state, sectorStart, sectorIndexStart, &sectorIndexLength);
+    RenderData renderData[4096] = { 0 };
+    size_t numTextures = 0;
+    size_t sectorStart = lineStart + lineLength, sectorIndexStart = state->gl.currentBuffer * state->gl.editorMaxBufferCount;
+    size_t sectorLength = CollectSectors(state, sectorStart, sectorIndexStart, renderData, 4096, &numTextures);
     size_t dragStart = sectorStart + sectorLength;
     size_t dragLength = CollectDragData(state, dragStart);
     size_t editStart = dragStart + dragLength;
@@ -521,13 +522,13 @@ void RenderEditorView(EdState *state)
     if(editStart + editLength == 0) // dont issue draw calls if we dont have anything to draw
         return;
 
-    tc_iterate_active(&state->textures, setTexture, state->gl.textureBufferMap);
-    state->gl.textureBufferMap[TEXTURE_SET_SIZE-1] = state->defaultTextures.missingTextureHandle;
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, state->gl.textureBuffer);
-
     glUseProgram(state->gl.editorSector.program);
-    // handle real texture here
-    glDrawElementsBaseVertex(GL_TRIANGLES, sectorIndexLength, GL_UNSIGNED_INT, 0, sectorStart);
+    glUniform1i(0, 0);
+    for(size_t i = 0; i < numTextures; ++i)
+    {
+        glBindTextureUnit(0, renderData[i].texture);
+        glDrawElementsBaseVertex(GL_TRIANGLES, renderData[i].indexCount, GL_UNSIGNED_INT, (void*)(renderData[i].indexOffset * sizeof(Index_t)), renderData[0].vertexOffset);
+    }
 
     glLineWidth(2);
     glUseProgram(state->gl.editorLine.program);

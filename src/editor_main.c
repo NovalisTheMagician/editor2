@@ -361,13 +361,6 @@ static SDL_GLContext InitOpenGL(SDL_Window *window, char *error, size_t errorSiz
         return NULL;
     }
 
-    if(!GLAD_GL_ARB_bindless_texture)
-    {
-        snprintf(error, errorSize, "GL_ARB_bindless_texture extension not supported");
-        SDL_GL_DeleteContext(glContext);
-        return NULL;
-    }
-
     if(SDL_GL_SetSwapInterval(-1) == -1)
         SDL_GL_SetSwapInterval(1);
 

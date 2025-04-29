@@ -167,7 +167,6 @@ static void SectorProperties(EdState *state)
                 free(selectedSector->data.floorTex);
                 Texture *tex = *(Texture**)payload->Data;
                 selectedSector->data.floorTex = CopyString(tex->name);
-                tc_active(&state->textures, tex);
             }
             igEndDragDropTarget();
         }

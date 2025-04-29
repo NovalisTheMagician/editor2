@@ -13,7 +13,9 @@ char* Ltrim(char *s)
 
 char* Rtrim(char *s)
 {
-    char* back = s + strlen(s);
+    size_t len = strlen(s);
+    if(len == 0) return s;
+    char* back = s + len;
     while(isspace(*--back));
     *(back+1) = '\0';
     return s;
@@ -21,6 +23,7 @@ char* Rtrim(char *s)
 
 char* Trim(char *s)
 {
+    if(!s) return NULL;
     return Rtrim(Ltrim(s));
 }
 
