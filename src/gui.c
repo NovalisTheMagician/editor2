@@ -16,7 +16,6 @@
 #include "script.h"
 
 #include "memory.h" // IWYU pragma: keep
-#include "utils/debug.h"
 
 static void SetValveStyle(ImGuiStyle *style)
 {
@@ -521,16 +520,10 @@ static void FileDialog(bool *doQuit)
     if (IGFD_DisplayDialog(cfileDialog, "filedlg", ImGuiWindowFlags_NoCollapse, minSize, maxSize))
     {
         FileDialogAction *action = IGFD_GetUserDatas(cfileDialog);
-#ifdef _DEBUG
-            debug_insertAddress(action, __FILE__, __LINE__);
-#endif
         assert(action);
         if(IGFD_IsOk(cfileDialog))
         {
             char *cfilePathName = IGFD_GetFilePathName(cfileDialog, IGFD_ResultMode_AddIfNoFileExt);
-#ifdef _DEBUG
-            debug_insertAddress(cfilePathName, __FILE__, __LINE__);
-#endif
             if(!cfilePathName)
                 cfilePathName = IGFD_GetCurrentPath(cfileDialog);
             action->callback(cfilePathName, action->data);

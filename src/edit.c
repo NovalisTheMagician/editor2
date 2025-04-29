@@ -14,7 +14,6 @@
 #include "map/insert.h"
 #include "map/create.h"
 #include "memory.h" // IWYU pragma: keep
-#include "utils/debug.h"
 
 void ScreenToEditorSpace(const EdState *state, int32_t *x, int32_t *y)
 {
@@ -312,9 +311,6 @@ MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLin
 
     unsigned int *indices = NULL;
     size_t numIndices = triangulate(polygon, innerPolygons, numInnerLines, &indices);
-#ifdef _DEBUG
-    debug_insertAddress(indices, __FILE__, __LINE__);
-#endif
 
     td->indices = malloc(numIndices * sizeof *indices);
     memcpy(td->indices, indices, numIndices * sizeof *indices);

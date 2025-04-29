@@ -1,11 +1,7 @@
-#include "SDL2/SDL_surface.h"
-#include "logging.h"
-#include "script.h"
-#include "utils/debug.h"
-#include "utils/string.h"
-#include <SDL2/SDL_video.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
+
 #define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
 #define CIMGUI_USE_OPENGL3
 #define CIMGUI_USE_SDL2
@@ -14,13 +10,14 @@
 
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_video.h>
+#include <SDL2/SDL_surface.h>
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_messagebox.h>
 
 #include "glad/gl.h"
 
 #include <ftplib.h>
-#include <unistd.h>
 
 #include <stb/stb_image.h>
 
@@ -30,7 +27,9 @@
 #include "async_load.h"
 #include "texture_load.h"
 #include "resources/resources.h"
-#include "memory.h"
+#include "logging.h"
+#include "script.h"
+#include "utils/string.h"
 
 #define SETTINGS_FILE "./settings.ini"
 #define DEFAULT_WINDOW_WIDTH 1600
@@ -90,9 +89,6 @@ static void setWindowIcon(SDL_Window *window)
 {
     int w, h, c;
     uint8_t *pixels = stbi_load_from_memory(gIconData, gIconSize, &w, &h, &c, 4);
-#ifdef _DEBUG
-    debug_insertAddress(pixels, __FILE__, __LINE__);
-#endif
     SDL_Surface *surface = SDL_CreateRGBSurface(0, w, h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
     memcpy(surface->pixels, pixels, w * h * 4);
     SDL_SetWindowIcon(window, surface);
@@ -102,10 +98,6 @@ static void setWindowIcon(SDL_Window *window)
 
 int EditorMain(int argc, char *argv[])
 {
-#if defined(_DEBUG)
-    debug_init("memory_logs.txt");
-#endif
-
     atexit(SDL_Quit);
 
     FtpInit();
@@ -262,10 +254,6 @@ int EditorMain(int argc, char *argv[])
     SDL_GL_DeleteContext(glContext);
     SDL_DestroyWindow(window);
     SDL_Quit();
-
-#if defined(_DEBUG)
-    debug_finish();
-#endif
 
     return EXIT_SUCCESS;
 }

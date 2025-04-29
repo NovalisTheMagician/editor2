@@ -9,7 +9,6 @@
 #include "utils.h"
 #include "texture_collection.h"
 #include "resources/resources.h"
-#include "utils/debug.h"
 #include "vertex_types.h"
 #include "memory.h" // IWYU pragma: keep
 
@@ -72,9 +71,6 @@ bool InitEditor(EdState *state, char *error, size_t errorSize)
 
     int w, h, c;
     uint8_t *pixels = stbi_load_from_memory(gDefaultTextureData, gDefaultTextureSize, &w, &h, &c, 4);
-#ifdef _DEBUG
-    debug_insertAddress(pixels, __FILE__, __LINE__);
-#endif
     if(!pixels)
     {
         snprintf(error, errorSize, "failed to load the default texture");
@@ -530,20 +526,34 @@ void RenderEditorView(EdState *state)
         glDrawElementsBaseVertex(GL_TRIANGLES, renderData[i].indexCount, GL_UNSIGNED_INT, (void*)(renderData[i].indexOffset * sizeof(Index_t)), renderData[0].vertexOffset);
     }
 
-    glLineWidth(2);
-    glUseProgram(state->gl.editorLine.program);
-    glDrawArrays(GL_LINES, lineStart, lineLength);
+    if(lineLength)
+    {
+        glLineWidth(2);
+        glUseProgram(state->gl.editorLine.program);
+        glDrawArrays(GL_LINES, lineStart, lineLength);
+    }
 
-    glPointSize(state->settings.vertexPointSize);
-    glUseProgram(state->gl.editorVertex.program);
-    glDrawArrays(GL_POINTS, vertStart, vertLength);
+    if(vertLength)
+    {
+        glPointSize(state->settings.vertexPointSize);
+        glUseProgram(state->gl.editorVertex.program);
+        glDrawArrays(GL_POINTS, vertStart, vertLength);
+    }
+    
+    if(editLength)
+    {
+        glPointSize(state->settings.vertexPointSize);
+        glUseProgram(state->gl.editorVertex.program);
+        glDrawArrays(GL_POINTS, editStart, editLength);
+    }
 
-    glUseProgram(state->gl.editorVertex.program);
-    glDrawArrays(GL_POINTS, editStart, editLength);
-
-    glUseProgram(state->gl.editorLine.program);
-    glDrawArrays(GL_LINE_LOOP, dragStart, dragLength);
-    glDrawArrays(GL_LINE_STRIP, editStart, editLength);
+    if(dragLength || editLength)
+    {
+        glLineWidth(2);
+        glUseProgram(state->gl.editorLine.program);
+        glDrawArrays(GL_LINE_LOOP, dragStart, dragLength);
+        glDrawArrays(GL_LINE_STRIP, editStart, editLength);
+    }
 
     glLineWidth(1);
 
