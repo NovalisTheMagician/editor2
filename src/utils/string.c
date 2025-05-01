@@ -1,7 +1,7 @@
 #include "string.h"
 
 #include <string.h>
-#include <memory.h>
+#include <stdlib.h>
 
 char* CopyString(const char *string)
 {

@@ -64,6 +64,8 @@ typedef struct MapLine
     LineData data;
     struct MapSector *frontSector, *backSector;
 
+    bool mark;
+
     size_t idx;
     struct MapLine *next, *prev;
 } MapLine;

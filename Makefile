@@ -84,6 +84,9 @@ GLAD_OBJ := $(BUILD_DIR)/$(GLAD_DIR)/gl.o
 INC_DIRS += $(GLAD_DIR)/include
 BUILD_DIRS += $(BUILD_DIR)/$(GLAD_DIR)
 
+# tsoding
+INC_DIRS += $(EXTERN_DIR)/tsoding
+
 # tiny regular expression
 RE_DIR := $(EXTERN_DIR)/re
 RE_SRC := $(RE_DIR)/re.c

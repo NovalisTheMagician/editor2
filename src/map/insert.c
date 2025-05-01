@@ -1,8 +1,10 @@
 #include "insert.h"
 
 #include <assert.h>
+#include <stdlib.h>
 
-#include "../memory.h"
+#include "arena.h"
+
 #include "../edit.h"
 #include "../geometry.h"
 #include "../map.h"
@@ -39,13 +41,13 @@ MapSector* MakeMapSector(Map *map, MapLine *startLine, SectorData data)
     if(FindEquvivalentSector(map, numLines, sectorLines)) return NULL;
     struct Polygon *poly = PolygonFromMapLines(numLines, sectorLines);
 
-    arena_t arena = arena_create(5 * 1024 * 1024); // 5 megs
+    Arena arena = { 0 };
 
     size_t numInnerLineLoops = 0, sizeInnerLineLoops = MAX_LINES_PER_SECTOR, usedLinesTop = 0, usedLinesSize = 2048, numPotentialLines = 0, sizePotentialLines = 1024;
-    MapLine ***innerLines = arena_calloc(&arena, sizeInnerLineLoops, sizeof *innerLines);
-    size_t *innerLinesNum = arena_calloc(&arena, sizeInnerLineLoops, sizeof *innerLinesNum);
-    MapLine **usedLines = arena_calloc(&arena, usedLinesSize, sizeof *usedLines);
-    MapLine **potentialLines = arena_calloc(&arena, sizePotentialLines, sizeof *potentialLines);
+    MapLine ***innerLines = arena_alloc(&arena, sizeInnerLineLoops * sizeof *innerLines);
+    size_t *innerLinesNum = arena_alloc(&arena, sizeInnerLineLoops * sizeof *innerLinesNum);
+    MapLine **usedLines = arena_alloc(&arena, usedLinesSize * sizeof *usedLines);
+    MapLine **potentialLines = arena_alloc(&arena, sizePotentialLines * sizeof *potentialLines);
 
     for(MapLine *line = map->headLine; line; line = line->next)
     {
@@ -62,7 +64,8 @@ MapSector* MakeMapSector(Map *map, MapLine *startLine, SectorData data)
     while(numPotentialLines > 0) // need at least 3 lines to form a sector
     {
         size_t id = numInnerLineLoops++;
-        innerLines[id] = arena_calloc(&arena, MAX_LINES_PER_SECTOR, sizeof **innerLines);
+        Arena_Mark mark = arena_snapshot(&arena);
+        innerLines[id] = arena_alloc(&arena, MAX_LINES_PER_SECTOR * sizeof **innerLines);
         MapLine *potentialLine = potentialLines[numPotentialLines-1];
         if(!potentialLine) goto nextIteration;
         size_t n = FindInnerLineLoop(potentialLine, innerLines[id], MAX_LINES_PER_SECTOR);
@@ -87,14 +90,14 @@ MapSector* MakeMapSector(Map *map, MapLine *startLine, SectorData data)
             innerLinesNum[id] = n;
         }
 nextIteration:
-        arena_reset_last_alloc(&arena);
+        arena_rewind(&arena, mark);
         numPotentialLines--;
     }
 
     free(poly);
     MapSector *sector = EditAddSector(map, numLines, sectorLines, numInnerLineLoops, innerLinesNum, innerLines, data);
 
-    arena_destroy(&arena);
+    arena_free(&arena);
 
     return sector;
 }
@@ -130,34 +133,24 @@ static inline QueueElement Dequeue(LineQueue *queue)
     return el;
 }
 
+typedef struct SectorUpdateItem
+{
+    MapLine *line;
+    SectorData sectorData;
+} SectorUpdateItem;
+
 typedef struct SectorUpdate
 {
-    struct
-    {
-        MapLine *line;
-        SectorData sectorData;
-    } data[QUEUE_SIZE];
-    size_t length;
+    SectorUpdateItem *items;
+    size_t count, capacity;
 } SectorUpdate;
+
+static Arena sectorUpdateArena = { 0 };
 
 static inline void InsertSectorUpdate(SectorUpdate *sectorUpdate, MapLine *line, SectorData sectorData)
 {
-    assert(sectorUpdate->length <= QUEUE_SIZE);
-    sectorUpdate->data[sectorUpdate->length++] = (typeof(sectorUpdate->data[0])){ .line = line, .sectorData = sectorData };
-}
-
-static void RemoveSectorUpdate(SectorUpdate *sectorUpdate, MapLine *line)
-{
-    for(size_t i = 0; i < sectorUpdate->length; ++i)
-    {
-        if(sectorUpdate->data[i].line == line)
-        {
-            FreeSectorData(sectorUpdate->data[i].sectorData);
-            sectorUpdate->data[i] = sectorUpdate->data[sectorUpdate->length-1];
-            sectorUpdate->length--;
-            break;
-        }
-    }
+    SectorUpdateItem item = { .line = line, .sectorData = sectorData };
+    arena_da_append(&sectorUpdateArena, sectorUpdate, item);
 }
 
 static void DoSplit(Map *map, SectorUpdate *sectorUpdate, MapLine *line, MapVertex *vertex)
@@ -176,6 +169,7 @@ static void DoSplit(Map *map, SectorUpdate *sectorUpdate, MapLine *line, MapVert
         {
             MapLine *sline = sector->outerLines[i];
             if(sline == line) continue;
+            sline->mark = true;
             InsertSectorUpdate(sectorUpdate, sline, CopySectorData(frontData));
         }
         RemoveSector(map, sector);
@@ -188,15 +182,17 @@ static void DoSplit(Map *map, SectorUpdate *sectorUpdate, MapLine *line, MapVert
         {
             MapLine *sline = sector->outerLines[i];
             if(sline == line) continue;
+            sline->mark = true;
             InsertSectorUpdate(sectorUpdate, sline, CopySectorData(backData));
         }
         RemoveSector(map, sector);
     }
 
-    if(hasSectorsAttached) RemoveSectorUpdate(sectorUpdate, line);
     SplitResult result = SplitMapLine(map, line, vertex);
     if(hasSectorsAttached)
     {
+        result.left->mark = true;
+        result.right->mark = true;
         if(hasFrontSector)
         {
             InsertSectorUpdate(sectorUpdate, result.left, CopySectorData(frontData));
@@ -226,6 +222,7 @@ static void DoSplit2(Map *map, SectorUpdate *sectorUpdate, MapLine *line, MapVer
         {
             MapLine *sline = sector->outerLines[i];
             if(sline == line) continue;
+            sline->mark = true;
             InsertSectorUpdate(sectorUpdate, sline, CopySectorData(frontData));
         }
         RemoveSector(map, sector);
@@ -238,15 +235,18 @@ static void DoSplit2(Map *map, SectorUpdate *sectorUpdate, MapLine *line, MapVer
         {
             MapLine *sline = sector->outerLines[i];
             if(sline == line) continue;
+            sline->mark = true;
             InsertSectorUpdate(sectorUpdate, sline, CopySectorData(backData));
         }
         RemoveSector(map, sector);
     }
 
-    if(hasSectorsAttached) RemoveSectorUpdate(sectorUpdate, line);
     SplitResult result = SplitMapLine2(map, line, vertexA, vertexB);
     if(hasSectorsAttached)
     {
+        result.left->mark = true;
+        result.right->mark = true;
+        result.middle->mark = true;
         if(hasFrontSector)
         {
             InsertSectorUpdate(sectorUpdate, result.left, CopySectorData(frontData));
@@ -404,13 +404,21 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
         didIntersect |= !canInsertLine;
     }
 
-    for(size_t i = 0; i < sectorsToUpdate.length; ++i)
+    for(MapLine *line = map->headLine; line; line = line->next)
     {
-        MapLine *line = sectorsToUpdate.data[i].line;
-        SectorData data = sectorsToUpdate.data[i].sectorData;
-        MakeMapSector(map, line, data);
-        FreeSectorData(data);
+        if(!line->mark) continue;
+        for(size_t i = 0; i < sectorsToUpdate.count; ++i)
+        {
+            if(line == sectorsToUpdate.items[i].line)
+            {
+                SectorData data = sectorsToUpdate.items[i].sectorData;
+                MakeMapSector(map, line, data);
+            }
+        }
+        line->mark = false;
     }
+
+    arena_reset(&sectorUpdateArena);
 
     // create sectors from the new lines
     if(isLoop)

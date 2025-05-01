@@ -1,6 +1,6 @@
 #include "async_load.h"
 
-#include <memory.h>
+#include <stdlib.h>
 #include <tgmath.h>
 
 static pthread_mutex_t threadMutex = PTHREAD_MUTEX_INITIALIZER;

@@ -8,6 +8,9 @@
 #include "cimgui.h"
 #include "cimgui_impl.h"
 
+#define ARENA_IMPLEMENTATION
+#include "arena.h"
+
 #define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_video.h>

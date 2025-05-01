@@ -2,9 +2,9 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "../logging.h"
-#include "../memory.h" // IWYU pragma: keep
 #include "../utils/string.h"
 
 extern pthread_mutex_t collectMutex;
