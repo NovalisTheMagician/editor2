@@ -43,7 +43,7 @@ MapSector* MakeMapSector(Map *map, MapLine *startLine, SectorData data)
 
     Arena arena = { 0 };
 
-    size_t numInnerLineLoops = 0, sizeInnerLineLoops = MAX_LINES_PER_SECTOR, usedLinesTop = 0, usedLinesSize = 2048, numPotentialLines = 0, sizePotentialLines = 1024;
+    size_t numInnerLineLoops = 0, sizeInnerLineLoops = MAX_LINES_PER_SECTOR, usedLinesTop = 0, usedLinesSize = 4096, numPotentialLines = 0, sizePotentialLines = 1024;
     MapLine ***innerLines = arena_alloc(&arena, sizeInnerLineLoops * sizeof *innerLines);
     size_t *innerLinesNum = arena_alloc(&arena, sizeInnerLineLoops * sizeof *innerLinesNum);
     MapLine **usedLines = arena_alloc(&arena, usedLinesSize * sizeof *usedLines);
@@ -283,9 +283,7 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
     }
 
     LineQueue queue = { 0 };
-
-    MapLine *startLines[QUEUE_SIZE];
-    size_t numStartLines = 0, numNewLines = 0;
+    size_t numNewLines = 0;
 
     SectorUpdate sectorsToUpdate = { 0 };
 
@@ -398,7 +396,7 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
             if(!newMapLine) return false;
 
             numNewLines++;
-            if(potentialStart) startLines[numStartLines++] = newMapLine;
+            newMapLine->new = potentialStart;
         }
 
         didIntersect |= !canInsertLine;
@@ -432,10 +430,12 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
         }
         else
         {
-            for(size_t i = 0; i < numStartLines; ++i)
+            for(MapLine *line = map->headLine; line; line = line->next)
             {
-                if(startLines[i]->frontSector == NULL)
-                    MakeMapSector(map, startLines[i], DefaultSectorData());
+                if(!line->new) continue;
+                if(line->frontSector == NULL)
+                    MakeMapSector(map, line, DefaultSectorData());
+                line->new = false;
             }
         }
     }

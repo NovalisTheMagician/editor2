@@ -187,11 +187,7 @@ static int dot_(lua_State *L)
     float y2 = lua_tonumber(L, -1);
     lua_pop(L, 1);
 
-    lua_getglobal(L, "Vec2");
-    lua_pushstring(L, "new");
-    lua_gettable(L, -2);
-    lua_pushnumber(L, x1 * x2);
-    lua_pushnumber(L, y1 * y2);
+    lua_pushnumber(L, x1*x2 + y1*y2);
     lua_pcall(L, 2, 1, 0);
 
     lua_remove(L, -2);
