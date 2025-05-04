@@ -2,8 +2,6 @@
 #include "ImGuiFileDialog.h"
 #include "utils/string.h"
 
-#include "memory.h" // IWYU pragma: keep
-
 static void OpenMapCallback(const char *path, void *data)
 {
     Map *map = data;

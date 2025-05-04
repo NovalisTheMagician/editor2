@@ -60,38 +60,40 @@ MapSector* MakeMapSector(Map *map, MapLine *startLine, SectorData data)
             potentialLines[numPotentialLines++] = line;
     }
 
-    if(numPotentialLines >= 3)
-    while(numPotentialLines > 0) // need at least 3 lines to form a sector
+    if(numPotentialLines >= 3) // need at least 3 lines to form a sector
     {
-        size_t id = numInnerLineLoops++;
-        Arena_Mark mark = arena_snapshot(&arena);
-        innerLines[id] = arena_alloc(&arena, MAX_LINES_PER_SECTOR * sizeof **innerLines);
-        MapLine *potentialLine = potentialLines[numPotentialLines-1];
-        if(!potentialLine) goto nextIteration;
-        size_t n = FindInnerLineLoop(potentialLine, innerLines[id], MAX_LINES_PER_SECTOR);
-        if(n == 0) // couldnt find a loop
+        while(numPotentialLines > 0)
         {
-            numInnerLineLoops--;
-            insert(usedLinesSize, &usedLinesTop, (void**)usedLines, potentialLine);
-        }
-        else
-        {
-            for(size_t i = 0; i < n; ++i)
+            size_t id = numInnerLineLoops++;
+            Arena_Mark mark = arena_snapshot(&arena);
+            innerLines[id] = arena_alloc(&arena, MAX_LINES_PER_SECTOR * sizeof **innerLines);
+            MapLine *potentialLine = potentialLines[numPotentialLines-1];
+            if(!potentialLine) goto nextIteration;
+            size_t n = FindInnerLineLoop(potentialLine, innerLines[id], MAX_LINES_PER_SECTOR);
+            if(n == 0) // couldnt find a loop
             {
-                MapLine *line = innerLines[id][i];
-                if(includes(usedLinesTop, (void**)usedLines, line))
-                {
-                    numInnerLineLoops--;
-                    goto nextIteration;
-                }
-                else
-                    insert(usedLinesSize, &usedLinesTop, (void**)usedLines, potentialLine);
+                numInnerLineLoops--;
+                insert(usedLinesSize, &usedLinesTop, (void**)usedLines, potentialLine);
             }
-            innerLinesNum[id] = n;
+            else
+            {
+                for(size_t i = 0; i < n; ++i)
+                {
+                    MapLine *line = innerLines[id][i];
+                    if(includes(usedLinesTop, (void**)usedLines, line))
+                    {
+                        numInnerLineLoops--;
+                        goto nextIteration;
+                    }
+                    else
+                        insert(usedLinesSize, &usedLinesTop, (void**)usedLines, potentialLine);
+                }
+                innerLinesNum[id] = n;
+            }
+    nextIteration:
+            arena_rewind(&arena, mark);
+            numPotentialLines--;
         }
-nextIteration:
-        arena_rewind(&arena, mark);
-        numPotentialLines--;
     }
 
     free(poly);
@@ -163,27 +165,27 @@ static void DoSplit(Map *map, SectorUpdate *sectorUpdate, MapLine *line, MapVert
 
     if(hasFrontSector)
     {
-        frontData = line->frontSector->data;
+        frontData = CopySectorData(line->frontSector->data);
         MapSector *sector = line->frontSector;
         for(size_t i = 0; i < sector->numOuterLines; ++i)
         {
             MapLine *sline = sector->outerLines[i];
             if(sline == line) continue;
             sline->mark = true;
-            InsertSectorUpdate(sectorUpdate, sline, CopySectorData(frontData));
+            InsertSectorUpdate(sectorUpdate, sline, frontData);
         }
         RemoveSector(map, sector);
     }
     if(hasBackSector)
     {
-        backData = line->backSector->data;
+        backData = CopySectorData(line->backSector->data);
         MapSector *sector = line->backSector;
         for(size_t i = 0; i < sector->numOuterLines; ++i)
         {
             MapLine *sline = sector->outerLines[i];
             if(sline == line) continue;
             sline->mark = true;
-            InsertSectorUpdate(sectorUpdate, sline, CopySectorData(backData));
+            InsertSectorUpdate(sectorUpdate, sline, backData);
         }
         RemoveSector(map, sector);
     }
@@ -195,13 +197,13 @@ static void DoSplit(Map *map, SectorUpdate *sectorUpdate, MapLine *line, MapVert
         result.right->mark = true;
         if(hasFrontSector)
         {
-            InsertSectorUpdate(sectorUpdate, result.left, CopySectorData(frontData));
-            InsertSectorUpdate(sectorUpdate, result.right, CopySectorData(frontData));
+            InsertSectorUpdate(sectorUpdate, result.left, frontData);
+            InsertSectorUpdate(sectorUpdate, result.right, frontData);
         }
         if(hasBackSector)
         {
-            InsertSectorUpdate(sectorUpdate, result.left, CopySectorData(backData));
-            InsertSectorUpdate(sectorUpdate, result.right, CopySectorData(backData));
+            InsertSectorUpdate(sectorUpdate, result.left, backData);
+            InsertSectorUpdate(sectorUpdate, result.right, backData);
         }
     }
 }
@@ -216,27 +218,27 @@ static void DoSplit2(Map *map, SectorUpdate *sectorUpdate, MapLine *line, MapVer
 
     if(hasFrontSector)
     {
-        frontData = line->frontSector->data;
+        frontData = CopySectorData(line->frontSector->data);
         MapSector *sector = line->frontSector;
         for(size_t i = 0; i < sector->numOuterLines; ++i)
         {
             MapLine *sline = sector->outerLines[i];
             if(sline == line) continue;
             sline->mark = true;
-            InsertSectorUpdate(sectorUpdate, sline, CopySectorData(frontData));
+            InsertSectorUpdate(sectorUpdate, sline, frontData);
         }
         RemoveSector(map, sector);
     }
     if(hasBackSector)
     {
-        backData = line->backSector->data;
+        backData = CopySectorData(line->backSector->data);
         MapSector *sector = line->backSector;
         for(size_t i = 0; i < sector->numOuterLines; ++i)
         {
             MapLine *sline = sector->outerLines[i];
             if(sline == line) continue;
             sline->mark = true;
-            InsertSectorUpdate(sectorUpdate, sline, CopySectorData(backData));
+            InsertSectorUpdate(sectorUpdate, sline, backData);
         }
         RemoveSector(map, sector);
     }
@@ -249,15 +251,15 @@ static void DoSplit2(Map *map, SectorUpdate *sectorUpdate, MapLine *line, MapVer
         result.middle->mark = true;
         if(hasFrontSector)
         {
-            InsertSectorUpdate(sectorUpdate, result.left, CopySectorData(frontData));
-            InsertSectorUpdate(sectorUpdate, result.right, CopySectorData(frontData));
-            InsertSectorUpdate(sectorUpdate, result.middle, CopySectorData(frontData));
+            InsertSectorUpdate(sectorUpdate, result.left, frontData);
+            InsertSectorUpdate(sectorUpdate, result.right, frontData);
+            InsertSectorUpdate(sectorUpdate, result.middle, frontData);
         }
         if(hasBackSector)
         {
-            InsertSectorUpdate(sectorUpdate, result.left, CopySectorData(backData));
-            InsertSectorUpdate(sectorUpdate, result.right, CopySectorData(backData));
-            InsertSectorUpdate(sectorUpdate, result.middle, CopySectorData(backData));
+            InsertSectorUpdate(sectorUpdate, result.left, backData);
+            InsertSectorUpdate(sectorUpdate, result.right, backData);
+            InsertSectorUpdate(sectorUpdate, result.middle, backData);
         }
     }
 }
