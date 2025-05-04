@@ -7,12 +7,12 @@ SRC_SUBDIRS := windows dialogs utils map scripts asset_sources
 DEFINES := __USE_XOPEN _GNU_SOURCE
 INC_DIRS := $(SRC_DIR)
 
-LIBS := m SDL2 ftp stdc++ lua
+LIBS := m SDL2 :libftp.a stdc++ :liblua.a
 LIB_DIRS :=
 
 RES := windres
 
-CC := gcc
+#CC := gcc
 C++ := g++
 
 CCFLAGS := -Wall -Wextra -std=gnu23 -Wstrict-prototypes
@@ -48,8 +48,8 @@ else
     UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
         LIBS += GL dl
-        CCFLAGS += $(shell pkg-config --cflags sdl2 lua) -fsanitize=address
-        LDFLAGS += $(shell pkg-config --libs sdl2 lua) -fsanitize=address
+        CCFLAGS += $(shell pkg-config --cflags sdl2) -fsanitize=address
+        LDFLAGS += $(shell pkg-config --libs sdl2) -fsanitize=address
         SDL_INC += $(shell pkg-config --cflags sdl2)
         DEFINES +=
     endif
