@@ -1,9 +1,31 @@
 #pragma once
 
 #include <stddef.h>
-#include "cglm/struct.h" // IWYU pragma: keep
+#include "cglm/struct.h"
 
 #define MAP_VERSION 1
+
+typedef enum PropertyType
+{
+    PROPERTY_STRING,
+    PROPERTY_BOOL,
+    PROPERTY_NUMBER,
+    PROPERTY_ENUM,
+} PropertyType;
+
+#define PROPERTY_KEY_MAX_LENGTH 256
+#define PROPERTY_VALUE_MAX_LENGTH 512
+
+typedef struct Property
+{
+    char key[PROPERTY_KEY_MAX_LENGTH], value[PROPERTY_VALUE_MAX_LENGTH];
+} Property;
+
+typedef struct PropertyTable
+{
+    Property *items;
+    size_t count, capacity;
+} PropertyTable;
 
 typedef enum LineType
 {
@@ -40,6 +62,8 @@ typedef struct MapVertex
     struct MapLine *attachedLines[256];
     size_t numAttachedLines;
 
+    PropertyTable props;
+
     struct MapVertex *next, *prev;
 } MapVertex;
 
@@ -63,6 +87,8 @@ typedef struct MapLine
 
     LineData data;
     struct MapSector *frontSector, *backSector;
+
+    PropertyTable props;
 
     bool mark, new;
 
@@ -93,6 +119,8 @@ typedef struct MapSector
     SectorData data;
 
     BoundingBox bb;
+
+    PropertyTable props;
 
     size_t idx;
     struct MapSector *next, *prev;
