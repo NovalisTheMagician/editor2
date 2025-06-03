@@ -227,6 +227,8 @@ typedef struct EdState
 
         int showSectorTextures;
 
+        uint64_t fetchStartTime, fetchEndTime;
+
 #ifdef _DEBUG
         int mx, my, mtx, mty;
 #endif

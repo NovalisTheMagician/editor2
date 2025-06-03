@@ -7,6 +7,8 @@
 #include <time.h>
 #include <string.h>
 
+#include <SDL2/SDL_timer.h>
+
 #include "cimgui.h"
 #include "ImGuiFileDialog.h"
 
@@ -410,7 +412,10 @@ static void MainMenuBar(bool *doQuit, EdState *state)
 
         if(state->data.fetchingTextures)
         {
-            const char fetchText[] = "Fetching Textures...";
+            uint64_t fetchingTime = (SDL_GetTicks64() - state->data.fetchStartTime) / 1000;
+
+            char fetchText[64] = { 0 };
+            snprintf(fetchText, sizeof fetchText, "Fetching Textures... %lu s", fetchingTime);
             float prevSize = textSize.x;
             igCalcTextSize(&textSize, fetchText, NULL, false, 0);
             igSameLine(igGetWindowWidth() - (prevSize + textSize.x + 16), 0);

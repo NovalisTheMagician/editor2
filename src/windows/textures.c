@@ -65,7 +65,10 @@ void TexturesWindow(bool *p_open, EdState *state)
 
         igInputText("Filter", state->data.textureFilter, sizeof state->data.textureFilter, 0, NULL, NULL);
         igSameLine(0, 16);
-        igText("%d Textures Found", tc_size(&state->textures));
+        if(state->data.fetchingTextures)
+            igText("%d Textures Found", tc_size(&state->textures));
+        else
+            igText("%d Textures Found (in %lu s)", tc_size(&state->textures), (state->data.fetchEndTime - state->data.fetchStartTime) / 1000);
 
         if(igBeginChild_ID(2002, (ImVec2){ 0, 0 }, true, ImGuiWindowFlags_AlwaysVerticalScrollbar))
         {

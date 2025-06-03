@@ -7,6 +7,8 @@
 #include <ftplib.h>
 #include <pthread.h>
 
+#include <SDL2/SDL_timer.h>
+
 #include "logging.h"
 #include "async_load.h"
 #include "asset_sources/texture_load_fs.h"
@@ -34,6 +36,7 @@ static void BatchCallback(Batch batch, bool lastBatch, void *, void *user)
     if(lastBatch)
     {
         state->data.fetchingTextures = false;
+        state->data.fetchEndTime = SDL_GetTicks64();
     }
 }
 
@@ -139,6 +142,8 @@ void LoadTextures(EdState *state, bool refresh)
     *data = (ThreadData){ .state = state, .folder = textureFolder };
 
     state->data.fetchingTextures = true;
+    state->data.fetchStartTime = SDL_GetTicks64();
+    state->data.fetchEndTime = state->data.fetchStartTime;
 
     cancelRequest = false;
     pthread_create(&fetchThread, NULL, LoadThread, data);
