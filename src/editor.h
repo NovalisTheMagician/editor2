@@ -217,6 +217,8 @@ typedef struct EdState
 
     struct
     {
+        int cachedDPI;
+
         bool fetchingTextures;
         bool autoScrollLogs;
 

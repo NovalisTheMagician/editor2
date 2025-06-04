@@ -106,6 +106,13 @@ static void setWindowIcon(SDL_Window *window)
     free(pixels);
 }
 
+static int getDisplayDpi(SDL_Window *window)
+{
+    float dpi;
+    SDL_GetDisplayDPI(SDL_GetWindowDisplayIndex(window), &dpi, NULL, NULL);
+    return (int)(dpi * 100.0f / DEFAULT_DPI);
+}
+
 int EditorMain(int argc, char *argv[])
 {
     atexit(SDL_Quit);
@@ -142,6 +149,9 @@ int EditorMain(int argc, char *argv[])
     EdState *state = calloc(1, sizeof *state);
     InitState(state);
     LogInit(&state->log);
+
+    state->data.cachedDPI = getDisplayDpi(window);
+    LogDebug("Display Scale: %d", state->data.cachedDPI);
 
     if(!InitEditor(state, errorBuffer, sizeof errorBuffer))
     {
@@ -181,6 +191,18 @@ int EditorMain(int argc, char *argv[])
     {
         while(SDL_PollEvent(&e) > 0)
         {
+            if(e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+            {
+                int newDpi = getDisplayDpi(window);
+                LogDebug("New Dpi: %d", newDpi);
+                if(newDpi != state->data.cachedDPI)
+                {
+                    state->data.cachedDPI = newDpi;
+                    InitFont(window);
+                    LogDebug("Display Scale changed: %d", state->data.cachedDPI);
+                }
+            }
+
             if(ImGui_ImplSDL2_ProcessEvent(&e)) continue;
 
             switch(e.type)
