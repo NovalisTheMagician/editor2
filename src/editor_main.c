@@ -51,7 +51,7 @@
 static SDL_Window* InitSDL(char *error, size_t errorSize);
 static bool InitImgui(SDL_Window *window, SDL_GLContext context, char *error, size_t errorSize);
 static SDL_GLContext InitOpenGL(SDL_Window *window, char *error, size_t errorSize);
-static void InitFont(SDL_Window *window);
+static void InitFont(SDL_Window *window, bool rebuild);
 
 static void HandleArguments(int argc, char *argv[], EdState *state)
 {
@@ -198,7 +198,7 @@ int EditorMain(int argc, char *argv[])
                 if(newDpi != state->data.cachedDPI)
                 {
                     state->data.cachedDPI = newDpi;
-                    InitFont(window);
+                    InitFont(window, true);
                     LogDebug("Display Scale changed: %d", state->data.cachedDPI);
                 }
             }
@@ -329,7 +329,7 @@ static SDL_Window* InitSDL(char *error, size_t errorSize)
     return window;
 }
 
-static void InitFont(SDL_Window *window)
+static void InitFont(SDL_Window *window, bool rebuild)
 {
     ImGuiIO *ioptr = igGetIO_Nil();
 
@@ -341,9 +341,13 @@ static void InitFont(SDL_Window *window)
 
     ImFontConfig *config = ImFontConfig_ImFontConfig();
     config->FontDataOwnedByAtlas = false;
-    ImFontAtlas_ClearFonts(ioptr->Fonts);
+    ImFontAtlas_Clear(ioptr->Fonts);
     ImFontAtlas_AddFontFromMemoryTTF(ioptr->Fonts, (void*)gFontData, gFontSize, fontSize, config, NULL);
+    ImFontAtlas_Build(ioptr->Fonts);
     ImFontConfig_destroy(config);
+    //ImGuiStyle_ScaleAllSizes(igGetStyle(), scale);
+    if(rebuild)
+        ImGui_ImplOpenGL3_CreateFontsTexture();
 }
 
 static bool InitImgui(SDL_Window *window, SDL_GLContext context, char *error, size_t errorSize)
@@ -353,7 +357,7 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context, char *error, si
     ImGuiIO *ioptr = igGetIO_Nil();
     ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_DockingEnable;
 
-    InitFont(window);
+    InitFont(window, false);
 
     ioptr->IniFilename = NULL;
 
