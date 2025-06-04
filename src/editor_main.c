@@ -42,9 +42,16 @@
 #define REQ_GL_MAJOR 4
 #define REQ_GL_MINOR 6
 
+#ifdef __APPLE__
+#define DEFAULT_DPI 72.0f
+#else
+#define DEFAULT_DPI 96.0f
+#endif
+
 static SDL_Window* InitSDL(char *error, size_t errorSize);
 static bool InitImgui(SDL_Window *window, SDL_GLContext context, char *error, size_t errorSize);
 static SDL_GLContext InitOpenGL(SDL_Window *window, char *error, size_t errorSize);
+static void InitFont(SDL_Window *window);
 
 static void HandleArguments(int argc, char *argv[], EdState *state)
 {
@@ -282,7 +289,7 @@ static SDL_Window* InitSDL(char *error, size_t errorSize)
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
 
-    uint32_t flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+    uint32_t flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
 #ifndef _DEBUG
     flags |= SDL_WINDOW_MAXIMIZED;
 #endif
@@ -300,6 +307,23 @@ static SDL_Window* InitSDL(char *error, size_t errorSize)
     return window;
 }
 
+static void InitFont(SDL_Window *window)
+{
+    ImGuiIO *ioptr = igGetIO_Nil();
+
+    int displayIndex = SDL_GetWindowDisplayIndex(window);
+    float dpi;
+    SDL_GetDisplayDPI(displayIndex, &dpi, NULL, NULL);
+    float scale = dpi / DEFAULT_DPI;
+    float fontSize = floorf(16.75f * scale);
+
+    ImFontConfig *config = ImFontConfig_ImFontConfig();
+    config->FontDataOwnedByAtlas = false;
+    ImFontAtlas_ClearFonts(ioptr->Fonts);
+    ImFontAtlas_AddFontFromMemoryTTF(ioptr->Fonts, (void*)gFontData, gFontSize, fontSize, config, NULL);
+    ImFontConfig_destroy(config);
+}
+
 static bool InitImgui(SDL_Window *window, SDL_GLContext context, char *error, size_t errorSize)
 {
     igCreateContext(NULL);
@@ -307,10 +331,7 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context, char *error, si
     ImGuiIO *ioptr = igGetIO_Nil();
     ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_DockingEnable;
 
-    ImFontConfig *config = ImFontConfig_ImFontConfig();
-    config->FontDataOwnedByAtlas = false;
-    ImFontAtlas_AddFontFromMemoryTTF(ioptr->Fonts, (void*)gFontData, gFontSize, 16.75f, config, NULL);
-    ImFontConfig_destroy(config);
+    InitFont(window);
 
     ioptr->IniFilename = NULL;
 
