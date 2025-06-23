@@ -6,20 +6,20 @@
     "configurations": [
         {
             "name": "editor2 ftp",
-            "type": "by-gdb",
+            "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/editor2",
-            "programArgs": "-p debugProject.epr",
+            "args": ["-p", "debugProject.epr"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "build"
         },
         {
             "name": "editor2 fs",
-            "type": "by-gdb",
+            "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/editor2",
-            "programArgs": "-p debugProjectFs.epr",
+            "args": ["-p", "debugProjectFs.epr"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "build"
@@ -29,7 +29,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/editor2",
-            "environment": [{"name": "LSAN_OPTIONS", "value": "verbosity=1:log_threads=1"}, {"name": "SDL_VIDEODRIVER", "value": "wayland"}],
+            "environment": [{"name": "SDL_VIDEODRIVER", "value": "wayland"}],
             "args": ["-p", "debugProjectFs.epr"],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -37,10 +37,10 @@
         },
         {
             "name": "editor2",
-            "type": "by-gdb",
+            "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/editor2",
-            "programArgs": "",
+            "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "preLaunchTask": "build"
