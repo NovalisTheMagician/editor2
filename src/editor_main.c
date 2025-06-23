@@ -337,7 +337,7 @@ static void InitFont(SDL_Window *window, bool rebuild)
     float dpi;
     SDL_GetDisplayDPI(displayIndex, &dpi, NULL, NULL);
     float scale = dpi / DEFAULT_DPI;
-    float fontSize = floorf(16.75f * scale);
+    float fontSize = (16.75f * scale);
 
     ImFontConfig *config = ImFontConfig_ImFontConfig();
     config->FontDataOwnedByAtlas = false;

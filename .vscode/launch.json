@@ -25,6 +25,17 @@
             "preLaunchTask": "build"
         },
         {
+            "name": "editor2 fs wayland",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/editor2",
+            "environment": [{"name": "LSAN_OPTIONS", "value": "verbosity=1:log_threads=1"}, {"name": "SDL_VIDEODRIVER", "value": "wayland"}],
+            "args": ["-p", "debugProjectFs.epr"],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "preLaunchTask": "build",
+        },
+        {
             "name": "editor2",
             "type": "by-gdb",
             "request": "launch",

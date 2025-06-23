@@ -426,8 +426,7 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
         if(numNewLines == 0) // no lines were added, possibly filling an empty space surrounded by existing lines
         {
             MapLine *l = GetMapLine(map, (line_t){ .a = vertices[0], .b = vertices[1] });
-            assert(l);
-            if(!(l->frontSector != NULL && l->backSector != NULL))
+            if(l && !(l->frontSector != NULL && l->backSector != NULL))
                 MakeMapSector(map, l, DefaultSectorData());
         }
         else
