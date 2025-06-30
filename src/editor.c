@@ -438,7 +438,7 @@ static size_t CollectSectors(const EdState *state, size_t vertexOffset, size_t i
         for(size_t i = 0; i < data.numVertices; i++)
         {
             const vec2s position = data.vertices[i];
-            const vec2s texcoord = data.vertices[i];
+            const vec2s texcoord = glms_vec2_scale(data.vertices[i], 1.0f / state->map.textureScale);
             
             state->gl.editorVertexMap[i + offsetIndex] = (EditorVertexType){ .position = position, .texCoord = texcoord, .color = state->settings.colors[colorIdx] };
         }
