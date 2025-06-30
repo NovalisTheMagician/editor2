@@ -18,7 +18,7 @@ C++ := g++
 CCFLAGS := -Wall -Wextra -std=gnu23 -Wstrict-prototypes
 
 LD := $(CC)
-LDFLAGS := -pthread
+LDFLAGS := -pthread -fuse-ld=gold
 
 ifeq ($(CONFIG),release)
     DEFINES += NDEBUG

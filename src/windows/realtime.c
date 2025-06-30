@@ -45,7 +45,7 @@ void RealtimeWindow(bool *p_open, EdState *state)
             }
 
             ResizeRealtimeView(state, clientArea.x, clientArea.y);
-            igImage((ImTextureID)(intptr_t)state->gl.realtimeColorTexture, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 });
+            igImage((ImTextureRef){ ._TexID = state->gl.realtimeColorTexture }, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 });
         }
         igEndChild();
 

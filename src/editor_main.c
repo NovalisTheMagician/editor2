@@ -51,7 +51,7 @@
 static SDL_Window* InitSDL(char *error, size_t errorSize);
 static bool InitImgui(SDL_Window *window, SDL_GLContext context, char *error, size_t errorSize);
 static SDL_GLContext InitOpenGL(SDL_Window *window, char *error, size_t errorSize);
-static void InitFont(SDL_Window *window, bool rebuild);
+static void InitFont(SDL_Window *window);
 
 static void HandleArguments(int argc, char *argv[], EdState *state)
 {
@@ -173,7 +173,7 @@ int EditorMain(int argc, char *argv[])
 
     if(!ScriptInit(&state->script, state))
     {
-        LogWarning("Failed to initilize scripting system. Scripting won\'t be available");
+        LogWarning("Failed to initilize scripting system. Scripting won't be available");
     }
 
     tc_init(&state->textures);
@@ -194,11 +194,9 @@ int EditorMain(int argc, char *argv[])
             if(e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
             {
                 int newDpi = getDisplayDpi(window);
-                LogDebug("New Dpi: %d", newDpi);
                 if(newDpi != state->data.cachedDPI)
                 {
                     state->data.cachedDPI = newDpi;
-                    InitFont(window, true);
                     LogDebug("Display Scale changed: %d", state->data.cachedDPI);
                 }
             }
@@ -329,7 +327,7 @@ static SDL_Window* InitSDL(char *error, size_t errorSize)
     return window;
 }
 
-static void InitFont(SDL_Window *window, bool rebuild)
+static void InitFont(SDL_Window *window)
 {
     ImGuiIO *ioptr = igGetIO_Nil();
 
@@ -343,11 +341,7 @@ static void InitFont(SDL_Window *window, bool rebuild)
     config->FontDataOwnedByAtlas = false;
     ImFontAtlas_Clear(ioptr->Fonts);
     ImFontAtlas_AddFontFromMemoryTTF(ioptr->Fonts, (void*)gFontData, gFontSize, fontSize, config, NULL);
-    ImFontAtlas_Build(ioptr->Fonts);
     ImFontConfig_destroy(config);
-    //ImGuiStyle_ScaleAllSizes(igGetStyle(), scale);
-    if(rebuild)
-        ImGui_ImplOpenGL3_CreateFontsTexture();
 }
 
 static bool InitImgui(SDL_Window *window, SDL_GLContext context, char *error, size_t errorSize)
@@ -357,7 +351,7 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context, char *error, si
     ImGuiIO *ioptr = igGetIO_Nil();
     ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_DockingEnable;
 
-    InitFont(window, false);
+    InitFont(window);
 
     ioptr->IniFilename = NULL;
 

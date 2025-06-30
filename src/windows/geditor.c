@@ -422,7 +422,7 @@ void EditorWindow(bool *p_open, EdState *state)
             }
 
             ResizeEditorView(state, clientArea.x, clientArea.y);
-            igImage((ImTextureID)(intptr_t)state->gl.editorColorTexture, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 });
+            igImage((ImTextureRef){ ._TexID = state->gl.editorColorTexture }, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 });
 
             static bool firstTime = true;
             if(firstTime)
