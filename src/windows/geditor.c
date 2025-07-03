@@ -111,17 +111,17 @@ void EditorWindow(bool *p_open, EdState *state)
     if(state->map.dirty)
         flags |= ImGuiWindowFlags_UnsavedDocument;
 
-    if(igShortcut_Nil(ImGuiKey_V, ImGuiInputFlags_RouteGlobal))
+    if(igShortcut_Nil(ImGuiKey_1, ImGuiInputFlags_RouteGlobal))
     {
         ChangeMode(state, MODE_VERTEX);
         igSetWindowFocus_Str("Editor");
     }
-    if(igShortcut_Nil(ImGuiKey_L, ImGuiInputFlags_RouteGlobal))
+    if(igShortcut_Nil(ImGuiKey_2, ImGuiInputFlags_RouteGlobal))
     {
         ChangeMode(state, MODE_LINE);
         igSetWindowFocus_Str("Editor");
     }
-    if(igShortcut_Nil(ImGuiKey_S, ImGuiInputFlags_RouteGlobal))
+    if(igShortcut_Nil(ImGuiKey_3, ImGuiInputFlags_RouteGlobal))
     {
         ChangeMode(state, MODE_SECTOR);
         igSetWindowFocus_Str("Editor");
