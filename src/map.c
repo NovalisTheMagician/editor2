@@ -22,37 +22,25 @@
 
 #define KEY_IS(k) strcasecmp(key, k) == 0
 
-static void FreeVertList(MapVertex *head)
-{
-    while(head)
-    {
-        MapVertex *vertex = head;
-        head = head->next;
+#define freeList(list) do { free(list->items); list->items = NULL; list->count = list->capacity = 0; } while(0)
 
-        FreeMapVertex(vertex);
-    }
+static void FreeVertList(VertexList *list)
+{
+    freeList(list);
 }
 
-static void FreeLineList(MapLine *head)
+static void FreeLineList(LineList *list)
 {
-    while(head)
-    {
-        MapLine *line = head;
-        head = head->next;
-
-        FreeMapLine(line);
-    }
+    for(size_t i = 0; i < list->count; ++i)
+        FreeMapLine(&list->items[i]);
+    freeList(list);
 }
 
-static void FreeSectorList(MapSector *head)
+static void FreeSectorList(SectorList *list)
 {
-    while(head)
-    {
-        MapSector *sector = head;
-        head = head->next;
-
-        FreeMapSector(sector);
-    }
+    for(size_t i = 0; i < list->count; ++i)
+        FreeMapSector(&list->items[i]);
+    freeList(list);
 }
 
 LineData DefaultLineData(void)
@@ -135,13 +123,12 @@ void FreeSectorData(SectorData data)
 
 void FreeMapVertex(MapVertex *vertex)
 {
-    free(vertex);
+    (void)vertex;
 }
 
 void FreeMapLine(MapLine *line)
 {
     FreeLineData(line->data);
-    free(line);
 }
 
 void FreeMapSector(MapSector *sector)
@@ -155,29 +142,11 @@ void FreeMapSector(MapSector *sector)
 
     free(sector->edData.vertices);
     free(sector->edData.indices);
-
-    free(sector);
 }
 
 void NewMap(Map *map)
 {
-    FreeVertList(map->headVertex);
-    map->headVertex = map->tailVertex = NULL;
-    map->numVertices = 0;
-    map->vertexIdx = 0;
-
-    FreeLineList(map->headLine);
-    map->headLine = map->tailLine = NULL;
-    map->numLines = 0;
-    map->lineIdx = 0;
-
-    FreeSectorList(map->headSector);
-    map->headSector = map->tailSector = NULL;
-    map->numSectors = 0;
-    map->sectorIdx = 0;
-
-    free(map->file);
-    map->file = NULL;
+    FreeMap(map);
 
     map->dirty = false;
 
@@ -463,28 +432,31 @@ void SaveMap(Map *map)
     fprintf(file, "textureScale = %d\n", map->textureScale);
 
     fprintf(file, "vertices = {\n");
-    for(MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
+    for(size_t i = 0; i < map->vertexList.count; ++i)
     {
+        MapVertex *vertex = &map->vertexList.items[i];
         fprintf(file, "\t%zu %.4f %.4f\n", vertex->idx, vertex->pos.x, vertex->pos.y);
     }
     fprintf(file, "}\n");
 
     fprintf(file, "lines = {\n");
-    for(MapLine *line = map->headLine; line; line = line->next)
+    for(size_t i = 0; i < map->lineList.count; ++i)
     {
-        fprintf(file, "\t%zu %zu %zu %u ", line->idx, line->a->idx, line->b->idx, line->data.type);
+        MapLine *line = &map->lineList.items[i];
+        fprintf(file, "\t%zu %zu %zu %u ", line->idx, line->a, line->b, line->data.type);
         fprintf(file, "%s %s %s ", getTextureName(line->data.front.lowerTex), getTextureName(line->data.front.middleTex), getTextureName(line->data.front.upperTex));
         fprintf(file, "%s %s %s\n", getTextureName(line->data.back.lowerTex), getTextureName(line->data.back.middleTex), getTextureName(line->data.back.upperTex));
     }
     fprintf(file, "}\n");
 
     fprintf(file, "sectors = {\n");
-    for(MapSector *sector = map->headSector; sector; sector = sector->next)
+    for(size_t i = 0; i < map->sectorList.count; ++i)
     {
+        MapSector *sector = &map->sectorList.items[i];
         fprintf(file, "\t%zu %zu ", sector->idx, sector->numOuterLines);
         for(size_t i = 0; i < sector->numOuterLines; ++i)
         {
-            fprintf(file, "%zu ", sector->outerLines[i]->idx);
+            fprintf(file, "%zu ", sector->outerLines[i]);
         }
         fprintf(file, "%d %d %u ", sector->data.floorHeight, sector->data.ceilHeight, sector->data.type);
         fprintf(file, "%s %s\n", getTextureName(sector->data.floorTex), getTextureName(sector->data.ceilTex));
@@ -497,9 +469,12 @@ void SaveMap(Map *map)
 
 void FreeMap(Map *map)
 {
-    FreeVertList(map->headVertex);
-    FreeLineList(map->headLine);
-    FreeSectorList(map->headSector);
+    FreeVertList(&map->vertexList);
+    map->vertexIdx = 0;
+    FreeLineList(&map->lineList);
+    map->lineIdx = 0;
+    FreeSectorList(&map->sectorList);
+    map->sectorIdx = 0;
 
     free(map->file);
     map->file = NULL;

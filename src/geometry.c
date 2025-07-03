@@ -4,6 +4,7 @@
 #include <tgmath.h>
 #include <limits.h>
 
+#include "map/query.h"
 #include "map/util.h"
 #include "utils.h"
 
@@ -12,12 +13,16 @@ bool PointInSector(MapSector *sector, vec2s point)
     return PointInPolygonVector(sector->numOuterLines, sector->edData.vertices, point);
 }
 
-bool PointInSector2(MapSector *sector, vec2s point)
+bool PointInSector2(Map *map, MapSector *sector, vec2s point)
 {
     bool inside = PointInSector(sector, point);
     for(size_t i = 0; i < sector->numInnerLines; ++i)
     {
-        struct Polygon *poly = PolygonFromMapLines(sector->numInnerLinesNum[i], sector->innerLines[i]);
+        size_t count = sector->numInnerLinesNum[i];
+        MapLine *lines[count];
+        for(size_t j = 0; j < count; ++j)
+            lines[j] = GetLine(map, sector->innerLines[i][j]);
+        struct Polygon *poly = PolygonFromMapLines(map, count, lines);
         inside &= !PointInPolygon(poly, point);
         free(poly);
     }
@@ -63,9 +68,11 @@ float MinDistToLine(vec2s a, vec2s b, vec2s point)
     return sqrt(glms_vec2_distance2(point, tmp));
 }
 
-int SideOfMapLine(MapLine *line, vec2s point)
+int SideOfMapLine(Map *map, MapLine *line, vec2s point)
 {
-    return SideOfLine(line->a->pos, line->b->pos, point);
+    MapVertex *a = GetVertex(map, line->a);
+    MapVertex *b = GetVertex(map, line->a);
+    return SideOfLine(a->pos, b->pos, point);
 }
 
 int SideOfLine(vec2s a, vec2s b, vec2s point)
@@ -85,15 +92,17 @@ BoundingBox BoundingBoxFromVertices(size_t numVertices, vec2s vertices[static nu
     return (BoundingBox){ .min = min, .max = max };
 }
 
-BoundingBox BoundingBoxFromMapLines(size_t numLines, MapLine *lines[static numLines])
+BoundingBox BoundingBoxFromMapLines(Map *map, size_t numLines, MapLine *lines[static numLines])
 {
     vec2s min = { .x = FLT_MAX, .y = FLT_MAX }, max = { .x = FLT_MIN, .y = FLT_MIN };
     for(size_t i = 0; i < numLines; ++i)
     {
-        vec2s vert = lines[i]->a->pos;
+        MapVertex *a = GetVertex(map, lines[i]->a);
+        MapVertex *b = GetVertex(map, lines[i]->b);
+        vec2s vert = a->pos;
         max = glms_vec2_maxv(vert, max);
         min = glms_vec2_minv(vert, min);
-        vert = lines[i]->b->pos;
+        vert = b->pos;
         max = glms_vec2_maxv(vert, max);
         min = glms_vec2_minv(vert, min);
     }
@@ -128,12 +137,15 @@ angle_t AngleLine(MapLine *line)
     return 0;
 }
 
-angle_t AngleOfMapLines(MapLine *a, MapLine *b)
+angle_t AngleOfMapLines(Map *map, MapLine *a, MapLine *b)
 {
-    MapVertex *aa = a->a;
+    MapVertex *va_ = GetVertex(map, a->a);
+    MapVertex *vb_ = GetVertex(map, a->b);
+
+    MapVertex *aa = va_;
     //MapVertex *ab = a->b;
-    MapVertex *ba = b->a;
-    MapVertex *bb = b->b;
+    MapVertex *ba = va_;
+    MapVertex *bb = vb_;
 
     MapVertex *common = aa == ba ? ba : aa == bb ? bb : NULL;
     assert(common);

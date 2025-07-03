@@ -37,9 +37,9 @@ static void insert(size_t size, size_t *num, void *elements[static size], void *
 MapSector* MakeMapSector(Map *map, MapLine *startLine, SectorData data)
 {
     MapLine *sectorLines[MAX_LINES_PER_SECTOR] = { 0 };
-    size_t numLines = FindOuterLineLoop(startLine, sectorLines, MAX_LINES_PER_SECTOR);
+    size_t numLines = FindOuterLineLoop(map, startLine, sectorLines, MAX_LINES_PER_SECTOR);
     if(FindEquvivalentSector(map, numLines, sectorLines)) return NULL;
-    struct Polygon *poly = PolygonFromMapLines(numLines, sectorLines);
+    struct Polygon *poly = PolygonFromMapLines(map, numLines, sectorLines);
 
     Arena arena = { 0 };
 
@@ -49,13 +49,16 @@ MapSector* MakeMapSector(Map *map, MapLine *startLine, SectorData data)
     MapLine **usedLines = arena_alloc(&arena, usedLinesSize * sizeof *usedLines);
     MapLine **potentialLines = arena_alloc(&arena, sizePotentialLines * sizeof *potentialLines);
 
-    for(MapLine *line = map->headLine; line; line = line->next)
+    for(size_t i = 0; i < map->lineList.count; ++i)
     {
+        MapLine *line = &map->lineList.items[i];
         if(includes(numLines, (void**)sectorLines, line))
             continue;
 
-        bool aIn = PointInPolygon(poly, line->a->pos);
-        bool bIn = PointInPolygon(poly, line->b->pos);
+        MapVertex *a = GetVertex(map, line->a), *b = GetVertex(map, line->b);
+
+        bool aIn = PointInPolygon(poly, a->pos);
+        bool bIn = PointInPolygon(poly, b->pos);
         if(aIn && bIn)
             potentialLines[numPotentialLines++] = line;
     }
@@ -69,7 +72,7 @@ MapSector* MakeMapSector(Map *map, MapLine *startLine, SectorData data)
             innerLines[id] = arena_alloc(&arena, MAX_LINES_PER_SECTOR * sizeof **innerLines);
             MapLine *potentialLine = potentialLines[numPotentialLines-1];
             if(!potentialLine) goto nextIteration;
-            size_t n = FindInnerLineLoop(potentialLine, innerLines[id], MAX_LINES_PER_SECTOR);
+            size_t n = FindInnerLineLoop(map, potentialLine, innerLines[id], MAX_LINES_PER_SECTOR);
             if(n == 0) // couldnt find a loop
             {
                 numInnerLineLoops--;
@@ -159,17 +162,17 @@ static void DoSplit(Map *map, SectorUpdate *sectorUpdate, MapLine *line, MapVert
 {
     SectorData frontData = DefaultSectorData();
     SectorData backData = DefaultSectorData();
-    bool hasFrontSector = line->frontSector != NULL;
-    bool hasBackSector = line->backSector != NULL;
+    bool hasFrontSector = line->frontSector != -1;
+    bool hasBackSector = line->backSector != -1;
     bool hasSectorsAttached = hasFrontSector || hasBackSector;
 
     if(hasFrontSector)
     {
-        frontData = CopySectorData(line->frontSector->data);
-        MapSector *sector = line->frontSector;
+        MapSector *sector = GetSector(map, line->frontSector);
+        frontData = CopySectorData(sector->data);
         for(size_t i = 0; i < sector->numOuterLines; ++i)
         {
-            MapLine *sline = sector->outerLines[i];
+            MapLine *sline = GetLine(map, sector->outerLines[i]);
             if(sline == line) continue;
             sline->mark = true;
             InsertSectorUpdate(sectorUpdate, sline, frontData);
@@ -178,11 +181,11 @@ static void DoSplit(Map *map, SectorUpdate *sectorUpdate, MapLine *line, MapVert
     }
     if(hasBackSector)
     {
-        backData = CopySectorData(line->backSector->data);
-        MapSector *sector = line->backSector;
+        MapSector *sector = GetSector(map, line->backSector);
+        backData = CopySectorData(sector->data);
         for(size_t i = 0; i < sector->numOuterLines; ++i)
         {
-            MapLine *sline = sector->outerLines[i];
+            MapLine *sline = GetLine(map, sector->outerLines[i]);
             if(sline == line) continue;
             sline->mark = true;
             InsertSectorUpdate(sectorUpdate, sline, backData);
@@ -212,17 +215,17 @@ static void DoSplit2(Map *map, SectorUpdate *sectorUpdate, MapLine *line, MapVer
 {
     SectorData frontData = DefaultSectorData();
     SectorData backData = DefaultSectorData();
-    bool hasFrontSector = line->frontSector != NULL;
-    bool hasBackSector = line->backSector != NULL;
+    bool hasFrontSector = line->frontSector != -1;
+    bool hasBackSector = line->backSector != -1;
     bool hasSectorsAttached = hasFrontSector || hasBackSector;
 
     if(hasFrontSector)
     {
-        frontData = CopySectorData(line->frontSector->data);
-        MapSector *sector = line->frontSector;
+        MapSector *sector = GetSector(map, line->frontSector);
+        frontData = CopySectorData(sector->data);
         for(size_t i = 0; i < sector->numOuterLines; ++i)
         {
-            MapLine *sline = sector->outerLines[i];
+            MapLine *sline = GetLine(map, sector->outerLines[i]);
             if(sline == line) continue;
             sline->mark = true;
             InsertSectorUpdate(sectorUpdate, sline, frontData);
@@ -231,11 +234,11 @@ static void DoSplit2(Map *map, SectorUpdate *sectorUpdate, MapLine *line, MapVer
     }
     if(hasBackSector)
     {
-        backData = CopySectorData(line->backSector->data);
-        MapSector *sector = line->backSector;
+        MapSector *sector = GetSector(map, line->backSector);
+        backData = CopySectorData(sector->data);
         for(size_t i = 0; i < sector->numOuterLines; ++i)
         {
-            MapLine *sline = sector->outerLines[i];
+            MapLine *sline = GetLine(map, sector->outerLines[i]);
             if(sline == line) continue;
             sline->mark = true;
             InsertSectorUpdate(sectorUpdate, sline, backData);
@@ -305,88 +308,103 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
         bool potentialStart = el.potentialStart;
 
         bool canInsertLine = true;
-        MapLine *mapLine = map->headLine;
-        while(mapLine != NULL)
+        for(size_t i = 0; i < map->lineList.count; ++i)
         {
-            line_t mline = { .a = mapLine->a->pos, .b = mapLine->b->pos };
+            MapLine *mapLine = &map->lineList.items[i];
+            MapVertex *a = GetVertex(map, mapLine->a), *b = GetVertex(map, mapLine->b);
+            line_t mline = { .a = a->pos, .b = b->pos };
 
             classify_res_t result = ClassifyLines(mline, line);
             switch(result.type)
             {
             case NO_RELATION:
+                {
+                    
+                }
                 break;
             case SAME_LINES:
                 {
-                    mapLine = NULL;
+                    canInsertLine = false;
+                    goto doneLineLoop;
                 }
                 break;
             case INTERSECTION:
                 {
-                    MapVertex *splitVertex = EditAddVertex(map, result.intersection.splitPoint);
+                    MapVertex *splitVertex = FindClosestVertex(map, result.intersection.splitPoint, 1.0f);
+                    if(!splitVertex) splitVertex = EditAddVertex(map, result.intersection.splitPoint);
                     DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
                     if(!Enqueue(&queue, result.intersection.splitLine1, true)) return false;
                     if(!Enqueue(&queue, result.intersection.splitLine2, true)) return false;
-                    mapLine = NULL;
+                    canInsertLine = false;
+                    goto doneLineLoop;
                 }
                 break;
             case TOUCH:
                 {
-                    MapVertex *splitVertex = EditAddVertex(map, result.touch.splitPoint);
+                    MapVertex *splitVertex = FindClosestVertex(map, result.touch.splitPoint, 2.0f);
+                    if(!splitVertex) splitVertex = EditAddVertex(map, result.touch.splitPoint);
                     DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
                     if(!Enqueue(&queue, line, true)) return false;
-                    mapLine = NULL;
+                    canInsertLine = false;
+                    goto doneLineLoop;
                 }
                 break;
             case TOUCH_REVERSE:
                 {
                     if(!Enqueue(&queue, (line_t){ .a = line.a, .b = result.touch.splitPoint }, true)) return false;
                     if(!Enqueue(&queue, (line_t){ .a = result.touch.splitPoint, .b = line.b }, true)) return false;
-                    mapLine = NULL;
+                    canInsertLine = false;
+                    goto doneLineLoop;
                 }
                 break;
             case OVERLAP:
                 {
-                    MapVertex *splitVertex = EditAddVertex(map, result.overlap.splitPoint);
+                    MapVertex *splitVertex = FindClosestVertex(map, result.overlap.splitPoint, 2.0f);
+                    if(!splitVertex) splitVertex = EditAddVertex(map, result.overlap.splitPoint);
                     DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
                     if(!Enqueue(&queue, result.overlap.line, true)) return false;
-                    mapLine = NULL;
+                    canInsertLine = false;
+                    goto doneLineLoop;
                 }
                 break;
             case SIMPLE_OVERLAP_INNER:
                 {
-                    MapVertex *splitVertex = EditAddVertex(map, result.overlap.splitPoint);
+                    MapVertex *splitVertex = FindClosestVertex(map, result.overlap.splitPoint, 2.0f);
+                    if(!splitVertex) splitVertex = EditAddVertex(map, result.overlap.splitPoint);
                     DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
-                    mapLine = NULL;
+                    canInsertLine = false;
+                    goto doneLineLoop;
                 }
                 break;
             case SIMPLE_OVERLAP_OUTER:
                 {
                     if(!Enqueue(&queue, result.overlap.line, false)) return false;
-                    mapLine = NULL;
+                    canInsertLine = false;
+                    goto doneLineLoop;
                 }
                 break;
             case INNER_CONTAINMENT:
                 {
-                    MapVertex *splitVertexA = EditAddVertex(map, result.innerContainment.split1);
-                    MapVertex *splitVertexB = EditAddVertex(map, result.innerContainment.split2);
+                    MapVertex *splitVertexA = FindClosestVertex(map, result.innerContainment.split1, 2.0f);
+                    if(!splitVertexA) splitVertexA = EditAddVertex(map, result.innerContainment.split1);
+                    MapVertex *splitVertexB = FindClosestVertex(map, result.innerContainment.split2, 2.0f);
+                    if(!splitVertexB) splitVertexB = EditAddVertex(map, result.innerContainment.split2);
                     DoSplit2(map, &sectorsToUpdate, mapLine, splitVertexA, splitVertexB);
-                    mapLine = NULL;
+                    canInsertLine = false;
+                    goto doneLineLoop;
                 }
                 break;
             case OUTER_CONTAINMENT:
                 {
                     if(!Enqueue(&queue, result.outerContainment.line1, true)) return false;
                     if(!Enqueue(&queue, result.outerContainment.line2, true)) return false;
-                    mapLine = NULL;
+                    canInsertLine = false;
+                    goto doneLineLoop;
                 }
                 break;
             }
-
-            if(mapLine)
-                mapLine = mapLine->next;
-            else
-                canInsertLine = false;
         }
+doneLineLoop:
 
         if(canInsertLine)
         {
@@ -404,8 +422,9 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
         didIntersect |= !canInsertLine;
     }
 
-    for(MapLine *line = map->headLine; line; line = line->next)
+    for(size_t i = 0; i < map->lineList.count; ++i)
     {
+        MapLine *line = &map->lineList.items[i];
         if(!line->mark) continue;
         for(size_t i = 0; i < sectorsToUpdate.count; ++i)
         {
@@ -426,15 +445,16 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
         if(numNewLines == 0) // no lines were added, possibly filling an empty space surrounded by existing lines
         {
             MapLine *l = GetMapLine(map, (line_t){ .a = vertices[0], .b = vertices[1] });
-            if(l && !(l->frontSector != NULL && l->backSector != NULL))
+            if(l && !(l->frontSector != -1 && l->backSector != -1))
                 MakeMapSector(map, l, DefaultSectorData());
         }
         else
         {
-            for(MapLine *line = map->headLine; line; line = line->next)
+            for(size_t i = 0; i < map->lineList.count; ++i)
             {
+                MapLine *line = &map->lineList.items[i];
                 if(!line->new) continue;
-                if(line->frontSector == NULL)
+                if(line->frontSector == -1)
                     MakeMapSector(map, line, DefaultSectorData());
                 line->new = false;
             }

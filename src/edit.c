@@ -5,6 +5,7 @@
 #include <tgmath.h>
 #include <string.h>
 
+#include "cglm/struct/vec2-ext.h"
 #include "triangulate.h"
 
 #include "geometry.h"
@@ -13,6 +14,7 @@
 #include "map/util.h"
 #include "map/insert.h"
 #include "map/create.h"
+#include "map/query.h"
 
 void ScreenToEditorSpace(const EdState *state, int32_t *x, int32_t *y)
 {
@@ -81,10 +83,10 @@ void EditRemoveVertices(Map *map, size_t num, MapVertex *vertices[static num])
         for(size_t j = 0; j < vertex->numAttachedLines; ++j)
         {
             bool lineIsInSet = false;
-            MapLine *attLine = vertex->attachedLines[j];
+            MapLine *attLine = GetLine(map, vertex->attachedLines[j]);
             for(size_t k = 0; k < numPotentialLines; ++k)
             {
-                lineIsInSet |= potentialLines[k] == attLine;
+                lineIsInSet |= potentialLines[k]->idx == attLine->idx;
                 if(lineIsInSet) break;
             }
 
@@ -101,8 +103,8 @@ void EditRemoveVertices(Map *map, size_t num, MapVertex *vertices[static num])
         MapLine *line = potentialLines[i];
         if(!line->a || !line->b)
         {
-            MapSector *frontSector = line->frontSector;
-            MapSector *backSector = line->backSector;
+            MapSector *frontSector = GetSector(map, line->frontSector);
+            MapSector *backSector = GetSector(map, line->backSector);
             bool canDeleteFront = frontSector != NULL, canDeleteBack = backSector != NULL;
             for(size_t s = 0; s < numDeletedSectors; ++s)
             {
@@ -133,9 +135,10 @@ void EditRemoveVertices(Map *map, size_t num, MapVertex *vertices[static num])
 
 MapVertex* EditGetVertex(Map *map, vec2s pos)
 {
-    for(MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
+    for(size_t i = 0; i < map->vertexList.count; ++i)
     {
-        if(vertex->pos.x == pos.x && vertex->pos.y == pos.y)
+        MapVertex *vertex = &map->vertexList.items[i];
+        if(glms_vec2_eqv_eps(pos, vertex->pos))
         {
             return vertex;
         }
@@ -145,22 +148,7 @@ MapVertex* EditGetVertex(Map *map, vec2s pos)
 
 MapVertex* EditGetClosestVertex(Map *map, vec2s pos, float maxDist)
 {
-    MapVertex *closestVertex = NULL;
-    float closestDist = FLT_MAX;
-    for(MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
-    {
-        float dist2 = glms_vec2_distance2(vertex->pos, pos);
-        if(dist2 <= maxDist*maxDist)
-        {
-            float dist = sqrt(dist2);
-            if(dist < closestDist)
-            {
-                closestDist = dist;
-                closestVertex = vertex;
-            }
-        }
-    }
-    return closestVertex;
+    return FindClosestVertex(map, pos, maxDist);
 }
 
 MapLine* EditAddLine(Map *map, MapVertex *v0, MapVertex *v1, LineData data)
@@ -169,8 +157,11 @@ MapLine* EditAddLine(Map *map, MapVertex *v0, MapVertex *v1, LineData data)
     if(!result.created) return result.mapElement;
     MapLine *line = result.mapElement;
 
-    vec2s vert0 = line->a->pos;
-    vec2s vert1 = line->b->pos;
+    MapVertex *a = GetVertex(map, line->a);
+    MapVertex *b = GetVertex(map, line->b);
+
+    vec2s vert0 = a->pos;
+    vec2s vert1 = b->pos;
 
     vec2s l = glms_vec2_sub(vert1, vert0);
     vec2s n = {{ -l.y, l.x }};
@@ -200,15 +191,15 @@ void EditRemoveLines(Map *map, size_t num, MapLine *lines[static num])
         bool isBInSet = false;
         for(size_t v = 0; v < numPotentialVertices; ++v)
         {
-            if(!isAInSet) isAInSet = potentialVertices[v] == line->a;
-            if(!isBInSet) isBInSet = potentialVertices[v] == line->b;
+            if(!isAInSet) isAInSet = potentialVertices[v]->idx == line->a;
+            if(!isBInSet) isBInSet = potentialVertices[v]->idx == line->b;
             if(isAInSet && isBInSet) break;
         }
-        if(!isAInSet) potentialVertices[numPotentialVertices++] = line->a;
-        if(!isBInSet) potentialVertices[numPotentialVertices++] = line->b;
+        if(!isAInSet) potentialVertices[numPotentialVertices++] = GetVertex(map, line->a);
+        if(!isBInSet) potentialVertices[numPotentialVertices++] = GetVertex(map, line->b);
 
-        MapSector *frontSector = line->frontSector;
-        MapSector *backSector = line->backSector;
+        MapSector *frontSector = GetSector(map, line->frontSector);
+        MapSector *backSector = GetSector(map, line->backSector);
         bool canDeleteFront = frontSector != NULL, canDeleteBack = backSector != NULL;
         for(size_t s = 0; s < numDeletedSectors; ++s)
         {
@@ -246,9 +237,12 @@ MapLine* EditGetClosestLine(Map *map, vec2s pos, float maxDist)
 {
     MapLine *closestLine = NULL;
     float closestDist = FLT_MAX;
-    for(MapLine *line = map->headLine; line; line = line->next)
+    for(size_t i = 0; i < map->lineList.count; ++i)
     {
-        float dist = MinDistToLine(line->a->pos, line->b->pos, pos);
+        MapLine *line = &map->lineList.items[i];
+        MapVertex *a = GetVertex(map, line->a);
+        MapVertex *b = GetVertex(map, line->b);
+        float dist = MinDistToLine(a->pos, b->pos, pos);
         if(dist <= maxDist && dist < closestDist)
         {
             closestDist = dist;
@@ -258,26 +252,26 @@ MapLine* EditGetClosestLine(Map *map, vec2s pos, float maxDist)
     return closestLine;
 }
 
-static void setLineSector(size_t numLines, MapLine *lines[static numLines], bool firstFront, MapSector *sector)
+static void setLineSector(Map *map, size_t numLines, MapLine *lines[static numLines], bool firstFront, MapSector *sector)
 {
-    MapVertex *nextVertex = firstFront ? lines[0]->b : lines[0]->a;
+    MapVertex *nextVertex = GetVertex(map, firstFront ? lines[0]->b : lines[0]->a);
     if(firstFront)
-        lines[0]->frontSector = sector;
+        lines[0]->frontSector = sector->idx;
     else
-        lines[0]->backSector = sector;
+        lines[0]->backSector = sector->idx;
 
     for(size_t i = 1; i < numLines; ++i)
     {
         MapLine *line = lines[i];
-        if(line->a == nextVertex)
+        if(line->a == nextVertex->idx)
         {
-            line->frontSector = sector;
-            nextVertex = line->b;
+            line->frontSector = sector->idx;
+            nextVertex = GetVertex(map, line->b);
         }
         else
         {
-            line->backSector = sector;
-            nextVertex = line->a;
+            line->backSector = sector->idx;
+            nextVertex = GetVertex(map, line->a);
         }
     }
 }
@@ -288,9 +282,9 @@ MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLin
     if(!result.created) return result.mapElement;
     MapSector *sector = result.mapElement;
 
-    struct Polygon *polygon = PolygonFromMapLines(numLines, lines);
+    struct Polygon *polygon = PolygonFromMapLines(map, numLines, lines);
     orientation_t orientation = LineLoopOrientation(polygon->length, (vec2s*)polygon->vertices);
-    setLineSector(numLines, lines, orientation == CW_ORIENT, sector);
+    setLineSector(map, numLines, lines, orientation == CW_ORIENT, sector);
 
     struct Polygon **innerPolygons = calloc(numInnerLines, sizeof *innerPolygons);
     for(size_t i = 0; i < numInnerLines; ++i)
@@ -301,9 +295,9 @@ MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLin
             numInnerLines--;
             continue;
         }
-        innerPolygons[i] = PolygonFromMapLines(numInnerLinesNum[i], innerLines[i]);
+        innerPolygons[i] = PolygonFromMapLines(map, numInnerLinesNum[i], innerLines[i]);
         orientation = LineLoopOrientation(innerPolygons[i]->length, (vec2s*)innerPolygons[i]->vertices);
-        setLineSector(numInnerLinesNum[i], innerLines[i], orientation == CCW_ORIENT, sector);
+        setLineSector(map, numInnerLinesNum[i], innerLines[i], orientation == CCW_ORIENT, sector);
     }
 
     TriangleData *td = &sector->edData;
@@ -351,9 +345,10 @@ void EditRemoveSectors(Map *map, size_t num, MapSector *sectors[static num])
 
 MapSector* EditGetSector(Map *map, vec2s pos)
 {
-    for(MapSector *sector = map->headSector; sector; sector = sector->next)
+    for(size_t i = 0; i < map->sectorList.count; ++i)
     {
-        bool isIn = PointInSector2(sector, pos);
+        MapSector *sector = &map->sectorList.items[i];
+        bool isIn = PointInSector2(map, sector, pos);
         if(isIn) return sector;
     }
     return NULL;

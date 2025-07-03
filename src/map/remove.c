@@ -1,150 +1,77 @@
 #include "remove.h"
+#include "map/query.h"
 
 #include <string.h>
+#include <assert.h>
+#include <sys/types.h>
+
+#define deleteElement(list, element) do {   ptrdiff_t arrIndex = (element) - ((list).items); \
+                                            assert(arrIndex >= 0 && arrIndex < (ptrdiff_t)(list).count); \
+                                            memmove((list).items + arrIndex, (list).items + arrIndex + 1, ((list).count - (arrIndex)) * sizeof *((list).items)); \
+                                            (list).count--; \
+                                        } while(0)
 
 void RemoveVertex(Map *map, MapVertex *vertex)
 {
-    MapVertex *prev = vertex->prev;
-    MapVertex *next = vertex->next;
-
-    if(prev == NULL && next == NULL)
-    {
-        map->headVertex = map->tailVertex = NULL;
-    }
-    else if(vertex == map->headVertex)
-    {
-        next->prev = NULL;
-        map->headVertex = next;
-    }
-    else if(vertex == map->tailVertex)
-    {
-        prev->next = NULL;
-        map->tailVertex = prev;
-    }
-    else
-    {
-        prev->next = next;
-        next->prev = prev;
-    }
-
-    for(size_t i = 0; i < vertex->numAttachedLines; ++i)
-    {
-        MapLine *line = vertex->attachedLines[i];
-        if(line->a == vertex)
-        {
-            line->a = NULL;
-        }
-        else
-        {
-            line->b = NULL;
-        }
-    }
-
     FreeMapVertex(vertex);
-
-    map->numVertices--;
+    deleteElement(map->vertexList, vertex);
     map->dirty = true;
 }
 
 void RemoveLine(Map *map, MapLine *line)
 {
-    MapLine *prev = line->prev;
-    MapLine *next = line->next;
+    MapVertex *a = GetVertex(map, line->a);
+    MapVertex *b = GetVertex(map, line->b);
 
-    if(prev == NULL && next == NULL)
+    if(a && a->numAttachedLines > 0)
     {
-        map->headLine = map->tailLine = NULL;
-    }
-    else if(line == map->headLine)
-    {
-        next->prev = NULL;
-        map->headLine = next;
-    }
-    else if(line == map->tailLine)
-    {
-        prev->next = NULL;
-        map->tailLine = prev;
-    }
-    else
-    {
-        prev->next = next;
-        next->prev = prev;
-    }
-
-    if(line->a && line->a->numAttachedLines > 0)
-    {
-        MapVertex *v = line->a;
+        MapVertex *v = a;
         for(size_t i = line->aVertIndex + 1; i < v->numAttachedLines; ++i)
         {
-            MapLine *attLine = v->attachedLines[i];
-            attLine->a == v ? attLine->aVertIndex-- : attLine->bVertIndex--;
+            MapLine *attLine = GetLine(map, v->attachedLines[i]);
+            attLine->a == v->idx ? attLine->aVertIndex-- : attLine->bVertIndex--;
         }
         memmove(v->attachedLines + line->aVertIndex, v->attachedLines + line->aVertIndex + 1, (v->numAttachedLines - (line->aVertIndex)) * sizeof *v->attachedLines);
         v->numAttachedLines--;
     }
 
-    if(line->b && line->b->numAttachedLines > 0)
+    if(b && b->numAttachedLines > 0)
     {
-        MapVertex *v = line->b;
+        MapVertex *v = b;
         for(size_t i = line->bVertIndex + 1; i < v->numAttachedLines; ++i)
         {
-            MapLine *attLine = v->attachedLines[i];
-            attLine->a == v ? attLine->aVertIndex-- : attLine->bVertIndex--;
+            MapLine *attLine = GetLine(map, v->attachedLines[i]);
+            attLine->a == v->idx ? attLine->aVertIndex-- : attLine->bVertIndex--;
         }
         memmove(v->attachedLines + line->bVertIndex, v->attachedLines + line->bVertIndex + 1, (v->numAttachedLines - (line->bVertIndex)) * sizeof *v->attachedLines);
         v->numAttachedLines--;
     }
 
     FreeMapLine(line);
-
-    map->numLines--;
+    deleteElement(map->lineList, line);
     map->dirty = true;
 }
 
 void RemoveSector(Map *map, MapSector *sector)
 {
-    MapSector *prev = sector->prev;
-    MapSector *next = sector->next;
-
-    if(prev == NULL && next == NULL)
-    {
-        map->headSector = map->tailSector = NULL;
-    }
-    else if(sector == map->headSector)
-    {
-        next->prev = NULL;
-        map->headSector = next;
-    }
-    else if(sector == map->tailSector)
-    {
-        prev->next = NULL;
-        map->tailSector = prev;
-    }
-    else
-    {
-        prev->next = next;
-        next->prev = prev;
-    }
-
     for(size_t i = 0; i < sector->numOuterLines; ++i)
     {
-        MapLine *line = sector->outerLines[i];
-        if(line->frontSector == sector) line->frontSector = NULL;
-        if(line->backSector == sector) line->backSector = NULL;
+        MapLine *line = GetLine(map, sector->outerLines[i]);
+        if(line->frontSector == (ssize_t)sector->idx) line->frontSector = -1;
+        if(line->backSector == (ssize_t)sector->idx) line->backSector = -1;
     }
 
     for(size_t i = 0; i < sector->numInnerLines; ++i)
     {
         for(size_t j = 0; j < sector->numInnerLinesNum[i]; ++j)
         {
-            MapLine *line = sector->innerLines[i][j];
-            if(line->frontSector == sector) line->frontSector = NULL;
-            if(line->backSector == sector) line->backSector = NULL;
+            MapLine *line = GetLine(map, sector->innerLines[i][j]);
+            if(line->frontSector == (ssize_t)sector->idx) line->frontSector = -1;
+            if(line->backSector == (ssize_t)sector->idx) line->backSector = -1;
         }
     }
 
     FreeMapSector(sector);
-
-    map->numSectors--;
+    deleteElement(map->sectorList, sector);
     map->dirty = true;
 }

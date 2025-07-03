@@ -3,10 +3,12 @@
 #include "../texture_collection.h"
 #include "cimgui.h"
 
+#include "map.h"
+#include "map/query.h"
 #include "texture_collection.h"
 #include "utils/string.h"
 
-static void SelectElement(EdState *state, void *element, int selectMode)
+static void SelectElement(EdState *state, size_t element, int selectMode)
 {
     state->data.numSelectedElements = 1;
     state->data.selectedElements[0] = element;
@@ -26,9 +28,11 @@ static void CenterVertex(EdState *state, MapVertex *vertex)
 
 static void CenterLine(EdState *state, MapLine *line)
 {
-    vec2s d = glms_vec2_sub(line->b->pos, line->a->pos);
+    MapVertex *a = GetVertex(&state->map, line->a);
+    MapVertex *b = GetVertex(&state->map, line->b);
+    vec2s d = glms_vec2_sub(b->pos, a->pos);
     d = glms_vec2_scale(d, 0.5f);
-    d = glms_vec2_add(d, line->a->pos);
+    d = glms_vec2_add(d, a->pos);
     GotoPos(state, d);
 }
 
@@ -51,7 +55,7 @@ static void VertexProperties(EdState *state)
 {
     if(state->data.numSelectedElements == 1)
     {
-        MapVertex *selectedVertex = state->data.selectedElements[0];
+        MapVertex *selectedVertex = GetVertex(&state->map, state->data.selectedElements[0]);
         char title[128] = { 0 };
         snprintf(title, sizeof title, "Vertex %d Properties", (int)selectedVertex->idx);
         igSeparatorTextEx(0, title, NULL, 0);
@@ -60,14 +64,14 @@ static void VertexProperties(EdState *state)
         //igSeparatorEx(ImGuiSeparatorFlags_Horizontal, 2);
         for(size_t i = 0; i < selectedVertex->numAttachedLines; ++i)
         {
-            MapLine *line = selectedVertex->attachedLines[i];
+            MapLine *line = GetLine(&state->map, selectedVertex->attachedLines[i]);
             igText("Line %lld:", line->idx);
             igSameLine(0, 4);
             char label[32] = {0};
             snprintf(label, sizeof label, "Select##id%zu", line->idx);
             if(igButton(label, (ImVec2){ 0, 0 }))
             {
-                SelectElement(state, line, MODE_LINE);
+                SelectElement(state, line->idx, MODE_LINE);
                 CenterLine(state, line);
                 igSetWindowFocus_Str("Editor");
             }
@@ -83,47 +87,51 @@ static void LineProperties(EdState *state)
 {
     if(state->data.numSelectedElements == 1)
     {
-        MapLine *selectedLine = state->data.selectedElements[0];
+        MapLine *selectedLine = GetLine(&state->map, state->data.selectedElements[0]);
         char title[128] = { 0 };
         snprintf(title, sizeof title, "Line %d Properties", (int)selectedLine->idx);
         igSeparatorTextEx(0, title, NULL, 0);
 
-        igText("Vertex A: %zu", selectedLine->a->idx);
+        MapVertex *a = GetVertex(&state->map, selectedLine->a);
+        igText("Vertex A: %zu", a->idx);
         igSameLine(0, 4);
         if(igButton("Select##a", (ImVec2){ 0, 0 }))
         {
-            SelectElement(state, selectedLine->a, MODE_VERTEX);
-            CenterVertex(state, selectedLine->a);
+            SelectElement(state, a->idx, MODE_VERTEX);
+            CenterVertex(state, a);
             igSetWindowFocus_Str("Editor");
         }
-        igText("Vertex B: %zu", selectedLine->b->idx);
+        MapVertex *b = GetVertex(&state->map, selectedLine->b);
+        igText("Vertex B: %zu", b->idx);
         igSameLine(0, 4);
         if(igButton("Select##b", (ImVec2){ 0, 0 }))
         {
-            SelectElement(state, selectedLine->b, MODE_VERTEX);
-            CenterVertex(state, selectedLine->b);
+            SelectElement(state, b->idx, MODE_VERTEX);
+            CenterVertex(state, b);
             igSetWindowFocus_Str("Editor");
         }
         //igText("Normal: %d", selectedLine->normal);
-        if(selectedLine->frontSector)
+        if(selectedLine->frontSector != -1)
         {
-            igText("Front Sector: %zu", selectedLine->frontSector->idx);
+            MapSector *sector = GetSector(&state->map, selectedLine->frontSector);
+            igText("Front Sector: %zu", sector->idx);
             igSameLine(0, 4);
             if(igButton("Select##fs", (ImVec2){ 0, 0 }))
             {
-                SelectElement(state, selectedLine->frontSector, MODE_SECTOR);
-                CenterSector(state, selectedLine->frontSector);
+                SelectElement(state, sector->idx, MODE_SECTOR);
+                CenterSector(state, sector);
                 igSetWindowFocus_Str("Editor");
             }
         }
-        if(selectedLine->backSector)
+        if(selectedLine->backSector != -1)
         {
-            igText("Back Sector: %zu", selectedLine->backSector->idx);
+            MapSector *sector = GetSector(&state->map, selectedLine->backSector);
+            igText("Back Sector: %zu", sector->idx);
             igSameLine(0, 4);
             if(igButton("Select##bs", (ImVec2){ 0, 0 }))
             {
-                SelectElement(state, selectedLine->backSector, MODE_SECTOR);
-                CenterSector(state, selectedLine->backSector);
+                SelectElement(state, sector->idx, MODE_SECTOR);
+                CenterSector(state, sector);
                 igSetWindowFocus_Str("Editor");
             }
         }
@@ -138,7 +146,7 @@ static void SectorProperties(EdState *state)
 {
     if(state->data.numSelectedElements == 1)
     {
-        MapSector *selectedSector = state->data.selectedElements[0];
+        MapSector *selectedSector = GetSector(&state->map, state->data.selectedElements[0]);
         char title[128] = { 0 };
         snprintf(title, sizeof title, "Sector %d Properties", (int)selectedSector->idx);
         igSeparatorTextEx(0, title, NULL, 0);

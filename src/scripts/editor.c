@@ -1,4 +1,5 @@
 #include "logging.h"
+#include "map/query.h"
 #include "scripts.h"
 
 #include "cglm/types-struct.h"
@@ -51,18 +52,19 @@ static void fillSideData(lua_State *L, Side side)
     lua_settable(L, -3);
 }
 
-static void fillMapLines(lua_State *L, MapLine **lines, size_t numLines)
+static void fillMapLines(lua_State *L, Map *map, MapLine **lines, size_t numLines)
 {
     for(size_t i = 0; i < numLines; ++i)
     {
         MapLine *line = lines[i];
+        MapVertex *a = GetVertex(map, line->a);
         lua_newtable(L);
         lua_pushstring(L, "a");
-        ScriptCreateVec2(L, line->a->pos.x, line->a->pos.y);
+        ScriptCreateVec2(L, a->pos.x, a->pos.y);
         lua_settable(L, -3);
 
         lua_pushstring(L, "b");
-        ScriptCreateVec2(L, line->a->pos.x, line->a->pos.y);
+        ScriptCreateVec2(L, a->pos.x, a->pos.y);
         lua_settable(L, -3);
 
         lua_pushstring(L, "type");
@@ -107,7 +109,7 @@ static int getselection_(lua_State *L)
     if(state->data.selectionMode == MODE_VERTEX)
         fillMapVertices(L, (MapVertex**)state->data.selectedElements, state->data.numSelectedElements);
     else if(state->data.selectionMode == MODE_LINE)
-        fillMapLines(L, (MapLine**)state->data.selectedElements, state->data.numSelectedElements);
+        fillMapLines(L, &state->map, (MapLine**)state->data.selectedElements, state->data.numSelectedElements);
     else if(state->data.selectionMode == MODE_SECTOR)
         fillMapSectors(L, (MapSector**)state->data.selectedElements, state->data.numSelectedElements);
 

@@ -89,7 +89,7 @@ static inline bool LineShare(line_t a, line_t b)
 }
 
 bool PointInSector(MapSector *sector, vec2s point);
-bool PointInSector2(MapSector *sector, vec2s point);
+bool PointInSector2(Map *map, MapSector *sector, vec2s point);
 bool PointInPolygonVector(size_t numVertices, vec2s vertices[static numVertices], vec2s point);
 bool PointInPolygon(struct Polygon *polygon, vec2s point);
 float MinDistToLine(vec2s a, vec2s b, vec2s point);
@@ -109,12 +109,12 @@ orientation_t LineLoopOrientation(size_t numVertices, vec2s vertices[static numV
 BoundingBox BoundingBoxFromVertices(size_t numVertices, vec2s vertices[static numVertices]);
 bool BoundingBoxIntersect(BoundingBox a, BoundingBox b);
 
-int SideOfMapLine(MapLine *line, vec2s point);
+int SideOfMapLine(Map *map, MapLine *line, vec2s point);
 int SideOfLine(vec2s a, vec2s b, vec2s point);
 
 angle_t NormalizeAngle(angle_t angle);
 angle_t AngleDifference(angle_t a, angle_t b);
 angle_t AngleLine(MapLine *line);
 angle_t AngleOfLines(line_t a, line_t b);
-angle_t AngleOfMapLines(MapLine *a, MapLine *b);
+angle_t AngleOfMapLines(Map *map, MapLine *a, MapLine *b);
 angle_t AngleOf(vec2s a, vec2s b, vec2s c);

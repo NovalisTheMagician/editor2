@@ -247,9 +247,9 @@ typedef struct EdState
 
         EditState editState;
 
-        void **selectedElements;
+        size_t *selectedElements;
         size_t numSelectedElements;
-        void *hoveredElement;
+        ssize_t hoveredElement;
     } data;
 
     struct {

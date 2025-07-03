@@ -5,6 +5,8 @@
 
 #define MAP_VERSION 1
 
+#define INITIAL_MAP_LIST_CAPACITY 1024
+
 typedef enum PropertyType
 {
     PROPERTY_STRING,
@@ -59,12 +61,10 @@ typedef struct MapVertex
 
     size_t idx;
 
-    struct MapLine *attachedLines[256];
+    size_t attachedLines[256];
     size_t numAttachedLines;
 
     PropertyTable props;
-
-    struct MapVertex *next, *prev;
 } MapVertex;
 
 typedef struct Side
@@ -82,18 +82,17 @@ typedef struct LineData
 
 typedef struct MapLine
 {
-    MapVertex *a, *b;
+    size_t a, b;
     size_t aVertIndex, bVertIndex;
 
     LineData data;
-    struct MapSector *frontSector, *backSector;
+    ssize_t frontSector, backSector;
 
     PropertyTable props;
 
     bool mark, new;
 
     size_t idx;
-    struct MapLine *next, *prev;
 } MapLine;
 
 typedef struct SectorData
@@ -109,10 +108,10 @@ typedef struct SectorData
 
 typedef struct MapSector
 {
-    MapLine **outerLines;
+    size_t *outerLines;
     size_t numOuterLines;
 
-    MapLine ***innerLines;
+    size_t **innerLines;
     size_t *numInnerLinesNum;
     size_t numInnerLines;
 
@@ -123,20 +122,32 @@ typedef struct MapSector
     PropertyTable props;
 
     size_t idx;
-    struct MapSector *next, *prev;
     TriangleData edData;
 } MapSector;
 
+typedef struct VertexList
+{
+    MapVertex *items;
+    size_t count, capacity;
+} VertexList;
+
+typedef struct LineList
+{
+    MapLine *items;
+    size_t count, capacity;
+} LineList;
+
+typedef struct SectorList
+{
+    MapSector *items;
+    size_t count, capacity;
+} SectorList;
+
 typedef struct Map
 {
-    MapVertex *headVertex, *tailVertex;
-    size_t numVertices;
-
-    MapLine *headLine, *tailLine;
-    size_t numLines;
-
-    MapSector *headSector, *tailSector;
-    size_t numSectors;
+    VertexList vertexList;
+    LineList lineList;
+    SectorList sectorList;
 
     bool dirty;
     char *file;

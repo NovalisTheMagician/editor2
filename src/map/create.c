@@ -3,93 +3,68 @@
 
 #include <string.h>
 
+#define da_append(da, item) \
+do {\
+    if(da.count >= da.capacity) {\
+        if(da.capacity == 0) da.capacity = INITIAL_MAP_LIST_CAPACITY;\
+        else da.capacity *= 2;\
+        da.items = realloc(da.items, da.capacity*sizeof *da.items);\
+    }\
+    da.items[da.count++] = item;\
+} while(0)
+
 CreateResult CreateVertex(Map *map, vec2s pos)
 {
-    for(MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
+    for(size_t i = 0; i < map->vertexList.count; ++i)
     {
+        MapVertex *vertex = &map->vertexList.items[i];
         if(glms_vec2_eqv_eps(vertex->pos, pos))
         {
             return (CreateResult){ .mapElement = vertex, .created = false };
         }
     }
 
-    MapVertex *vertex = calloc(1, sizeof *vertex);
-    vertex->pos = pos;
-    vertex->idx = map->vertexIdx++;
-    vertex->prev = map->tailVertex;
-
-    if(map->headVertex == NULL)
-    {
-        map->headVertex = vertex;
-        map->tailVertex = vertex;
-    }
-    else if(map->tailVertex->prev == NULL)
-    {
-        map->headVertex->next = vertex;
-    }
-    else
-    {
-        map->tailVertex->next = vertex;
-    }
-    map->tailVertex = vertex;
-    map->numVertices++;
+    MapVertex vertex = { .idx = map->vertexIdx++, .pos = pos };
+    da_append(map->vertexList, vertex);
 
     map->dirty = true;
 
-    return (CreateResult){ .mapElement = vertex, .created = true };
+    return (CreateResult){ .mapElement = &map->vertexList.items[map->vertexList.count-1], .created = true };
 }
 
 CreateResult CreateLine(Map *map, MapVertex *v0, MapVertex *v1, LineData data)
 {
-    for(MapLine *line = map->headLine; line; line = line->next)
+    for(size_t i = 0; i < map->lineList.count; ++i)
     {
-        bool ab = line->a == v0 && line->b == v1;
-        bool ba = line->a == v1 && line->b == v0;
+        MapLine *line = &map->lineList.items[i];
+        bool ab = line->a == v0->idx && line->b == v1->idx;
+        bool ba = line->a == v1->idx && line->b == v0->idx;
         if(ab || ba)
         {
             return (CreateResult){ .mapElement = line, .created = false };
         }
     }
 
-    MapLine *line = calloc(1, sizeof *line);
-    line->a = v0;
-    line->b = v1;
-    line->idx = map->lineIdx++;
-    line->prev = map->tailLine;
-    line->data = CopyLineData(data);
-
-    v0->attachedLines[v0->numAttachedLines] = line;
-    line->aVertIndex = v0->numAttachedLines;
+    MapLine line = { .idx = map->lineIdx++, .data = CopyLineData(data), .a = v0->idx, .b = v1->idx, .frontSector = -1, .backSector = -1 };
+    v0->attachedLines[v0->numAttachedLines] = line.idx;
+    line.aVertIndex = v0->numAttachedLines;
     v0->numAttachedLines++;
-    v1->attachedLines[v1->numAttachedLines] = line;
-    line->bVertIndex = v1->numAttachedLines;
+    v1->attachedLines[v1->numAttachedLines] = line.idx;
+    line.bVertIndex = v1->numAttachedLines;
     v1->numAttachedLines++;
 
-    if(map->headLine == NULL)
-    {
-        map->headLine = line;
-        map->tailLine = line;
-    }
-    else if(map->tailLine->prev == NULL)
-    {
-        map->headLine->next = line;
-    }
-    else
-    {
-        map->tailLine->next = line;
-    }
-    map->tailLine = line;
-    map->numLines++;
+    da_append(map->lineList, line);
 
     map->dirty = true;
 
-    return (CreateResult){ .mapElement = line, .created = true };
+    return (CreateResult){ .mapElement = &map->lineList.items[map->lineList.count-1], .created = true };
 }
 
 CreateResult CreateSector(Map *map, size_t numLines, MapLine *lines[static numLines], SectorData data)
 {
-    for(MapSector *sector = map->headSector; sector; sector = sector->next)
+    for(size_t i = 0; i < map->sectorList.count; ++i)
     {
+        MapSector *sector = &map->sectorList.items[i];
         if(sector->numOuterLines != numLines) continue;
 
         bool allSame = true;
@@ -98,7 +73,7 @@ CreateResult CreateSector(Map *map, size_t numLines, MapLine *lines[static numLi
             bool sharesALine = false;
             for(size_t j = 0; j < sector->numOuterLines; ++j)
             {
-                if(lines[i] == sector->outerLines[j])
+                if(lines[i]->idx == sector->outerLines[j])
                 {
                     sharesALine = true;
                     break;
@@ -115,32 +90,13 @@ CreateResult CreateSector(Map *map, size_t numLines, MapLine *lines[static numLi
             return (CreateResult){ .mapElement = sector, .created = false };
     }
 
-    MapSector *sector = calloc(1, sizeof *sector);
-    sector->numOuterLines = numLines;
-    sector->outerLines = malloc(sector->numOuterLines * sizeof *sector->outerLines);
-    memcpy(sector->outerLines, lines, sector->numOuterLines * sizeof *sector->outerLines);
-    sector->idx = map->sectorIdx++;
-    sector->prev = map->tailSector;
-    sector->data = CopySectorData(data);
+    MapSector sector = { .idx = map->sectorIdx++, .numOuterLines = numLines, .data = CopySectorData(data), .outerLines = malloc(numLines * sizeof *sector.outerLines) };
+    for(size_t i = 0; i < numLines; ++i)
+        sector.outerLines[i] = lines[i]->idx;
 
-    if(map->headSector == NULL)
-    {
-        map->headSector = sector;
-        map->tailSector = sector;
-    }
-    else if(map->tailSector->prev == NULL)
-    {
-        map->headSector->next = sector;
-    }
-    else
-    {
-        map->tailSector->next = sector;
-    }
-    map->tailSector = sector;
-
-    map->numSectors++;
+    da_append(map->sectorList, sector);
 
     map->dirty = true;
 
-    return (CreateResult){ .mapElement = sector, .created = true };
+    return (CreateResult){ .mapElement = &map->sectorList.items[map->sectorList.count - 1], .created = true };
 }

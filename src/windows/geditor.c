@@ -5,6 +5,8 @@
 #include "cimgui.h"
 
 #include "logging.h"
+#include "map.h"
+#include "map/query.h"
 #include "utils.h"
 #include "../edit.h"
 
@@ -48,39 +50,45 @@ static void RectSelect(EdState *state, bool add)
     {
     case MODE_VERTEX:
         {
-            for(MapVertex *vertex = state->map.headVertex; vertex; vertex = vertex->next)
+            for(size_t i = 0; i < state->map.vertexList.count; ++i)
             {
+                MapVertex *vertex = &state->map.vertexList.items[i];
                 if(within(min, max, vertex->pos))
                 {
-                    state->data.selectedElements[state->data.numSelectedElements++] = vertex;
+                    state->data.selectedElements[state->data.numSelectedElements++] = vertex->idx;
                 }
             }
         }
         break;
     case MODE_LINE:
         {
-            for(MapLine *line = state->map.headLine; line; line = line->next)
+            for(size_t i = 0; i < state->map.lineList.count; ++i)
             {
-                if(within(min, max, line->a->pos) && within(min, max, line->b->pos))
+                MapLine *line = &state->map.lineList.items[i];
+                MapVertex *a = GetVertex(&state->map, line->a);
+                MapVertex *b = GetVertex(&state->map, line->b);
+                if(within(min, max, a->pos) && within(min, max, b->pos))
                 {
-                    state->data.selectedElements[state->data.numSelectedElements++] = line;
+                    state->data.selectedElements[state->data.numSelectedElements++] = line->idx;
                 }
             }
         }
         break;
     case MODE_SECTOR:
         {
-            for(MapSector *sector = state->map.headSector; sector; sector = sector->next)
+            for(size_t i = 0; i < state->map.sectorList.count; ++i)
             {
+                MapSector *sector = &state->map.sectorList.items[i];
                 bool allPointsIn = true;
-                for(size_t i = 0; i < sector->numOuterLines; ++i)
+                for(size_t j = 0; j < sector->numOuterLines; ++j)
                 {
-                    allPointsIn &= within(min, max, sector->outerLines[i]->a->pos);
+                    MapVertex *a = GetVertex(&state->map, sector->outerLines[j]);
+                    allPointsIn &= within(min, max, a->pos);
                 }
 
                 if(allPointsIn)
                 {
-                    state->data.selectedElements[state->data.numSelectedElements++] = sector;
+                    state->data.selectedElements[state->data.numSelectedElements++] = sector->idx;
                 }
             }
         }
@@ -111,17 +119,17 @@ void EditorWindow(bool *p_open, EdState *state)
     if(state->map.dirty)
         flags |= ImGuiWindowFlags_UnsavedDocument;
 
-    if(igShortcut_Nil(ImGuiKey_V, ImGuiInputFlags_RouteGlobal))
+    if(igShortcut_Nil(ImGuiKey_1, ImGuiInputFlags_RouteGlobal))
     {
         ChangeMode(state, MODE_VERTEX);
         igSetWindowFocus_Str("Editor");
     }
-    if(igShortcut_Nil(ImGuiKey_L, ImGuiInputFlags_RouteGlobal))
+    if(igShortcut_Nil(ImGuiKey_2, ImGuiInputFlags_RouteGlobal))
     {
         ChangeMode(state, MODE_LINE);
         igSetWindowFocus_Str("Editor");
     }
-    if(igShortcut_Nil(ImGuiKey_S, ImGuiInputFlags_RouteGlobal))
+    if(igShortcut_Nil(ImGuiKey_3, ImGuiInputFlags_RouteGlobal))
     {
         ChangeMode(state, MODE_SECTOR);
         igSetWindowFocus_Str("Editor");
@@ -208,9 +216,24 @@ void EditorWindow(bool *p_open, EdState *state)
                 {
                     switch(state->data.selectionMode)
                     {
-                    case MODE_VERTEX: state->data.hoveredElement = EditGetClosestVertex(map, mouseVertex, VERTEX_DIST); break;
-                    case MODE_LINE: state->data.hoveredElement = EditGetClosestLine(map, mouseVertex, LINE_DIST); break;
-                    case MODE_SECTOR: state->data.hoveredElement = EditGetSector(map, mouseVertex); break;
+                    case MODE_VERTEX: 
+                        {
+                            MapVertex *vertex = EditGetClosestVertex(map, mouseVertex, VERTEX_DIST);
+                            state->data.hoveredElement = vertex ? (ssize_t)vertex->idx : -1;
+                        }
+                        break;
+                    case MODE_LINE: 
+                        {
+                            MapLine *line = EditGetClosestLine(map, mouseVertex, LINE_DIST);
+                            state->data.hoveredElement = line ? (ssize_t)line->idx : -1;
+                        }
+                        break;
+                    case MODE_SECTOR: 
+                        {
+                            MapSector *sector = EditGetSector(map, mouseVertex);
+                            state->data.hoveredElement = sector ? (ssize_t)sector->idx : -1;
+                        }
+                        break;
                     }
                 }
 
@@ -292,22 +315,37 @@ void EditorWindow(bool *p_open, EdState *state)
                     }
                     else if(state->data.editState == ESTATE_NORMAL)
                     {
-                        void *selectedElement = NULL;
+                        ssize_t selectedElement = -1;
                         switch(state->data.selectionMode)
                         {
-                        case MODE_VERTEX: selectedElement = EditGetClosestVertex(map, mouseVertex, VERTEX_DIST); break;
-                        case MODE_LINE: selectedElement = EditGetClosestLine(map, mouseVertex, LINE_DIST); break;
-                        case MODE_SECTOR: selectedElement = EditGetSector(map, mouseVertex); break;
+                        case MODE_VERTEX: 
+                            {
+                                MapVertex *vertex = EditGetClosestVertex(map, mouseVertex, VERTEX_DIST);
+                                selectedElement = vertex ? (ssize_t)vertex->idx : -1;
+                            }
+                            break;
+                        case MODE_LINE: 
+                            {
+                                MapLine *line = EditGetClosestLine(map, mouseVertex, LINE_DIST);
+                                selectedElement = line ? (ssize_t)line->idx : -1;
+                            }
+                            break;
+                        case MODE_SECTOR: 
+                            {
+                                MapSector *sector = EditGetSector(map, mouseVertex);
+                                selectedElement = sector ? (ssize_t)sector->idx : -1;
+                            }
+                            break;
                         }
 
-                        if(selectedElement)
+                        if(selectedElement != -1)
                         {
                             if(shiftDown)
                             {
                                 bool removed = false;
                                 for(size_t i = 0; i < state->data.numSelectedElements; ++i)
                                 {
-                                    if(state->data.selectedElements[i] == selectedElement)
+                                    if(state->data.selectedElements[i] == (size_t)selectedElement)
                                     {
                                         memmove(state->data.selectedElements + i, state->data.selectedElements + i + 1, (state->data.numSelectedElements - (i+1)) * sizeof *state->data.selectedElements);
                                         state->data.numSelectedElements--;
@@ -359,7 +397,7 @@ void EditorWindow(bool *p_open, EdState *state)
                     {
                         state->data.editState = ESTATE_ADDVERTEX;
                         state->data.numSelectedElements = 0;
-                        state->data.hoveredElement = NULL;
+                        state->data.hoveredElement = -1;
                     }
                     break;
                     case ESTATE_ADDVERTEX:
@@ -397,7 +435,7 @@ void EditorWindow(bool *p_open, EdState *state)
                         case MODE_SECTOR: EditRemoveSectors(map, state->data.numSelectedElements, (MapSector**)state->data.selectedElements); break;
                         }
                         state->data.numSelectedElements = 0;
-                        state->data.hoveredElement = NULL;
+                        state->data.hoveredElement = -1;
                     }
                 }
 
