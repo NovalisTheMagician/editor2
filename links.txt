@@ -1,4 +1,2 @@
 https://stackoverflow.com/questions/6017176/gllinestipple-deprecated-in-opengl-3-1
 https://stackoverflow.com/questions/17397724/point-sprites-for-particle-system
-https://stackoverflow.com/questions/8671027/c-standard-library-function-to-find-the-byte-order-of-the-hardware
-https://gist.github.com/noct/9884320
