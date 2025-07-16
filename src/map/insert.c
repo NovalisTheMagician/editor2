@@ -38,7 +38,7 @@ MapSector* MakeMapSector(Map *map, MapLine *startLine, SectorData data)
 {
     MapLine *sectorLines[MAX_LINES_PER_SECTOR] = { 0 };
     size_t numLines = FindOuterLineLoop(startLine, sectorLines, MAX_LINES_PER_SECTOR);
-    if(FindEquvivalentSector(map, numLines, sectorLines)) return NULL;
+    if(FindEquivalentSector(map, numLines, sectorLines)) return NULL;
     struct Polygon *poly = PolygonFromMapLines(numLines, sectorLines);
 
     Arena arena = { 0 };

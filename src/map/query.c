@@ -28,7 +28,7 @@ MapSector* GetSector(Map *map, size_t idx)
     return NULL;
 }
 
-MapSector* FindEquvivalentSector(Map *map, size_t numLines, MapLine *lines[static numLines])
+MapSector* FindEquivalentSector(Map *map, size_t numLines, MapLine *lines[static numLines])
 {
     for(MapSector *sector = map->headSector; sector; sector = sector->next)
     {

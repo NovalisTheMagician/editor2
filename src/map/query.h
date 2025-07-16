@@ -5,7 +5,7 @@
 MapVertex* GetVertex(Map *map, size_t idx);
 MapLine* GetLine(Map *map, size_t idx);
 MapSector* GetSector(Map *map, size_t idx);
-MapSector* FindEquvivalentSector(Map *map, size_t numLines, MapLine *lines[static numLines]);
+MapSector* FindEquivalentSector(Map *map, size_t numLines, MapLine *lines[static numLines]);
 
 int angleSortOuter(const void *a, const void *b);
 int angleSortInner(const void *a, const void *b);
