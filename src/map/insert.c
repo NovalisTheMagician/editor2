@@ -14,6 +14,7 @@
 #include "query.h"
 
 #define MAX_LINES_PER_SECTOR 1024
+#define STITCHING_DIST 8.0f
 
 static bool includes(size_t num, void *elements[static num], void *v)
 {
@@ -322,8 +323,17 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
                 break;
             case INTERSECTION:
                 {
-                    MapVertex *splitVertex = EditAddVertex(map, result.intersection.splitPoint);
-                    DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
+                    MapVertex *closestVert = FindClosestVertex(map, result.intersection.splitPoint, STITCHING_DIST);
+                    if(closestVert)
+                    {
+                        result.intersection.splitLine1.b = closestVert->pos;
+                        result.intersection.splitLine2.a = closestVert->pos;
+                    }
+                    else
+                    {
+                        MapVertex *splitVertex = EditAddVertex(map, result.intersection.splitPoint);
+                        DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
+                    }
                     if(!Enqueue(&queue, result.intersection.splitLine1, true)) return false;
                     if(!Enqueue(&queue, result.intersection.splitLine2, true)) return false;
                     mapLine = NULL;
@@ -331,8 +341,16 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
                 break;
             case TOUCH:
                 {
-                    MapVertex *splitVertex = EditAddVertex(map, result.touch.splitPoint);
-                    DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
+                    MapVertex *closestVert = FindClosestVertex(map, result.touch.splitPoint, STITCHING_DIST);
+                    if(closestVert)
+                    {
+                        line.a = closestVert->pos; //TODO: need to check which end of the line to adjust
+                    }
+                    else
+                    {
+                        MapVertex *splitVertex = EditAddVertex(map, result.touch.splitPoint);
+                        DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
+                    }
                     if(!Enqueue(&queue, line, true)) return false;
                     mapLine = NULL;
                 }
@@ -346,16 +364,24 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
                 break;
             case OVERLAP:
                 {
-                    MapVertex *splitVertex = EditAddVertex(map, result.overlap.splitPoint);
-                    DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
+                    MapVertex *closestVert = FindClosestVertex(map, result.overlap.splitPoint, STITCHING_DIST);
+                    if(!closestVert)
+                    {
+                        MapVertex *splitVertex = EditAddVertex(map, result.overlap.splitPoint);
+                        DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
+                    }
                     if(!Enqueue(&queue, result.overlap.line, true)) return false;
                     mapLine = NULL;
                 }
                 break;
             case SIMPLE_OVERLAP_INNER:
                 {
-                    MapVertex *splitVertex = EditAddVertex(map, result.overlap.splitPoint);
-                    DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
+                    MapVertex *closestVert = FindClosestVertex(map, result.overlap.splitPoint, STITCHING_DIST);
+                    if(!closestVert)
+                    {
+                        MapVertex *splitVertex = EditAddVertex(map, result.overlap.splitPoint);
+                        DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
+                    }
                     mapLine = NULL;
                 }
                 break;
@@ -367,9 +393,25 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, vec2s vertices[static numVert
                 break;
             case INNER_CONTAINMENT:
                 {
-                    MapVertex *splitVertexA = EditAddVertex(map, result.innerContainment.split1);
-                    MapVertex *splitVertexB = EditAddVertex(map, result.innerContainment.split2);
-                    DoSplit2(map, &sectorsToUpdate, mapLine, splitVertexA, splitVertexB);
+                    MapVertex *closestVertA = FindClosestVertex(map, result.innerContainment.split1, STITCHING_DIST);
+                    MapVertex *closestVertB = FindClosestVertex(map, result.innerContainment.split2, STITCHING_DIST);
+
+                    if(closestVertA && closestVertB)
+                    {
+                        MapVertex *splitVertexA = EditAddVertex(map, result.innerContainment.split1);
+                        MapVertex *splitVertexB = EditAddVertex(map, result.innerContainment.split2);
+                        DoSplit2(map, &sectorsToUpdate, mapLine, splitVertexA, splitVertexB);
+                    }
+                    else if(closestVertA)
+                    {
+                        MapVertex *splitVertex = EditAddVertex(map, result.innerContainment.split1);
+                        DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
+                    }
+                    else if(closestVertB)
+                    {
+                        MapVertex *splitVertex = EditAddVertex(map, result.innerContainment.split2);
+                        DoSplit(map, &sectorsToUpdate, mapLine, splitVertex);
+                    }
                     mapLine = NULL;
                 }
                 break;
