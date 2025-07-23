@@ -75,7 +75,9 @@ static void VertexProperties(EdState *state)
     }
     else if(state->data.numSelectedElements > 1)
     {
-        igSeparatorTextEx(0, "Vertex (...) Properties", NULL, 0);
+        char title[128] = { 0 };
+        snprintf(title, sizeof title, "Vertex (...) Properties (%d selected)", (int)state->data.numSelectedElements);
+        igSeparatorTextEx(0, title, NULL, 0);
     }
 }
 
@@ -130,7 +132,9 @@ static void LineProperties(EdState *state)
     }
     else if(state->data.numSelectedElements > 1)
     {
-        igSeparatorTextEx(0, "Line (...) Properties", NULL, 0);
+        char title[128] = { 0 };
+        snprintf(title, sizeof title, "Line (...) Properties (%d selected)", (int)state->data.numSelectedElements);
+        igSeparatorTextEx(0, title, NULL, 0);
     }
 }
 
@@ -194,7 +198,9 @@ static void SectorProperties(EdState *state)
     }
     else if(state->data.numSelectedElements > 1)
     {
-        igSeparatorTextEx(0, "Sector (...) Properties", NULL, 0);
+        char title[128] = { 0 };
+        snprintf(title, sizeof title, "Sector (...) Properties (%d selected)", (int)state->data.numSelectedElements);
+        igSeparatorTextEx(0, title, NULL, 0);
     }
 }
 
