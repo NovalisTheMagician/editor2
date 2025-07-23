@@ -191,6 +191,7 @@ int EditorMain(int argc, char *argv[])
     {
         while(SDL_PollEvent(&e) > 0)
         {
+#if 0
             if(e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
             {
                 int newDpi = getDisplayDpi(window);
@@ -200,6 +201,7 @@ int EditorMain(int argc, char *argv[])
                     LogDebug("Display Scale changed: %d", state->data.cachedDPI);
                 }
             }
+#endif
 
             if(ImGui_ImplSDL2_ProcessEvent(&e)) continue;
 
@@ -331,11 +333,16 @@ static void InitFont(SDL_Window *window)
 {
     ImGuiIO *ioptr = igGetIO_Nil();
 
+#if 0
     int displayIndex = SDL_GetWindowDisplayIndex(window);
     float dpi;
     SDL_GetDisplayDPI(displayIndex, &dpi, NULL, NULL);
     float scale = dpi / DEFAULT_DPI;
     float fontSize = (16.75f * scale);
+#else
+    (void)window;
+    float fontSize = 16.75f;
+#endif
 
     ImFontConfig *config = ImFontConfig_ImFontConfig();
     config->FontDataOwnedByAtlas = false;
