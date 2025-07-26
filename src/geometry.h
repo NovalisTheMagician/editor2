@@ -97,6 +97,8 @@ float MinDistToLine(vec2s a, vec2s b, vec2s point);
 bool LineIsCollinear(line_t a, line_t b);
 bool LineIsParallel(line_t a, line_t b);
 
+vec2s LineGetClosestPoint(line_t line, vec2s pos);
+
 // this assumes that both lines are collinear
 vec2s LineGetCommonPoint(line_t major, line_t support);
 float LineGetPointFactor(line_t line, vec2s point);

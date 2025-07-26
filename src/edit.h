@@ -4,7 +4,7 @@
 
 void ScreenToEditorSpace(const EdState *state, int32_t *x, int32_t *y);
 void EditorToScreenSpace(const EdState *state, int32_t *x, int32_t *y);
-void ScreenToEditorSpaceGrid(const EdState *state, int32_t *x, int32_t *y);
+void ScreenToEditorSpaceGrid(const EdState *state, int gridsize, int32_t *x, int32_t *y);
 
 void ScreenToEditorSpacef(const EdState *state, float *x, float *y);
 

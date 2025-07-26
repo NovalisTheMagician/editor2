@@ -215,6 +215,16 @@ bool LineIsParallel(line_t a, line_t b)
     return fabs(D) < SMALL_NUM;
 }
 
+vec2s LineGetClosestPoint(line_t line, vec2s pos)
+{
+    vec2s dir = glms_vec2_normalize(glms_vec2_sub(line.b, line.a));
+    float len = glms_vec2_distance(line.a, line.b);
+    vec2s lhs = glms_vec2_sub(pos, line.a);
+    float dotP = glms_vec2_dot(lhs, dir);
+    dotP = clamp(0.0f, len, dotP);
+    return glms_vec2_add(line.a, glms_vec2_scale(dir, dotP));
+}
+
 vec2s LineGetCommonPoint(line_t major, line_t support)
 {
     if(glms_vec2_eqv_eps(major.a, support.a)) return major.a;

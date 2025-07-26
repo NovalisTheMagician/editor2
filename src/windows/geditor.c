@@ -4,7 +4,10 @@
 #include <string.h>
 #include "cimgui.h"
 
+#include "editor.h"
+#include "geometry.h"
 #include "logging.h"
+#include "map.h"
 #include "utils.h"
 #include "../edit.h"
 
@@ -142,9 +145,14 @@ void EditorWindow(bool *p_open, EdState *state)
         igPushItemWidth(80);
         static const char *gridSizes[] = { "1", "2", "4", "8", "16", "32", "64", "128", "256", "512", "1024" };
         static const size_t numGrids = COUNT_OF(gridSizes);
-        int gridSelection = log2(state->data.gridSize);
+        int gridSelection = log2f(state->data.gridSize);
         igCombo_Str_arr("Gridsize", &gridSelection, gridSizes, numGrids, numGrids);
-        state->data.gridSize = pow(2, gridSelection);
+        state->data.gridSize = powf(2, gridSelection);
+        igSameLine(0, 16);
+        igPushItemWidth(80);
+        int altGridSelection = log2f(state->data.altGridSize);
+        igCombo_Str_arr("Alt Gridsize", &altGridSelection, gridSizes, numGrids, numGrids);
+        state->data.altGridSize = powf(2, altGridSelection);
 
         igSameLine(0, 16);
         igPushItemWidth(80);
@@ -183,11 +191,42 @@ void EditorWindow(bool *p_open, EdState *state)
 
             int edX = relX, edSX = relX, edY = relY, edSY = relY;
             float edXf = relX, edYf = relY;
-            ScreenToEditorSpaceGrid(state, &edSX, &edSY);
+            ScreenToEditorSpaceGrid(state, state->data.gridSize, &edSX, &edSY);
             ScreenToEditorSpace(state, &edX, &edY);
             ScreenToEditorSpacef(state, &edXf, &edYf);
 
+            bool shiftDown = igGetIO_Nil()->KeyShift;
+            bool altDown = igGetIO_Nil()->KeyAlt;
+            bool ctrlDown = igGetIO_Nil()->KeyCtrl;
             Map *map = &state->map;
+
+            if(state->data.editState == ESTATE_ADDVERTEX)
+            {
+                if(altDown)
+                {
+                    MapLine *closestLine = EditGetClosestLine(map, (vec2s){ .x = edX, .y = edY }, LINE_DIST);
+                    if(closestLine)
+                    {
+                        vec2s closestPoint = LineGetClosestPoint((line_t){ closestLine->a->pos, closestLine->b->pos }, (vec2s){ .x = edX, .y = edY });
+                        edSX = closestPoint.x;
+                        edSY = closestPoint.y;
+                    }
+                }
+                else if(ctrlDown)
+                {
+                    MapVertex *closestVertex = EditGetClosestVertex(map, (vec2s){ .x = edX, .y = edY }, VERTEX_DIST + 5);
+                    if(closestVertex)
+                    {
+                        edSX = closestVertex->pos.x;
+                        edSY = closestVertex->pos.y;
+                    }
+                }
+                else if(shiftDown)
+                {
+                    edSX = relX, edSY = relY;
+                    ScreenToEditorSpaceGrid(state, state->data.altGridSize, &edSX, &edSY);
+                }
+            }
 
             if(hovored)
             {
@@ -197,10 +236,6 @@ void EditorWindow(bool *p_open, EdState *state)
                 state->data.mtx = edSX;
                 state->data.mty = edSY;
 #endif
-
-                bool shiftDown = igGetIO_Nil()->KeyShift;
-                bool altDown = igGetIO_Nil()->KeyAlt;
-
                 vec2s mouseVertex = { {edX, edY} };
                 state->data.editVertexMouse = (vec2s){ .x = edSX, .y = edSY };
                 state->data.editDragMouse = mouseVertex;

@@ -223,6 +223,7 @@ typedef struct EdState
         bool autoScrollLogs;
 
         int gridSize;
+        int altGridSize;
         float zoomLevel;
         ImVec2 viewPosition;
         int selectionMode;

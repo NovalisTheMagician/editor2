@@ -101,6 +101,7 @@ bool InitEditor(EdState *state, char *error, size_t errorSize)
     glTextureParameteri(state->gl.whiteTexture, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
     state->data.gridSize = 32;
+    state->data.altGridSize = 16;
     state->data.zoomLevel = 1.0f;
 
     const GLbitfield
