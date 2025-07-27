@@ -289,16 +289,6 @@ static void MainMenuBar(bool *doQuit, EdState *state)
     {
         if(igBeginMenu("File", true))
         {
-            if(igMenuItem_Bool("New Project", "", false, allowFileOps)) { if(state->project.dirty) { openProjectPopup = true; modalAction = SMA_NEW; } else NewProject(&state->project); }
-            if(igMenuItem_Bool("Open Project", "", false, allowFileOps)) { if(state->project.dirty) { openProjectPopup = true; modalAction = SMA_OPEN; } else OpenProjectDialog(&state->project); }
-            if(igMenuItem_Bool("Save Project", "", false, state->project.dirty && allowFileOps))
-            {
-                if(!state->project.file)
-                    SaveProjectDialog(&state->project, false);
-                else
-                    SaveProject(&state->project);
-            }
-            igSeparator();
             if(igMenuItem_Bool("New Map", "Ctrl+N", false, allowFileOps)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_NEW; } else DoNewMap(state); }
             if(igMenuItem_Bool("Open Map", "Ctrl+O", false, allowFileOps)) { if(state->map.dirty) { openMapPopup = true; modalAction = SMA_OPEN; } else DoLoadMap(state); }
             if(igMenuItem_Bool("Save Map", "Ctrl+S", false, state->map.dirty && allowFileOps))
@@ -309,6 +299,16 @@ static void MainMenuBar(bool *doQuit, EdState *state)
                     SaveMap(&state->map);
             }
             if(igMenuItem_Bool("SaveAs Map", "", false, allowFileOps)) { SaveMapDialog(&state->map, doQuit); }
+            igSeparator();
+            if(igMenuItem_Bool("New Project", "", false, allowFileOps)) { if(state->project.dirty) { openProjectPopup = true; modalAction = SMA_NEW; } else NewProject(&state->project); }
+            if(igMenuItem_Bool("Open Project", "", false, allowFileOps)) { if(state->project.dirty) { openProjectPopup = true; modalAction = SMA_OPEN; } else OpenProjectDialog(&state->project); }
+            if(igMenuItem_Bool("Save Project", "", false, state->project.dirty && allowFileOps))
+            {
+                if(!state->project.file)
+                    SaveProjectDialog(&state->project, false);
+                else
+                    SaveProject(&state->project);
+            }
             igSeparator();
             if(igMenuItem_Bool("Quit", "Alt+F4", false, true)) { *doQuit = true; }
             igEndMenu();

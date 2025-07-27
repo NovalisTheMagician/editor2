@@ -449,6 +449,20 @@ void EditorWindow(bool *p_open, EdState *state)
                             state->data.numSelectedElements = 0;
                     }
                 }
+
+                if(igIsKeyPressed_Bool(ImGuiKey_Tab, false))
+                {
+                    if(state->data.editState == ESTATE_ADDVERTEX)
+                    {
+                        if(state->data.editVertexBufferSize >= 2)
+                        {
+                            // submit edit data
+                            SubmitEditData(state, true);
+                        }
+                        state->data.editVertexBufferSize = 0;
+                        state->data.editState = ESTATE_NORMAL;
+                    }
+                }
             }
 
             if(focused)
