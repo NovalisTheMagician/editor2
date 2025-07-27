@@ -2,7 +2,7 @@
 
 
 #include <assert.h>
-#include <tgmath.h>
+#include <math.h>
 #include <string.h>
 
 #include "triangulate.h"
@@ -14,36 +14,29 @@
 #include "map/insert.h"
 #include "map/create.h"
 
-void ScreenToEditorSpace(const EdState *state, int32_t *x, int32_t *y)
-{
-    const float z = state->data.zoomLevel;
-    *x = (int32_t)((*x + state->data.viewPosition.x) / z);
-    *y = (int32_t)((*y + state->data.viewPosition.y) / z);
-}
-
-void ScreenToEditorSpacef(const EdState *state, float *x, float *y)
+void ScreenToEditorSpace(const EdState *state, float *x, float *y)
 {
     const float z = state->data.zoomLevel;
     *x = (*x + state->data.viewPosition.x) / z;
     *y = (*y + state->data.viewPosition.y) / z;
 }
 
-void EditorToScreenSpace(const EdState *state, int32_t *x, int32_t *y)
+void EditorToScreenSpace(const EdState *state, float *x, float *y)
 {
     const float z = state->data.zoomLevel;
-    *x = (int32_t)((*x - state->data.viewPosition.x) * z);
-    *y = (int32_t)((*y - state->data.viewPosition.y) * z);
+    *x = ((*x - state->data.viewPosition.x) * z);
+    *y = ((*y - state->data.viewPosition.y) * z);
 }
 
-void ScreenToEditorSpaceGrid(const EdState *state, int gridsize, int32_t *x, int32_t *y)
+void ScreenToEditorSpaceGrid(const EdState *state, int gridsize, float *x, float *y)
 {
     ScreenToEditorSpace(state, x, y);
     const int offset = gridsize / 2;
-    int32_t xt = *x, yt = *y;
+    float xt = (int)(*x), yt = (int)(*y);
     xt += xt < 0 ? -offset : offset;
-    *x = xt / gridsize * gridsize;
+    *x = (int)xt / gridsize * gridsize;
     yt += yt < 0 ? -offset : offset;
-    *y = yt / gridsize * gridsize;
+    *y = (int)yt / gridsize * gridsize;
 }
 
 void EditCopy(EdState *state)

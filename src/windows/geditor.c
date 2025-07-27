@@ -189,11 +189,9 @@ void EditorWindow(bool *p_open, EdState *state)
             int relX = (int)mpos.x - (int)clientPos.x;
             int relY = (int)mpos.y - (int)clientPos.y;
 
-            int edX = relX, edSX = relX, edY = relY, edSY = relY;
-            float edXf = relX, edYf = relY;
-            ScreenToEditorSpaceGrid(state, state->data.gridSize, &edSX, &edSY);
+            float edX = relX, edSX = relX, edY = relY, edSY = relY;
             ScreenToEditorSpace(state, &edX, &edY);
-            ScreenToEditorSpacef(state, &edXf, &edYf);
+            ScreenToEditorSpaceGrid(state, state->data.gridSize, &edSX, &edSY);
 
             bool shiftDown = igGetIO_Nil()->KeyShift;
             bool altDown = igGetIO_Nil()->KeyAlt;
@@ -378,10 +376,10 @@ void EditorWindow(bool *p_open, EdState *state)
                     state->data.zoomLevel = clamp(MIN_ZOOM, MAX_ZOOM, state->data.zoomLevel);
 
                     float edXAfter = relX, edYAfter = relY;
-                    ScreenToEditorSpacef(state, &edXAfter, &edYAfter);
+                    ScreenToEditorSpace(state, &edXAfter, &edYAfter);
 
-                    state->data.viewPosition.x += (edXf - edXAfter) * state->data.zoomLevel;
-                    state->data.viewPosition.y += (edYf - edYAfter) * state->data.zoomLevel;
+                    state->data.viewPosition.x += (edX - edXAfter) * state->data.zoomLevel;
+                    state->data.viewPosition.y += (edY - edYAfter) * state->data.zoomLevel;
 
                     igSetWindowFocus_Nil();
                 }
