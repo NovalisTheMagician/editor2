@@ -29,7 +29,6 @@ else
 endif
 
 SDL_INC :=
-EARCUT_INC :=
 
 ifeq ($(OS),Windows_NT)
     LIBS += dinput8 dxguid dxerr8 user32 gdi32 winmm imm32 ole32 oleaut32 shell32 setupapi version uuid ws2_32 Iphlpapi comctl32 gdi32 comdlg32 opengl32
@@ -38,7 +37,6 @@ ifeq ($(OS),Windows_NT)
     INC_DIRS += $(INC_PATH)
     LDFLAGS += -static
     SDL_INC += -I$(INC_PATH)/SDL2
-    EARCUT_INC += -I$(INC_PATH)
     ifeq ($(CONFIG),release)
         LDFLAGS += -mwindows
     else
@@ -121,6 +119,8 @@ TRIANG_OBJ := $(BUILD_DIR)/$(TRIANG_DIR)/triangulate.o
 INC_DIRS += $(TRIANG_DIR)
 BUILD_DIRS += $(BUILD_DIR)/$(TRIANG_DIR)
 
+EARCUT_INC := $(TRIANG_DIR)/earcut/include
+
 # incbin
 INCBIN_DIR := $(EXTERN_DIR)/incbin
 INC_DIRS += $(INCBIN_DIR)
@@ -179,7 +179,7 @@ $(BUILD_DIR)/$(CIMGUI_DIR)/%.o: $(CIMGUI_DIR)/%.cpp
 
 $(TRIANG_OBJ): $(TRIANG_SRC)
 	@echo "++ $< (External Triangulate)"
-	@$(C++) -O2 -c $< -o $@ $(EARCUT_INC)
+	@$(C++) -O2 -c $< -o $@ -I$(EARCUT_INC)
 
 .PHONY: clean echo
 clean:
@@ -193,5 +193,6 @@ echo:
 	@echo "INC_DIRS= $(INC_DIRS)"
 	@echo "CCFLAGS= $(CCFLAGS)"
 	@echo "LDFLAGS= $(LDFLAGS)"
+	@echo "EARCUT_INC= $(EARCUT_INC)"
 
 -include $(OBJS:.o=.d)
