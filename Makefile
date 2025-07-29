@@ -7,7 +7,7 @@ SRC_SUBDIRS := windows dialogs utils map scripts asset_sources
 DEFINES := __USE_XOPEN _GNU_SOURCE
 INC_DIRS := $(SRC_DIR)
 
-LIBS := m SDL2 :libftp.a stdc++ :liblua.a
+LIBS := m SDL2 stdc++
 LIB_DIRS :=
 
 RES := windres
@@ -129,6 +129,23 @@ INC_DIRS += $(INCBIN_DIR)
 CGLM_DIR := $(EXTERN_DIR)/cglm
 INC_DIRS += $(CGLM_DIR)/include
 
+# lua
+LUA_DIR := $(EXTERN_DIR)/lua-5.4.8
+LUA_SRCS := $(LUA_DIR)/src/lapi.c $(LUA_DIR)/src/lcode.c $(LUA_DIR)/src/lctype.c $(LUA_DIR)/src/ldebug.c $(LUA_DIR)/src/ldo.c $(LUA_DIR)/src/ldump.c $(LUA_DIR)/src/lfunc.c $(LUA_DIR)/src/lgc.c $(LUA_DIR)/src/llex.c $(LUA_DIR)/src/lmem.c $(LUA_DIR)/src/lobject.c $(LUA_DIR)/src/lopcodes.c $(LUA_DIR)/src/lparser.c $(LUA_DIR)/src/lstate.c $(LUA_DIR)/src/lstring.c $(LUA_DIR)/src/ltable.c $(LUA_DIR)/src/ltm.c $(LUA_DIR)/src/lundump.c $(LUA_DIR)/src/lvm.c $(LUA_DIR)/src/lzio.c
+LUA_SRCS += $(LUA_DIR)/src/lauxlib.c $(LUA_DIR)/src/lbaselib.c $(LUA_DIR)/src/lcorolib.c $(LUA_DIR)/src/ldblib.c $(LUA_DIR)/src/liolib.c $(LUA_DIR)/src/lmathlib.c $(LUA_DIR)/src/loadlib.c $(LUA_DIR)/src/loslib.c $(LUA_DIR)/src/lstrlib.c $(LUA_DIR)/src/ltablib.c $(LUA_DIR)/src/lutf8lib.c $(LUA_DIR)/src/linit.c
+LUA_OBJS := $(patsubst $(LUA_DIR)/src/%.c, $(BUILD_DIR)/$(LUA_DIR)/%.o, $(LUA_SRCS))
+
+INC_DIRS += $(LUA_DIR)/src
+BUILD_DIRS += $(BUILD_DIR)/$(LUA_DIR)
+
+# ftplib
+FTP_DIR := $(EXTERN_DIR)/ftplib-4.0-1
+FTP_SRC := $(FTP_DIR)/src/ftplib.c
+FTP_OBJ := $(BUILD_DIR)/$(FTP_DIR)/ftplib.o
+
+INC_DIRS += $(FTP_DIR)/src
+BUILD_DIRS += $(BUILD_DIR)/$(FTP_DIR)
+
 CPPFLAGS := $(addprefix -I,$(INC_DIRS)) $(addprefix -D,$(DEFINES)) -MMD -MP
 LIB_FLAGS := $(addprefix -L,$(LIB_DIRS)) $(addprefix -l,$(LIBS))
 
@@ -145,7 +162,7 @@ $(BUILD_DIRS):
 	@echo "MD $@"
 	@mkdir -p $@
 
-$(APPLICATION): $(OBJS) $(RES_OBJ) $(RC_OBJ) $(GLAD_OBJ) $(RE_OBJ) $(IGFD_OBJ) $(CIMGUI_OBJS) $(TRIANG_OBJ)
+$(APPLICATION): $(OBJS) $(RES_OBJ) $(RC_OBJ) $(GLAD_OBJ) $(RE_OBJ) $(IGFD_OBJ) $(CIMGUI_OBJS) $(TRIANG_OBJ) $(LUA_OBJS) $(FTP_OBJ)
 	@echo "LD $@"
 	@$(LD) $(LDFLAGS) -o $@ $^ $(LIB_FLAGS)
 
@@ -181,6 +198,14 @@ $(TRIANG_OBJ): $(TRIANG_SRC)
 	@echo "++ $< (External Triangulate)"
 	@$(C++) -O2 -c $< -o $@ -I$(EARCUT_INC)
 
+$(BUILD_DIR)/$(LUA_DIR)/%.o: $(LUA_DIR)/src/%.c
+	@echo "CC $< (External Lua)"
+	@$(CC) -O2 -c $< -o $@ -DLUA_COMPAT_5_3
+
+$(FTP_OBJ): $(FTP_SRC)
+	@echo "CC $< (External ftplib)"
+	@$(CC) -O2 -c $< -o $@ -D_FILE_OFFSET_BITS=64
+
 .PHONY: clean echo
 clean:
 	@echo "RM $(BUILD_DIR)/"
@@ -193,6 +218,5 @@ echo:
 	@echo "INC_DIRS= $(INC_DIRS)"
 	@echo "CCFLAGS= $(CCFLAGS)"
 	@echo "LDFLAGS= $(LDFLAGS)"
-	@echo "EARCUT_INC= $(EARCUT_INC)"
 
 -include $(OBJS:.o=.d)
