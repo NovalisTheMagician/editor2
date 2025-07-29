@@ -146,6 +146,9 @@ FTP_OBJ := $(BUILD_DIR)/$(FTP_DIR)/ftplib.o
 INC_DIRS += $(FTP_DIR)/src
 BUILD_DIRS += $(BUILD_DIR)/$(FTP_DIR)
 
+# stb
+INC_DIR := $(EXTERN_DIR)/stb
+
 CPPFLAGS := $(addprefix -I,$(INC_DIRS)) $(addprefix -D,$(DEFINES)) -MMD -MP
 LIB_FLAGS := $(addprefix -L,$(LIB_DIRS)) $(addprefix -l,$(LIBS))
 
