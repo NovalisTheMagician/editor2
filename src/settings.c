@@ -12,6 +12,8 @@
 #define KEY_3DFOV "preview_fov"
 #define KEY_GAMEPATH "game_path"
 #define KEY_LAUNCHARGS "launch_arguments"
+#define KEY_SHOWFRAMERATE "show_framerate"
+#define KEY_SHOWFRAMETIME "show_frametime"
 
 #define KEY_IS(k) strcasecmp(key, k) == 0
 
@@ -85,6 +87,8 @@ void ResetSettings(EdSettings *settings)
     settings->vertexPointSize = 7.0f;
 
     settings->realtimeFov = 90;
+
+    settings->showFramerate = settings->showFrametime = true;
 }
 
 bool LoadSettings(const char *settingsPath, EdSettings *settings)
@@ -118,6 +122,8 @@ bool LoadSettings(const char *settingsPath, EdSettings *settings)
             if(KEY_IS(KEY_3DFOV)) { if(ParseInt(value, &settings->realtimeFov)) continue; }
             if(KEY_IS(KEY_GAMEPATH)) { strncpy(settings->gamePath, value, sizeof settings->gamePath); continue; }
             if(KEY_IS(KEY_LAUNCHARGS)) { strncpy(settings->launchArguments, value, sizeof settings->launchArguments); continue; }
+            if(KEY_IS(KEY_SHOWFRAMERATE)) { if(ParseBool(value, &settings->showFramerate)) continue; }
+            if(KEY_IS(KEY_SHOWFRAMETIME)) { if(ParseBool(value, &settings->showFrametime)) continue; }
 parseError:
             LogWarning("Failed to parse `%s` on line: %d", settingsPath, lineNr);
         }
@@ -148,6 +154,10 @@ void SaveSettings(const char *settingsPath, const EdSettings *settings)
         fprintf(file, "// Base\n");
         fprintf(file, KEY_GAMEPATH"=%s\n", settings->gamePath);
         fprintf(file, KEY_LAUNCHARGS"=%s\n", settings->launchArguments);
+
+        fprintf(file, "// Misc\n");
+        fprintf(file, KEY_SHOWFRAMERATE"=%d\n", settings->showFramerate);
+        fprintf(file, KEY_SHOWFRAMETIME"=%d\n", settings->showFrametime);
         fclose(file);
     }
 }

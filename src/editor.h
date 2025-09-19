@@ -103,6 +103,8 @@ typedef struct EdSettings
     bool showGridLines, showMajorAxis;
     int realtimeFov;
 
+    bool showFramerate, showFrametime;
+
     char gamePath[MAX_GAMEPATH_LEN];
     char launchArguments[MAX_GAMEARGUMENTS_LEN];
 } EdSettings;

@@ -23,6 +23,8 @@ void SettingsWindow(bool *p_open, EdState *state)
                     if(state->log.capacity < 4) state->log.capacity = 4;
                     LogResizeBuffer(&state->log);
                 }
+                igCheckbox("Show Framerate", &state->settings.showFramerate);
+                igCheckbox("Show Frametime", &state->settings.showFrametime);
                 igSeparator();
                 if(igButton("Reset Settings", (ImVec2){ 0, 0 })) { ResetSettings(&state->settings); }
                 igEndTabItem();

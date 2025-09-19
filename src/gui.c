@@ -401,14 +401,27 @@ static void MainMenuBar(bool *doQuit, EdState *state)
             igEndMenu();
         }
 
-        char buffer[64];
-        float framerate = igGetIO_Nil()->Framerate;
-        snprintf(buffer, sizeof buffer, "%d FPS (%.4f ms)", (int)round(framerate), 1.0f / framerate);
-        ImVec2 textSize;
-        igCalcTextSize(&textSize, buffer, buffer + strlen(buffer) + 1, false, 0);
+#define FRAMERATE_FORMAT "%d FPS"
+#define FRAMETIME_FORMAT "%.4f ms"
+        char *formatString;
+        if(state->settings.showFramerate && state->settings.showFrametime)
+            formatString = FRAMERATE_FORMAT " (" FRAMETIME_FORMAT ")";
+        else if(state->settings.showFramerate)
+            formatString = FRAMERATE_FORMAT;
+        else
+            formatString = FRAMETIME_FORMAT;
 
-        igSameLine(igGetWindowWidth() - textSize.x - 4, 0);
-        igTextColored((ImVec4){ 0, 0.8f, 0.09f, 1 }, buffer);
+        ImVec2 textSize = { 0 };
+        if(state->settings.showFramerate || state->settings.showFrametime)
+        {
+            char buffer[64];
+            float framerate = igGetIO_Nil()->Framerate;
+            snprintf(buffer, sizeof buffer, formatString, (int)round(framerate), 1.0f / framerate);
+            igCalcTextSize(&textSize, buffer, buffer + strlen(buffer) + 1, false, 0);
+    
+            igSameLine(igGetWindowWidth() - textSize.x - 4, 0);
+            igTextColored((ImVec4){ 0, 0.8f, 0.09f, 1 }, buffer);
+        }
 
         if(state->data.fetchingTextures)
         {
