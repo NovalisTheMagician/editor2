@@ -2,18 +2,18 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <string.h>
 #include <tgmath.h>
 #include <time.h>
 #include <stdio.h>
+#include <errno.h>
 
 #define LOGBUFFER_CAPACITY 1024
 #define LOGBUFFER_LINE_LEN 512
 
 static LogBuffer *logBuffer_;
 
-#ifdef _DEBUG
 static FILE *logFile;
-#endif
 
 static size_t getNextIndex(LogBuffer *logBuffer)
 {
@@ -53,9 +53,14 @@ void LogInit(LogBuffer *logBuffer)
 
     logBuffer_ = logBuffer;
 
-#ifdef _DEBUG
-    logFile = fopen("debug.log", "w");
-#endif
+    char timeBuffer[128] = { 0 };
+    time_t timer = time(NULL);
+    struct tm *tm_info = localtime(&timer);
+    strftime(timeBuffer, sizeof timeBuffer, "%d-%m-%Y_%H-%M-%S.log", tm_info);
+
+    logFile = fopen(timeBuffer, "w");
+    if(!logFile)
+        LogWarning("Failed to create logfile: %s", strerror(errno));
 }
 
 void LogDestroy(LogBuffer *logBuffer)
@@ -66,9 +71,8 @@ void LogDestroy(LogBuffer *logBuffer)
     free(logBuffer->severities);
     logBuffer_ = NULL;
 
-#ifdef _DEBUG
-    fclose(logFile);
-#endif
+    if(logFile)
+        fclose(logFile);
 }
 
 static void freeStrings(LogBuffer *logBuffer)
@@ -127,6 +131,13 @@ void LogString(LogBuffer *logBuffer, LogSeverity severity, const char *str)
 
     logBuffer->lines[idx] = lineStr;
     logBuffer->severities[idx] = severity;
+
+    if(logFile)
+    {
+        fputs(lineStr, logFile);
+        fputc('\n', logFile);
+        fflush(logFile);
+    }
 }
 
 static void LogFormatV(LogBuffer *logBuffer, LogSeverity severity, const char *format, va_list args)
@@ -145,6 +156,13 @@ static void LogFormatV(LogBuffer *logBuffer, LogSeverity severity, const char *f
 
     logBuffer->lines[idx] = lineStr;
     logBuffer->severities[idx] = severity;
+
+    if(logFile)
+    {
+        fputs(lineStr, logFile);
+        fputc('\n', logFile);
+        fflush(logFile);
+    }
 }
 
 void LogFormat(LogBuffer *logBuffer, LogSeverity severity, const char *format, ...)
@@ -199,11 +217,6 @@ void LogDebug(const char *format, ...)
     va_start(args, format);
 
     LogFormatV(logBuffer_, LOG_DEBUG, format, args);
-
-    vfprintf(logFile, format, args);
-    fprintf(logFile, "\n");
-    fflush(logFile);
-
     va_end(args);
 }
 #endif
