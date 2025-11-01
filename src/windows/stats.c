@@ -22,12 +22,12 @@ void StatsWindow(bool *p_open, EdState *state)
         if(igButton("Reload All", (ImVec2){ 0 })) ScriptReloadAll(&state->script);
         for(size_t i = 0; i < state->script.numPlugins; ++i)
         {
-            igText("%s (%s)", state->script.plugins[i].name, state->script.plugins[i].file);
-            igSameLine(0, 4);
             igPushID_Int(i);
             if(igButton("Reload", (ImVec2){ 0 }))
                 ScriptReloadPlugin(&state->script, i);
             igPopID();
+            igSameLine(0, 4);
+            igText("%s (%s)", state->script.plugins[i].name, state->script.plugins[i].file);
         }
     }
     igEnd();

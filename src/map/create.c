@@ -2,12 +2,13 @@
 #include "map.h"
 
 #include <string.h>
+#include <stdlib.h>
 
-CreateResult CreateVertex(Map *map, vec2s pos)
+CreateResult CreateVertex(Map *map, Vec2 pos)
 {
     for(MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
     {
-        if(glms_vec2_eqv_eps(vertex->pos, pos))
+        if(vec2_eqv(vertex->pos, pos))
         {
             return (CreateResult){ .mapElement = vertex, .created = false };
         }

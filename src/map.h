@@ -1,7 +1,8 @@
 #pragma once
 
 #include <stddef.h>
-#include "cglm/struct.h"
+#include <stdint.h>
+#include "vecmath.h"
 
 #define MAP_VERSION 1
 
@@ -39,7 +40,7 @@ typedef enum SectorType
 
 typedef struct TriangleData
 {
-    vec2s *vertices;
+    Vec2 *vertices;
     size_t numVertices;
     uint32_t *indices;
     size_t numIndices;
@@ -47,7 +48,7 @@ typedef struct TriangleData
 
 typedef struct BoundingBox
 {
-    vec2s min, max;
+    Vec2 min, max;
 } BoundingBox;
 
 struct MapLine;
@@ -55,7 +56,7 @@ struct MapSector;
 
 typedef struct MapVertex
 {
-    vec2s pos;
+    Vec2 pos;
 
     size_t idx;
 

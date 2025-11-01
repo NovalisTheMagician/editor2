@@ -1,6 +1,8 @@
-#include "cglm/struct/cam.h"
-#include "cglm/util.h"
 #include "editor.h"
+
+#include <cglm/struct.h>
+#include <cglm/struct/cam.h>
+#include <cglm/util.h>
 
 void ResizeRealtimeView(EdState *state, int width, int height)
 {
@@ -34,11 +36,11 @@ void ResizeRealtimeView(EdState *state, int width, int height)
 
 void RenderRealtimeView(EdState *state)
 {
-    vec3s center = glms_vec3_add(state->realtime.cameraPosition, state->realtime.cameraDirection);
-    vec3s up = { .y = 1 };
+    Vec3 center = vec3_add(state->realtime.cameraPosition, state->realtime.cameraDirection);
+    Vec3 up = { .y = 1 };
     float fov = glm_rad(state->settings.realtimeFov);
     float aspect = (float)state->gl.realtimeFramebufferWidth / state->gl.realtimeFramebufferHeight;
     mat4s projection = glms_perspective(fov, aspect, 0.01f, 1000.0f);
-    mat4s view = glms_lookat(state->realtime.cameraPosition, center, up);
+    mat4s view = glms_lookat(*(vec3s*)&state->realtime.cameraPosition, *(vec3s*)&center, *(vec3s*)&up);
     mat4s viewProj = glms_mul(projection, view);
 }

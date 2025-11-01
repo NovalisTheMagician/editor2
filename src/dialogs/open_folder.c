@@ -4,6 +4,7 @@
 #include "../project.h"
 
 #include <string.h>
+#include <stdlib.h>
 
 static void OpenFolderCallback(const char *path, void *data)
 {

@@ -2,6 +2,8 @@
 #include "ImGuiFileDialog.h"
 #include "utils/string.h"
 
+#include <stdlib.h>
+
 static void OpenMapCallback(const char *path, void *data)
 {
     Map *map = data;

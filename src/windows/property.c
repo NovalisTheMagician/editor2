@@ -6,6 +6,8 @@
 #include "texture_collection.h"
 #include "utils/string.h"
 
+#include "../vecmath.h"
+
 static void SelectElement(EdState *state, void *element, int selectMode)
 {
     state->data.numSelectedElements = 1;
@@ -13,7 +15,7 @@ static void SelectElement(EdState *state, void *element, int selectMode)
     state->data.selectionMode = selectMode;
 }
 
-static void GotoPos(EdState *state, vec2s pos)
+static void GotoPos(EdState *state, Vec2 pos)
 {
     state->data.viewPosition.x = -(state->gl.editorFramebufferWidth / 2.0f) + pos.x * state->data.zoomLevel;
     state->data.viewPosition.y = -(state->gl.editorFramebufferHeight / 2.0f) + pos.y * state->data.zoomLevel;
@@ -26,9 +28,9 @@ static void CenterVertex(EdState *state, MapVertex *vertex)
 
 static void CenterLine(EdState *state, MapLine *line)
 {
-    vec2s d = glms_vec2_sub(line->b->pos, line->a->pos);
-    d = glms_vec2_scale(d, 0.5f);
-    d = glms_vec2_add(d, line->a->pos);
+    Vec2 d = vec2_sub(line->b->pos, line->a->pos);
+    d = vec2_scale(d, 0.5f);
+    d = vec2_add(d, line->a->pos);
     GotoPos(state, d);
 }
 
@@ -37,7 +39,7 @@ static void CenterSector(EdState *state, MapSector *sector)
     BoundingBox bb = sector->bb;
     float w = bb.max.x - bb.min.x;
     float h = bb.max.y - bb.min.y;
-    GotoPos(state, (vec2s){ .x = (w/2) + bb.min.x, .y = (h/2) + bb.min.y });
+    GotoPos(state, (Vec2){ .x = (w/2) + bb.min.x, .y = (h/2) + bb.min.y });
 }
 
 static void MapProperties(EdState *state)
@@ -57,6 +59,7 @@ static void VertexProperties(EdState *state)
         igSeparatorTextEx(0, title, NULL, 0);
 
         igText("Attached lines: %d", selectedVertex->numAttachedLines);
+        igText("Position: (%.2f %.2f)", selectedVertex->pos.x, selectedVertex->pos.y);
         //igSeparatorEx(ImGuiSeparatorFlags_Horizontal, 2);
         for(size_t i = 0; i < selectedVertex->numAttachedLines; ++i)
         {

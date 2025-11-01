@@ -1,19 +1,21 @@
 #pragma once
 
-#include "cglm/struct.h" // IWYU pragma: keep
+#include <stdint.h>
+
+#include "vecmath.h"
 
 typedef struct EditorVertexType
 {
-    vec2s position;
-    vec4s color;
-    vec2s texCoord;
+    Vec2 position;
+    Color color;
+    Vec2 texCoord;
 } EditorVertexType;
 
 typedef struct RealtimeVertexType
 {
-    vec3s position;
-    vec4s color;
-    vec2s texCoord;
+    Vec3 position;
+    Color color;
+    Vec2 texCoord;
 } RealtimeVertexType;
 
 typedef uint32_t Index_t;

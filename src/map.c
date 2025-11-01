@@ -333,10 +333,10 @@ bool LoadMap(Map *map)
                     size_t idx;
                     line = ParseLineIndex(line, &idx);
                     if(!line) continue;
-                    vec2s pos;
-                    line = ParseLineFloat(line, &pos.x);
+                    Vec2 pos;
+                    line = ParseLineReal(line, &pos.x);
                     if(!line) continue;
-                    line = ParseLineFloat(line, &pos.y);
+                    line = ParseLineReal(line, &pos.y);
 
                     MapVertex *vertex = EditAddVertex(map, pos);;
                     vertex->idx = idx;

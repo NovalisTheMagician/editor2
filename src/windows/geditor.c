@@ -31,18 +31,15 @@ static void SubmitEditData(EdState *state, bool isLoop)
     state->data.editVertexBufferSize = 0;
 }
 
-static bool within(vec2s min, vec2s max, vec2s v)
+static bool within(Vec2 min, Vec2 max, Vec2 v)
 {
     return v.x >= min.x && v.y >= min.y && v.x <= max.x && v.y <= max.y;
 }
 
 static void RectSelect(EdState *state, bool add)
 {
-    vec2s min = { .x = min(state->data.startDrag.x, state->data.endDrag.x), .y = min(state->data.startDrag.y, state->data.endDrag.y) };
-    vec2s max = { .x = max(state->data.startDrag.x, state->data.endDrag.x), .y = max(state->data.startDrag.y, state->data.endDrag.y) };
-
-    LogDebug("min: %d %d", (int)min.x, (int)min.y);
-    LogDebug("max: %d %d", (int)max.x, (int)max.y);
+    Vec2 min = { .x = min(state->data.startDrag.x, state->data.endDrag.x), .y = min(state->data.startDrag.y, state->data.endDrag.y) };
+    Vec2 max = { .x = max(state->data.startDrag.x, state->data.endDrag.x), .y = max(state->data.startDrag.y, state->data.endDrag.y) };
 
     if(!add)
         state->data.numSelectedElements = 0;
@@ -91,7 +88,7 @@ static void RectSelect(EdState *state, bool add)
     }
 }
 
-static void AddEditVertex(EdState *state, vec2s v)
+static void AddEditVertex(EdState *state, Vec2 v)
 {
     size_t idx = state->data.editVertexBufferSize++;
     state->data.editVertexBuffer[idx] = v;
@@ -202,17 +199,17 @@ void EditorWindow(bool *p_open, EdState *state)
             {
                 if(altDown)
                 {
-                    MapLine *closestLine = EditGetClosestLine(map, (vec2s){ .x = edX, .y = edY }, LINE_DIST);
+                    MapLine *closestLine = EditGetClosestLine(map, (Vec2){ .x = edX, .y = edY }, LINE_DIST);
                     if(closestLine)
                     {
-                        vec2s closestPoint = LineGetClosestPoint((line_t){ closestLine->a->pos, closestLine->b->pos }, (vec2s){ .x = edX, .y = edY });
+                        Vec2 closestPoint = LineGetClosestPoint((line_t){ closestLine->a->pos, closestLine->b->pos }, (Vec2){ .x = edX, .y = edY });
                         edSX = closestPoint.x;
                         edSY = closestPoint.y;
                     }
                 }
                 else if(ctrlDown)
                 {
-                    MapVertex *closestVertex = EditGetClosestVertex(map, (vec2s){ .x = edX, .y = edY }, VERTEX_DIST + 5);
+                    MapVertex *closestVertex = EditGetClosestVertex(map, (Vec2){ .x = edX, .y = edY }, VERTEX_DIST + 5);
                     if(closestVertex)
                     {
                         edSX = closestVertex->pos.x;
@@ -234,8 +231,8 @@ void EditorWindow(bool *p_open, EdState *state)
                 state->data.mtx = edSX;
                 state->data.mty = edSY;
 #endif
-                vec2s mouseVertex = { {edX, edY} };
-                state->data.editVertexMouse = (vec2s){ .x = edSX, .y = edSY };
+                Vec2 mouseVertex = { edX, edY };
+                state->data.editVertexMouse = (Vec2){ .x = edSX, .y = edSY };
                 state->data.editDragMouse = mouseVertex;
                 if(state->data.editState == ESTATE_NORMAL)
                 {
@@ -273,7 +270,6 @@ void EditorWindow(bool *p_open, EdState *state)
 
                     if(!state->data.isDragging)
                     {
-                        LogDebug("Start Drag");
                         state->data.isDragging = true;
                         state->data.startDrag = mouseVertex;
                         state->data.endDrag = mouseVertex;
@@ -287,7 +283,6 @@ void EditorWindow(bool *p_open, EdState *state)
                 {
                     if(state->data.isDragging)
                     {
-                        LogDebug("End Drag");
                         state->data.isDragging = false;
                         RectSelect(state, shiftDown);
                     }
@@ -295,7 +290,7 @@ void EditorWindow(bool *p_open, EdState *state)
 
                 if(igIsMouseClicked_Bool(ImGuiMouseButton_Left, false) && !state->data.isDragging)
                 {
-                    vec2s mouseVertexSnap = { {edSX, edSY} };
+                    Vec2 mouseVertexSnap = { edSX, edSY };
                     if(state->data.editState == ESTATE_ADDVERTEX)
                     {
                         if(state->data.editVertexBufferSize == 0)
@@ -304,7 +299,7 @@ void EditorWindow(bool *p_open, EdState *state)
                         }
                         else
                         {
-                            vec2s first = state->data.editVertexBuffer[0];
+                            Vec2 first = state->data.editVertexBuffer[0];
                             if(mouseVertexSnap.x == first.x && mouseVertexSnap.y == first.y && state->data.editVertexBufferSize >= 3)
                             {
                                 // submit to edit
@@ -314,7 +309,7 @@ void EditorWindow(bool *p_open, EdState *state)
                             }
                             else
                             {
-                                vec2s last = state->data.editVertexBuffer[state->data.editVertexBufferSize-1];
+                                Vec2 last = state->data.editVertexBuffer[state->data.editVertexBufferSize-1];
                                 if(!(mouseVertexSnap.x == last.x && mouseVertexSnap.y == last.y))
                                 {
                                     AddEditVertex(state, mouseVertexSnap);
@@ -382,6 +377,21 @@ void EditorWindow(bool *p_open, EdState *state)
                     state->data.viewPosition.y += (edY - edYAfter) * state->data.zoomLevel;
 
                     igSetWindowFocus_Nil();
+                }
+
+                if(igIsKeyPressed_Bool(ImGuiKey_F, false))
+                {
+                    if(state->data.editState == ESTATE_NORMAL && state->data.selectionMode == MODE_LINE)
+                    {
+                        assert(false && "Not yet fully implemented");
+                        for(size_t i = 0; i < state->data.numSelectedElements; ++i)
+                        {
+                            MapLine *line = state->data.selectedElements[i];
+                            MapVertex *tmp = line->b;
+                            line->b = line->a;
+                            line->a = tmp;
+                        }
+                    }
                 }
 
                 if(igIsKeyPressed_Bool(ImGuiKey_Space, false))

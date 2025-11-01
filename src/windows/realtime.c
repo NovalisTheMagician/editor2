@@ -1,7 +1,7 @@
 #include "../gwindows.h"
 #include "cimgui.h"
 
-static vec3s screenToWorld(vec2s screenCoord)
+static vec3s screenToWorld(Vec2 screenCoord)
 {
     return (vec3s){ 0 };
 }

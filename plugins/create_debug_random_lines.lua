@@ -6,7 +6,7 @@ local function execfunc()
         local y = math.random(-range, range)
         table.insert(vertices, Vec2.new(x, y))
     end
-    Editor.InsertLines(vertices, true)
+    Editor.InsertLines(vertices, false)
 end
 
 Editor.RegisterPlugin("Create Random Lines", execfunc)

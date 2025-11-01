@@ -49,7 +49,7 @@ void SettingsWindow(bool *p_open, EdState *state)
             {
                 for(int i = 0; i < NUM_COLORS; ++i)
                 {
-                    igColorEdit4(ColorIndexToString(i), state->settings.colors[i].raw, 0);
+                    igColorEdit4(ColorIndexToString(i), (float*)&state->settings.colors[i], 0);
                 }
                 igEndTabItem();
             }

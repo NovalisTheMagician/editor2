@@ -56,7 +56,7 @@ void LogInit(LogBuffer *logBuffer)
     char timeBuffer[128] = { 0 };
     time_t timer = time(NULL);
     struct tm *tm_info = localtime(&timer);
-    strftime(timeBuffer, sizeof timeBuffer, "%d-%m-%Y_%H-%M-%S.log", tm_info);
+    strftime(timeBuffer, sizeof timeBuffer, "%Y-%m-%d_%H-%M-%S.log", tm_info);
 
     logFile = fopen(timeBuffer, "w");
     if(!logFile)

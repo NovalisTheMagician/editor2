@@ -35,8 +35,8 @@
 #include "utils/string.h"
 
 #define SETTINGS_FILE "./settings.ini"
-#define DEFAULT_WINDOW_WIDTH 1600
-#define DEFAULT_WINDOW_HEIGHT 900
+#define DEFAULT_WINDOW_WIDTH 1920
+#define DEFAULT_WINDOW_HEIGHT 1080
 
 #define SHADER_VERSION "#version 460 core\n"
 #define REQ_GL_MAJOR 4
@@ -93,6 +93,9 @@ static void InitState(EdState *state)
     state->ui.showEntities = true;
     state->ui.showLogs = true;
     state->ui.showProperties = true;
+#ifdef _DEBUG
+    state->ui.showStats = true;
+#endif
 }
 
 static void setWindowIcon(SDL_Window *window)
@@ -227,7 +230,7 @@ int EditorMain(int argc, char *argv[])
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glBindFramebuffer(GL_FRAMEBUFFER, state->gl.editorFramebufferMS);
             glViewport(0, 0, state->gl.editorFramebufferWidth, state->gl.editorFramebufferHeight);
-            glClearNamedFramebufferfv(state->gl.editorFramebufferMS, GL_COLOR, 0, state->settings.colors[COL_BACKGROUND].raw);
+            glClearNamedFramebufferfv(state->gl.editorFramebufferMS, GL_COLOR, 0, (float*)&state->settings.colors[COL_BACKGROUND]);
             RenderEditorView(state);
             glBlitNamedFramebuffer(state->gl.editorFramebufferMS, state->gl.editorFramebuffer, 0, 0, state->gl.editorFramebufferWidth, state->gl.editorFramebufferHeight, 0, 0, state->gl.editorFramebufferWidth, state->gl.editorFramebufferHeight, GL_COLOR_BUFFER_BIT, GL_LINEAR);
             glDisable(GL_BLEND);
@@ -240,7 +243,7 @@ int EditorMain(int argc, char *argv[])
 
             glBindFramebuffer(GL_FRAMEBUFFER, state->gl.realtimeFramebuffer);
             glViewport(0, 0, state->gl.realtimeFramebufferWidth, state->gl.realtimeFramebufferHeight);
-            glClearNamedFramebufferfv(state->gl.realtimeFramebuffer, GL_COLOR, 0, state->settings.colors[COL_RTBACKGROUND].raw);
+            glClearNamedFramebufferfv(state->gl.realtimeFramebuffer, GL_COLOR, 0, (float*)&state->settings.colors[COL_RTBACKGROUND]);
             const float depth = 1.0f;
             glClearNamedFramebufferfv(state->gl.realtimeFramebuffer, GL_DEPTH, 0, &depth);
             RenderRealtimeView(state);
@@ -252,7 +255,7 @@ int EditorMain(int argc, char *argv[])
         igRender();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, (int)ioptr->DisplaySize.x, (int)ioptr->DisplaySize.y);
-        glClearNamedFramebufferfv(0, GL_COLOR, 0, state->settings.colors[COL_WORKSPACE_BACK].raw);
+        glClearNamedFramebufferfv(0, GL_COLOR, 0, (float*)&state->settings.colors[COL_WORKSPACE_BACK]);
         ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
 
         SDL_GL_SwapWindow(window);

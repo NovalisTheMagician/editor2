@@ -3,6 +3,8 @@
 #include "../geometry.h"
 
 #include <assert.h>
+#include <float.h>
+#include <stdlib.h>
 
 MapVertex* GetVertex(Map *map, size_t idx)
 {
@@ -59,13 +61,13 @@ MapSector* FindEquivalentSector(Map *map, size_t numLines, MapLine *lines[static
     return NULL;
 }
 
-MapVertex* FindClosestVertex(const Map *map, vec2s position, float radiusSq)
+MapVertex* FindClosestVertex(const Map *map, Vec2 position, float radiusSq)
 {
     float closestDist = FLT_MAX;
     MapVertex *closestVertex = NULL;
     for(MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
     {
-        float distSq = glms_vec2_distance2(vertex->pos, position);
+        float distSq = vec2_distance2(vertex->pos, position);
         if(distSq <= radiusSq && distSq < closestDist)
         {
             closestDist = distSq;

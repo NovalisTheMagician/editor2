@@ -77,7 +77,7 @@ struct Polygon* PolygonFromVertices(size_t numVertices, EditorVertexType vertice
     return polygon;
 }
 
-struct Polygon* PolygonFromVectors(size_t numVectors, vec2s vectors[static numVectors])
+struct Polygon* PolygonFromVectors(size_t numVectors, Vec2 vectors[static numVectors])
 {
     struct Polygon *polygon = calloc(1, sizeof *polygon + numVectors * sizeof *polygon->vertices);
     polygon->length = numVectors;
@@ -99,8 +99,8 @@ MapLine* GetMapLine(Map *map, line_t line)
 {
     for(MapLine *mline = map->headLine; mline; mline = mline->next)
     {
-        if((glms_vec2_eqv_eps(mline->a->pos, line.a) && glms_vec2_eqv_eps(mline->b->pos, line.b)) ||
-           (glms_vec2_eqv_eps(mline->b->pos, line.a) && glms_vec2_eqv_eps(mline->a->pos, line.b)))
+        if((vec2_eqv(mline->a->pos, line.a) && vec2_eqv(mline->b->pos, line.b)) ||
+           (vec2_eqv(mline->b->pos, line.a) && vec2_eqv(mline->a->pos, line.b)))
            return mline;
     }
     return NULL;

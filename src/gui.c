@@ -325,9 +325,9 @@ static void MainMenuBar(bool *doQuit, EdState *state)
             igSeparator();
             if(igBeginMenu("Modes", true))
             {
-                if(igMenuItem_Bool("Vertex", "V", state->data.selectionMode == MODE_VERTEX, true)) { ChangeMode(state, MODE_VERTEX); }
-                if(igMenuItem_Bool("Line", "L", state->data.selectionMode == MODE_LINE, true)) { ChangeMode(state, MODE_LINE); }
-                if(igMenuItem_Bool("Sector", "S", state->data.selectionMode == MODE_SECTOR, true)) { ChangeMode(state, MODE_SECTOR); }
+                if(igMenuItem_Bool("Vertex", "1", state->data.selectionMode == MODE_VERTEX, true)) { ChangeMode(state, MODE_VERTEX); }
+                if(igMenuItem_Bool("Line", "2", state->data.selectionMode == MODE_LINE, true)) { ChangeMode(state, MODE_LINE); }
+                if(igMenuItem_Bool("Sector", "3", state->data.selectionMode == MODE_SECTOR, true)) { ChangeMode(state, MODE_SECTOR); }
                 igEndMenu();
             }
             igSeparator();
@@ -414,7 +414,7 @@ static void MainMenuBar(bool *doQuit, EdState *state)
         ImVec2 textSize = { 0 };
         if(state->settings.showFramerate || state->settings.showFrametime)
         {
-            char buffer[64];
+            char buffer[64] = { 0 };
             float framerate = igGetIO_Nil()->Framerate;
             snprintf(buffer, sizeof buffer, formatString, (int)round(framerate), 1.0f / framerate);
             igCalcTextSize(&textSize, buffer, buffer + strlen(buffer) + 1, false, 0);

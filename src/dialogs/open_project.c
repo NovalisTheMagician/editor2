@@ -2,6 +2,8 @@
 #include "ImGuiFileDialog.h"
 #include "utils/string.h"
 
+#include <stdlib.h>
+
 static void OpenProjectCallback(const char *path, void *data)
 {
     Project *project = data;

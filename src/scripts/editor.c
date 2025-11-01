@@ -142,7 +142,7 @@ static int insertlines_(lua_State *L)
         isLoop = lua_toboolean(L, 2);
 
     int numVertices = luaL_len(L, 1);
-    vec2s vertices[numVertices];
+    Vec2 vertices[numVertices];
     for(int i = 0; i < numVertices; ++i)
     {
         lua_rawgeti(L, 1, i+1);
@@ -156,7 +156,7 @@ static int insertlines_(lua_State *L)
         float y = lua_tonumber(L, -1);
         lua_pop(L, 1);
 
-        vertices[i] = (vec2s){ .x = x, .y = y };
+        vertices[i] = (Vec2){ .x = x, .y = y };
 
         lua_pop(L, 1);
     }

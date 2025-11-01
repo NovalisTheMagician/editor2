@@ -94,7 +94,7 @@ bool InitEditor(EdState *state, char *error, size_t errorSize)
     static Color whiteColor = { .r = 1, .g = 1, .b = 1, .a = 1 };
     glCreateTextures(GL_TEXTURE_2D, 1, &state->gl.whiteTexture);
     glTextureStorage2D(state->gl.whiteTexture, 1, GL_RGBA8, 1, 1);
-    glTextureSubImage2D(state->gl.whiteTexture, 0, 0, 0, 1, 1, GL_RGBA, GL_FLOAT, whiteColor.raw);
+    glTextureSubImage2D(state->gl.whiteTexture, 0, 0, 0, 1, 1, GL_RGBA, GL_FLOAT, &whiteColor);
     glTextureParameteri(state->gl.whiteTexture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTextureParameteri(state->gl.whiteTexture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTextureParameteri(state->gl.whiteTexture, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -123,9 +123,9 @@ bool InitEditor(EdState *state, char *error, size_t errorSize)
     glEnableVertexArrayAttrib(state->gl.editorVertexFormat, 0);
     glEnableVertexArrayAttrib(state->gl.editorVertexFormat, 1);
     glEnableVertexArrayAttrib(state->gl.editorVertexFormat, 2);
-    glVertexArrayAttribFormat(state->gl.editorVertexFormat, 0, 2, GL_FLOAT, GL_FALSE, offsetof(EditorVertexType, position));
+    glVertexArrayAttribFormat(state->gl.editorVertexFormat, 0, 2, GL_DOUBLE, GL_FALSE, offsetof(EditorVertexType, position));
     glVertexArrayAttribFormat(state->gl.editorVertexFormat, 1, 4, GL_FLOAT, GL_FALSE, offsetof(EditorVertexType, color));
-    glVertexArrayAttribFormat(state->gl.editorVertexFormat, 2, 2, GL_FLOAT, GL_FALSE, offsetof(EditorVertexType, texCoord));
+    glVertexArrayAttribFormat(state->gl.editorVertexFormat, 2, 2, GL_DOUBLE, GL_FALSE, offsetof(EditorVertexType, texCoord));
     glVertexArrayAttribBinding(state->gl.editorVertexFormat, 0, 0);
     glVertexArrayAttribBinding(state->gl.editorVertexFormat, 1, 0);
     glVertexArrayAttribBinding(state->gl.editorVertexFormat, 2, 0);
@@ -136,9 +136,9 @@ bool InitEditor(EdState *state, char *error, size_t errorSize)
     glEnableVertexArrayAttrib(state->gl.realtimeVertexFormat, 0);
     glEnableVertexArrayAttrib(state->gl.realtimeVertexFormat, 1);
     glEnableVertexArrayAttrib(state->gl.realtimeVertexFormat, 2);
-    glVertexArrayAttribFormat(state->gl.realtimeVertexFormat, 0, 3, GL_FLOAT, GL_FALSE, offsetof(RealtimeVertexType, position));
+    glVertexArrayAttribFormat(state->gl.realtimeVertexFormat, 0, 3, GL_DOUBLE, GL_FALSE, offsetof(RealtimeVertexType, position));
     glVertexArrayAttribFormat(state->gl.realtimeVertexFormat, 1, 4, GL_FLOAT, GL_FALSE, offsetof(RealtimeVertexType, color));
-    glVertexArrayAttribFormat(state->gl.realtimeVertexFormat, 2, 2, GL_FLOAT, GL_FALSE, offsetof(RealtimeVertexType, texCoord));
+    glVertexArrayAttribFormat(state->gl.realtimeVertexFormat, 2, 2, GL_DOUBLE, GL_FALSE, offsetof(RealtimeVertexType, texCoord));
     glVertexArrayAttribBinding(state->gl.realtimeVertexFormat, 0, 0);
     glVertexArrayAttribBinding(state->gl.realtimeVertexFormat, 1, 0);
     glVertexArrayAttribBinding(state->gl.realtimeVertexFormat, 2, 0);
@@ -353,18 +353,18 @@ static size_t CollectLines(const EdState *state, size_t vertexOffset)
 foundColIdx:
         }
 
-        vec4s color = state->settings.colors[colorIdx];
+        Color color = state->settings.colors[colorIdx];
         size_t relVertIdx = 0;
         state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = line->a->pos, .color = color };
         state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = line->b->pos, .color = color };
 
-        vec2s dir = glms_vec2_sub(line->b->pos, line->a->pos);
-        vec2s normalStart = glms_vec2_add(line->a->pos, glms_vec2_scale(dir, 0.5f));
-        vec2s perpDir = glms_vec2_normalize((vec2s){ .x = -dir.y, .y = dir.x });
+        Vec2 dir = vec2_sub(line->b->pos, line->a->pos);
+        Vec2 normalStart = vec2_add(line->a->pos, vec2_scale(dir, 0.5f));
+        Vec2 perpDir = vec2_normalize((Vec2){ .x = -dir.y, .y = dir.x });
 
         float inverseZoom = 1.0f / (state->data.zoomLevel);
         float normalLength = 6;
-        vec2s normalEnd = glms_vec2_add(normalStart, glms_vec2_scale(perpDir, normalLength * inverseZoom));
+        Vec2 normalEnd = vec2_add(normalStart, vec2_scale(perpDir, normalLength * inverseZoom));
 
         state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = normalStart, .color = color };
         state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = normalEnd, .color = color };
@@ -373,10 +373,10 @@ foundColIdx:
         {
             float arrowHeadThickness = 6;
             float arrowHeadHeight = 8;
-            vec2s endPoint = glms_vec2_sub(line->b->pos, glms_vec2_scale(glms_vec2_normalize(dir), arrowHeadHeight));
-            vec2s invPerpDir = { .x = -perpDir.x, .y = -perpDir.y };
-            vec2s arrowHeadLeft = glms_vec2_add(endPoint, glms_vec2_scale(invPerpDir, arrowHeadThickness));
-            vec2s arrowHeadRight = glms_vec2_add(endPoint, glms_vec2_scale(perpDir, arrowHeadThickness));
+            Vec2 endPoint = vec2_sub(line->b->pos, vec2_scale(vec2_normalize(dir), arrowHeadHeight));
+            Vec2 invPerpDir = { .x = -perpDir.x, .y = -perpDir.y };
+            Vec2 arrowHeadLeft = vec2_add(endPoint, vec2_scale(invPerpDir, arrowHeadThickness));
+            Vec2 arrowHeadRight = vec2_add(endPoint, vec2_scale(perpDir, arrowHeadThickness));
 
             state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = line->b->pos, .color = color };
             state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = arrowHeadLeft, .color = color };
@@ -438,8 +438,8 @@ static size_t CollectSectors(const EdState *state, size_t vertexOffset, size_t i
         size_t offsetIndex = verts + vertexOffset;
         for(size_t i = 0; i < data.numVertices; i++)
         {
-            const vec2s position = data.vertices[i];
-            const vec2s texcoord = glms_vec2_scale(data.vertices[i], 1.0f / state->map.textureScale);
+            const Vec2 position = data.vertices[i];
+            const Vec2 texcoord = vec2_scale(data.vertices[i], 1.0f / state->map.textureScale);
             
             state->gl.editorVertexMap[i + offsetIndex] = (EditorVertexType){ .position = position, .texCoord = texcoord, .color = state->settings.colors[colorIdx] };
         }

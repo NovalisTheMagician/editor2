@@ -6,6 +6,8 @@
 
 #include "vertex_types.h"
 
+#include "vecmath.h"
+
 #include "map.h"
 #include "project.h"
 #include "network.h"
@@ -13,6 +15,9 @@
 #include "async_load.h"
 #include "logging.h"
 #include "script.h"
+#include "vecmath.h"
+
+#include <cglm/struct.h>
 
 #define MAX_GAMEPATH_LEN 256
 #define MAX_GAMEARGUMENTS_LEN 256
@@ -90,8 +95,6 @@ typedef enum EditState
     ESTATE_ADDVERTEX
 } EditState;
 
-typedef vec4s Color;
-
 typedef struct EdSettings
 {
     Color colors[NUM_COLORS];
@@ -112,8 +115,8 @@ typedef struct EdSettings
 typedef struct BackgroundShaderData
 {
     mat4s viewProj;
-    vec4s tint;
-    vec4s majorTint;
+    Color tint;
+    Color majorTint;
     float hOffset, vOffset, period;
     int majorIndex;
 } BackgroundShaderData;
@@ -121,8 +124,8 @@ typedef struct BackgroundShaderData
 typedef struct EditorShaderData
 {
     mat4s viewProj;
-    vec4s tint;
-    vec2s coordOffset;
+    Color tint;
+    Vec2 coordOffset;
 } EditorShaderData;
 
 typedef struct EdState
@@ -243,9 +246,9 @@ typedef struct EdState
         mat4s editorProjection;
 
         bool isDragging;
-        vec2s startDrag, endDrag;
+        Vec2 startDrag, endDrag;
 
-        vec2s editVertexBuffer[EDIT_VERTEXBUFFER_CAP], editVertexMouse, editDragMouse, editVertexDrag[3];
+        Vec2 editVertexBuffer[EDIT_VERTEXBUFFER_CAP], editVertexMouse, editDragMouse, editVertexDrag[3];
         size_t editVertexBufferSize;
 
         EditState editState;
@@ -256,7 +259,7 @@ typedef struct EdState
     } data;
 
     struct {
-        vec3s cameraPosition, cameraDirection;
+        Vec3 cameraPosition, cameraDirection;
         mat4s realtimeProjection;
         float realtimeFov;
     } realtime;

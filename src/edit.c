@@ -54,7 +54,7 @@ void EditCut(EdState *state)
     LogDebug("Cut!!\n");
 }
 
-MapVertex* EditAddVertex(Map *map, vec2s pos)
+MapVertex* EditAddVertex(Map *map, Vec2 pos)
 {
     CreateResult result = CreateVertex(map, pos);
     if(!result.created) return result.mapElement;
@@ -124,7 +124,7 @@ void EditRemoveVertices(Map *map, size_t num, MapVertex *vertices[static num])
     map->dirty = true;
 }
 
-MapVertex* EditGetVertex(Map *map, vec2s pos)
+MapVertex* EditGetVertex(Map *map, Vec2 pos)
 {
     for(MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
     {
@@ -136,13 +136,13 @@ MapVertex* EditGetVertex(Map *map, vec2s pos)
     return NULL;
 }
 
-MapVertex* EditGetClosestVertex(Map *map, vec2s pos, float maxDist)
+MapVertex* EditGetClosestVertex(Map *map, Vec2 pos, float maxDist)
 {
     MapVertex *closestVertex = NULL;
     float closestDist = FLT_MAX;
     for(MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
     {
-        float dist2 = glms_vec2_distance2(vertex->pos, pos);
+        float dist2 = vec2_distance2(vertex->pos, pos);
         if(dist2 <= maxDist*maxDist)
         {
             float dist = sqrt(dist2);
@@ -162,18 +162,18 @@ MapLine* EditAddLine(Map *map, MapVertex *v0, MapVertex *v1, LineData data)
     if(!result.created) return result.mapElement;
     MapLine *line = result.mapElement;
 
-    vec2s vert0 = line->a->pos;
-    vec2s vert1 = line->b->pos;
+    Vec2 vert0 = line->a->pos;
+    Vec2 vert1 = line->b->pos;
 
-    vec2s l = glms_vec2_sub(vert1, vert0);
-    vec2s n = {{ -l.y, l.x }};
-    n = glms_vec2_normalize(n);
+    Vec2 l = vec2_sub(vert1, vert0);
+    Vec2 n = { -l.y, l.x };
+    n = vec2_normalize(n);
 
-    vec2s middle = glms_vec2_scale(l, 0.5f);
-    middle = glms_vec2_add(vert0, middle);
+    Vec2 middle = vec2_scale(l, 0.5f);
+    middle = vec2_add(vert0, middle);
 
-    vec2s middleNormal = glms_vec2_scale(n, 10.0f);
-    middleNormal = glms_vec2_add(middle, middleNormal);
+    Vec2 middleNormal = vec2_scale(n, 10.0f);
+    middleNormal = vec2_add(middle, middleNormal);
 
     return line;
 }
@@ -235,7 +235,7 @@ void EditRemoveLines(Map *map, size_t num, MapLine *lines[static num])
     map->dirty = true;
 }
 
-MapLine* EditGetClosestLine(Map *map, vec2s pos, float maxDist)
+MapLine* EditGetClosestLine(Map *map, Vec2 pos, float maxDist)
 {
     MapLine *closestLine = NULL;
     float closestDist = FLT_MAX;
@@ -282,7 +282,7 @@ MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLin
     MapSector *sector = result.mapElement;
 
     struct Polygon *polygon = PolygonFromMapLines(numLines, lines);
-    orientation_t orientation = LineLoopOrientation(polygon->length, (vec2s*)polygon->vertices);
+    orientation_t orientation = LineLoopOrientation(polygon->length, (Vec2*)polygon->vertices);
     setLineSector(numLines, lines, orientation == CW_ORIENT, sector);
 
     struct Polygon **innerPolygons = calloc(numInnerLines, sizeof *innerPolygons);
@@ -295,7 +295,7 @@ MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLin
             continue;
         }
         innerPolygons[i] = PolygonFromMapLines(numInnerLinesNum[i], innerLines[i]);
-        orientation = LineLoopOrientation(innerPolygons[i]->length, (vec2s*)innerPolygons[i]->vertices);
+        orientation = LineLoopOrientation(innerPolygons[i]->length, (Vec2*)innerPolygons[i]->vertices);
         setLineSector(numInnerLinesNum[i], innerLines[i], orientation == CCW_ORIENT, sector);
     }
 
@@ -342,7 +342,7 @@ void EditRemoveSectors(Map *map, size_t num, MapSector *sectors[static num])
     map->dirty = true;
 }
 
-MapSector* EditGetSector(Map *map, vec2s pos)
+MapSector* EditGetSector(Map *map, Vec2 pos)
 {
     for(MapSector *sector = map->headSector; sector; sector = sector->next)
     {
@@ -352,13 +352,13 @@ MapSector* EditGetSector(Map *map, vec2s pos)
     return NULL;
 }
 
-bool EditApplyLines(EdState *state, size_t num, vec2s points[static num])
+bool EditApplyLines(EdState *state, size_t num, Vec2 points[static num])
 {
     Map *map = &state->map;
     return InsertLinesIntoMap(map, num, points, false);
 }
 
-bool EditApplySector(EdState *state, size_t num, vec2s points[static num])
+bool EditApplySector(EdState *state, size_t num, Vec2 points[static num])
 {
     Map *map = &state->map;
     return InsertLinesIntoMap(map, num, points, true);
