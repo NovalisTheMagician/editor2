@@ -1,5 +1,6 @@
 #include "remove.h"
 
+#include <assert.h>
 #include <string.h>
 
 void RemoveVertex(Map *map, MapVertex *vertex)
@@ -48,6 +49,8 @@ void RemoveVertex(Map *map, MapVertex *vertex)
 
 void RemoveLine(Map *map, MapLine *line)
 {
+	assert(line->frontSector == NULL && line->backSector == NULL && "RemoveLine called while still having sectors attached");
+
     MapLine *prev = line->prev;
     MapLine *next = line->next;
 
@@ -79,7 +82,7 @@ void RemoveLine(Map *map, MapLine *line)
             MapLine *attLine = v->attachedLines[i];
             attLine->a == v ? attLine->aVertIndex-- : attLine->bVertIndex--;
         }
-        memmove(v->attachedLines + line->aVertIndex, v->attachedLines + line->aVertIndex + 1, (v->numAttachedLines - (line->aVertIndex)) * sizeof *v->attachedLines);
+        memmove(v->attachedLines + line->aVertIndex, v->attachedLines + line->aVertIndex + 1, (v->numAttachedLines - (line->aVertIndex) - 1) * sizeof *v->attachedLines);
         v->numAttachedLines--;
     }
 
@@ -91,7 +94,7 @@ void RemoveLine(Map *map, MapLine *line)
             MapLine *attLine = v->attachedLines[i];
             attLine->a == v ? attLine->aVertIndex-- : attLine->bVertIndex--;
         }
-        memmove(v->attachedLines + line->bVertIndex, v->attachedLines + line->bVertIndex + 1, (v->numAttachedLines - (line->bVertIndex)) * sizeof *v->attachedLines);
+        memmove(v->attachedLines + line->bVertIndex, v->attachedLines + line->bVertIndex + 1, (v->numAttachedLines - (line->bVertIndex) - 1) * sizeof *v->attachedLines);
         v->numAttachedLines--;
     }
 

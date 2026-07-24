@@ -11,7 +11,7 @@
 #include "resources/resources.h"
 #include "vertex_types.h"
 
-#define SELECTION_CAPACITY 10000
+#define SELECTION_CAPACITY 100000
 #define BUFFER_SIZE (1<<20)
 #define TEXTURE_SET_SIZE 8192
 #define WHITE_TEXTURE (TEXTURE_SET_SIZE - 1)
@@ -123,9 +123,9 @@ bool InitEditor(EdState *state, char *error, size_t errorSize)
     glEnableVertexArrayAttrib(state->gl.editorVertexFormat, 0);
     glEnableVertexArrayAttrib(state->gl.editorVertexFormat, 1);
     glEnableVertexArrayAttrib(state->gl.editorVertexFormat, 2);
-    glVertexArrayAttribFormat(state->gl.editorVertexFormat, 0, 2, GL_DOUBLE, GL_FALSE, offsetof(EditorVertexType, position));
+    glVertexArrayAttribFormat(state->gl.editorVertexFormat, 0, 2, GL_FLOAT, GL_FALSE, offsetof(EditorVertexType, position));
     glVertexArrayAttribFormat(state->gl.editorVertexFormat, 1, 4, GL_FLOAT, GL_FALSE, offsetof(EditorVertexType, color));
-    glVertexArrayAttribFormat(state->gl.editorVertexFormat, 2, 2, GL_DOUBLE, GL_FALSE, offsetof(EditorVertexType, texCoord));
+    glVertexArrayAttribFormat(state->gl.editorVertexFormat, 2, 2, GL_FLOAT, GL_FALSE, offsetof(EditorVertexType, texCoord));
     glVertexArrayAttribBinding(state->gl.editorVertexFormat, 0, 0);
     glVertexArrayAttribBinding(state->gl.editorVertexFormat, 1, 0);
     glVertexArrayAttribBinding(state->gl.editorVertexFormat, 2, 0);
@@ -136,9 +136,9 @@ bool InitEditor(EdState *state, char *error, size_t errorSize)
     glEnableVertexArrayAttrib(state->gl.realtimeVertexFormat, 0);
     glEnableVertexArrayAttrib(state->gl.realtimeVertexFormat, 1);
     glEnableVertexArrayAttrib(state->gl.realtimeVertexFormat, 2);
-    glVertexArrayAttribFormat(state->gl.realtimeVertexFormat, 0, 3, GL_DOUBLE, GL_FALSE, offsetof(RealtimeVertexType, position));
+    glVertexArrayAttribFormat(state->gl.realtimeVertexFormat, 0, 3, GL_FLOAT, GL_FALSE, offsetof(RealtimeVertexType, position));
     glVertexArrayAttribFormat(state->gl.realtimeVertexFormat, 1, 4, GL_FLOAT, GL_FALSE, offsetof(RealtimeVertexType, color));
-    glVertexArrayAttribFormat(state->gl.realtimeVertexFormat, 2, 2, GL_DOUBLE, GL_FALSE, offsetof(RealtimeVertexType, texCoord));
+    glVertexArrayAttribFormat(state->gl.realtimeVertexFormat, 2, 2, GL_FLOAT, GL_FALSE, offsetof(RealtimeVertexType, texCoord));
     glVertexArrayAttribBinding(state->gl.realtimeVertexFormat, 0, 0);
     glVertexArrayAttribBinding(state->gl.realtimeVertexFormat, 1, 0);
     glVertexArrayAttribBinding(state->gl.realtimeVertexFormat, 2, 0);
@@ -303,7 +303,7 @@ static size_t CollectVertices(const EdState *state, size_t vertexOffset)
             colorIdx = COL_VERTEX_HOVER;
         }
 
-        state->gl.editorVertexMap[verts + vertexOffset] = (EditorVertexType){ .position = vertex->pos, .color = state->settings.colors[colorIdx] };
+        state->gl.editorVertexMap[verts + vertexOffset] = (EditorVertexType){ .position = vec2_from_fvec2(vertex->pos), .color = state->settings.colors[colorIdx] };
         verts++;
     }
     return verts;
@@ -353,13 +353,16 @@ static size_t CollectLines(const EdState *state, size_t vertexOffset)
 foundColIdx:
         }
 
+        Vec2 aPos = vec2_from_fvec2(line->a->pos);
+        Vec2 bPos = vec2_from_fvec2(line->b->pos);
+
         Color color = state->settings.colors[colorIdx];
         size_t relVertIdx = 0;
-        state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = line->a->pos, .color = color };
-        state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = line->b->pos, .color = color };
+        state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = aPos, .color = color };
+        state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = bPos, .color = color };
 
-        Vec2 dir = vec2_sub(line->b->pos, line->a->pos);
-        Vec2 normalStart = vec2_add(line->a->pos, vec2_scale(dir, 0.5f));
+        Vec2 dir = vec2_sub(bPos, aPos);
+        Vec2 normalStart = vec2_add(aPos, vec2_scale(dir, 0.5f));
         Vec2 perpDir = vec2_normalize((Vec2){ .x = -dir.y, .y = dir.x });
 
         float inverseZoom = 1.0f / (state->data.zoomLevel);
@@ -373,15 +376,15 @@ foundColIdx:
         {
             float arrowHeadThickness = 6;
             float arrowHeadHeight = 8;
-            Vec2 endPoint = vec2_sub(line->b->pos, vec2_scale(vec2_normalize(dir), arrowHeadHeight));
+            Vec2 endPoint = vec2_sub(bPos, vec2_scale(vec2_normalize(dir), arrowHeadHeight));
             Vec2 invPerpDir = { .x = -perpDir.x, .y = -perpDir.y };
             Vec2 arrowHeadLeft = vec2_add(endPoint, vec2_scale(invPerpDir, arrowHeadThickness));
             Vec2 arrowHeadRight = vec2_add(endPoint, vec2_scale(perpDir, arrowHeadThickness));
 
-            state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = line->b->pos, .color = color };
+            state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = bPos, .color = color };
             state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = arrowHeadLeft, .color = color };
 
-            state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = line->b->pos, .color = color };
+            state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = bPos, .color = color };
             state->gl.editorVertexMap[verts + vertexOffset + relVertIdx++] = (EditorVertexType){ .position = arrowHeadRight, .color = color };
         }
         verts += relVertIdx;
@@ -453,10 +456,10 @@ static size_t CollectDragData(const EdState *state, size_t vertexOffset)
 {
     if(state->data.isDragging)
     {
-        state->gl.editorVertexMap[vertexOffset + 0] = (EditorVertexType){ .position = state->data.editVertexDrag[0], .color = state->settings.colors[COL_ACTIVE_EDIT] };
-        state->gl.editorVertexMap[vertexOffset + 1] = (EditorVertexType){ .position = state->data.editVertexDrag[1], .color = state->settings.colors[COL_ACTIVE_EDIT] };
-        state->gl.editorVertexMap[vertexOffset + 2] = (EditorVertexType){ .position = state->data.editDragMouse, .color = state->settings.colors[COL_ACTIVE_EDIT] };
-        state->gl.editorVertexMap[vertexOffset + 3] = (EditorVertexType){ .position = state->data.editVertexDrag[2], .color = state->settings.colors[COL_ACTIVE_EDIT] };
+        state->gl.editorVertexMap[vertexOffset + 0] = (EditorVertexType){ .position = vec2_from_fvec2(state->data.editVertexDrag[0]), .color = state->settings.colors[COL_ACTIVE_EDIT] };
+        state->gl.editorVertexMap[vertexOffset + 1] = (EditorVertexType){ .position = vec2_from_fvec2(state->data.editVertexDrag[1]), .color = state->settings.colors[COL_ACTIVE_EDIT] };
+        state->gl.editorVertexMap[vertexOffset + 2] = (EditorVertexType){ .position = vec2_from_fvec2(state->data.editDragMouse), .color = state->settings.colors[COL_ACTIVE_EDIT] };
+        state->gl.editorVertexMap[vertexOffset + 3] = (EditorVertexType){ .position = vec2_from_fvec2(state->data.editVertexDrag[2]), .color = state->settings.colors[COL_ACTIVE_EDIT] };
         return 4;
     }
     return 0;
@@ -468,9 +471,9 @@ static size_t CollectEditData(const EdState *state, size_t vertexOffset)
     {
         for(size_t i = 0; i < state->data.editVertexBufferSize; ++i)
         {
-            state->gl.editorVertexMap[vertexOffset + i] = (EditorVertexType){ .position = state->data.editVertexBuffer[i], .color = state->settings.colors[COL_ACTIVE_EDIT] };
+            state->gl.editorVertexMap[vertexOffset + i] = (EditorVertexType){ .position = vec2_from_fvec2(state->data.editVertexBuffer[i]), .color = state->settings.colors[COL_ACTIVE_EDIT] };
         }
-        state->gl.editorVertexMap[vertexOffset + state->data.editVertexBufferSize] = (EditorVertexType){ .position = state->data.editVertexMouse, .color = state->settings.colors[COL_ACTIVE_EDIT] };
+        state->gl.editorVertexMap[vertexOffset + state->data.editVertexBufferSize] = (EditorVertexType){ .position = vec2_from_fvec2(state->data.editVertexMouse), .color = state->settings.colors[COL_ACTIVE_EDIT] };
 
         return state->data.editVertexBufferSize + 1;
     }

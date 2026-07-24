@@ -72,8 +72,7 @@ static void HandleArguments(int argc, char *argv[], EdState *state)
             }
             break;
         case 'm':
-            state->map.file = CopyString(optarg);
-            if(!LoadMap(&state->map))
+            if(!LoadMap(&state->map, optarg))
             {
                 NewMap(&state->map);
             }
@@ -109,11 +108,13 @@ static void setWindowIcon(SDL_Window *window)
     free(pixels);
 }
 
-static int getDisplayDpi(SDL_Window *window)
+static SDL_Window *cachedWindow;
+
+void UpdateTitle(const char *title)
 {
-    float dpi;
-    SDL_GetDisplayDPI(SDL_GetWindowDisplayIndex(window), &dpi, NULL, NULL);
-    return (int)(dpi * 100.0f / DEFAULT_DPI);
+    static char buffer[1024] = {0};
+    snprintf(buffer, sizeof buffer - 1, "%s (%s)", EDITOR_NAME, title);
+    SDL_SetWindowTitle(cachedWindow, buffer);
 }
 
 int EditorMain(int argc, char *argv[])
@@ -130,6 +131,7 @@ int EditorMain(int argc, char *argv[])
         return EXIT_FAILURE;
     }
     setWindowIcon(window);
+    cachedWindow = window;
 
     SDL_GLContext glContext = InitOpenGL(window, errorBuffer, sizeof errorBuffer);
     if(!glContext)
@@ -152,9 +154,6 @@ int EditorMain(int argc, char *argv[])
     EdState *state = calloc(1, sizeof *state);
     InitState(state);
     LogInit(&state->log);
-
-    state->data.cachedDPI = getDisplayDpi(window);
-    LogDebug("Display Scale: %d", state->data.cachedDPI);
 
     if(!InitEditor(state, errorBuffer, sizeof errorBuffer))
     {
@@ -179,6 +178,11 @@ int EditorMain(int argc, char *argv[])
         LogWarning("Failed to initilize scripting system. Scripting won't be available");
     }
 
+    if(state->map.file != NULL)
+        UpdateTitle(state->map.file);
+    else
+        UpdateTitle("unnamed map");
+
     tc_init(&state->textures);
     if(state->project.file)
     {
@@ -194,18 +198,6 @@ int EditorMain(int argc, char *argv[])
     {
         while(SDL_PollEvent(&e) > 0)
         {
-#if 0
-            if(e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
-            {
-                int newDpi = getDisplayDpi(window);
-                if(newDpi != state->data.cachedDPI)
-                {
-                    state->data.cachedDPI = newDpi;
-                    LogDebug("Display Scale changed: %d", state->data.cachedDPI);
-                }
-            }
-#endif
-
             if(ImGui_ImplSDL2_ProcessEvent(&e)) continue;
 
             switch(e.type)
@@ -293,6 +285,7 @@ int EditorMain(int argc, char *argv[])
     return EXIT_SUCCESS;
 }
 
+__attribute__((no_sanitize("address")))
 static SDL_Window* InitSDL(char *error, size_t errorSize)
 {
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
@@ -336,16 +329,8 @@ static void InitFont(SDL_Window *window)
 {
     ImGuiIO *ioptr = igGetIO_Nil();
 
-#if 0
-    int displayIndex = SDL_GetWindowDisplayIndex(window);
-    float dpi;
-    SDL_GetDisplayDPI(displayIndex, &dpi, NULL, NULL);
-    float scale = dpi / DEFAULT_DPI;
-    float fontSize = (16.75f * scale);
-#else
     (void)window;
     float fontSize = 16.75f;
-#endif
 
     ImFontConfig *config = ImFontConfig_ImFontConfig();
     config->FontDataOwnedByAtlas = false;

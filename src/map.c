@@ -3,7 +3,9 @@
 #include "edit.h"
 #include "logging.h"
 #include "map/query.h"
+#include "map/insert.h"
 #include "serialization.h"
+#include "utils/string.h"
 
 #include <string.h>
 #include <stdio.h>
@@ -151,6 +153,7 @@ void FreeMapSector(MapSector *sector)
     free(sector->outerLines);
     for(size_t i = 0; i < sector->numInnerLines; ++i)
         free(sector->innerLines[i]);
+    free(sector->numInnerLinesNum);
     free(sector->innerLines);
 
     free(sector->edData.vertices);
@@ -220,11 +223,11 @@ static char* parseSide(char *line, Side *side)
     return line;
 }
 
-bool LoadMap(Map *map)
+bool LoadMap(Map *map, const char *filename)
 {
-    if(map->file == NULL) return false;
+    if(filename == NULL) return false;
 
-    FILE *file = fopen(map->file, "r");
+    FILE *file = fopen(filename, "r");
     if(!file)
     {
         LogError("Failed to load map file %s: %s", map->file, strerror(errno));
@@ -233,6 +236,7 @@ bool LoadMap(Map *map)
 
     NewMap(map);
 
+    map->file = CopyString(filename);
     map->vertexIdx = map->lineIdx = map->sectorIdx = 0;
     bool inBlock = false;
     enum ParseMode mode = PARSE_PROPS;
@@ -338,7 +342,7 @@ bool LoadMap(Map *map)
                     if(!line) continue;
                     line = ParseLineReal(line, &pos.y);
 
-                    MapVertex *vertex = EditAddVertex(map, pos);;
+                    MapVertex *vertex = EditAddVertex(map, fvec2_from_vec2(pos));;
                     vertex->idx = idx;
 
                     if(idx > map->vertexIdx) map->vertexIdx = idx;
@@ -419,7 +423,9 @@ bool LoadMap(Map *map)
                         strcpy(data.ceilTex, ceilTexture);
                     }
 
-                    MapSector *sector = EditAddSector(map, numOuterLines, outerLines, 0, (size_t[0]){}, (MapLine**[0]){}, data);
+                    MapSector *sector = MakeMapSector(map, outerLines[0], false, data);
+
+                    //MapSector *sector = EditAddSector(map, numOuterLines, outerLines, 0, (size_t[0]){}, (MapLine**[0]){}, data);
                     sector->idx = idx;
 
                     if(idx > map->lineIdx) map->lineIdx = idx;
@@ -465,7 +471,7 @@ void SaveMap(Map *map)
     fprintf(file, "vertices = {\n");
     for(MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
     {
-        fprintf(file, "\t%zu %.4f %.4f\n", vertex->idx, vertex->pos.x, vertex->pos.y);
+        fprintf(file, "\t%zu %.4f %.4f\n", vertex->idx, fixed_to_real(vertex->pos.x), fixed_to_real(vertex->pos.y));
     }
     fprintf(file, "}\n");
 

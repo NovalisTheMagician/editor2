@@ -61,16 +61,17 @@ MapSector* FindEquivalentSector(Map *map, size_t numLines, MapLine *lines[static
     return NULL;
 }
 
-MapVertex* FindClosestVertex(const Map *map, Vec2 position, float radiusSq)
+MapVertex* FindClosestVertex(const Map *map, FVec2 pos, fixed_t radius)
 {
-    float closestDist = FLT_MAX;
     MapVertex *closestVertex = NULL;
+    fixedw_t closestDistSq = 0, maxDistSq = (fixedw_t)radius * radius;
     for(MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
     {
-        float distSq = vec2_distance2(vertex->pos, position);
-        if(distSq <= radiusSq && distSq < closestDist)
+        fixedw_t distSq = fvec2_distance2(vertex->pos, pos);
+        if(distSq > maxDistSq) continue;
+        if(closestVertex == NULL || distSq < closestDistSq)
         {
-            closestDist = distSq;
+            closestDistSq = distSq;
             closestVertex = vertex;
         }
     }
@@ -83,13 +84,6 @@ typedef struct Path
     MapVertex *nextVertex;
     float relativeAngle;
 } Path;
-
-typedef struct PathStack
-{
-    Path paths[100];
-    size_t numPaths;
-    MapVertex *vertex;
-} PathStack;
 
 int angleSortOuter(const void *a, const void *b)
 {
@@ -109,71 +103,54 @@ int angleSortInner(const void *a, const void *b)
     return 0;
 }
 
-static void insertPath(PathStack *pathStack, MapLine *line, MapVertex *nextVertex, MapVertex *vertex, int(*cmpFunc)(const void*, const void*))
-{
-    pathStack->vertex = nextVertex;
-    for(size_t i = 0; i < nextVertex->numAttachedLines; ++i)
-    {
-        MapLine *attLine = nextVertex->attachedLines[i];
-        if(attLine == line) continue;
-
-        MapVertex *otherVertex = nextVertex == attLine->a ? attLine->b : attLine->a;
-        float angle = PI2 - AngleOfLines((line_t){ .a = nextVertex->pos, .b = vertex->pos }, (line_t){ .a = nextVertex->pos, .b = otherVertex->pos });
-
-        Path *path = &pathStack->paths[pathStack->numPaths++];
-        path->line = attLine;
-        path->relativeAngle = angle;
-        path->nextVertex = attLine->a == nextVertex ? attLine->b : attLine->a;
-    }
-    qsort(pathStack->paths, pathStack->numPaths, sizeof *pathStack->paths, cmpFunc);
-}
-
-size_t FindLineLoop(MapLine *startLine, MapLine **sectorLines, size_t maxLoopLength, int(*cmpFunc)(const void*, const void*))
+size_t FindLineLoop(MapLine *startLine, MapLine **sectorLines, size_t maxLoopLength, bool reversed, int(*cmpFunc)(const void*, const void*))
 {
     assert(maxLoopLength > 0);
 
-    // front means natural direction
+    MapVertex *origVertex = reversed ? startLine->b : startLine->a;
     sectorLines[0] = startLine;
     size_t numLines = 1;
 
-    MapVertex *mapVertexForNext = startLine->b, *mapVertex = startLine->a;
-    PathStack *pathStack = calloc(1024, sizeof *pathStack);
-    size_t pathTop = 0;
-    insertPath(&pathStack[pathTop++], startLine, mapVertexForNext, mapVertex, cmpFunc);
+    MapVertex *vertex = origVertex;
+    MapVertex *nextVertex = reversed ? startLine->a : startLine->b;
+    MapLine *currentLine = startLine;
 
-    bool foundLoop = false;
-    while(pathTop > 0)
+    Path candidates[256];
+
+    for(;;)
     {
-        PathStack *pathElement = &pathStack[pathTop-1];
-
-        // dead-end, go back
-        if(pathElement->numPaths == 0)
+        size_t numCandidates = 0;
+        for(size_t i = 0; i < nextVertex->numAttachedLines && numCandidates < 256; ++i)
         {
-            pathTop--;
-            numLines--;
-            continue;
+            MapLine *attLine = nextVertex->attachedLines[i];
+            if(attLine == currentLine)
+                continue;
+
+            MapVertex *otherVertex = nextVertex == attLine->a ? attLine->b : attLine->a;
+            float angle = PI2 - AngleOfLines((line_t){ nextVertex->pos, vertex->pos }, (line_t){ nextVertex->pos, otherVertex->pos });
+            candidates[numCandidates++] = (Path){ .line = attLine, .nextVertex = otherVertex, .relativeAngle = angle };
         }
 
-        Path path = pathElement->paths[--pathElement->numPaths];
-        MapLine *mapLine = path.line;
-
-        // found a loop
-        if(mapLine == startLine)
+        Path chosen;
+        if(numCandidates == 0)
         {
-            foundLoop = true;
-            break;
+            chosen = (Path){ .line = currentLine, .nextVertex = vertex };
+        }
+        else
+        {
+            qsort(candidates, numCandidates, sizeof *candidates, cmpFunc);
+            chosen = candidates[numCandidates - 1];
         }
 
-        // add current line to list
-        size_t idx = numLines++;
-        sectorLines[idx] = mapLine;
+        if(nextVertex == origVertex && chosen.line == startLine)
+            return numLines;
 
-        PathStack *stackPush = &pathStack[pathTop++];
-        insertPath(stackPush, mapLine, path.nextVertex, pathElement->vertex, cmpFunc);
+        if(numLines >= maxLoopLength)
+            return 0;
+
+        sectorLines[numLines++] = chosen.line;
+        vertex = nextVertex;
+        nextVertex = chosen.nextVertex;
+        currentLine = chosen.line;
     }
-
-    free(pathStack);
-
-    if(!foundLoop) numLines = 0;
-    return numLines;
 }

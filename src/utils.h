@@ -2,6 +2,8 @@
 
 #include <math.h>
 
+#define EDITOR_NAME "Editor2"
+
 #define EPSILON 0.000001
 
 #define COUNT_OF(arr) (sizeof(arr)/sizeof(0[arr]))

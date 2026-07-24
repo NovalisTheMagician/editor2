@@ -230,7 +230,7 @@ typedef struct EdState
         int gridSize;
         int altGridSize;
         float zoomLevel;
-        ImVec2 viewPosition;
+        Vec2 viewPosition;
         int selectionMode;
 
         int showSectorTextures;
@@ -246,9 +246,9 @@ typedef struct EdState
         mat4s editorProjection;
 
         bool isDragging;
-        Vec2 startDrag, endDrag;
+        FVec2 startDrag, endDrag;
 
-        Vec2 editVertexBuffer[EDIT_VERTEXBUFFER_CAP], editVertexMouse, editDragMouse, editVertexDrag[3];
+        FVec2 editVertexBuffer[EDIT_VERTEXBUFFER_CAP], editVertexMouse, editDragMouse, editVertexDrag[3];
         size_t editVertexBufferSize;
 
         EditState editState;
@@ -275,6 +275,8 @@ typedef struct EdState
 } EdState;
 
 const char* ColorIndexToString(Colors color);
+
+void UpdateTitle(const char *title);
 
 void ResetSettings(EdSettings *settings);
 bool LoadSettings(const char *settingsPath, EdSettings *settings);

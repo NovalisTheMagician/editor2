@@ -2,6 +2,8 @@
 #include "ImGuiFileDialog.h"
 #include "utils/string.h"
 
+#include "editor.h"
+
 #include <stdlib.h>
 
 static void SaveMapCallback(const char *path, void *data)
@@ -10,6 +12,7 @@ static void SaveMapCallback(const char *path, void *data)
     free(map->file);
     map->file = CopyString(path);
     SaveMap(map);
+    UpdateTitle(map->file);
 }
 
 void SaveMapDialog(Map *map, bool quitRequest)

@@ -1,0 +1,7 @@
+--recurse=yes
+--exclude=.git
+--exclude=build
+--exclude=.vscode
+--exclude=.zed
+--exclude=\*.map
+--exclude=\*.epr

@@ -23,14 +23,14 @@ static void GotoPos(EdState *state, Vec2 pos)
 
 static void CenterVertex(EdState *state, MapVertex *vertex)
 {
-    GotoPos(state, vertex->pos);
+    GotoPos(state, vec2_from_fvec2(vertex->pos));
 }
 
 static void CenterLine(EdState *state, MapLine *line)
 {
-    Vec2 d = vec2_sub(line->b->pos, line->a->pos);
+    Vec2 d = vec2_sub(vec2_from_fvec2(line->b->pos), vec2_from_fvec2(line->a->pos));
     d = vec2_scale(d, 0.5f);
-    d = vec2_add(d, line->a->pos);
+    d = vec2_add(d, vec2_from_fvec2(line->a->pos));
     GotoPos(state, d);
 }
 
@@ -59,7 +59,7 @@ static void VertexProperties(EdState *state)
         igSeparatorTextEx(0, title, NULL, 0);
 
         igText("Attached lines: %d", selectedVertex->numAttachedLines);
-        igText("Position: (%.2f %.2f)", selectedVertex->pos.x, selectedVertex->pos.y);
+        igText("Position: (%.2f %.2f)", fixed_to_real(selectedVertex->pos.x), fixed_to_real(selectedVertex->pos.y));
         //igSeparatorEx(ImGuiSeparatorFlags_Horizontal, 2);
         for(size_t i = 0; i < selectedVertex->numAttachedLines; ++i)
         {
@@ -197,6 +197,26 @@ static void SectorProperties(EdState *state)
                 selectedSector->data.ceilTex = CopyString(tex->name);
             }
             igEndDragDropTarget();
+        }
+
+        igText("Number of inner lines: %zu", selectedSector->numInnerLines);
+        for(size_t i = 0; i < selectedSector->numInnerLines; ++i)
+        {
+            size_t n = selectedSector->numInnerLinesNum[i];
+            for(size_t j = 0; j < n; ++j)
+            {
+                MapLine *line = selectedSector->innerLines[i][j];
+                igText("Line %lld:", line->idx);
+                igSameLine(0, 4);
+                char label[32] = {0};
+                snprintf(label, sizeof label, "Select##id%zu", line->idx);
+                if(igButton(label, (ImVec2){ 0, 0 }))
+                {
+                    SelectElement(state, line, MODE_LINE);
+                    CenterLine(state, line);
+                    igSetWindowFocus_Str("Editor");
+                }
+            }
         }
     }
     else if(state->data.numSelectedElements > 1)

@@ -4,11 +4,11 @@
 #include <string.h>
 #include <stdlib.h>
 
-CreateResult CreateVertex(Map *map, Vec2 pos)
+CreateResult CreateVertex(Map *map, FVec2 pos)
 {
     for(MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
     {
-        if(vec2_eqv(vertex->pos, pos))
+        if(fvec2_eq(vertex->pos, pos))
         {
             return (CreateResult){ .mapElement = vertex, .created = false };
         }
@@ -42,6 +42,9 @@ CreateResult CreateVertex(Map *map, Vec2 pos)
 
 CreateResult CreateLine(Map *map, MapVertex *v0, MapVertex *v1, LineData data)
 {
+    if(v0 == v1)
+        return (CreateResult){ };
+
     for(MapLine *line = map->headLine; line; line = line->next)
     {
         bool ab = line->a == v0 && line->b == v1;

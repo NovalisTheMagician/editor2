@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include "vecmath.h"
 
+#define STITCHING_DIST fixed_from_int(2)
+
 #define MAP_VERSION 1
 
 typedef enum PropertyType
@@ -56,7 +58,7 @@ struct MapSector;
 
 typedef struct MapVertex
 {
-    Vec2 pos;
+    FVec2 pos;
 
     size_t idx;
 
@@ -160,6 +162,6 @@ void FreeMapLine(MapLine *line);
 void FreeMapSector(MapSector *sector);
 
 void NewMap(Map *map);
-bool LoadMap(Map *map);
+bool LoadMap(Map *map, const char *filename);
 void SaveMap(Map *map);
 void FreeMap(Map *map);

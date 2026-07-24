@@ -12,6 +12,7 @@
 #include "cimgui.h"
 #include "ImGuiFileDialog.h"
 
+#include "editor.h"
 #include "gwindows.h"
 #include "dialogs.h"
 
@@ -607,6 +608,7 @@ static void DoNewMap(EdState *state)
     state->data.editVertexBufferSize = 0;
     state->data.numSelectedElements = 0;
     NewMap(&state->map);
+    UpdateTitle("unnamed map");
 }
 
 static void DoLoadMap(EdState *state)

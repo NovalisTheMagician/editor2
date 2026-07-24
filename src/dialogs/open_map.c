@@ -1,15 +1,16 @@
 #include "../dialogs.h"
 #include "ImGuiFileDialog.h"
-#include "utils/string.h"
+
+#include "editor.h"
 
 #include <stdlib.h>
 
 static void OpenMapCallback(const char *path, void *data)
 {
     Map *map = data;
-    free(map->file);
-    map->file = CopyString(path);
-    LoadMap(map);
+    //free(map->file);
+    LoadMap(map, path);
+    UpdateTitle(map->file);
 }
 
 void OpenMapDialog(Map *map)

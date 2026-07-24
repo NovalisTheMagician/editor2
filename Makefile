@@ -29,6 +29,7 @@ else
 endif
 
 SDL_INC :=
+LUA_DEF :=
 
 ifeq ($(OS),Windows_NT)
     LIBS += dinput8 dxguid dxerr8 user32 gdi32 winmm imm32 ole32 oleaut32 shell32 setupapi version uuid ws2_32 Iphlpapi comctl32 gdi32 comdlg32 opengl32
@@ -50,6 +51,7 @@ else
         LDFLAGS += $(shell pkg-config --libs sdl2) -fsanitize=address
         SDL_INC += $(shell pkg-config --cflags sdl2)
         DEFINES +=
+        LUA_DEF += -DLUA_USE_POSIX
     endif
     ifeq ($(UNAME_S),Darwin)
     endif
@@ -203,7 +205,7 @@ $(TRIANG_OBJ): $(TRIANG_SRC)
 
 $(BUILD_DIR)/$(LUA_DIR)/%.o: $(LUA_DIR)/src/%.c
 	@echo "CC $< (External Lua)"
-	@$(CC) -O2 -c $< -o $@ -DLUA_COMPAT_5_3
+	@$(CC) -O2 -c $< -o $@ -DLUA_COMPAT_5_3 $(LUA_DEF)
 
 $(FTP_OBJ): $(FTP_SRC)
 	@echo "CC $< (External ftplib)"
