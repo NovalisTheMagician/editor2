@@ -299,7 +299,7 @@ static void MainMenuBar(bool *doQuit, EdState *state)
                 else
                     SaveMap(&state->map);
             }
-            if(igMenuItem_Bool("SaveAs Map", "", false, allowFileOps)) { SaveMapDialog(&state->map, doQuit); }
+            if(igMenuItem_Bool("SaveAs Map", "", false, allowFileOps)) { SaveMapDialog(&state->map, *doQuit); }
             igSeparator();
             if(igMenuItem_Bool("New Project", "", false, allowFileOps)) { if(state->project.dirty) { openProjectPopup = true; modalAction = SMA_NEW; } else NewProject(&state->project); }
             if(igMenuItem_Bool("Open Project", "", false, allowFileOps)) { if(state->project.dirty) { openProjectPopup = true; modalAction = SMA_OPEN; } else OpenProjectDialog(&state->project); }
