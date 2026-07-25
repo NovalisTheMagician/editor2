@@ -303,7 +303,6 @@ MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLin
     memcpy(sector->numInnerLinesNum, numInnerLinesNum, numInnerLines * sizeof *sector->numInnerLinesNum);
 
     struct Polygon *polygon = constructPolygon(&arena, numLines, lines);
-    orientation_t orientation = LineLoopOrientationReal(polygon->length, (Vec2*)polygon->vertices);
     setLineSector(numLines, lines, sector, false);
 
     struct Polygon **innerPolygons = arena_alloc(&arena, numInnerLines * sizeof *innerPolygons);
@@ -312,7 +311,6 @@ MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLin
         if(numInnerLinesNum[i] == 0)
             continue;
         innerPolygons[i] = constructPolygon(&arena, numInnerLinesNum[i], innerLines[i]);
-        orientation = LineLoopOrientationReal(innerPolygons[i]->length, (Vec2*)innerPolygons[i]->vertices);
         setLineSector(numInnerLinesNum[i], innerLines[i], sector, innerOtherSide[i]);
     }
 

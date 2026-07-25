@@ -40,7 +40,8 @@ typedef struct intersection_res_t
 typedef enum orientation_t
 {
     CW_ORIENT,
-    CCW_ORIENT
+    CCW_ORIENT,
+    DEGENERATE_ORIENT
 } orientation_t;
 
 static inline bool LineEq(line_t a, line_t b)

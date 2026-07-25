@@ -158,6 +158,20 @@ static bool TraceTargetsAreFree(size_t numLines, MapLine *lines[static numLines]
     return true;
 }
 
+static bool LoopHasRealBoundary(size_t numLines, MapLine *lines[static numLines])
+{
+    for(size_t i = 0; i < numLines; ++i)
+    {
+        size_t count = 0;
+        for(size_t j = 0; j < numLines; ++j)
+            if(lines[i] == lines[j])
+                count++;
+        if(count == 1)
+            return true;
+    }
+    return false;
+}
+
 MapSector* MakeMapSector(Map *map, MapLine *startLine, bool reversed, SectorData data)
 {
     MapLine *sectorLines[MAX_LINES_PER_SECTOR] = { 0 };
@@ -166,7 +180,7 @@ MapSector* MakeMapSector(Map *map, MapLine *startLine, bool reversed, SectorData
         return NULL;
 
     orientation_t orientation = LoopIsBoundedFace(numLines, sectorLines);
-    if(orientation != EXPECTED_BOUNDED_ORIENTATION)
+    if(orientation == DEGENERATE_ORIENT || orientation != EXPECTED_BOUNDED_ORIENTATION)
         return NULL;
 
     if(MapSector *s = FindEquivalentSector(map, numLines, sectorLines))
@@ -218,14 +232,14 @@ MapSector* MakeMapSector(Map *map, MapLine *startLine, bool reversed, SectorData
 
             size_t n = FindInnerLineLoop(potentialLine, innerLines[id], MAX_LINES_PER_SECTOR, false);
             bool usedReversed = false;
-            assert(ValidateLineLoop(n, innerLines[id], false));
-            bool valid = n > 0 && LoopIsValidHole(poly, n, innerLines[id]);
+            //assert(ValidateLineLoop(n, innerLines[id], false));
+            bool valid = n > 0 && LoopHasRealBoundary(n, innerLines[id]) && LoopIsValidHole(poly, n, innerLines[id]);
 
             if(!valid)
             {
                 n = FindInnerLineLoop(potentialLine, innerLines[id], MAX_LINES_PER_SECTOR, true);
                 usedReversed = true;
-                valid = n > 0 && LoopIsValidHole(poly, n, innerLines[id]);
+                valid = n > 0 && LoopHasRealBoundary(n, innerLines[id]) && LoopIsValidHole(poly, n, innerLines[id]);
             }
 
             if(!valid) // couldnt find a loop

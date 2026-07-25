@@ -12,6 +12,8 @@
 #include "../edit.h"
 #include "vecmath.h"
 
+#include "map/insert.h"
+
 #define DEFAULT_WHITE { 1, 1, 1, 1 }
 #define LINE_DIST fixed_from_int(10)
 #define VERTEX_DIST fixed_from_int(5)
@@ -389,13 +391,39 @@ void EditorWindow(bool *p_open, EdState *state)
                 {
                     if(state->data.editState == ESTATE_NORMAL && state->data.selectionMode == MODE_LINE)
                     {
-                        assert(false && "Not yet fully implemented");
+                        //assert(false && "Not yet fully implemented");
                         for(size_t i = 0; i < state->data.numSelectedElements; ++i)
                         {
                             MapLine *line = state->data.selectedElements[i];
+                            MapSector *front = line->frontSector, *back = line->backSector;
                             MapVertex *tmp = line->b;
                             line->b = line->a;
                             line->a = tmp;
+
+                            line->frontSector = back;
+                            line->backSector = front;
+                        }
+                    }
+                }
+
+                if(igIsKeyPressed_Bool(ImGuiKey_M, false))
+                {
+                    if(state->data.editState == ESTATE_NORMAL)
+                    {
+                        MapLine *line = EditGetClosestLine(map, (FVec2){ x1, y1 }, fixed_from_int(128));
+                        if(line)
+                        {
+                            bool front = SideOfMapLine(line, (FVec2){ x1, y1 }) > 0;
+                            if((front && line->frontSector == NULL) || (!front && line->backSector == NULL))
+                            {
+                                MapSector *sector = MakeMapSector(map, line, !front, DefaultSectorData());
+                                if(!sector)
+                                    LogError("Failed to make sector");
+                            }
+                            else
+                            {
+                                LogInfo("Sector already exists");
+                            }
                         }
                     }
                 }

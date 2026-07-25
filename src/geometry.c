@@ -502,6 +502,8 @@ enum orientation_t LineLoopOrientation(size_t numVertices, FVec2 vertices[static
 
         //res += fixed_mul((b.x - a.x), (b.y + a.y));
     }
+    if(res == 0)
+        return DEGENERATE_ORIENT;
     return res >= 0 ? CCW_ORIENT : CW_ORIENT;
 }
 
