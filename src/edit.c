@@ -178,7 +178,10 @@ void EditRemoveLines(Map *map, size_t num, MapLine *lines[static num])
 
         MapSector *frontSector = line->frontSector;
         MapSector *backSector = line->backSector;
+        if(frontSector == backSector)
+            backSector = NULL;
         bool canDeleteFront = frontSector != NULL, canDeleteBack = backSector != NULL;
+
         for(size_t s = 0; s < numDeletedSectors; ++s)
         {
             if(!canDeleteFront && !canDeleteBack)

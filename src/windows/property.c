@@ -6,12 +6,20 @@
 #include "texture_collection.h"
 #include "utils/string.h"
 
+#include <string.h>
 #include "../vecmath.h"
 
 static void SelectElement(EdState *state, void *element, int selectMode)
 {
     state->data.numSelectedElements = 1;
     state->data.selectedElements[0] = element;
+    state->data.selectionMode = selectMode;
+}
+
+static void SelectElements(EdState *state, size_t numElements, void *elements[static numElements], int selectMode)
+{
+    state->data.numSelectedElements = numElements;
+    memcpy(state->data.selectedElements, elements, sizeof *elements * numElements);
     state->data.selectionMode = selectMode;
 }
 
@@ -199,24 +207,16 @@ static void SectorProperties(EdState *state)
             igEndDragDropTarget();
         }
 
-        igText("Number of inner lines: %zu", selectedSector->numInnerLines);
+        igText("Number of inner line loops: %zu", selectedSector->numInnerLines);
         for(size_t i = 0; i < selectedSector->numInnerLines; ++i)
         {
             size_t n = selectedSector->numInnerLinesNum[i];
-            for(size_t j = 0; j < n; ++j)
-            {
-                MapLine *line = selectedSector->innerLines[i][j];
-                igText("Line %lld:", line->idx);
-                igSameLine(0, 4);
-                char label[32] = {0};
-                snprintf(label, sizeof label, "Select##id%zu", line->idx);
-                if(igButton(label, (ImVec2){ 0, 0 }))
-                {
-                    SelectElement(state, line, MODE_LINE);
-                    CenterLine(state, line);
-                    igSetWindowFocus_Str("Editor");
-                }
-            }
+            igText("Lineloop %lld:", i);
+            igSameLine(0, 4);
+            char label[32] = {0};
+            snprintf(label, sizeof label, "Select##id%zu", i);
+            if(igButton(label, (ImVec2){ 0, 0 }))
+                SelectElements(state, selectedSector->numInnerLinesNum[i], (void**)selectedSector->innerLines[i], MODE_LINE);
         }
     }
     else if(state->data.numSelectedElements > 1)

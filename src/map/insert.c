@@ -140,11 +140,16 @@ static bool TraceTargetsAreFree(size_t numLines, MapLine *lines[static numLines]
     MapVertex *vertex, *nextVertex;
     GetLoopStart(lines[0], lines[1], &vertex, &nextVertex);
 
-    for(size_t i = 0; i < numLines; ++i)
+    bool front0 = lines[0]->a == vertex;
+    MapSector *sector = (front0 != otherSide) ? lines[0]->frontSector : lines[0]->backSector;
+    if(sector != NULL)
+        return false;
+
+    for(size_t i = 1; i < numLines; ++i)
     {
         MapLine *line = lines[i];
         bool front = line->a == nextVertex;
-        MapSector *existing = (front == otherSide) ? line->frontSector : line->backSector;
+        MapSector *existing = (front != otherSide) ? line->frontSector : line->backSector;
         if(existing != NULL)
             return false;
 
@@ -167,7 +172,7 @@ MapSector* MakeMapSector(Map *map, MapLine *startLine, bool reversed, SectorData
     if(MapSector *s = FindEquivalentSector(map, numLines, sectorLines))
         return s;
 
-    if(!TraceTargetsAreFree(numLines, sectorLines, reversed))
+    if(!TraceTargetsAreFree(numLines, sectorLines, false))
         return NULL;
 
     polygon_t *poly = PolygonFromMapLines(numLines, sectorLines);
@@ -241,6 +246,9 @@ MapSector* MakeMapSector(Map *map, MapLine *startLine, bool reversed, SectorData
                         break;
                     }
                 }
+
+                if(!rejected && !TraceTargetsAreFree(n, innerLines[id], !usedReversed))
+                    rejected = true;
 
                 if(rejected)
                 {
@@ -665,10 +673,11 @@ static void DetectEnclosingSectors(Map *map, TouchedLines *touched)
         MapLine *rep = touched->items[i].line;
         if(rep->frontSector || rep->backSector)
             continue;
-
+        
+        FVec2 midpoint = fvec2_scale(fvec2_add(rep->a->pos, rep->b->pos), fixed_from_real(0.5f));
         for(MapSector *s = map->headSector; s; s = s->next)
         {
-            if(!PointInSector2(s, rep->a->pos))
+            if(!PointInSector2(s, midpoint))
                 continue;
 
             MapLine *outerStart = s->outerLines[0];
