@@ -408,12 +408,11 @@ static size_t CollectSectors(const EdState *state, size_t vertexOffset, size_t i
     for(const MapSector *sector = state->map.headSector; sector; sector = sector->next)
     {
         int colorIdx = COL_SECTOR;
-        /*
         if(state->data.numSelectedElements > 0 && includes(state->data.selectedElements, state->data.numSelectedElements, sector))
         {
             colorIdx = COL_SECTOR_SELECT;
         }
-        else*/ if(sector == state->data.hoveredElement)
+        else if(sector == state->data.hoveredElement)
         {
             colorIdx = COL_SECTOR_HOVER;
         }
@@ -501,7 +500,8 @@ void RenderEditorView(EdState *state)
     EditorShaderData data =
     {
         .viewProj = viewProjMat,
-        .tint = { .r = 1, .g = 1, .b = 1, .a = 1 }
+        .tint = { .r = 1, .g = 1, .b = 1, .a = 1 },
+        .zoom = state->data.zoomLevel
     };
     glNamedBufferSubData(state->gl.editorShaderDataBuffer, 0, sizeof data, &data);
 

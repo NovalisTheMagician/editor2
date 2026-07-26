@@ -9018,7 +9018,7 @@ CATEGORIES	extern/re/scripts/exrex.py	/^CATEGORIES = {$/;"	v
 CC	extern/lua-5.4.8/src/Makefile	/^CC= gcc -std=gnu99$/;"	m
 CC	extern/re/Makefile	/^CC := gcc$/;"	m
 CCFLAGS	extern/triangulate/Makefile	/^CCFLAGS := -O2 -Wall$/;"	m
-CCW_ORIENT	src/geometry.h	/^    CCW_ORIENT$/;"	e	enum:orientation_t
+CCW_ORIENT	src/geometry.h	/^    CCW_ORIENT,$/;"	e	enum:orientation_t
 CClosure	extern/lua-5.4.8/src/lobject.h	/^typedef struct CClosure {$/;"	s
 CClosure	extern/lua-5.4.8/src/lobject.h	/^} CClosure;$/;"	t	typeref:struct:CClosure
 CFBundleDevelopmentRegion	extern/cimgui/imgui/examples/example_apple_metal/iOS/Info-iOS.plist	/^	<key>CFBundleDevelopmentRegion<\/key>$/;"	k
@@ -10047,6 +10047,7 @@ DEFAULT_WHITE	src/windows/geditor.c	/^#define DEFAULT_WHITE /;"	d	file:
 DEFAULT_WINDOW_HEIGHT	src/editor_main.c	/^#define DEFAULT_WINDOW_HEIGHT /;"	d	file:
 DEFAULT_WINDOW_WIDTH	src/editor_main.c	/^#define DEFAULT_WINDOW_WIDTH /;"	d	file:
 DEFINES	Makefile	/^DEFINES := __USE_XOPEN _GNU_SOURCE$/;"	m
+DEGENERATE_ORIENT	src/geometry.h	/^    DEGENERATE_ORIENT$/;"	e	enum:orientation_t
 DEPFLAGS	extern/ftplib-4.0-1/src/Makefile	/^DEPFLAGS =$/;"	m
 DESCRIPTION	extern/ftplib-4.0-1/html/FtpAccess.html	/^<h2>DESCRIPTION<\/h2>$/;"	i
 DESCRIPTION	extern/ftplib-4.0-1/html/FtpCDUp.html	/^<h2>DESCRIPTION<\/h2>$/;"	i
@@ -22285,7 +22286,9 @@ LogWindow	extern/cimgui/cimgui.h	/^    ImGuiWindow* LogWindow;$/;"	m	struct:ImGu
 LogWindow	extern/cimgui/imgui/imgui_internal.h	/^    ImGuiWindow*            LogWindow;$/;"	m	struct:ImGuiContext	typeref:typename:ImGuiWindow *
 LogsWindow	src/windows/logs.c	/^void LogsWindow(bool *p_open, EdState *state)$/;"	f	typeref:typename:void
 LongAxis	extern/triangulate/earcut/test/comparison/libtess2/tess.c	/^static int LongAxis( TESSreal v[3] )$/;"	f	typeref:typename:int	file:
+LoopHasRealBoundary	src/map/insert.c	/^static bool LoopHasRealBoundary(size_t numLines, MapLine *lines[static numLines])$/;"	f	typeref:typename:bool	file:
 LoopIsBoundedFace	src/map/insert.c	/^static orientation_t LoopIsBoundedFace(size_t numLines, MapLine *lines[static numLines])$/;"	f	typeref:typename:orientation_t	file:
+LoopIsOutermost	src/map/insert.c	/^static bool LoopIsOutermost(polygon_t *innerPoly, size_t n, MapLine *loop[static n], size_t numP/;"	f	typeref:typename:bool	file:
 LoopIsValidHole	src/map/insert.c	/^static bool LoopIsValidHole(polygon_t *outerPoly, size_t n, MapLine *loop[static n])$/;"	f	typeref:typename:bool	file:
 LoopRequestSetAll	extern/cimgui/cimgui.h	/^    ImS8 LoopRequestSetAll;$/;"	m	struct:ImGuiMultiSelectTempData	typeref:typename:ImS8
 LoopRequestSetAll	extern/cimgui/imgui/imgui_internal.h	/^    ImS8                    LoopRequestSetAll;  \/\/ -1: no operation, 0: clear all, 1: select a/;"	m	struct:ImGuiMultiSelectTempData	typeref:typename:ImS8
@@ -25832,6 +25835,7 @@ SelectAllFileNames	extern/imguifiledialog/ImGuiFileDialog.cpp	/^void IGFD::FileM
 SelectAllFilesKey	extern/imguifiledialog/ImGuiFileDialog.cpp	/^#define SelectAllFilesKey /;"	d	file:
 SelectDirectory	extern/imguifiledialog/ImGuiFileDialog.cpp	/^bool IGFD::FileManager::SelectDirectory(const std::shared_ptr<FileInfos>& vInfos) {$/;"	f	class:IGFD::FileManager	typeref:typename:bool
 SelectElement	src/windows/property.c	/^static void SelectElement(EdState *state, void *element, int selectMode)$/;"	f	typeref:typename:void	file:
+SelectElements	src/windows/property.c	/^static void SelectElements(EdState *state, size_t numElements, void *elements[static numElements/;"	f	typeref:typename:void	file:
 SelectFileName	extern/imguifiledialog/ImGuiFileDialog.cpp	/^void IGFD::FileManager::SelectFileName(const std::shared_ptr<FileInfos>& vInfos) {$/;"	f	class:IGFD::FileManager	typeref:typename:void
 SelectOrDeselectFileName	extern/imguifiledialog/ImGuiFileDialog.cpp	/^void IGFD::FileManager::SelectOrDeselectFileName(const FileDialogInternal& vFileDialogInternal, /;"	f	class:IGFD::FileManager	typeref:typename:void
 SelectRequest	extern/cimgui/cimgui.h	/^    bool SelectRequest;$/;"	m	struct:ImGuiTypingSelectRequest	typeref:typename:bool
@@ -39593,6 +39597,7 @@ constructor	extern/cimgui/generator/output/impl_definitions.json	/^      "constr
 constructor	extern/lua-5.4.8/src/lparser.c	/^static void constructor (LexState *ls, expdesc *t) {$/;"	f	typeref:typename:void	file:
 consumed	src/map/insert.c	/^    bool consumed;$/;"	m	struct:LineWork	typeref:typename:bool	file:
 contains	extern/cimgui/imgui/imgui.h	/^    inline bool         contains(const T& v) const          { const T* data = Data;  const T* da/;"	f	struct:ImVector	typeref:typename:bool
+contains	src/windows/geditor.c	/^static bool contains(size_t numElements, void *elements[static numElements], void *value)$/;"	f	typeref:typename:bool	file:
 containsPoint	extern/triangulate/earcut/include/mapbox/earcut.hpp	/^        inline bool containsPoint(double px, double py) const {$/;"	f	struct:mapbox::detail::Earcut::Triangle	typeref:typename:bool
 contents	extern/lua-5.4.8/doc/contents.html	/^<H2><A NAME="contents">Contents<\/A><\/H2>$/;"	a
 contents	extern/lua-5.4.8/src/lobject.h	/^  char contents[1];$/;"	m	struct:TString	typeref:typename:char[1]
@@ -79332,6 +79337,7 @@ zbuffer_end	extern/imguifiledialog/stb/stb_image.h	/^   stbi_uc *zbuffer, *zbuff
 zbuffer_end	extern/stb/stb_image.h	/^   stbi_uc *zbuffer, *zbuffer_end;$/;"	m	struct:__anon5b03bf430c08	typeref:typename:stbi_uc *
 zgetc	extern/lua-5.4.8/src/lzio.h	/^#define zgetc(/;"	d
 zoom	extern/triangulate/earcut/test/viz.cpp	/^    double zoom = -1.;$/;"	m	struct:Camera2D	typeref:typename:double	file:
+zoom	src/editor.h	/^    float zoom;$/;"	m	struct:EditorShaderData	typeref:typename:float
 zoomLevel	src/editor.h	/^        float zoomLevel;$/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:float
 zout	extern/imguifiledialog/stb/stb_image.h	/^   char *zout;$/;"	m	struct:__anon47b0cd7d0c08	typeref:typename:char *
 zout	extern/stb/stb_image.h	/^   char *zout;$/;"	m	struct:__anon5b03bf430c08	typeref:typename:char *

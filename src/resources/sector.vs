@@ -6,12 +6,14 @@ layout(location=2) in vec2 inTexCoords;
 
 out vec4 outColor;
 out vec2 outTexCoords;
+out vec2 outScreenPos;
 
 layout(binding=0, std430) readonly buffer data
 {
     mat4 viewProj;
     vec4 tint;
     vec2 coordOffset;
+    float zoom;
 };
 
 void main()
@@ -19,4 +21,5 @@ void main()
     gl_Position = viewProj * vec4(inPosition, 0, 1);
     outColor = inColor;
     outTexCoords = inTexCoords;
+    outScreenPos = inPosition * zoom;
 }

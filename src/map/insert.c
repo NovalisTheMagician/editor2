@@ -172,6 +172,35 @@ static bool LoopHasRealBoundary(size_t numLines, MapLine *lines[static numLines]
     return false;
 }
 
+static bool LoopIsOutermost(polygon_t *innerPoly, size_t n, MapLine *loop[static n], size_t numPotentialLines, MapLine *potentialLines[static numPotentialLines])
+{
+    for(size_t i = 0; i < numPotentialLines; ++i)
+    {
+        MapLine *candidate = potentialLines[i];
+        if(includes(n, (void**)loop, candidate))
+            continue;
+        
+        bool aShared = false, bShared = false;
+        for(size_t j = 0; j < n; ++j)
+        {
+            MapVertex *va = loop[j]->a, *vb = loop[j]->b;
+            if(candidate->a == va || candidate->a == vb) aShared = true;
+            if(candidate->b == va || candidate->b == vb) bShared = true;
+        }
+
+        if(!aShared && !bShared)
+            continue;
+
+        bool escapes = false;
+        if(!aShared && !PointInPolygon(innerPoly, candidate->a->pos)) escapes = true;
+        if(!bShared && !PointInPolygon(innerPoly, candidate->b->pos)) escapes = true;
+
+        if(escapes)
+            return false;
+    }
+    return true;
+}
+
 MapSector* MakeMapSector(Map *map, MapLine *startLine, bool reversed, SectorData data)
 {
     MapLine *sectorLines[MAX_LINES_PER_SECTOR] = { 0 };
@@ -264,10 +293,19 @@ MapSector* MakeMapSector(Map *map, MapLine *startLine, bool reversed, SectorData
                 if(!rejected && !TraceTargetsAreFree(n, innerLines[id], !usedReversed))
                     rejected = true;
 
+                polygon_t *innerPoly = PolygonFromMapLines(n, innerLines[id]);
+                if(!rejected)
+                {
+                    if(!LoopIsOutermost(innerPoly, n, innerLines[id], numPotentialLines, potentialLines))
+                        rejected = true;
+                }
+
                 if(rejected)
                 {
                     numInnerLineLoops--;
+                    insert(usedLinesSize, &usedLinesTop, (void**)usedLines, potentialLine);
                     arena_rewind(&arena, mark);
+                    free(innerPoly);
                 }
                 else
                 {
@@ -279,7 +317,7 @@ MapSector* MakeMapSector(Map *map, MapLine *startLine, bool reversed, SectorData
                     innerLinesNum[id] = n;
                     innerOtherSide[id] = !usedReversed;
 
-                    polygon_t *innerPoly = PolygonFromMapLines(n, innerLines[id]);
+                    //polygon_t *innerPoly = PolygonFromMapLines(n, innerLines[id]);
                     for(size_t k = 0; k < numPotentialLines;)
                     {
                         MapLine *candidate = potentialLines[k];

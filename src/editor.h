@@ -126,6 +126,7 @@ typedef struct EditorShaderData
     mat4s viewProj;
     Color tint;
     Vec2 coordOffset;
+    float zoom;
 } EditorShaderData;
 
 typedef struct EdState

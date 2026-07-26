@@ -39,6 +39,16 @@ static bool within(FVec2 min, FVec2 max, FVec2 v)
     return v.x >= min.x && v.y >= min.y && v.x <= max.x && v.y <= max.y;
 }
 
+static bool contains(size_t numElements, void *elements[static numElements], void *value)
+{
+    for(size_t i = 0; i < numElements; ++i)
+    {
+        if(elements[i] == value)
+            return true;
+    }
+    return false;
+}
+
 static void RectSelect(EdState *state, bool add)
 {
     FVec2 min = fvec2_min(state->data.startDrag, state->data.endDrag);
@@ -53,7 +63,7 @@ static void RectSelect(EdState *state, bool add)
         {
             for(MapVertex *vertex = state->map.headVertex; vertex; vertex = vertex->next)
             {
-                if(within(min, max, vertex->pos))
+                if(within(min, max, vertex->pos) && !contains(state->data.numSelectedElements, state->data.selectedElements, vertex))
                 {
                     state->data.selectedElements[state->data.numSelectedElements++] = vertex;
                 }
@@ -64,7 +74,7 @@ static void RectSelect(EdState *state, bool add)
         {
             for(MapLine *line = state->map.headLine; line; line = line->next)
             {
-                if(within(min, max, line->a->pos) && within(min, max, line->b->pos))
+                if(within(min, max, line->a->pos) && within(min, max, line->b->pos) && !contains(state->data.numSelectedElements, state->data.selectedElements, line))
                 {
                     state->data.selectedElements[state->data.numSelectedElements++] = line;
                 }
@@ -81,7 +91,7 @@ static void RectSelect(EdState *state, bool add)
                     allPointsIn &= within(min, max, sector->outerLines[i]->a->pos);
                 }
 
-                if(allPointsIn)
+                if(allPointsIn && !contains(state->data.numSelectedElements, state->data.selectedElements, sector))
                 {
                     state->data.selectedElements[state->data.numSelectedElements++] = sector;
                 }
@@ -170,7 +180,21 @@ void EditorWindow(bool *p_open, EdState *state)
         igSameLine(0, 16);
         if(igButton("Go To", (ImVec2){ 0, 0 }))
         {
-
+            static bool gotoPopupOpen = false;
+            if(igBeginPopupModal("Go To", &gotoPopupOpen, 0))
+            {
+                float coords[2] = { 0 };
+                igInputFloat2("Coords", coords, NULL, 0);
+                if(igButton("Goto", (ImVec2){ 0, 0 }))
+                {
+                    igCloseCurrentPopup();
+                }
+                if(igButton("Cancel", (ImVec2){ 0, 0 }))
+                {
+                    igCloseCurrentPopup();
+                }
+                igEndPopup();
+            }
         }
 
         if(igBeginChild_ID(1000, (ImVec2){ 0, 0 }, false, ImGuiWindowFlags_NoMove))
