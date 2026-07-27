@@ -50,6 +50,34 @@ static void CenterSector(EdState *state, MapSector *sector)
     GotoPos(state, (Vec2){ .x = (w/2) + bb.min.x, .y = (h/2) + bb.min.y });
 }
 
+static void TextureField(EdState *state, const char *label, char **textureName)
+{
+    Texture *texture = tc_get(&state->textures, *textureName);
+    igText(label);
+    GLuint texId = texture ? texture->texture1 : state->defaultTextures.missingTexture;
+    ImVec2 size = texture ? (ImVec2){ texture->width, texture->height } : (ImVec2){ state->defaultTextures.missingTextureWidth, state->defaultTextures.missingTextureHeight };
+    char buffer[128] = { 0 };
+    snprintf(buffer, sizeof buffer, "%sTexture", label);
+    igImageButton(buffer, (ImTextureRef){ ._TexID = texId }, size, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1, }, (ImVec4){ 0, 0, 0, 0 }, (ImVec4){ 1, 1, 1, 1 });
+    if(igIsItemHovered(0) && igIsMouseReleased_Nil(ImGuiMouseButton_Right) && texture)
+    {
+        free(*textureName);
+        *textureName = NULL;
+    }
+
+    if(igBeginDragDropTarget())
+    {
+        const ImGuiPayload *payload = igAcceptDragDropPayload("TextureDnD", 0);
+        if(payload)
+        {
+            free(*textureName);
+            Texture *tex = *(Texture**)payload->Data;
+            *textureName = CopyString(tex->name);
+        }
+        igEndDragDropTarget();
+    }
+}
+
 static void MapProperties(EdState *state)
 {
     igSeparatorTextEx(0, "Map Properties", NULL, 0);
@@ -100,6 +128,13 @@ static void LineProperties(EdState *state)
         char title[128] = { 0 };
         snprintf(title, sizeof title, "Line %d Properties", (int)selectedLine->idx);
         igSeparatorTextEx(0, title, NULL, 0);
+
+        TextureField(state, "Front Upper", &selectedLine->data.front.upperTex);
+        TextureField(state, "Front Middle", &selectedLine->data.front.middleTex);
+        TextureField(state, "Front Lower", &selectedLine->data.front.lowerTex);
+        TextureField(state, "Back Upper", &selectedLine->data.back.upperTex);
+        TextureField(state, "Back Middle", &selectedLine->data.back.middleTex);
+        TextureField(state, "Back Lower", &selectedLine->data.back.lowerTex);
 
         igText("Vertex A: %zu", selectedLine->a->idx);
         igSameLine(0, 4);
@@ -158,54 +193,13 @@ static void SectorProperties(EdState *state)
         snprintf(title, sizeof title, "Sector %d Properties", (int)selectedSector->idx);
         igSeparatorTextEx(0, title, NULL, 0);
 
-        igInputInt("Floor Height", &selectedSector->data.floorHeight, 1, 10, 0);
-        igInputInt("Ceiling Height", &selectedSector->data.ceilHeight, 1, 10, 0);
+        if(igInputInt("Floor Height", &selectedSector->data.floorHeight, 1, 10, 0))
+            state->map.dirty = true;
+        if(igInputInt("Ceiling Height", &selectedSector->data.ceilHeight, 1, 10, 0))
+            state->map.dirty = true;
 
-        Texture *floorTexture = tc_get(&state->textures, selectedSector->data.floorTex);
-        igText("Floor");
-        GLuint texId = floorTexture ? floorTexture->texture1 : state->defaultTextures.missingTexture;
-        ImVec2 size = floorTexture ? (ImVec2){ floorTexture->width, floorTexture->height } : (ImVec2){ state->defaultTextures.missingTextureWidth, state->defaultTextures.missingTextureHeight };
-        igImageButton("floorTexture", (ImTextureRef){ ._TexID = texId }, size, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1, }, (ImVec4){ 0, 0, 0, 0 }, (ImVec4){ 1, 1, 1, 1 });
-        if(igIsItemHovered(0) && igIsMouseReleased_Nil(ImGuiMouseButton_Right) && floorTexture)
-        {
-            free(selectedSector->data.floorTex);
-            selectedSector->data.floorTex = NULL;
-        }
-
-        if(igBeginDragDropTarget())
-        {
-            const ImGuiPayload *payload = igAcceptDragDropPayload("TextureDnD", 0);
-            if(payload)
-            {
-                free(selectedSector->data.floorTex);
-                Texture *tex = *(Texture**)payload->Data;
-                selectedSector->data.floorTex = CopyString(tex->name);
-            }
-            igEndDragDropTarget();
-        }
-
-        Texture *ceilTexture = tc_get(&state->textures, selectedSector->data.ceilTex);
-        igText("Ceiling");
-        texId = ceilTexture ? ceilTexture->texture1 : state->defaultTextures.missingTexture;
-        size = ceilTexture ? (ImVec2){ ceilTexture->width, ceilTexture->height } : (ImVec2){ state->defaultTextures.missingTextureWidth, state->defaultTextures.missingTextureHeight };
-        igImageButton("ceilTexture", (ImTextureRef){ ._TexID = texId }, size, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1, }, (ImVec4){ 0, 0, 0, 0 }, (ImVec4){ 1, 1, 1, 1 });
-        if(igIsItemHovered(0) && igIsMouseReleased_Nil(ImGuiMouseButton_Right) && ceilTexture)
-        {
-            free(selectedSector->data.floorTex);
-            selectedSector->data.floorTex = NULL;
-        }
-
-        if(igBeginDragDropTarget())
-        {
-            const ImGuiPayload *payload = igAcceptDragDropPayload("TextureDnD", 0);
-            if(payload)
-            {
-                free(selectedSector->data.ceilTex);
-                Texture *tex = *(Texture**)payload->Data;
-                selectedSector->data.ceilTex = CopyString(tex->name);
-            }
-            igEndDragDropTarget();
-        }
+        TextureField(state, "Floor", &selectedSector->data.floorTex);
+        TextureField(state, "Ceiling", &selectedSector->data.ceilTex);
 
         igText("Number of inner line loops: %zu", selectedSector->numInnerLines);
         for(size_t i = 0; i < selectedSector->numInnerLines; ++i)

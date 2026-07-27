@@ -5,6 +5,16 @@
 #include <float.h>
 #include "utils.h"
 
+#define PI 3.14159265359
+#define PI2 (PI * 2.0)
+#define PIHALF (PI / 2.0)
+
+#define rad2deg(x) ({typeof(x) _x = (x); _x * 180.0 / PI;})
+#define deg2rad(x) ({typeof(x) _x = (x); _x * PI / 180.0;})
+
+#define between(p, a, b) ({ typeof(p) p_ = (p); typeof(a) a_ = (a); typeof(b) b_ = (b); (p_ >= a_ && p_ <= b_) || (p_ <= a_ && p_ >= b_); })
+#define sign(x) ({ typeof(x) x_ = (x); (x_ > 0) - (x_ < 0); })
+
 typedef float real_t;
 #define REAL_MIN -FLT_MAX
 #define REAL_MAX FLT_MAX
@@ -131,7 +141,7 @@ static inline real_t vec3_dot(Vec3 a, Vec3 b)
 
 static inline Vec3 vec3_cross(Vec3 a, Vec3 b)
 {
-    return (Vec3){ a.y*b.z - b.z*a.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x };
+    return (Vec3){ a.y*b.z - a.z*b.y, a.z*b.x - a.x*b.z, a.x*b.y - a.y*b.x };
 }
 
 static inline real_t vec3_distance2(Vec3 a, Vec3 b)

@@ -29,6 +29,9 @@ void StatsWindow(bool *p_open, EdState *state)
             igSameLine(0, 4);
             igText("%s (%s)", state->script.plugins[i].name, state->script.plugins[i].file);
         }
+#ifdef _DEBUG
+        
+#endif
     }
     igEnd();
 }

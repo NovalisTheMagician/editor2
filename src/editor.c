@@ -12,7 +12,7 @@
 #include "vertex_types.h"
 
 #define SELECTION_CAPACITY 100000
-#define BUFFER_SIZE (1<<20)
+#define BUFFER_SIZE (1<<21)
 #define TEXTURE_SET_SIZE 8192
 #define WHITE_TEXTURE (TEXTURE_SET_SIZE - 1)
 
@@ -119,6 +119,16 @@ bool InitEditor(EdState *state, char *error, size_t errorSize)
 
     state->gl.editorMaxBufferCount = BUFFER_SIZE / NUM_BUFFERS;
 
+    bufferSize = BUFFER_SIZE * sizeof(RealtimeVertexType);
+    glCreateBuffers(1, &state->gl.realtimeVertexBuffer);
+    glNamedBufferStorage(state->gl.realtimeVertexBuffer, bufferSize, NULL, storage_flags);
+    state->gl.realtimeVertexMap = glMapNamedBufferRange(state->gl.realtimeVertexBuffer, 0, bufferSize, mapping_flags);
+
+    iBufferSize = BUFFER_SIZE * sizeof(Index_t);
+    glCreateBuffers(1, &state->gl.realtimeIndexBuffer);
+    glNamedBufferStorage(state->gl.realtimeIndexBuffer, iBufferSize, NULL, storage_flags);
+    state->gl.realtimeIndexMap = glMapNamedBufferRange(state->gl.realtimeIndexBuffer, 0, iBufferSize, mapping_flags);
+
     glCreateVertexArrays(1, &state->gl.editorVertexFormat);
     glEnableVertexArrayAttrib(state->gl.editorVertexFormat, 0);
     glEnableVertexArrayAttrib(state->gl.editorVertexFormat, 1);
@@ -142,6 +152,8 @@ bool InitEditor(EdState *state, char *error, size_t errorSize)
     glVertexArrayAttribBinding(state->gl.realtimeVertexFormat, 0, 0);
     glVertexArrayAttribBinding(state->gl.realtimeVertexFormat, 1, 0);
     glVertexArrayAttribBinding(state->gl.realtimeVertexFormat, 2, 0);
+    glVertexArrayVertexBuffer(state->gl.realtimeVertexFormat, 0, state->gl.realtimeVertexBuffer, 0, sizeof(RealtimeVertexType));
+    glVertexArrayElementBuffer(state->gl.realtimeVertexFormat, state->gl.realtimeIndexBuffer);
 
     glCreateBuffers(1, &state->gl.editorShaderDataBuffer);
     glNamedBufferStorage(state->gl.editorShaderDataBuffer, sizeof(EditorShaderData), NULL, GL_DYNAMIC_STORAGE_BIT);
@@ -149,6 +161,10 @@ bool InitEditor(EdState *state, char *error, size_t errorSize)
     state->data.autoScrollLogs = true;
 
     state->data.selectedElements = calloc(SELECTION_CAPACITY, sizeof *state->data.selectedElements);
+
+    state->realtime.cameraPosition = (Vec3){ 0, 0, 0 };
+    state->realtime.cameraDirection = (Vec3){ 0, 0, 1 };
+    state->realtime.cameraRight = (Vec3){ -1, 0, 0 };
 
     return true;
 }
@@ -159,7 +175,7 @@ void DestroyEditor(EdState *state)
     glDeleteFramebuffers(COUNT_OF(framebuffers), framebuffers);
     GLuint textures[] = { state->gl.editorColorTexture, state->gl.editorColorTextureMS, state->gl.realtimeColorTexture, state->gl.realtimeDepthTexture, state->gl.whiteTexture, state->defaultTextures.missingTexture };
     glDeleteTextures(COUNT_OF(textures), textures);
-    GLuint buffer[] = { state->gl.editorVertexBuffer, state->gl.editorIndexBuffer, state->gl.editorShaderDataBuffer, state->gl.backgroundLinesBuffer };
+    GLuint buffer[] = { state->gl.editorVertexBuffer, state->gl.editorIndexBuffer, state->gl.realtimeVertexBuffer, state->gl.realtimeIndexBuffer, state->gl.editorShaderDataBuffer, state->gl.backgroundLinesBuffer };
     glDeleteBuffers(COUNT_OF(buffer), buffer);
     GLuint formats[] = { state->gl.editorBackProg.backVertexFormat, state->gl.editorVertexFormat, state->gl.realtimeVertexFormat };
     glDeleteVertexArrays(COUNT_OF(formats), formats);

@@ -186,12 +186,22 @@ typedef struct EdState
         EditorVertexType *editorVertexMap;
         Index_t *editorIndexMap;
 
+        GLuint realtimeVertexBuffer, realtimeIndexBuffer, realtimeShaderDataBuffer;
+        RealtimeVertexType *realtimeVertexMap;
+        Index_t *realtimeIndexMap;
+
         size_t editorMaxBufferCount;
 
         int currentBuffer;
         GLsync editorBufferFence[NUM_BUFFERS];
         size_t editorVertexBufferOffset[NUM_BUFFERS];
         size_t editorIndexBufferOffset[NUM_BUFFERS];
+
+        int realtimeCurrentBuffer;
+        GLsync realtimeBufferFence[NUM_BUFFERS];
+        size_t realtimeVertexBufferOffset[NUM_BUFFERS];
+        size_t realtimeIndexBufferOffset[NUM_BUFFERS];
+
 
         struct
         {
@@ -260,7 +270,7 @@ typedef struct EdState
     } data;
 
     struct {
-        Vec3 cameraPosition, cameraDirection;
+        Vec3 cameraPosition, cameraDirection, cameraRight;
         mat4s realtimeProjection;
         float realtimeFov;
     } realtime;
@@ -268,9 +278,7 @@ typedef struct EdState
     struct
     {
         GLuint missingIcon;
-        GLuint64 missingIconHandle;
         GLuint missingTexture;
-        GLuint64 missingTextureHandle;
         int missingTextureWidth, missingTextureHeight;
     } defaultTextures;
 } EdState;

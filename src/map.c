@@ -64,7 +64,12 @@ LineData DefaultLineData(void)
 
 SectorData DefaultSectorData(void)
 {
-    return (SectorData){ .type = ST_NORMAL };
+    return (SectorData)
+    { 
+        .type = ST_NORMAL,
+        .floorHeight = 0,
+        .ceilHeight = 64
+    };
 }
 
 LineData CopyLineData(LineData data)
@@ -345,7 +350,7 @@ bool LoadMap(Map *map, const char *filename)
                     MapVertex *vertex = EditAddVertex(map, fvec2_from_vec2(pos));;
                     vertex->idx = idx;
 
-                    if(idx > map->vertexIdx) map->vertexIdx = idx;
+                    if(idx > map->vertexIdx) map->vertexIdx = idx + 1;
                 }
                 break;
             case PARSE_LINES:
@@ -374,7 +379,7 @@ bool LoadMap(Map *map, const char *filename)
                     MapLine *mapLine = EditAddLine(map, vA, vB, data);
                     mapLine->idx = idx;
 
-                    if(idx > map->lineIdx) map->lineIdx = idx;
+                    if(idx > map->lineIdx) map->lineIdx = idx + 1;
 
                     FreeLineData(data);
                 }
@@ -428,7 +433,7 @@ bool LoadMap(Map *map, const char *filename)
                     //MapSector *sector = EditAddSector(map, numOuterLines, outerLines, 0, (size_t[0]){}, (MapLine**[0]){}, data);
                     sector->idx = idx;
 
-                    if(idx > map->lineIdx) map->lineIdx = idx;
+                    if(idx > map->sectorIdx) map->sectorIdx = idx + 1;
 
                     FreeSectorData(data);
                 }

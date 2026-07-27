@@ -28,15 +28,78 @@ void RealtimeWindow(bool *p_open, EdState *state)
             (void)relX;
             (void)relY;
 
+            ImGuiIO *ioptr = igGetIO_Nil();
+            float dt = ioptr->DeltaTime;
+
+            const real_t speed = 78;
+
             if(hovored)
             {
                 bool shiftDown = igGetIO_Nil()->KeyShift;
                 bool altDown = igGetIO_Nil()->KeyAlt;
 
-                if(igIsMouseDragging(ImGuiMouseButton_Right, 2))
-                {
+                Vec3 cameraPosition = state->realtime.cameraPosition;
+                Vec3 cameraDirection = state->realtime.cameraDirection;
+                Vec3 cameraRight = state->realtime.cameraRight;
+                Vec3 cameraUp = vec3_cross(cameraRight, cameraDirection);
 
+                real_t pitchMax = PI - deg2rad(5);
+
+                if(igIsMouseDragging(ImGuiMouseButton_Right, 1))
+                {
+                    ImVec2 dragDelta;
+                    real_t yaw = atan2(cameraDirection.z, cameraDirection.x);
+                    real_t pitch = asin(cameraDirection.y);
+                    igGetMouseDragDelta(&dragDelta, ImGuiMouseButton_Right, 1);
+                    yaw += dragDelta.x * dt;
+                    pitch += -dragDelta.y * dt;
+                    igResetMouseDragDelta(ImGuiMouseButton_Right);
+                    
+                    if(pitch > pitchMax)
+                        pitch = pitchMax;
+                    else if(pitch < -pitchMax)
+                        pitch = -pitchMax;
+
+                    while(yaw >= PI2)
+                        yaw -= PI2;
+                    while(yaw < 0)
+                        yaw += PI2;
+                    
+                    real_t xzLen = cos(pitch);
+                    cameraDirection = vec3_normalize((Vec3){ xzLen*cos(yaw), sin(pitch), xzLen*sin(yaw) });
+                    cameraRight = vec3_normalize((Vec3){ -cameraDirection.z, 0, cameraDirection.x });
+                    cameraUp = vec3_normalize(vec3_cross(cameraRight, cameraDirection));
                 }
+
+                if(igIsKeyDown_Nil(ImGuiKey_W))
+                {
+                    cameraPosition = vec3_add(cameraPosition, vec3_scale(cameraDirection, speed * dt));
+                }
+                if(igIsKeyDown_Nil(ImGuiKey_S))
+                {
+                    cameraPosition = vec3_add(cameraPosition, vec3_scale(cameraDirection, -speed * dt));
+                }
+                if(igIsKeyDown_Nil(ImGuiKey_D))
+                {
+                    cameraPosition = vec3_add(cameraPosition, vec3_scale(cameraRight, speed * dt));
+                }
+                if(igIsKeyDown_Nil(ImGuiKey_A))
+                {
+                    cameraPosition = vec3_add(cameraPosition, vec3_scale(cameraRight, -speed * dt));
+                }
+                if(igIsKeyDown_Nil(ImGuiKey_Q))
+                {
+                    cameraPosition = vec3_add(cameraPosition, vec3_scale(cameraUp, speed * dt));
+                }
+                if(igIsKeyDown_Nil(ImGuiKey_E))
+                {
+                    cameraPosition = vec3_add(cameraPosition, vec3_scale(cameraUp, -speed * dt));
+                }
+
+
+                state->realtime.cameraRight = cameraRight;
+                state->realtime.cameraDirection = cameraDirection;
+                state->realtime.cameraPosition = cameraPosition;
             }
 
             if(focused)
@@ -45,7 +108,7 @@ void RealtimeWindow(bool *p_open, EdState *state)
             }
 
             ResizeRealtimeView(state, clientArea.x, clientArea.y);
-            igImage((ImTextureRef){ ._TexID = state->gl.realtimeColorTexture }, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 });
+            igImage((ImTextureRef){ ._TexID = state->gl.realtimeColorTexture }, clientArea, (ImVec2){ 0, 1 }, (ImVec2){ 1, 0 });
         }
         igEndChild();
 
