@@ -43,7 +43,7 @@ void RealtimeWindow(bool *p_open, EdState *state)
                 Vec3 cameraRight = state->realtime.cameraRight;
                 Vec3 cameraUp = vec3_cross(cameraRight, cameraDirection);
 
-                real_t pitchMax = PI - deg2rad(5);
+                real_t pitchMax = PIHALF - deg2rad(1);
 
                 if(igIsMouseDragging(ImGuiMouseButton_Right, 1))
                 {

@@ -9629,12 +9629,14 @@ CollapsingHeader	extern/cimgui/imgui/imgui_widgets.cpp	/^bool ImGui::CollapsingH
 CollapsingHeader	extern/cimgui/imgui/imgui_widgets.cpp	/^bool ImGui::CollapsingHeader(const char* label, bool* p_visible, ImGuiTreeNodeFlags flags)$/;"	f	class:ImGui	typeref:typename:bool
 CollectDragData	src/editor.c	/^static size_t CollectDragData(const EdState *state, size_t vertexOffset)$/;"	f	typeref:typename:size_t	file:
 CollectEditData	src/editor.c	/^static size_t CollectEditData(const EdState *state, size_t vertexOffset)$/;"	f	typeref:typename:size_t	file:
+CollectFlats	src/realtime.c	/^static size_t CollectFlats(const EdState *state, size_t vertexOffset, RenderList *renderList)$/;"	f	typeref:typename:size_t	file:
 CollectIntersections	src/map/insert.c	/^static bool CollectIntersections(Map *map, WorkSet *ws, size_t numNewLines, size_t newLineIdx[st/;"	f	typeref:typename:bool	file:
 CollectLines	src/editor.c	/^static size_t CollectLines(const EdState *state, size_t vertexOffset)$/;"	f	typeref:typename:size_t	file:
 CollectSectors	src/editor.c	/^static size_t CollectSectors(const EdState *state, size_t vertexOffset, size_t indexOffset, Rend/;"	f	typeref:typename:size_t	file:
 CollectTexturesFs	src/asset_sources/texture_load_fs.c	/^size_t CollectTexturesFs(TextureCollection *tc, FetchLocation **locations, size_t size, size_t */;"	f	typeref:typename:size_t
 CollectTexturesFtp	src/asset_sources/texture_load_ftp.c	/^size_t CollectTexturesFtp(TextureCollection *tc, FetchLocation **locations, size_t size, size_t /;"	f	typeref:typename:size_t
 CollectVertices	src/editor.c	/^static size_t CollectVertices(const EdState *state, size_t vertexOffset)$/;"	f	typeref:typename:size_t	file:
+CollectWalls	src/realtime.c	/^static size_t CollectWalls(const EdState *state, size_t vertexOffset, RenderList *renderList)$/;"	f	typeref:typename:size_t	file:
 Collector	extern/triangulate/earcut/test/fixtures/geometries.hpp	/^class Collector {$/;"	c	namespace:mapbox::fixtures
 Color	extern/cimgui/imgui/imgui_demo.cpp	/^    ImVec4      Color;      \/\/ An arbitrary variable associated to the document$/;"	m	struct:MyDocument	typeref:typename:ImVec4	file:
 Color	src/vecmath.h	/^} Color;$/;"	t	typeref:struct:__anone350707a0308
@@ -14160,6 +14162,7 @@ GetPlatformIO	extern/cimgui/imgui/imgui.cpp	/^ImGuiPlatformIO& ImGui::GetPlatfor
 GetPopupAllowedExtentRect	extern/cimgui/imgui/imgui.cpp	/^ImRect ImGui::GetPopupAllowedExtentRect(ImGuiWindow* window)$/;"	f	class:ImGui	typeref:typename:ImRect
 GetProgramInfoLog	extern/cimgui/imgui/backends/imgui_impl_opengl3_loader.h	/^        PFNGLGETPROGRAMINFOLOGPROC        GetProgramInfoLog;$/;"	m	struct:ImGL3WProcs::__anon0d3434fa0108	typeref:typename:PFNGLGETPROGRAMINFOLOGPROC
 GetProgramiv	extern/cimgui/imgui/backends/imgui_impl_opengl3_loader.h	/^        PFNGLGETPROGRAMIVPROC             GetProgramiv;$/;"	m	struct:ImGL3WProcs::__anon0d3434fa0108	typeref:typename:PFNGLGETPROGRAMIVPROC
+GetRenderDataSlot	src/realtime.c	/^static RenderData* GetRenderDataSlot(RenderList *renderList, GLuint texture)$/;"	f	typeref:typename:RenderData *	file:
 GetResizeBorderRect	extern/cimgui/imgui/imgui.cpp	/^static ImRect GetResizeBorderRect(ImGuiWindow* window, int border_n, float perp_padding, float t/;"	f	typeref:typename:ImRect	file:
 GetResultingFileName	extern/imguifiledialog/ImGuiFileDialog.cpp	/^std::string IGFD::FileManager::GetResultingFileName(FileDialogInternal& vFileDialogInternal, IGF/;"	f	class:IGFD::FileManager	typeref:typename:std::string
 GetResultingFilePathName	extern/imguifiledialog/ImGuiFileDialog.cpp	/^std::string IGFD::FileManager::GetResultingFilePathName(FileDialogInternal& vFileDialogInternal,/;"	f	class:IGFD::FileManager	typeref:typename:std::string
@@ -14209,6 +14212,7 @@ GetTexID	extern/cimgui/imgui/imgui.h	/^inline ImTextureID ImTextureRef::GetTexID
 GetTexRef	extern/cimgui/imgui/imgui.h	/^    ImTextureRef        GetTexRef()                 { ImTextureRef tex_ref; tex_ref._TexData = t/;"	f	struct:ImTextureData	typeref:typename:ImTextureRef
 GetTextLineHeight	extern/cimgui/imgui/imgui.cpp	/^float ImGui::GetTextLineHeight()$/;"	f	class:ImGui	typeref:typename:float
 GetTextLineHeightWithSpacing	extern/cimgui/imgui/imgui.cpp	/^float ImGui::GetTextLineHeightWithSpacing()$/;"	f	class:ImGui	typeref:typename:float
+GetTextureId	src/realtime.c	/^static GLuint GetTextureId(const EdState *state, const Texture *texture)$/;"	f	typeref:typename:GLuint	file:
 GetTime	extern/cimgui/imgui/imgui.cpp	/^double ImGui::GetTime()$/;"	f	class:ImGui	typeref:typename:double
 GetTopMostAndVisiblePopupModal	extern/cimgui/imgui/imgui.cpp	/^ImGuiWindow* ImGui::GetTopMostAndVisiblePopupModal()$/;"	f	class:ImGui	typeref:typename:ImGuiWindow *
 GetTopMostPopupModal	extern/cimgui/imgui/imgui.cpp	/^ImGuiWindow* ImGui::GetTopMostPopupModal()$/;"	f	class:ImGui	typeref:typename:ImGuiWindow *
@@ -22431,6 +22435,7 @@ MakeMapSector	src/map/insert.c	/^MapSector* MakeMapSector(Map *map, MapLine *sta
 MakePolygon	src/map/util.c	/^struct Polygon* MakePolygon(Arena *arena, size_t numVertices, FVec2 vertices[static numVertices]/;"	f	typeref:struct:Polygon *
 MakeScaledSize	extern/cimgui/imgui/backends/imgui_impl_metal.mm	/^inline static CGSize MakeScaledSize(CGSize size, CGFloat scale)$/;"	f
 MakeVertex	extern/triangulate/earcut/test/comparison/libtess2/mesh.c	/^static void MakeVertex( TESSvertex *newVertex,$/;"	f	typeref:typename:void	file:
+MakeWall	src/realtime.c	/^static void MakeWall(Vec2 a, Vec2 b, real_t zb, real_t zt, RealtimeVertexType *vertices, RenderD/;"	f	typeref:typename:void	file:
 MallocWrapper	extern/cimgui/imgui/imgui.cpp	/^static void*   MallocWrapper(size_t size, void* user_data)    { IM_UNUSED(user_data); IM_UNUSED(/;"	f	typeref:typename:void *	file:
 MallocWrapper	extern/cimgui/imgui/imgui.cpp	/^static void*   MallocWrapper(size_t size, void* user_data)    { IM_UNUSED(user_data); return mal/;"	f	typeref:typename:void *	file:
 ManageGPUThumbnails	extern/imguifiledialog/ImGuiFileDialog.cpp	/^IGFD_C_API void ManageGPUThumbnails(ImGuiFileDialog* vContextPtr) {$/;"	f	typeref:typename:IGFD_C_API void
@@ -24084,9 +24089,9 @@ PFN_SetThreadDpiAwarenessContext	extern/cimgui/imgui/backends/imgui_impl_win32.c
 PFN_XInputGetCapabilities	extern/cimgui/imgui/backends/imgui_impl_win32.cpp	/^typedef DWORD(WINAPI* PFN_XInputGetCapabilities)(DWORD, DWORD, XINPUT_CAPABILITIES*);$/;"	t	typeref:typename:DWORD (WINAPI *)(DWORD,DWORD,XINPUT_CAPABILITIES *)	file:
 PFN_XInputGetState	extern/cimgui/imgui/backends/imgui_impl_win32.cpp	/^typedef DWORD(WINAPI* PFN_XInputGetState)(DWORD, XINPUT_STATE*);$/;"	t	typeref:typename:DWORD (WINAPI *)(DWORD,XINPUT_STATE *)	file:
 PI	extern/lua-5.4.8/src/lmathlib.c	/^#define PI	/;"	d	file:
-PI	src/geometry.h	/^#define PI /;"	d
-PI2	src/geometry.h	/^#define PI2 /;"	d
-PIHALF	src/geometry.h	/^#define PIHALF /;"	d
+PI	src/vecmath.h	/^#define PI /;"	d
+PI2	src/vecmath.h	/^#define PI2 /;"	d
+PIHALF	src/vecmath.h	/^#define PIHALF /;"	d
 PLACES_BOOKMARK_DEFAULT_OPEPEND	extern/imguifiledialog/ImGuiFileDialog.cpp	/^#define PLACES_BOOKMARK_DEFAULT_OPEPEND /;"	d	file:
 PLACES_DEVICES_DEFAULT_OPEPEND	extern/imguifiledialog/ImGuiFileDialog.cpp	/^#define PLACES_DEVICES_DEFAULT_OPEPEND /;"	d	file:
 PLACES_PANE_DEFAULT_SHOWN	extern/imguifiledialog/ImGuiFileDialog.cpp	/^#define PLACES_PANE_DEFAULT_SHOWN /;"	d	file:
@@ -24808,12 +24813,16 @@ RenderCompleteSemaphore	extern/cimgui/cimgui_impl.h	/^    VkSemaphore RenderComp
 RenderCompleteSemaphore	extern/cimgui/imgui/backends/imgui_impl_vulkan.h	/^    VkSemaphore         RenderCompleteSemaphore;$/;"	m	struct:ImGui_ImplVulkanH_FrameSemaphores	typeref:typename:VkSemaphore
 RenderData	src/editor.c	/^typedef struct RenderData$/;"	s	file:
 RenderData	src/editor.c	/^} RenderData;$/;"	t	typeref:struct:RenderData	file:
+RenderData	src/realtime.c	/^typedef struct RenderData$/;"	s	file:
+RenderData	src/realtime.c	/^} RenderData;$/;"	t	typeref:struct:RenderData	file:
 RenderDimmedBackgroundBehindWindow	extern/cimgui/imgui/imgui.cpp	/^static void ImGui::RenderDimmedBackgroundBehindWindow(ImGuiWindow* window, ImU32 col)$/;"	f	class:ImGui	typeref:typename:void	file:
 RenderDimmedBackgrounds	extern/cimgui/imgui/imgui.cpp	/^static void ImGui::RenderDimmedBackgrounds()$/;"	f	class:ImGui	typeref:typename:void	file:
 RenderDragDropTargetRect	extern/cimgui/imgui/imgui.cpp	/^void ImGui::RenderDragDropTargetRect(const ImRect& bb, const ImRect& item_clip_rect)$/;"	f	class:ImGui	typeref:typename:void
 RenderEditorView	src/editor.c	/^void RenderEditorView(EdState *state)$/;"	f	typeref:typename:void
 RenderFrame	extern/cimgui/imgui/imgui.cpp	/^void ImGui::RenderFrame(ImVec2 p_min, ImVec2 p_max, ImU32 fill_col, bool borders, float rounding/;"	f	class:ImGui	typeref:typename:void
 RenderFrameBorder	extern/cimgui/imgui/imgui.cpp	/^void ImGui::RenderFrameBorder(ImVec2 p_min, ImVec2 p_max, float rounding)$/;"	f	class:ImGui	typeref:typename:void
+RenderList	src/realtime.c	/^typedef struct RenderList$/;"	s	file:
+RenderList	src/realtime.c	/^} RenderList;$/;"	t	typeref:struct:RenderList	file:
 RenderMouseCursor	extern/cimgui/imgui/imgui.cpp	/^void ImGui::RenderMouseCursor(ImVec2 base_pos, float base_scale, ImGuiMouseCursor mouse_cursor, /;"	f	class:ImGui	typeref:typename:void
 RenderNavCursor	extern/cimgui/imgui/imgui.cpp	/^void ImGui::RenderNavCursor(const ImRect& bb, ImGuiID id, ImGuiNavRenderCursorFlags flags)$/;"	f	class:ImGui	typeref:typename:void
 RenderNavHighlight	extern/cimgui/imgui/imgui_internal.h	/^    inline    void          RenderNavHighlight(const ImRect& bb, ImGuiID id, ImGuiNavRenderCurso/;"	f	namespace:ImGui	typeref:typename:void
@@ -27680,6 +27689,7 @@ Texture	src/texture_collection.h	/^typedef struct Texture$/;"	s
 Texture	src/texture_collection.h	/^} Texture;$/;"	t	typeref:struct:Texture
 TextureCollection	src/texture_collection.h	/^typedef struct TextureCollection$/;"	s
 TextureCollection	src/texture_collection.h	/^} TextureCollection;$/;"	t	typeref:struct:TextureCollection
+TextureField	src/windows/property.c	/^static void TextureField(EdState *state, const char *label, char **textureName)$/;"	f	typeref:typename:void	file:
 TextureFlags	src/texture_collection.h	/^typedef enum TextureFlags$/;"	g
 TextureFlags	src/texture_collection.h	/^} TextureFlags;$/;"	t	typeref:enum:TextureFlags
 TextureIteration	src/windows/textures.c	/^static void TextureIteration(Texture *texture, size_t idx, void *user)$/;"	f	typeref:typename:void	file:
@@ -34304,7 +34314,7 @@ begin	extern/imguifiledialog/ImGuiFileDialog.h	/^    typename std::vector<T>::co
 begin	extern/imguifiledialog/ImGuiFileDialog.h	/^    typename std::vector<T>::iterator begin() {$/;"	f	class:IGFD::SearchableVector	typeref:typename:std::vector<T>::iterator
 begin	extern/tsoding/arena.h	/^    Region *begin, *end;$/;"	m	struct:__anon3d9ca04e0108	typeref:typename:Region *
 bench	extern/triangulate/earcut/CMakeLists.txt	/^    add_executable(bench test\/bench.cpp $<TARGET_OBJECTS:fixtures>)$/;"	t
-between	src/geometry.h	/^#define between(/;"	d
+between	src/vecmath.h	/^#define between(/;"	d
 bg_col	extern/cimgui/generator/output/definitions.json	/^        "bg_col": "0",$/;"	s	object:igSplitterBehavior.0.defaults
 bg_col	extern/cimgui/generator/output/definitions.json	/^        "bg_col": "ImVec4(0,0,0,0)",$/;"	s	object:igImageButton.0.defaults
 bg_col	extern/cimgui/generator/output/definitions.json	/^        "bg_col": "ImVec4(0,0,0,0)",$/;"	s	object:igImageWithBg.0.defaults
@@ -37175,8 +37185,9 @@ callfrealloc	extern/lua-5.4.8/src/lmem.c	/^#define callfrealloc(/;"	d	file:
 callstatus	extern/lua-5.4.8/src/lstate.h	/^  unsigned short callstatus;$/;"	m	struct:CallInfo	typeref:typename:unsigned short
 cam	extern/triangulate/earcut/test/viz.cpp	/^static Camera2D cam;$/;"	v	typeref:typename:Camera2D	file:
 camera	extern/cglm/docs/source/cam.rst	/^camera$/;"	H
-cameraDirection	src/editor.h	/^        Vec3 cameraPosition, cameraDirection;$/;"	m	struct:EdState::__anonf14592f90908	typeref:typename:Vec3
-cameraPosition	src/editor.h	/^        Vec3 cameraPosition, cameraDirection;$/;"	m	struct:EdState::__anonf14592f90908	typeref:typename:Vec3
+cameraDirection	src/editor.h	/^        Vec3 cameraPosition, cameraDirection, cameraRight;$/;"	m	struct:EdState::__anonf14592f90908	typeref:typename:Vec3
+cameraPosition	src/editor.h	/^        Vec3 cameraPosition, cameraDirection, cameraRight;$/;"	m	struct:EdState::__anonf14592f90908	typeref:typename:Vec3
+cameraRight	src/editor.h	/^        Vec3 cameraPosition, cameraDirection, cameraRight;$/;"	m	struct:EdState::__anonf14592f90908	typeref:typename:Vec3
 canBeEdited	extern/imguifiledialog/ImGuiFileDialog.h	/^        bool canBeEdited                             = false;  \/\/ will show +\/- button for ad/;"	m	struct:IGFD::PlacesFeature::GroupStruct	typeref:typename:bool
 canBeSaved	extern/imguifiledialog/ImGuiFileDialog.h	/^        bool canBeSaved                              = false;  \/\/ defined by code, can be used/;"	m	struct:IGFD::PlacesFeature::GroupStruct	typeref:typename:bool
 canBeSaved	extern/imguifiledialog/ImGuiFileDialog.h	/^        bool canBeSaved = true;  \/\/ defined by code, can be used for prevent serialization \/ /;"	m	struct:IGFD::PlacesFeature::PlaceStruct	typeref:typename:bool
@@ -37198,6 +37209,8 @@ capacity	src/map/insert.c	/^    size_t count, capacity;$/;"	m	struct:LineWork	ty
 capacity	src/map/insert.c	/^    size_t count, capacity;$/;"	m	struct:PendingLineSector	typeref:typename:size_t	file:
 capacity	src/map/insert.c	/^    size_t count, capacity;$/;"	m	struct:TouchedLines	typeref:typename:size_t	file:
 capacity	src/map/insert.c	/^    size_t count, capacity;$/;"	m	struct:WorkSet	typeref:typename:size_t	file:
+capacity	src/realtime.c	/^    size_t count, capacity;$/;"	m	struct:RenderData	typeref:typename:size_t	file:
+capacity	src/realtime.c	/^    size_t count, capacity;$/;"	m	struct:RenderList	typeref:typename:size_t	file:
 capture	extern/lua-5.4.8/src/lstrlib.c	/^  } capture[LUA_MAXCAPTURES];$/;"	m	struct:MatchState	typeref:struct:MatchState::__anon5f656ce90108[]	file:
 capture_to_close	extern/lua-5.4.8/src/lstrlib.c	/^static int capture_to_close (MatchState *ms) {$/;"	f	typeref:typename:int	file:
 cast	extern/lua-5.4.8/src/llimits.h	/^#define cast(/;"	d
@@ -39637,6 +39650,8 @@ count	src/map/insert.c	/^    size_t count, capacity;$/;"	m	struct:LineWork	typer
 count	src/map/insert.c	/^    size_t count, capacity;$/;"	m	struct:PendingLineSector	typeref:typename:size_t	file:
 count	src/map/insert.c	/^    size_t count, capacity;$/;"	m	struct:TouchedLines	typeref:typename:size_t	file:
 count	src/map/insert.c	/^    size_t count, capacity;$/;"	m	struct:WorkSet	typeref:typename:size_t	file:
+count	src/realtime.c	/^    size_t count, capacity;$/;"	m	struct:RenderData	typeref:typename:size_t	file:
+count	src/realtime.c	/^    size_t count, capacity;$/;"	m	struct:RenderList	typeref:typename:size_t	file:
 countExtDot	extern/imguifiledialog/ImGuiFileDialog.h	/^    size_t countExtDot = 0U;                                          \/\/ count dots in file ex/;"	m	class:IGFD::FileInfos	typeref:typename:size_t
 countSelectionMax	extern/imguifiledialog/ImGuiFileDialog.h	/^    int32_t countSelectionMax  = 1;                          \/\/ count selection max, 0 for inf/;"	m	struct:IGFD::FileDialogConfig	typeref:typename:int32_t
 countSelectionMax	extern/imguifiledialog/ImGuiFileDialog.h	/^    int32_t countSelectionMax;   \/\/ count selection max$/;"	m	struct:IGFD_FileDialog_Config	typeref:typename:int32_t
@@ -41541,7 +41556,7 @@ define	extern/imguifiledialog/Documentation.md	/^you can do that by define the c
 define	extern/imguifiledialog/Documentation.md	/^you can enable it with the compiler flag : #define USE_QUICK_PATH_SELECT $/;"	h	subsection:ImGuiFileDialog""Features""Samples :
 define	extern/re/README.md	/^- Small code and binary size: 500 SLOC, ~3kb binary for x86. Statically #define'd memory usage \//;"	h	subsection:A small regex implementation in C""Notable features and omissions
 definitions description	extern/cimgui/README.md	/^### definitions description$/;"	S	chapter:generate binding
-deg2rad	src/geometry.h	/^#define deg2rad(/;"	d
+deg2rad	src/vecmath.h	/^#define deg2rad(/;"	d
 degenerate	extern/triangulate/earcut/test/fixtures/degenerate.cpp	/^static const Fixture<short> degenerate("degenerate",$/;"	v	namespace:mapbox::fixtures	typeref:typename:const Fixture<short>	file:
 delay	extern/imguifiledialog/stb/stb_image.h	/^   int delay;$/;"	m	struct:__anon47b0cd7d1308	typeref:typename:int
 delay	extern/stb/stb_image.h	/^   int delay;$/;"	m	struct:__anon5b03bf431308	typeref:typename:int
@@ -51582,6 +51597,8 @@ items	src/map/insert.c	/^    LineSectorData *items;$/;"	m	struct:PendingLineSect
 items	src/map/insert.c	/^    LineWork *items;$/;"	m	struct:WorkSet	typeref:typename:LineWork *	file:
 items	src/map/insert.c	/^    SplitPoint *items;$/;"	m	struct:LineWork	typeref:typename:SplitPoint *	file:
 items	src/map/insert.c	/^    TouchedLine *items;$/;"	m	struct:TouchedLines	typeref:typename:TouchedLine *	file:
+items	src/realtime.c	/^    Index_t *items;$/;"	m	struct:RenderData	typeref:typename:Index_t *	file:
+items	src/realtime.c	/^    RenderData *items;$/;"	m	struct:RenderList	typeref:typename:RenderData *	file:
 itemsCount	extern/cimgui/generator/cpp2ffi.lua	/^local function itemsCount(items)$/;"	f
 items_count	extern/cimgui/generator/output/definitions.json	/^        "items_count": "-1",$/;"	s	object:igBeginMultiSelect.0.defaults
 items_height	extern/cimgui/generator/output/definitions.json	/^        "items_height": "-1.0f"$/;"	s	object:ImGuiListClipper_Begin.0.defaults
@@ -55382,9 +55399,7 @@ mingw	extern/lua-5.4.8/src/Makefile	/^mingw:$/;"	t
 mini	extern/imguifiledialog/ImGuiFileDialog.cpp	/^#define mini(/;"	d	file:
 minor	extern/cimgui/imgui/backends/imgui_impl_opengl3_loader.h	/^static struct { int major, minor; } version;$/;"	m	struct:__anon0d3434fa0208	typeref:typename:int
 missingIcon	src/editor.h	/^        GLuint missingIcon;$/;"	m	struct:EdState::__anonf14592f90a08	typeref:typename:GLuint
-missingIconHandle	src/editor.h	/^        GLuint64 missingIconHandle;$/;"	m	struct:EdState::__anonf14592f90a08	typeref:typename:GLuint64
 missingTexture	src/editor.h	/^        GLuint missingTexture;$/;"	m	struct:EdState::__anonf14592f90a08	typeref:typename:GLuint
-missingTextureHandle	src/editor.h	/^        GLuint64 missingTextureHandle;$/;"	m	struct:EdState::__anonf14592f90a08	typeref:typename:GLuint64
 missingTextureHeight	src/editor.h	/^        int missingTextureWidth, missingTextureHeight;$/;"	m	struct:EdState::__anonf14592f90a08	typeref:typename:int
 missingTextureWidth	src/editor.h	/^        int missingTextureWidth, missingTextureHeight;$/;"	m	struct:EdState::__anonf14592f90a08	typeref:typename:int
 modTime	src/texture_collection.h	/^    time_t modTime;$/;"	m	struct:Texture	typeref:typename:time_t
@@ -64988,7 +65003,7 @@ prev	src/map.h	/^    struct MapVertex *next, *prev;$/;"	m	struct:MapVertex	typer
 prevZ	extern/triangulate/earcut/include/mapbox/earcut.hpp	/^        Node* prevZ = nullptr;$/;"	m	struct:mapbox::detail::Earcut::Node	typeref:typename:Node *
 prev_first	extern/cimgui/imgui/imstb_textedit.h	/^   int prev_first;  \/\/ first char of previous row$/;"	m	struct:__anon7a1c51c00408	typeref:typename:int
 prev_link	extern/cimgui/imgui/imstb_rectpack.h	/^   stbrp_node **prev_link;$/;"	m	struct:__anon2a0fbde20308	typeref:typename:stbrp_node **
-preview_fov	settings.ini	/^preview_fov=90$/;"	k
+preview_fov	settings.ini	/^preview_fov=70$/;"	k
 previous	extern/lua-5.4.8/src/ldo.c	/^  struct lua_longjmp *previous;$/;"	m	struct:lua_longjmp	typeref:struct:lua_longjmp *	file:
 previous	extern/lua-5.4.8/src/lobject.h	/^      struct UpVal **previous;$/;"	m	struct:UpVal::__anon319ae595060a::__anon319ae5950708	typeref:struct:UpVal **
 previous	extern/lua-5.4.8/src/lparser.c	/^  struct BlockCnt *previous;  \/* chain *\/$/;"	m	struct:BlockCnt	typeref:struct:BlockCnt *	file:
@@ -65074,7 +65089,7 @@ r	extern/cglm/include/cglm/types-struct.h	/^    int r;$/;"	m	struct:ivec4s::__an
 r	extern/lua-5.4.8/src/llex.h	/^  lua_Number r;$/;"	m	union:__anon960dddc7010a	typeref:typename:lua_Number
 r	extern/triangulate/earcut/test/comparison/libtess2/priorityq.c	/^	struct { PQkey **p, **r; } Stack[50], *top = Stack;$/;"	m	struct:pqInit::__anonec406ba00108	typeref:typename:PQkey **	file:
 r	src/vecmath.h	/^    float r, g, b, a;$/;"	m	struct:__anone350707a0308	typeref:typename:float
-rad2deg	src/geometry.h	/^#define rad2deg(/;"	d
+rad2deg	src/vecmath.h	/^#define rad2deg(/;"	d
 rain	extern/triangulate/earcut/test/fixtures/rain.cpp	/^static const Fixture<short> rain($/;"	v	namespace:mapbox::fixtures	typeref:typename:const Fixture<short>	file:
 randfuncs	extern/lua-5.4.8/src/lmathlib.c	/^static const luaL_Reg randfuncs[] = {$/;"	v	typeref:typename:const luaL_Reg[]	file:
 randseed	extern/lua-5.4.8/src/lmathlib.c	/^static void randseed (lua_State *L, RanState *state) {$/;"	f	typeref:typename:void	file:
@@ -65157,16 +65172,25 @@ realdestructor	extern/cimgui/generator/output/definitions.json	/^      "realdest
 reallymarkobject	extern/lua-5.4.8/src/lgc.c	/^static void reallymarkobject (global_State *g, GCObject *o) {$/;"	f	typeref:typename:void	file:
 reallyold	extern/lua-5.4.8/src/lstate.h	/^  GCObject *reallyold;  \/* objects more than one cycle old ("really old") *\/$/;"	m	struct:global_State	typeref:typename:GCObject *
 realtime	src/editor.h	/^    } realtime;$/;"	m	struct:EdState	typeref:struct:EdState::__anonf14592f90908
+realtimeBufferFence	src/editor.h	/^        GLsync realtimeBufferFence[NUM_BUFFERS];$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:GLsync[]
 realtimeColorTexture	src/editor.h	/^        GLuint realtimeColorTexture;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:GLuint
+realtimeCurrentBuffer	src/editor.h	/^        int realtimeCurrentBuffer;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:int
 realtimeDepthTexture	src/editor.h	/^        GLuint realtimeDepthTexture;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:GLuint
 realtimeFov	src/editor.h	/^        float realtimeFov;$/;"	m	struct:EdState::__anonf14592f90908	typeref:typename:float
 realtimeFov	src/editor.h	/^    int realtimeFov;$/;"	m	struct:EdSettings	typeref:typename:int
 realtimeFramebuffer	src/editor.h	/^        GLuint realtimeFramebuffer;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:GLuint
 realtimeFramebufferHeight	src/editor.h	/^        int realtimeFramebufferHeight;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:int
 realtimeFramebufferWidth	src/editor.h	/^        int realtimeFramebufferWidth;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:int
+realtimeIndexBuffer	src/editor.h	/^        GLuint realtimeVertexBuffer, realtimeIndexBuffer, realtimeShaderDataBuffer;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:GLuint
+realtimeIndexBufferOffset	src/editor.h	/^        size_t realtimeIndexBufferOffset[NUM_BUFFERS];$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:size_t[]
+realtimeIndexMap	src/editor.h	/^        Index_t *realtimeIndexMap;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:Index_t *
 realtimeProgram	src/editor.h	/^        } realtimeProgram;$/;"	m	struct:EdState::__anonf14592f90208	typeref:struct:EdState::__anonf14592f90208::__anonf14592f90708
 realtimeProjection	src/editor.h	/^        mat4s realtimeProjection;$/;"	m	struct:EdState::__anonf14592f90908	typeref:typename:mat4s
+realtimeShaderDataBuffer	src/editor.h	/^        GLuint realtimeVertexBuffer, realtimeIndexBuffer, realtimeShaderDataBuffer;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:GLuint
+realtimeVertexBuffer	src/editor.h	/^        GLuint realtimeVertexBuffer, realtimeIndexBuffer, realtimeShaderDataBuffer;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:GLuint
+realtimeVertexBufferOffset	src/editor.h	/^        size_t realtimeVertexBufferOffset[NUM_BUFFERS];$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:size_t[]
 realtimeVertexFormat	src/editor.h	/^        GLuint realtimeVertexFormat;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:GLuint
+realtimeVertexMap	src/editor.h	/^        RealtimeVertexType *realtimeVertexMap;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:RealtimeVertexType *
 recfield	extern/lua-5.4.8/src/lparser.c	/^static void recfield (LexState *ls, ConsControl *cc) {$/;"	f	typeref:typename:void	file:
 rect_height_compare	extern/cimgui/imgui/imstb_rectpack.h	/^static int STBRP__CDECL rect_height_compare(const void *a, const void *b)$/;"	f	typeref:typename:int STBRP__CDECL
 rect_original_order	extern/cimgui/imgui/imstb_rectpack.h	/^static int STBRP__CDECL rect_original_order(const void *a, const void *b)$/;"	f	typeref:typename:int STBRP__CDECL
@@ -65214,6 +65238,7 @@ removelastlineinfo	extern/lua-5.4.8/src/lcode.c	/^static void removelastlineinfo
 removevalues	extern/lua-5.4.8/src/lcode.c	/^static void removevalues (FuncState *fs, int list) {$/;"	f	typeref:typename:void	file:
 removevars	extern/lua-5.4.8/src/lparser.c	/^static void removevars (FuncState *fs, int tolevel) {$/;"	f	typeref:typename:void	file:
 render3d	src/editor.h	/^        bool render3d;$/;"	m	struct:EdState::__anonf14592f90108	typeref:typename:bool
+renderArena	src/realtime.c	/^static Arena renderArena = { 0 };$/;"	v	typeref:typename:Arena	file:
 renderPipelineStateCache	extern/cimgui/imgui/backends/imgui_impl_metal.mm	/^@property (nonatomic, strong) NSMutableDictionary*          renderPipelineStateCache; \/\/ pipel/;"	p	interface:MetalContext
 renderPipelineStateForFramebufferDescriptor:device:	extern/cimgui/imgui/backends/imgui_impl_metal.mm	/^- (id<MTLRenderPipelineState>)renderPipelineStateForFramebufferDescriptor:(FramebufferDescriptor/;"	m	implementation:MetalContext
 renderPipelineStateForFramebufferDescriptor:device:	extern/cimgui/imgui/backends/imgui_impl_metal.mm	/^- (id<MTLRenderPipelineState>)renderPipelineStateForFramebufferDescriptor:(FramebufferDescriptor/;"	m	interface:MetalContext
@@ -67155,7 +67180,7 @@ sidePane	extern/imguifiledialog/ImGuiFileDialog.h	/^    PaneFun sidePane;       
 sidePaneWidth	extern/imguifiledialog/ImGuiFileDialog.h	/^    float sidePaneWidth = 250.0f;                            \/\/ side pane width$/;"	m	struct:IGFD::FileDialogConfig	typeref:typename:float
 sidePaneWidth	extern/imguifiledialog/ImGuiFileDialog.h	/^    float sidePaneWidth;         \/\/ side pane width};$/;"	m	struct:IGFD_FileDialog_Config	typeref:typename:float
 sign	extern/triangulate/earcut/include/mapbox/earcut.hpp	/^int Earcut<N>::sign(double val) {$/;"	f	class:mapbox::detail::Earcut	typeref:typename:int
-sign	src/geometry.h	/^#define sign(/;"	d
+sign	src/vecmath.h	/^#define sign(/;"	d
 signature	extern/cimgui/generator/output/definitions.json	/^          "signature": "(size_t sz,void* user_data)",$/;"	s	object:ImGuiFreeType_SetAllocatorFunctions.0.argsT.0
 signature	extern/cimgui/generator/output/definitions.json	/^          "signature": "(void const*,void const*)",$/;"	s	object:igImQsort.0.argsT.3
 signature	extern/cimgui/generator/output/definitions.json	/^          "signature": "(void* data,int idx)",$/;"	s	object:igPlotEx.0.argsT.2
@@ -72507,6 +72532,7 @@ text_end	extern/cimgui/generator/output/definitions.json	/^        "text_end": "
 text_end	extern/cimgui/generator/output/definitions.json	/^        "text_end": "NULL",$/;"	s	object:ImDrawList_AddText.1.defaults
 text_end	extern/cimgui/generator/output/definitions.json	/^        "text_end": "NULL",$/;"	s	object:igCalcTextSize.0.defaults
 texture	src/editor.c	/^    GLuint texture;$/;"	m	struct:RenderData	typeref:typename:GLuint	file:
+texture	src/realtime.c	/^    GLuint texture;$/;"	m	struct:RenderData	typeref:typename:GLuint	file:
 texture1	src/texture_collection.h	/^    GLuint texture1, texture2;$/;"	m	struct:Texture	typeref:typename:GLuint
 texture2	src/texture_collection.h	/^    GLuint texture1, texture2;$/;"	m	struct:Texture	typeref:typename:GLuint
 textureChannels	extern/imguifiledialog/ImGuiFileDialog.h	/^    int textureChannels             = 0;  \/\/ count channels of the texture to upload$/;"	m	struct:IGFD_Thumbnail_Info	typeref:typename:int
