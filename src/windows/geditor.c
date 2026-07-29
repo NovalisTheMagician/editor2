@@ -107,6 +107,11 @@ static void AddEditVertex(EdState *state, FVec2 v)
     state->data.editVertexBuffer[idx] = v;
 }
 
+static void GotoLocation(EdState *state, real_t x, real_t y)
+{
+    state->data.viewPosition = (Vec2){ x - (state->gl.editorFramebufferWidth / 2.0f), x - (state->gl.editorFramebufferHeight / 2.0f) };
+}
+
 void EditorWindow(bool *p_open, EdState *state)
 {
     if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_C, ImGuiInputFlags_RouteGlobal))
@@ -173,28 +178,27 @@ void EditorWindow(bool *p_open, EdState *state)
 
         igSameLine(0, 16);
         if(igButton("Go To Origin", (ImVec2){ 0, 0 }))
-        {
-            state->data.viewPosition = (Vec2){ -state->gl.editorFramebufferWidth / 2.0f, -state->gl.editorFramebufferHeight / 2.0f };
-        }
+            GotoLocation(state, 0, 0);
 
         igSameLine(0, 16);
         if(igButton("Go To", (ImVec2){ 0, 0 }))
+            igOpenPopup_Str("Go To", 0);
+
+        if(igBeginPopupModal("Go To", NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
-            static bool gotoPopupOpen = false;
-            if(igBeginPopupModal("Go To", &gotoPopupOpen, 0))
+            static float coords[2] = { 0 };
+            igInputFloat2("Coords", coords, NULL, 0);
+            if(igButton("Goto", (ImVec2){ 0, 0 }))
             {
-                float coords[2] = { 0 };
-                igInputFloat2("Coords", coords, NULL, 0);
-                if(igButton("Goto", (ImVec2){ 0, 0 }))
-                {
-                    igCloseCurrentPopup();
-                }
-                if(igButton("Cancel", (ImVec2){ 0, 0 }))
-                {
-                    igCloseCurrentPopup();
-                }
-                igEndPopup();
+                GotoLocation(state, coords[0], coords[1]);
+                igCloseCurrentPopup();
             }
+            igSameLine(0, 4);
+            if(igButton("Cancel", (ImVec2){ 0, 0 }))
+            {
+                igCloseCurrentPopup();
+            }
+            igEndPopup();
         }
 
         if(igBeginChild_ID(1000, (ImVec2){ 0, 0 }, false, ImGuiWindowFlags_NoMove))

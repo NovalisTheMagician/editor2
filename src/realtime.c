@@ -77,6 +77,7 @@ static size_t CollectFlats(const EdState *state, size_t vertexOffset, RenderList
     size_t verts = 0;
     for(const MapSector *sector = state->map.headSector; sector; sector = sector->next)
     {
+        real_t light = sector->data.lightLevel / 255.0f;
         const TriangleData data = sector->edData;
 
         real_t z = sector->data.floorHeight;
@@ -92,7 +93,7 @@ static size_t CollectFlats(const EdState *state, size_t vertexOffset, RenderList
             const Vec2 ePos = data.vertices[i];
             const Vec3 position = { .x = ePos.x, .y = z, .z = ePos.y };
             const Vec2 texcoord = vec2_scale(data.vertices[i], 1.0f / state->map.textureScale);
-            const Color color = { 1, 1, 1, 1 };
+            const Color color = { light, light, light, 1 };
 
             state->gl.realtimeVertexMap[i + offsetIndex] = (RealtimeVertexType){ .position = position, .texCoord = texcoord, .color = color };
         }
@@ -112,7 +113,7 @@ static size_t CollectFlats(const EdState *state, size_t vertexOffset, RenderList
             const Vec2 ePos = data.vertices[i];
             const Vec3 position = { .x = ePos.x, .y = z, .z = ePos.y };
             const Vec2 texcoord = vec2_scale(data.vertices[i], 1.0 / state->map.textureScale);
-            const Color color = { 1, 1, 1, 1 };
+            const Color color = { light, light, light, 1 };
 
             state->gl.realtimeVertexMap[i + offsetIndex] = (RealtimeVertexType){ .position = position, .texCoord = texcoord, .color = color };
         }
@@ -121,7 +122,7 @@ static size_t CollectFlats(const EdState *state, size_t vertexOffset, RenderList
     return verts;
 }
 
-static void MakeWall(Vec2 a, Vec2 b, real_t zb, real_t zt, RealtimeVertexType *vertices, RenderData *renderData, size_t vertOffset, real_t texScale)
+static void MakeWall(Vec2 a, Vec2 b, real_t zb, real_t zt, RealtimeVertexType *vertices, RenderData *renderData, size_t vertOffset, real_t texScale, real_t yOffset, real_t light)
 {
     real_t len = vec2_distance(a, b);
     real_t height = zt - zb;
@@ -129,9 +130,9 @@ static void MakeWall(Vec2 a, Vec2 b, real_t zb, real_t zt, RealtimeVertexType *v
     const Vec3 tr = { .x = b.x, .y = zt, .z = b.y };
     const Vec3 bl = { .x = a.x, .y = zb, .z = a.y };
     const Vec3 br = { .x = b.x, .y = zb, .z = b.y };
-    const Vec2 uvtl = vec2_scale((Vec2){ 0, 0 }, texScale), uvtr = vec2_scale((Vec2){ len, 0 }, texScale);
-    const Vec2 uvbl = vec2_scale((Vec2){ 0, height }, texScale), uvbr = vec2_scale((Vec2){ len, height }, texScale);
-    const Color color = { 0.7f, 0.7f, 0.7f, 1.0f };
+    const Vec2 uvtl = vec2_scale((Vec2){ 0, yOffset }, texScale), uvtr = vec2_scale((Vec2){ len, yOffset }, texScale);
+    const Vec2 uvbl = vec2_scale((Vec2){ 0, height + yOffset }, texScale), uvbr = vec2_scale((Vec2){ len, height + yOffset }, texScale);
+    const Color color = { light, light, light, 1.0f };
     
     vertices[0] = (RealtimeVertexType){ .position = tl, .texCoord = uvtl, .color = color };
     vertices[1] = (RealtimeVertexType){ .position = tr, .texCoord = uvtr, .color = color };
@@ -153,7 +154,18 @@ static size_t CollectWalls(const EdState *state, size_t vertexOffset, RenderList
         if(line->frontSector && line->backSector) // double sided line -> uses upper, lower and mid textures
         {
             bool frontBottomExposed = line->frontSector->data.floorHeight < line->backSector->data.floorHeight;
-            bool frontTopExposed = line->frontSector->data.ceilHeight < line->backSector->data.ceilHeight;
+            bool frontTopExposed = line->frontSector->data.ceilHeight > line->backSector->data.ceilHeight;
+
+            real_t frontLight = line->frontSector->data.lightLevel / 255.0f;
+            real_t backLight = line->backSector->data.lightLevel / 255.0f;
+
+            real_t wzb = max(line->frontSector->data.floorHeight, line->backSector->data.floorHeight);
+            real_t wzt = min(line->frontSector->data.ceilHeight, line->backSector->data.ceilHeight);
+            real_t windowHeight = wzt - wzb;
+
+            real_t frontTopHeight = line->frontSector->data.ceilHeight - line->backSector->data.ceilHeight;
+
+            real_t backTopHeight = line->backSector->data.ceilHeight - line->frontSector->data.ceilHeight;
 
             bool noBottomExpose = false;
             if(line->frontSector->data.floorHeight == line->backSector->data.floorHeight) // no lower texture needed here
@@ -163,58 +175,62 @@ static size_t CollectWalls(const EdState *state, size_t vertexOffset, RenderList
                 noTopExpose = true;
 
             Vec2 a = vec2_from_fvec2(line->a->pos), b = vec2_from_fvec2(line->b->pos);
-            if(frontBottomExposed)
+            if(!noBottomExpose)
             {
-                real_t zb = line->frontSector->data.floorHeight;
-                real_t zt = line->backSector->data.floorHeight;
-                GLuint texId = GetTextureId(state, tc_get(&state->textures, data.front.lowerTex));
-                RenderData *rd = GetRenderDataSlot(renderList, texId);
-                MakeWall(a, b, zb, zt, state->gl.realtimeVertexMap + vertexOffset + verts, rd, vertexOffset + verts, scaleValue);
-                verts += 4;
-            }
-            else if(!noBottomExpose)
-            {
-                real_t zb = line->backSector->data.floorHeight;
-                real_t zt = line->frontSector->data.floorHeight;
-                GLuint texId = GetTextureId(state, tc_get(&state->textures, data.back.lowerTex));
-                RenderData *rd = GetRenderDataSlot(renderList, texId);
-                MakeWall(b, a, zb, zt, state->gl.realtimeVertexMap + vertexOffset + verts, rd, vertexOffset + verts, scaleValue);
-                verts += 4;
-            }
-
-            if(frontTopExposed)
-            {
-                real_t zt = line->frontSector->data.ceilHeight;
-                real_t zb = line->backSector->data.ceilHeight;
-                GLuint texId = GetTextureId(state, tc_get(&state->textures, data.front.upperTex));
-                RenderData *rd = GetRenderDataSlot(renderList, texId);
-                MakeWall(a, b, zb, zt, state->gl.realtimeVertexMap + vertexOffset + verts, rd, vertexOffset + verts, scaleValue);
-                verts += 4;
-            }
-            else if(!noTopExpose)
-            {
-                real_t zt = line->backSector->data.ceilHeight;
-                real_t zb = line->frontSector->data.ceilHeight;
-                GLuint texId = GetTextureId(state, tc_get(&state->textures, data.back.upperTex));
-                RenderData *rd = GetRenderDataSlot(renderList, texId);
-                MakeWall(b, a, zb, zt, state->gl.realtimeVertexMap + vertexOffset + verts, rd, vertexOffset + verts, scaleValue);
-                verts += 4;
+                if(frontBottomExposed)
+                {
+                    real_t zb = line->frontSector->data.floorHeight;
+                    real_t zt = line->backSector->data.floorHeight;
+                    GLuint texId = GetTextureId(state, tc_get(&state->textures, data.front.lowerTex));
+                    RenderData *rd = GetRenderDataSlot(renderList, texId);
+                    MakeWall(a, b, zb, zt, state->gl.realtimeVertexMap + vertexOffset + verts, rd, vertexOffset + verts, scaleValue, windowHeight + frontTopHeight, frontLight);
+                    verts += 4;
+                }
+                else
+                {
+                    real_t zb = line->backSector->data.floorHeight;
+                    real_t zt = line->frontSector->data.floorHeight;
+                    GLuint texId = GetTextureId(state, tc_get(&state->textures, data.back.lowerTex));
+                    RenderData *rd = GetRenderDataSlot(renderList, texId);
+                    MakeWall(b, a, zb, zt, state->gl.realtimeVertexMap + vertexOffset + verts, rd, vertexOffset + verts, scaleValue, windowHeight + backTopHeight, backLight);
+                    verts += 4;
+                }
             }
 
-            real_t zb = max(line->frontSector->data.floorHeight, line->backSector->data.floorHeight);
-            real_t zt = min(line->frontSector->data.ceilHeight, line->backSector->data.ceilHeight);
+            if(!noTopExpose)
+            {
+                if(frontTopExposed)
+                {
+                    real_t zt = line->frontSector->data.ceilHeight;
+                    real_t zb = line->backSector->data.ceilHeight;
+                    GLuint texId = GetTextureId(state, tc_get(&state->textures, data.front.upperTex));
+                    RenderData *rd = GetRenderDataSlot(renderList, texId);
+                    MakeWall(a, b, zb, zt, state->gl.realtimeVertexMap + vertexOffset + verts, rd, vertexOffset + verts, scaleValue, 0, frontLight);
+                    verts += 4;
+                }
+                else
+                {
+                    real_t zt = line->backSector->data.ceilHeight;
+                    real_t zb = line->frontSector->data.ceilHeight;
+                    GLuint texId = GetTextureId(state, tc_get(&state->textures, data.back.upperTex));
+                    RenderData *rd = GetRenderDataSlot(renderList, texId);
+                    MakeWall(b, a, zb, zt, state->gl.realtimeVertexMap + vertexOffset + verts, rd, vertexOffset + verts, scaleValue, 0, backLight);
+                    verts += 4;
+                }
+            }
+
             if(data.front.middleTex)
             {
                 GLuint texId = GetTextureId(state, tc_get(&state->textures, data.front.middleTex));
                 RenderData *rd = GetRenderDataSlot(renderList, texId);
-                MakeWall(a, b, zb, zt, state->gl.realtimeVertexMap + vertexOffset + verts, rd, vertexOffset + verts, scaleValue);
+                MakeWall(a, b, wzb, wzt, state->gl.realtimeVertexMap + vertexOffset + verts, rd, vertexOffset + verts, scaleValue, frontTopHeight, frontLight);
                 verts += 4;
             }
             if(data.back.middleTex)
             {
-                GLuint texId = GetTextureId(state, tc_get(&state->textures, data.front.middleTex));
+                GLuint texId = GetTextureId(state, tc_get(&state->textures, data.back.middleTex));
                 RenderData *rd = GetRenderDataSlot(renderList, texId);
-                MakeWall(b, a, zb, zt, state->gl.realtimeVertexMap + vertexOffset + verts, rd, vertexOffset + verts, scaleValue);
+                MakeWall(b, a, wzb, wzt, state->gl.realtimeVertexMap + vertexOffset + verts, rd, vertexOffset + verts, scaleValue, backTopHeight, backLight);
                 verts += 4;
             }
         }
@@ -229,19 +245,21 @@ static size_t CollectWalls(const EdState *state, size_t vertexOffset, RenderList
 
             if(front)
             {
+                real_t light = line->frontSector->data.lightLevel / 255.0f;
                 real_t zb = line->frontSector->data.floorHeight;
                 real_t zt = line->frontSector->data.ceilHeight;
                 GLuint texId = GetTextureId(state, tc_get(&state->textures, data.front.middleTex));
                 RenderData *rd = GetRenderDataSlot(renderList, texId);
-                MakeWall(a, b, zb, zt, state->gl.realtimeVertexMap + vertexOffset + verts, rd, vertexOffset + verts, scaleValue);
+                MakeWall(a, b, zb, zt, state->gl.realtimeVertexMap + vertexOffset + verts, rd, vertexOffset + verts, scaleValue, 0, light);
             }
             else
             {
+                real_t light = line->backSector->data.lightLevel / 255.0f;
                 real_t zb = line->backSector->data.floorHeight;
                 real_t zt = line->backSector->data.ceilHeight;
                 GLuint texId = GetTextureId(state, tc_get(&state->textures, data.back.middleTex));
                 RenderData *rd = GetRenderDataSlot(renderList, texId);
-                MakeWall(b, a, zb, zt, state->gl.realtimeVertexMap + vertexOffset + verts, rd, vertexOffset + verts, scaleValue);
+                MakeWall(b, a, zb, zt, state->gl.realtimeVertexMap + vertexOffset + verts, rd, vertexOffset + verts, scaleValue, 0, light);
             }
             verts += 4;
         }

@@ -105,6 +105,7 @@ typedef struct SectorData
 
     int32_t floorHeight;
     int32_t ceilHeight;
+    uint8_t lightLevel;
 
     char *floorTex;
     char *ceilTex;

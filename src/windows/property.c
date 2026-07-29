@@ -63,6 +63,7 @@ static void TextureField(EdState *state, const char *label, char **textureName)
     {
         free(*textureName);
         *textureName = NULL;
+        state->map.dirty = true;
     }
 
     if(igBeginDragDropTarget())
@@ -73,6 +74,7 @@ static void TextureField(EdState *state, const char *label, char **textureName)
             free(*textureName);
             Texture *tex = *(Texture**)payload->Data;
             *textureName = CopyString(tex->name);
+            state->map.dirty = true;
         }
         igEndDragDropTarget();
     }
@@ -197,6 +199,13 @@ static void SectorProperties(EdState *state)
             state->map.dirty = true;
         if(igInputInt("Ceiling Height", &selectedSector->data.ceilHeight, 1, 10, 0))
             state->map.dirty = true;
+
+        int v = selectedSector->data.lightLevel;
+        if(igSliderInt("Light Level", &v, 0, 255, NULL, 0))
+        {
+            selectedSector->data.lightLevel = v;
+            state->map.dirty = true;
+        }
 
         TextureField(state, "Floor", &selectedSector->data.floorTex);
         TextureField(state, "Ceiling", &selectedSector->data.ceilTex);

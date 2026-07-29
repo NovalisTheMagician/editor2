@@ -68,7 +68,8 @@ SectorData DefaultSectorData(void)
     { 
         .type = ST_NORMAL,
         .floorHeight = 0,
-        .ceilHeight = 64
+        .ceilHeight = 64,
+        .lightLevel = 255
     };
 }
 

@@ -117,24 +117,6 @@ static orientation_t LoopIsBoundedFace(size_t numLines, MapLine *lines[static nu
     return LineLoopOrientation(numLines, verts);
 }
 
-static bool ValidateLineLoop(size_t numLines, MapLine *lines[static numLines], bool reversed)
-{
-    MapVertex *origVertex = reversed ? lines[0]->b : lines[0]->a;
-    MapVertex *v = origVertex;
-    MapVertex *nextV = reversed ? lines[0]->a : lines[0]->b;
-
-    for(size_t i = 1; i < numLines; ++i)
-    {
-        MapLine *l = lines[i];
-        if(l->a != nextV && l->b != nextV)
-            return false;
-        bool front = l->a == nextV;
-        v = front ? l->a : l->b;
-        nextV = front ? l->b : l->a;
-    }
-    return nextV == origVertex;
-}
-
 static bool TraceTargetsAreFree(size_t numLines, MapLine *lines[static numLines], bool otherSide)
 {
     MapVertex *vertex, *nextVertex;
@@ -255,13 +237,11 @@ MapSector* MakeMapSector(Map *map, MapLine *startLine, bool reversed, SectorData
             {
                 numInnerLineLoops--;
                 arena_rewind(&arena, mark);
-                //numPotentialLines--;
                 continue;
             }
 
             size_t n = FindInnerLineLoop(potentialLine, innerLines[id], MAX_LINES_PER_SECTOR, false);
             bool usedReversed = false;
-            //assert(ValidateLineLoop(n, innerLines[id], false));
             bool valid = n > 0 && LoopHasRealBoundary(n, innerLines[id]) && LoopIsValidHole(poly, n, innerLines[id]);
 
             if(!valid)
@@ -315,9 +295,8 @@ MapSector* MakeMapSector(Map *map, MapLine *startLine, bool reversed, SectorData
                         insert(usedLinesSize, &usedLinesTop, (void**)usedLines, line);
                     }
                     innerLinesNum[id] = n;
-                    innerOtherSide[id] = !usedReversed;
+                    innerOtherSide[id] = LoopIsBoundedFace(n, innerLines[id]) == CW_ORIENT;
 
-                    //polygon_t *innerPoly = PolygonFromMapLines(n, innerLines[id]);
                     for(size_t k = 0; k < numPotentialLines;)
                     {
                         MapLine *candidate = potentialLines[k];
