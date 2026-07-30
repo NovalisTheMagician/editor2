@@ -175,7 +175,6 @@ size_t FindLineLoop(MapLine *startLine, MapLine **sectorLines, size_t maxLoopLen
         if(numCandidates == 0)
         {
             arena_da_append(&arena, &dead, currentLine);
-            //dead[numDead++] = currentLine;
             if(--stack.count == 0)
                 return 0;
             continue;

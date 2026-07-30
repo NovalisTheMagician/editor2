@@ -37,11 +37,13 @@ void RealtimeWindow(bool *p_open, EdState *state)
             {
                 bool shiftDown = igGetIO_Nil()->KeyShift;
                 bool altDown = igGetIO_Nil()->KeyAlt;
+                bool ctrlDown = igGetIO_Nil()->KeyCtrl;
 
                 Vec3 cameraPosition = state->realtime.cameraPosition;
                 Vec3 cameraDirection = state->realtime.cameraDirection;
                 Vec3 cameraRight = state->realtime.cameraRight;
-                Vec3 cameraUp = vec3_cross(cameraRight, cameraDirection);
+                //Vec3 cameraUp = vec3_cross(cameraRight, cameraDirection);
+                Vec3 globalUp = { 0, 1, 0 };
 
                 real_t pitchMax = PIHALF - deg2rad(1);
 
@@ -71,29 +73,29 @@ void RealtimeWindow(bool *p_open, EdState *state)
                     cameraUp = vec3_normalize(vec3_cross(cameraRight, cameraDirection));
                 }
 
-                if(igIsKeyDown_Nil(ImGuiKey_W))
+                if(igIsKeyDown_Nil(ImGuiKey_W) && !ctrlDown)
                 {
                     cameraPosition = vec3_add(cameraPosition, vec3_scale(cameraDirection, speed * dt));
                 }
-                if(igIsKeyDown_Nil(ImGuiKey_S))
+                if(igIsKeyDown_Nil(ImGuiKey_S) && !ctrlDown)
                 {
                     cameraPosition = vec3_add(cameraPosition, vec3_scale(cameraDirection, -speed * dt));
                 }
-                if(igIsKeyDown_Nil(ImGuiKey_D))
+                if(igIsKeyDown_Nil(ImGuiKey_D) && !ctrlDown)
                 {
                     cameraPosition = vec3_add(cameraPosition, vec3_scale(cameraRight, speed * dt));
                 }
-                if(igIsKeyDown_Nil(ImGuiKey_A))
+                if(igIsKeyDown_Nil(ImGuiKey_A) && !ctrlDown)
                 {
                     cameraPosition = vec3_add(cameraPosition, vec3_scale(cameraRight, -speed * dt));
                 }
-                if(igIsKeyDown_Nil(ImGuiKey_Q))
+                if(igIsKeyDown_Nil(ImGuiKey_Q) && !ctrlDown)
                 {
-                    cameraPosition = vec3_add(cameraPosition, vec3_scale(cameraUp, speed * dt));
+                    cameraPosition = vec3_add(cameraPosition, vec3_scale(globalUp, speed * dt));
                 }
-                if(igIsKeyDown_Nil(ImGuiKey_E))
+                if(igIsKeyDown_Nil(ImGuiKey_E) && !ctrlDown)
                 {
-                    cameraPosition = vec3_add(cameraPosition, vec3_scale(cameraUp, -speed * dt));
+                    cameraPosition = vec3_add(cameraPosition, vec3_scale(globalUp, -speed * dt));
                 }
 
 
