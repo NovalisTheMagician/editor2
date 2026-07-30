@@ -315,6 +315,8 @@ void RenderRealtimeView(EdState *state)
         offset += rd->count;
     }
 
+    arena_reset(&renderArena);
+
     if(state->gl.editorBufferFence[state->gl.currentBuffer] != NULL) glDeleteSync(state->gl.editorBufferFence[state->gl.currentBuffer]);
     state->gl.editorBufferFence[state->gl.currentBuffer] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
     state->gl.currentBuffer = (state->gl.currentBuffer + 1) % NUM_BUFFERS;

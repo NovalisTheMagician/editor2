@@ -1,6 +1,7 @@
 #include "query.h"
 #include "../map.h"
 #include "../geometry.h"
+#include "arena.h"
 
 #include <assert.h>
 #include <float.h>
@@ -103,22 +104,50 @@ int angleSortInner(const void *a, const void *b)
     return 0;
 }
 
+typedef struct StackEntry
+{
+    MapVertex *vertex;
+    MapVertex *nextVertex;
+    MapLine *line;
+} StackEntry;
+
+typedef struct Stack
+{
+    StackEntry *items;
+    size_t count, capacity;
+} Stack;
+
+typedef struct DeadList
+{
+    MapLine **items;
+    size_t count, capacity;
+} DeadList;
+
+static Arena arena = { 0 };
+
 size_t FindLineLoop(MapLine *startLine, MapLine **sectorLines, size_t maxLoopLength, bool reversed, int(*cmpFunc)(const void*, const void*))
 {
     assert(maxLoopLength > 0);
+    arena_reset(&arena);
 
     MapVertex *origVertex = reversed ? startLine->b : startLine->a;
-    sectorLines[0] = startLine;
-    size_t numLines = 1;
+    MapVertex *startNext = reversed ? startLine->a : startLine->b;
 
-    MapVertex *vertex = origVertex;
-    MapVertex *nextVertex = reversed ? startLine->a : startLine->b;
-    MapLine *currentLine = startLine;
+    Stack stack = { 0 };
+    StackEntry entry = { .vertex = origVertex, .nextVertex = startNext, .line = startLine };
+    arena_da_append(&arena, &stack, entry);
+
+    DeadList dead = { 0 };
 
     Path candidates[256];
 
     for(;;)
     {
+        StackEntry top = stack.items[stack.count-1];
+        MapVertex *vertex = top.vertex;
+        MapVertex *nextVertex = top.nextVertex;
+        MapLine *currentLine = top.line;
+
         size_t numCandidates = 0;
         for(size_t i = 0; i < nextVertex->numAttachedLines && numCandidates < 256; ++i)
         {
@@ -126,31 +155,46 @@ size_t FindLineLoop(MapLine *startLine, MapLine **sectorLines, size_t maxLoopLen
             if(attLine == currentLine)
                 continue;
 
+            bool isDead = false;
+            for(size_t d = 0; d < dead.count; ++d)
+            {
+                if(dead.items[d] == attLine)
+                {
+                    isDead = true;
+                    break;
+                }
+            }
+            if(isDead)
+                continue;
+
             MapVertex *otherVertex = nextVertex == attLine->a ? attLine->b : attLine->a;
             float angle = PI2 - AngleOfLines((line_t){ nextVertex->pos, vertex->pos }, (line_t){ nextVertex->pos, otherVertex->pos });
             candidates[numCandidates++] = (Path){ .line = attLine, .nextVertex = otherVertex, .relativeAngle = angle };
         }
 
-        Path chosen;
         if(numCandidates == 0)
         {
-            chosen = (Path){ .line = currentLine, .nextVertex = vertex };
+            arena_da_append(&arena, &dead, currentLine);
+            //dead[numDead++] = currentLine;
+            if(--stack.count == 0)
+                return 0;
+            continue;
         }
-        else
-        {
-            qsort(candidates, numCandidates, sizeof *candidates, cmpFunc);
-            chosen = candidates[numCandidates - 1];
-        }
+
+        qsort(candidates, numCandidates, sizeof *candidates, cmpFunc);
+        Path chosen = candidates[numCandidates - 1];
 
         if(nextVertex == origVertex && chosen.line == startLine)
-            return numLines;
+        {
+            for(size_t i = 0; i < stack.count; ++i)
+                sectorLines[i] = stack.items[i].line;
+            return stack.count;
+        }
 
-        if(numLines >= maxLoopLength)
+        if(stack.count >= maxLoopLength)
             return 0;
 
-        sectorLines[numLines++] = chosen.line;
-        vertex = nextVertex;
-        nextVertex = chosen.nextVertex;
-        currentLine = chosen.line;
+        entry = (StackEntry){ .vertex = nextVertex, .nextVertex = chosen.nextVertex, .line = chosen.line };
+        arena_da_append(&arena, &stack, entry);
     }
 }
