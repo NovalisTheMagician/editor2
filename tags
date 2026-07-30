@@ -10230,6 +10230,8 @@ DateTimeFormat	extern/imguifiledialog/ImGuiFileDialog.cpp	/^#define DateTimeForm
 DeIndexAllBuffers	extern/cimgui/imgui/imgui_draw.cpp	/^void ImDrawData::DeIndexAllBuffers()$/;"	f	class:ImDrawData	typeref:typename:void
 DeactivatedItemData	extern/cimgui/cimgui.h	/^    ImGuiDeactivatedItemData DeactivatedItemData;$/;"	m	struct:ImGuiContext	typeref:typename:ImGuiDeactivatedItemData
 DeactivatedItemData	extern/cimgui/imgui/imgui_internal.h	/^    ImGuiDeactivatedItemData DeactivatedItemData;$/;"	m	struct:ImGuiContext	typeref:typename:ImGuiDeactivatedItemData
+DeadList	src/map/query.c	/^typedef struct DeadList$/;"	s	file:
+DeadList	src/map/query.c	/^} DeadList;$/;"	t	typeref:struct:DeadList	file:
 Dear ImGui	extern/cimgui/imgui/docs/README.md	/^Dear ImGui$/;"	c
 Dear ImGui Emscripten example	extern/cimgui/imgui/examples/libs/emscripten/shell_minimal.html	/^    <title>Dear ImGui Emscripten example<\/title>$/;"	j
 Dear ImGui Emscripten+GLFW+WebGPU example	extern/cimgui/imgui/examples/example_glfw_wgpu/web/index.html	/^    <title>Dear ImGui Emscripten+GLFW+WebGPU example<\/title>$/;"	j
@@ -14287,6 +14289,7 @@ GlyphRanges	extern/cimgui/cimgui.h	/^    const ImWchar* GlyphRanges;$/;"	m	struc
 GlyphRanges	extern/cimgui/imgui/imgui.h	/^    const ImWchar*  GlyphRanges;            \/\/ NULL     \/\/ *LEGACY* THE ARRAY DATA NEEDS TO /;"	m	struct:ImFontConfig	typeref:typename:const ImWchar *
 Glyphs	extern/cimgui/cimgui.h	/^    ImVector_ImFontGlyph Glyphs;$/;"	m	struct:ImFontBaked	typeref:typename:ImVector_ImFontGlyph
 Glyphs	extern/cimgui/imgui/imgui.h	/^    ImVector<ImFontGlyph>       Glyphs;             \/\/ 12-16 \/\/ out \/\/ All glyphs.$/;"	m	struct:ImFontBaked	typeref:typename:ImVector<ImFontGlyph>
+GotoLocation	src/windows/geditor.c	/^static void GotoLocation(EdState *state, real_t x, real_t y)$/;"	f	typeref:typename:void	file:
 GotoPos	src/windows/property.c	/^static void GotoPos(EdState *state, Vec2 pos)$/;"	f	typeref:typename:void	file:
 GrabMinSize	extern/cimgui/cimgui.h	/^    float GrabMinSize;$/;"	m	struct:ImGuiStyle	typeref:typename:float
 GrabMinSize	extern/cimgui/imgui/imgui.h	/^    float       GrabMinSize;                \/\/ Minimum width\/height of a grab box for slider\//;"	m	struct:ImGuiStyle	typeref:typename:float
@@ -26448,6 +26451,10 @@ Square	extern/cimgui/imgui/imgui_demo.cpp	/^        static void Square(ImGuiSize
 SrvDescriptorAllocFn	extern/cimgui/imgui/backends/imgui_impl_dx12.h	/^    void                        (*SrvDescriptorAllocFn)(ImGui_ImplDX12_InitInfo* info, D3D12_CPU/;"	m	struct:ImGui_ImplDX12_InitInfo	typeref:typename:void (*)(ImGui_ImplDX12_InitInfo * info,D3D12_CPU_DESCRIPTOR_HANDLE * out_cpu_desc_handle,D3D12_GPU_DESCRIPTOR_HANDLE * out_gpu_desc_handle)
 SrvDescriptorFreeFn	extern/cimgui/imgui/backends/imgui_impl_dx12.h	/^    void                        (*SrvDescriptorFreeFn)(ImGui_ImplDX12_InitInfo* info, D3D12_CPU_/;"	m	struct:ImGui_ImplDX12_InitInfo	typeref:typename:void (*)(ImGui_ImplDX12_InitInfo * info,D3D12_CPU_DESCRIPTOR_HANDLE cpu_desc_handle,D3D12_GPU_DESCRIPTOR_HANDLE gpu_desc_handle)
 SrvDescriptorHeap	extern/cimgui/imgui/backends/imgui_impl_dx12.h	/^    ID3D12DescriptorHeap*       SrvDescriptorHeap;$/;"	m	struct:ImGui_ImplDX12_InitInfo	typeref:typename:ID3D12DescriptorHeap *
+Stack	src/map/query.c	/^typedef struct Stack$/;"	s	file:
+Stack	src/map/query.c	/^} Stack;$/;"	t	typeref:struct:Stack	file:
+StackEntry	src/map/query.c	/^typedef struct StackEntry$/;"	s	file:
+StackEntry	src/map/query.c	/^} StackEntry;$/;"	t	typeref:struct:StackEntry	file:
 StackLevel	extern/cimgui/cimgui.h	/^    int StackLevel;$/;"	m	struct:ImGuiIDStackTool	typeref:typename:int
 StackLevel	extern/cimgui/imgui/imgui_internal.h	/^    int                     StackLevel;                 \/\/ -1: query stack and resize Results,/;"	m	struct:ImGuiIDStackTool	typeref:typename:int
 StackSizesInBegin	extern/cimgui/cimgui.h	/^    ImGuiErrorRecoveryState StackSizesInBegin;$/;"	m	struct:ImGuiWindowStackData	typeref:typename:ImGuiErrorRecoveryState
@@ -28096,7 +28103,6 @@ VVARARG	extern/lua-5.4.8/src/lparser.h	/^  VVARARG  \/* vararg expression; info 
 VVOID	extern/lua-5.4.8/src/lparser.h	/^  VVOID,  \/* when 'expdesc' describes the last expression of a list,$/;"	e	enum:__anone48a2a0b0103
 Valid	extern/cimgui/cimgui.h	/^    bool Valid;$/;"	m	struct:ImDrawData	typeref:typename:bool
 Valid	extern/cimgui/imgui/imgui.h	/^    bool                Valid;              \/\/ Only valid after Render() is called and before /;"	m	struct:ImDrawData	typeref:typename:bool
-ValidateLineLoop	src/map/insert.c	/^static bool ValidateLineLoop(size_t numLines, MapLine *lines[static numLines], bool reversed)$/;"	f	typeref:typename:bool	file:
 Value	extern/cimgui/cimgui.h	/^    ImVec4 Value;$/;"	m	struct:ImColor	typeref:typename:ImVec4
 Value	extern/cimgui/imgui/imgui.h	/^    ImVec4          Value;$/;"	m	struct:ImColor	typeref:typename:ImVec4
 Value	extern/cimgui/imgui/imgui_demo.cpp	/^    struct EnumDesc { ImGuiTableFlags Value; const char* Name; const char* Tooltip; };$/;"	m	struct:EditTableSizingFlags::EnumDesc	typeref:typename:ImGuiTableFlags	file:
@@ -29188,6 +29194,7 @@ apply	extern/triangulate/earcut/test/viz.cpp	/^    void apply() {$/;"	f	struct:C
 area	extern/triangulate/earcut/include/mapbox/earcut.hpp	/^        inline double area() const { return (by - ay) * (cx - bx) - (bx - ax) * (cy - by); }$/;"	f	struct:mapbox::detail::Earcut::Triangle	typeref:typename:double
 area	extern/triangulate/earcut/include/mapbox/earcut.hpp	/^double Earcut<N>::area(const Node* p, const Node* q, const Node* r) const {$/;"	f	class:mapbox::detail::Earcut	typeref:typename:double
 arena	src/edit.c	/^static Arena arena = { 0 };$/;"	v	typeref:typename:Arena	file:
+arena	src/map/query.c	/^static Arena arena = { 0 };$/;"	v	typeref:typename:Arena	file:
 arena_alloc	extern/tsoding/arena.h	/^void *arena_alloc(Arena *a, size_t size_bytes)$/;"	f	typeref:typename:void *
 arena_da_append	extern/tsoding/arena.h	/^#define arena_da_append(/;"	d
 arena_da_append_many	extern/tsoding/arena.h	/^#define arena_da_append_many(/;"	d
@@ -37209,6 +37216,8 @@ capacity	src/map/insert.c	/^    size_t count, capacity;$/;"	m	struct:LineWork	ty
 capacity	src/map/insert.c	/^    size_t count, capacity;$/;"	m	struct:PendingLineSector	typeref:typename:size_t	file:
 capacity	src/map/insert.c	/^    size_t count, capacity;$/;"	m	struct:TouchedLines	typeref:typename:size_t	file:
 capacity	src/map/insert.c	/^    size_t count, capacity;$/;"	m	struct:WorkSet	typeref:typename:size_t	file:
+capacity	src/map/query.c	/^    size_t count, capacity;$/;"	m	struct:DeadList	typeref:typename:size_t	file:
+capacity	src/map/query.c	/^    size_t count, capacity;$/;"	m	struct:Stack	typeref:typename:size_t	file:
 capacity	src/realtime.c	/^    size_t count, capacity;$/;"	m	struct:RenderData	typeref:typename:size_t	file:
 capacity	src/realtime.c	/^    size_t count, capacity;$/;"	m	struct:RenderList	typeref:typename:size_t	file:
 capture	extern/lua-5.4.8/src/lstrlib.c	/^  } capture[LUA_MAXCAPTURES];$/;"	m	struct:MatchState	typeref:struct:MatchState::__anon5f656ce90108[]	file:
@@ -39650,6 +39659,8 @@ count	src/map/insert.c	/^    size_t count, capacity;$/;"	m	struct:LineWork	typer
 count	src/map/insert.c	/^    size_t count, capacity;$/;"	m	struct:PendingLineSector	typeref:typename:size_t	file:
 count	src/map/insert.c	/^    size_t count, capacity;$/;"	m	struct:TouchedLines	typeref:typename:size_t	file:
 count	src/map/insert.c	/^    size_t count, capacity;$/;"	m	struct:WorkSet	typeref:typename:size_t	file:
+count	src/map/query.c	/^    size_t count, capacity;$/;"	m	struct:DeadList	typeref:typename:size_t	file:
+count	src/map/query.c	/^    size_t count, capacity;$/;"	m	struct:Stack	typeref:typename:size_t	file:
 count	src/realtime.c	/^    size_t count, capacity;$/;"	m	struct:RenderData	typeref:typename:size_t	file:
 count	src/realtime.c	/^    size_t count, capacity;$/;"	m	struct:RenderList	typeref:typename:size_t	file:
 countExtDot	extern/imguifiledialog/ImGuiFileDialog.h	/^    size_t countExtDot = 0U;                                          \/\/ count dots in file ex/;"	m	class:IGFD::FileInfos	typeref:typename:size_t
@@ -51597,6 +51608,8 @@ items	src/map/insert.c	/^    LineSectorData *items;$/;"	m	struct:PendingLineSect
 items	src/map/insert.c	/^    LineWork *items;$/;"	m	struct:WorkSet	typeref:typename:LineWork *	file:
 items	src/map/insert.c	/^    SplitPoint *items;$/;"	m	struct:LineWork	typeref:typename:SplitPoint *	file:
 items	src/map/insert.c	/^    TouchedLine *items;$/;"	m	struct:TouchedLines	typeref:typename:TouchedLine *	file:
+items	src/map/query.c	/^    MapLine **items;$/;"	m	struct:DeadList	typeref:typename:MapLine **	file:
+items	src/map/query.c	/^    StackEntry *items;$/;"	m	struct:Stack	typeref:typename:StackEntry *	file:
 items	src/realtime.c	/^    Index_t *items;$/;"	m	struct:RenderData	typeref:typename:Index_t *	file:
 items	src/realtime.c	/^    RenderData *items;$/;"	m	struct:RenderList	typeref:typename:RenderData *	file:
 itemsCount	extern/cimgui/generator/cpp2ffi.lua	/^local function itemsCount(items)$/;"	f
@@ -51878,6 +51891,7 @@ libtessDeviationMap	extern/triangulate/earcut/test/convert_tests.js	/^    var li
 libtessTesselator	extern/triangulate/earcut/test/fixtures/geometries.hpp	/^    Libtess2Tesselator<double, Polygon<std::pair<T, T>>> libtessTesselator;$/;"	m	class:mapbox::fixtures::Fixture	typeref:typename:Libtess2Tesselator<double,Polygon<std::pair<T,T>>>
 license	extern/lua-5.4.8/doc/readme.html	/^<H2><A NAME="license">License<\/A><\/H2>$/;"	a
 license	extern/re/clib.json	/^  "license": "Public Domain",$/;"	s
+lightLevel	src/map.h	/^    uint8_t lightLevel;$/;"	m	struct:SectorData	typeref:typename:uint8_t
 limitasasize	extern/lua-5.4.8/src/ltable.c	/^#define limitasasize(/;"	d	file:
 limitequalsasize	extern/lua-5.4.8/src/ltable.c	/^#define limitequalsasize(/;"	d	file:
 limits	extern/triangulate/earcut/test/viz.cpp	/^    void limits(double l, double r, double b, double t) {$/;"	f	struct:Camera2D	typeref:typename:void	file:
@@ -51885,6 +51899,7 @@ line	extern/lua-5.4.8/src/lobject.h	/^  int line;$/;"	m	struct:AbsLineInfo	typer
 line	extern/lua-5.4.8/src/lparser.h	/^  int line;  \/* line where it appeared *\/$/;"	m	struct:Labeldesc	typeref:typename:int
 line	src/map/insert.c	/^    MapLine *line;$/;"	m	struct:TouchedLine	typeref:typename:MapLine *	file:
 line	src/map/query.c	/^    MapLine *line;$/;"	m	struct:Path	typeref:typename:MapLine *	file:
+line	src/map/query.c	/^    MapLine *line;$/;"	m	struct:StackEntry	typeref:typename:MapLine *	file:
 line0	extern/imguifiledialog/stb/stb_image.h	/^   stbi_uc *line0,*line1;$/;"	m	struct:__anon47b0cd7d0a08	typeref:typename:stbi_uc *
 line0	extern/stb/stb_image.h	/^   stbi_uc *line0,*line1;$/;"	m	struct:__anon5b03bf430a08	typeref:typename:stbi_uc *
 line1	extern/imguifiledialog/stb/stb_image.h	/^   stbi_uc *line0,*line1;$/;"	m	struct:__anon47b0cd7d0a08	typeref:typename:stbi_uc *
@@ -62489,6 +62504,7 @@ next	src/map.h	/^    struct MapSector *next, *prev;$/;"	m	struct:MapSector	typer
 next	src/map.h	/^    struct MapVertex *next, *prev;$/;"	m	struct:MapVertex	typeref:struct:MapVertex *
 next (table [, index])	extern/lua-5.4.8/doc/manual.html	/^<hr><h3><a name="pdf-next"><code>next (table [, index])<\/code><\/a><\/h3>$/;"	j
 nextVertex	src/map/query.c	/^    MapVertex *nextVertex;$/;"	m	struct:Path	typeref:typename:MapVertex *	file:
+nextVertex	src/map/query.c	/^    MapVertex *nextVertex;$/;"	m	struct:StackEntry	typeref:typename:MapVertex *	file:
 nextZ	extern/triangulate/earcut/include/mapbox/earcut.hpp	/^        Node* nextZ = nullptr;$/;"	m	struct:mapbox::detail::Earcut::Node	typeref:typename:Node *
 next_char	extern/cimgui/generator/json.lua	/^local function next_char(str, idx, set, negate)$/;"	f
 next_chunk	extern/cimgui/imgui/imgui_internal.h	/^    T*      next_chunk(T* p)            { size_t HDR_SZ = 4; IM_ASSERT(p >= begin() && p < end()/;"	f	struct:ImChunkStream	typeref:typename:T *
@@ -79069,6 +79085,7 @@ versor	extern/cglm/include/cglm/types.h	/^typedef vec4                    versor
 versors	extern/cglm/include/cglm/types-struct.h	/^typedef union CGLM_ALIGN_IF(16) versors {$/;"	u
 versors	extern/cglm/include/cglm/types-struct.h	/^} versors;$/;"	t	typeref:union:versors
 vertex	src/map/insert.c	/^    MapVertex *vertex;$/;"	m	struct:SplitPoint	typeref:typename:MapVertex *	file:
+vertex	src/map/query.c	/^    MapVertex *vertex;$/;"	m	struct:StackEntry	typeref:typename:MapVertex *	file:
 vertexBucket	extern/triangulate/earcut/test/comparison/libtess2/mesh.h	/^	struct BucketAlloc* vertexBucket;$/;"	m	struct:TESSmesh	typeref:struct:BucketAlloc *
 vertexCount	extern/triangulate/earcut/test/comparison/libtess2/tess.h	/^	int vertexCount;$/;"	m	struct:TESStesselator	typeref:typename:int
 vertexData	extern/triangulate/earcut/test/comparison/libtess2.hpp	/^    Vertices vertexData;$/;"	m	class:Libtess2Tesselator	typeref:typename:Vertices

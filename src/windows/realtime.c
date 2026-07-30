@@ -70,7 +70,7 @@ void RealtimeWindow(bool *p_open, EdState *state)
                     real_t xzLen = cos(pitch);
                     cameraDirection = vec3_normalize((Vec3){ xzLen*cos(yaw), sin(pitch), xzLen*sin(yaw) });
                     cameraRight = vec3_normalize((Vec3){ -cameraDirection.z, 0, cameraDirection.x });
-                    cameraUp = vec3_normalize(vec3_cross(cameraRight, cameraDirection));
+                    //cameraUp = vec3_normalize(vec3_cross(cameraRight, cameraDirection));
                 }
 
                 if(igIsKeyDown_Nil(ImGuiKey_W) && !ctrlDown)
