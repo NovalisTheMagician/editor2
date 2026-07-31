@@ -24,12 +24,8 @@
 #define GLOBALDEF
 #define GLOBALREF extern
 #elif defined(_WIN32)
-#if defined BUILDING_LIBRARY
-#define GLOBALDEF __declspec(dllexport)
-#define GLOBALREF __declspec(dllexport)
-#else
-#define GLOBALREF __declspec(dllimport)
-#endif
+#define GLOBALDEF
+#define GLOBALREF extern
 #endif
 
 #include <limits.h>

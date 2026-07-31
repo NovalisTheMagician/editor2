@@ -1,24 +1,29 @@
-APPLICATION := editor2
+PLATFORM ?= $(shell uname -s)
+ARCH ?= $(shell uname -m)
 
-BUILD_DIR := build
+APPLICATION := editor2.$(ARCH)
+
+BUILD_DIR := build/$(PLATFORM)/$(ARCH)
 SRC_DIR := src
 SRC_SUBDIRS := windows dialogs utils map scripts asset_sources
 
 DEFINES := __USE_XOPEN _GNU_SOURCE
-INC_DIRS := $(SRC_DIR)
+INC_DIRS += $(SRC_DIR)
 
 LIBS := m SDL2 stdc++
-LIB_DIRS :=
+LIB_DIRS ?=
 
-RES := windres
+RES ?= windres
+
+PKG_CONFIG ?= pkg-config
 
 #CC := gcc
-C++ := g++
+CXX ?= g++
 
 CCFLAGS := -Wall -Wextra -std=gnu23 -Wstrict-prototypes
 
 LD := $(CC)
-LDFLAGS := -pthread -fuse-ld=gold
+LDFLAGS := -pthread
 
 ifeq ($(CONFIG),release)
     DEFINES += NDEBUG
@@ -28,34 +33,38 @@ else
     CCFLAGS += -g
 endif
 
-SDL_INC :=
-LUA_DEF :=
+SDL_INC ?=
+LUA_DEF ?=
 
-ifeq ($(OS),Windows_NT)
-    LIBS += dinput8 dxguid dxerr8 user32 gdi32 winmm imm32 ole32 oleaut32 shell32 setupapi version uuid ws2_32 Iphlpapi comctl32 gdi32 comdlg32 opengl32
+ifeq ($(OS),Window_NT)
+    MINGW = 1
+endif
+
+ifdef MINGW
+    LIBS += dinput8 dxguid dxerr8 user32 gdi32 winmm imm32 ole32 oleaut32 shell32 setupapi version uuid ws2_32 iphlpapi comctl32 gdi32 comdlg32 opengl32
     APPLICATION := $(APPLICATION).exe
-    LIB_DIRS += $(LIB_GCC_PATH)
-    INC_DIRS += $(INC_PATH)
+    #LIB_DIRS += $(LIB_GCC_PATH)
+    #INC_DIRS += $(INC_PATH)
     LDFLAGS += -static
-    SDL_INC += -I$(INC_PATH)/SDL2
+    #SDL_INC += -I$(INC_PATH)/SDL2
+    SDL_INC += $(shell $(PKG_CONFIG) --cflags sdl2)
     ifeq ($(CONFIG),release)
         LDFLAGS += -mwindows
     else
         LDFLAGS += -mconsole
     endif
 else
-    UNAME_S := $(shell uname -s)
-    ifeq ($(UNAME_S),Linux)
+    ifeq ($(PLATFORM),Linux)
         LIBS += GL dl
-        CCFLAGS += $(shell pkg-config --cflags sdl2) -fsanitize=address
-        LDFLAGS += $(shell pkg-config --libs sdl2) -fsanitize=address
-        SDL_INC += $(shell pkg-config --cflags sdl2)
+        CCFLAGS += $(shell $(PKG_CONFIG) --cflags sdl2) -fsanitize=address
+        LDFLAGS += $(shell $(PKG_CONFIG) --libs sdl2) -fsanitize=address
+        SDL_INC += $(shell $(PKG_CONFIG) --cflags sdl2)
         DEFINES +=
         LUA_DEF += -DLUA_USE_POSIX
     endif
-    ifeq ($(UNAME_S),Darwin)
+    ifeq ($(PLATFORM),Darwin)
     endif
-    ifeq ($(UNAME_S),FreeBSD)
+    ifeq ($(PLATFORM),FreeBSD)
     endif
 endif
 
@@ -156,72 +165,86 @@ LIB_FLAGS := $(addprefix -L,$(LIB_DIRS)) $(addprefix -l,$(LIBS))
 
 RC_SRC :=
 RC_OBJ :=
-ifeq ($(OS),Windows_NT)
+ifdef MINGW
     RC_SRC += $(SRC_DIR)/$(RES_DIR)/resource.rc
     RC_OBJ += $(BUILD_DIR)/$(RES_DIR)/resource.o
+endif
+
+ifndef V
+    Q := @
 endif
 
 all: $(BUILD_DIRS) $(APPLICATION)
 
 $(BUILD_DIRS):
 	@echo "MD $@"
-	@mkdir -p $@
+	$(Q)mkdir -p $@
 
 $(APPLICATION): $(OBJS) $(RES_OBJ) $(RC_OBJ) $(GLAD_OBJ) $(RE_OBJ) $(IGFD_OBJ) $(CIMGUI_OBJS) $(TRIANG_OBJ) $(LUA_OBJS) $(FTP_OBJ)
 	@echo "LD $@"
-	@$(LD) $(LDFLAGS) -o $@ $^ $(LIB_FLAGS)
+	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIB_FLAGS)
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c Makefile
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
 	@echo "CC $<"
-	@$(CC) $(CPPFLAGS) $(CCFLAGS) -c $< -o $@
+	$(Q)$(CC) $(CPPFLAGS) $(CCFLAGS) -c $< -o $@
 
-$(RES_OBJ): $(RES_SRC) $(RESOURCES) Makefile
+$(RES_OBJ): $(RES_SRC) $(RESOURCES)
 	@echo "CC $< (Resources)"
-	@$(CC) $(CPPFLAGS) $(CCFLAGS) -I$(RES_PATH) -c $< -o $@
+	$(Q)$(CC) $(CPPFLAGS) $(CCFLAGS) -I$(RES_PATH) -c $< -o $@
 
 $(RC_OBJ): $(RC_SRC)
 	@echo "RES $<"
-	@$(RES) $< $@
+	$(Q)$(RES) $< $@
 
 $(GLAD_OBJ): $(GLAD_SRC)
 	@echo "CC $< (External GLAD)"
-	@$(CC) -O2 -I$(GLAD_DIR)/include -c $< -o $@
+	$(Q)$(CC) -O2 -I$(GLAD_DIR)/include -c $< -o $@
 
 $(RE_OBJ): $(RE_SRC)
 	@echo "CC $< (External RE)"
-	@$(CC) -O2 -c $< -o $@
+	$(Q)$(CC) -O2 -c $< -o $@
 
 $(IGFD_OBJ): $(IGFD_SRC)
 	@echo "++ $< (External IGFD)"
-	@$(C++) -O2 -c $< -o $@ -I$(CIMGUI_DIR)/imgui -DUSE_PLACES_FEATURE -DUSE_PLACES_DEVICES -DUSE_PLACES_BOOKMARKS
+	$(Q)$(CXX) -O2 -c $< -o $@ -I$(CIMGUI_DIR)/imgui -DUSE_PLACES_FEATURE -DUSE_PLACES_DEVICES -DUSE_PLACES_BOOKMARKS
 
 $(BUILD_DIR)/$(CIMGUI_DIR)/%.o: $(CIMGUI_DIR)/%.cpp
 	@echo "++ $< (External CImgui)"
-	@$(C++) -O2 -c $< -o $@ -I$(CIMGUI_DIR)/imgui $(SDL_INC) '-DIMGUI_IMPL_API=extern "C"'
+	$(Q)$(CXX) -O2 -c $< -o $@ -I$(CIMGUI_DIR)/imgui $(SDL_INC) '-DIMGUI_IMPL_API=extern "C"'
 
 $(TRIANG_OBJ): $(TRIANG_SRC)
 	@echo "++ $< (External Triangulate)"
-	@$(C++) -O2 -c $< -o $@ -I$(EARCUT_INC)
+	$(Q)$(CXX) -O2 -c $< -o $@ -I$(EARCUT_INC)
 
 $(BUILD_DIR)/$(LUA_DIR)/%.o: $(LUA_DIR)/src/%.c
 	@echo "CC $< (External Lua)"
-	@$(CC) -O2 -c $< -o $@ -DLUA_COMPAT_5_3 $(LUA_DEF)
+	$(Q)$(CC) -O2 -c $< -o $@ -DLUA_COMPAT_5_3 $(LUA_DEF)
 
 $(FTP_OBJ): $(FTP_SRC)
 	@echo "CC $< (External ftplib)"
-	@$(CC) -O2 -c $< -o $@ -D_FILE_OFFSET_BITS=64
+	$(Q)$(CC) -O2 -c $< -o $@ -D_FILE_OFFSET_BITS=64 -DBUILDING_LIBRARY
 
-.PHONY: clean echo
+.PHONY: clean purge echo
 clean:
 	@echo "RM $(BUILD_DIR)/"
-	@rm -rf $(BUILD_DIR)
+	$(Q)rm -rf $(BUILD_DIR)
 	@echo "RM $(APPLICATION)"
-	@rm -f $(APPLICATION)
+	$(Q)rm -f $(APPLICATION)
+
+purge:
+	@echo "RM build/"
+	$(Q)rm -rf build/
+	@echo "RM editor.*"
+	$(Q)rm -f editor.*
 
 echo:
 	@echo "LIBS= $(LIBS)"
 	@echo "INC_DIRS= $(INC_DIRS)"
 	@echo "CCFLAGS= $(CCFLAGS)"
 	@echo "LDFLAGS= $(LDFLAGS)"
+	@echo "BUILD_DIR= $(BUILD_DIR)"
+	@echo "SDL_INC= $(SDL_INC)"
+	@echo "LD= $(LD)"
+	@echo "LIB_FLAGS= $(LIB_FLAGS)"
 
 -include $(OBJS:.o=.d)

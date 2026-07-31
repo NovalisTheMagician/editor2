@@ -6,7 +6,7 @@ int EditorMain(int argc, char *argv[]);
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
-#include <Windows.h>
+#include <windows.h>
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
     int argc = __argc;

@@ -2,6 +2,7 @@
 
 #include <string.h>
 #include <tgmath.h>
+#include <assert.h>
 #include <stb/stb_image.h>
 
 #include "logging.h"

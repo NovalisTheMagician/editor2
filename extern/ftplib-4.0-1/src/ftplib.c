@@ -43,12 +43,13 @@
 #include <inet.h>
 #elif defined(_WIN32)
 #include <winsock.h>
+#undef _REENTRANT
 #endif
 #if defined(__APPLE__)
 #undef _REENTRANT
 #endif
 
-#define BUILDING_LIBRARY
+//#define BUILDING_LIBRARY
 #include "ftplib.h"
 
 #if defined(__UINT64_MAX) && !defined(PRIu64)
@@ -499,8 +500,8 @@ GLOBALDEF int FtpConnect(const char *host, netbuf **nControl)
 #else
     	if ((phe = gethostbyname(lhost)) == NULL)
     	{
-	    if (ftplib_debug)
-		fprintf(stderr, "gethostbyname: %s\n", hstrerror(h_errno));
+	    //if (ftplib_debug)
+		//fprintf(stderr, "gethostbyname: %s\n", hstrerror(h_errno));
 	    free(lhost);
 	    return 0;
     	}
