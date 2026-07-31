@@ -1,9 +1,11 @@
 PLATFORM ?= $(shell uname -s)
 ARCH ?= $(shell uname -m)
 
-APPLICATION := editor2.$(ARCH)
+APPLICATION_NAME := editor2
+APPLICATION := $(APPLICATION_NAME).$(ARCH)
 
-BUILD_DIR := build/$(PLATFORM)/$(ARCH)
+BUILD_DIR_BASE := build
+BUILD_DIR := $(BUILD_DIR_BASE)/$(PLATFORM)/$(ARCH)
 SRC_DIR := src
 SRC_SUBDIRS := windows dialogs utils map scripts asset_sources
 
@@ -234,8 +236,8 @@ clean:
 purge:
 	@echo "RM build/"
 	$(Q)rm -rf build/
-	@echo "RM editor.*"
-	$(Q)rm -f editor.*
+	@echo "RM editor2.*"
+	$(Q)rm -f editor2.*
 
 echo:
 	@echo "LIBS= $(LIBS)"

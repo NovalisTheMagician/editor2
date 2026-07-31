@@ -6,7 +6,7 @@
 
 #define STITCHING_DIST fixed_from_int(2)
 
-#define MAP_VERSION 1
+#define MAP_VERSION 2
 
 typedef enum PropertyType
 {

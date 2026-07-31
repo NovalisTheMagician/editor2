@@ -300,7 +300,7 @@ bool LoadMap(Map *map, const char *filename)
                     LogError("Failed to parse the version");
                     break;
                 }
-                else if(version > MAP_VERSION)
+                else if(version != MAP_VERSION)
                 {
                     LogError("Map format version too new (%d > %d)", version, MAP_VERSION);
                     break;
@@ -349,9 +349,9 @@ bool LoadMap(Map *map, const char *filename)
                     line = ParseLineReal(line, &pos.y);
 
                     MapVertex *vertex = EditAddVertex(map, fvec2_from_vec2(pos));;
-                    vertex->idx = idx;
+                    vertex->idx = idx++;
 
-                    if(idx > map->vertexIdx) map->vertexIdx = idx + 1;
+                    if(idx > map->vertexIdx) map->vertexIdx = idx;
                 }
                 break;
             case PARSE_LINES:
@@ -378,9 +378,9 @@ bool LoadMap(Map *map, const char *filename)
                     MapVertex *vB = GetVertex(map, vertexB);
                     if(!vB) continue;
                     MapLine *mapLine = EditAddLine(map, vA, vB, data);
-                    mapLine->idx = idx;
+                    mapLine->idx = idx++;
 
-                    if(idx > map->lineIdx) map->lineIdx = idx + 1;
+                    if(idx > map->lineIdx) map->lineIdx = idx;
 
                     FreeLineData(data);
                 }
@@ -392,26 +392,27 @@ bool LoadMap(Map *map, const char *filename)
                     size_t idx;
                     line = ParseLineIndex(line, &idx);
                     if(!line) continue;
-                    size_t numOuterLines;
-                    line = ParseLineIndex(line, &numOuterLines);
-                    if(!line) continue;
 
-                    MapLine *outerLines[numOuterLines];
-                    for(size_t i = 0; i < numOuterLines; ++i)
-                    {
-                        size_t lineIdx;
-                        line = ParseLineIndex(line, &lineIdx);
-                        if(!line) goto nextLine;
-                        MapLine *mapLine = GetLine(map, lineIdx);
-                        if(!mapLine) goto nextLine;
-                        outerLines[i] = mapLine;
-                    }
+					size_t lineIdx;
+					line = ParseLineIndex(line, &lineIdx);
+					if(!line) goto nextLine;
+					MapLine *outerLine = GetLine(map, lineIdx);
+					if(!outerLine) goto nextLine;
+					int isFront;
+					line = ParseLineInt(line, &isFront);
+					if(!line) continue;
 
                     line = ParseLineInt(line, &data.floorHeight);
                     if(!line) continue;
                     line = ParseLineInt(line, &data.ceilHeight);
                     if(!line) continue;
                     line = ParseLineUint(line, &data.type);
+					if(!line) continue;
+					uint32_t ll;
+					line = ParseLineUint(line, &ll);
+					if(ll > 255) ll = 255;
+					data.lightLevel = ll;
+					if(!line) continue;
 
                     char *floorTexture;
                     line = ParseLineTexture(line, &floorTexture);
@@ -429,12 +430,9 @@ bool LoadMap(Map *map, const char *filename)
                         strcpy(data.ceilTex, ceilTexture);
                     }
 
-                    MapSector *sector = MakeMapSector(map, outerLines[0], false, data);
-
-                    //MapSector *sector = EditAddSector(map, numOuterLines, outerLines, 0, (size_t[0]){}, (MapLine**[0]){}, data);
-                    sector->idx = idx;
-
-                    if(idx > map->sectorIdx) map->sectorIdx = idx + 1;
+                    MapSector *sector = MakeMapSector(map, outerLine, !isFront, data);
+                    sector->idx = idx++;
+                    if(idx > map->sectorIdx) map->sectorIdx = idx;
 
                     FreeSectorData(data);
                 }
@@ -493,12 +491,9 @@ void SaveMap(Map *map)
     fprintf(file, "sectors = {\n");
     for(MapSector *sector = map->headSector; sector; sector = sector->next)
     {
-        fprintf(file, "\t%zu %zu ", sector->idx, sector->numOuterLines);
-        for(size_t i = 0; i < sector->numOuterLines; ++i)
-        {
-            fprintf(file, "%zu ", sector->outerLines[i]->idx);
-        }
-        fprintf(file, "%d %d %u ", sector->data.floorHeight, sector->data.ceilHeight, sector->data.type);
+        fprintf(file, "\t%zu %zu %d ", sector->idx, sector->outerLines[0]->idx, sector->outerLines[0]->frontSector == sector);
+		fprintf(file, "%d %d %u ", sector->data.floorHeight, sector->data.ceilHeight, sector->data.type);
+        fprintf(file, "%u ", sector->data.lightLevel);
         fprintf(file, "%s %s\n", getTextureName(sector->data.floorTex), getTextureName(sector->data.ceilTex));
     }
     fprintf(file, "}\n");

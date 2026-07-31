@@ -284,7 +284,7 @@
 $(APPLICATION)	Makefile	/^$(APPLICATION): $(OBJS) $(RES_OBJ) $(RC_OBJ) $(GLAD_OBJ) $(RE_OBJ) $(IGFD_OBJ) $(CIMGUI_OBJS) $(/;"	t
 $(BUILD_DIR)/$(CIMGUI_DIR)/%.o	Makefile	/^$(BUILD_DIR)\/$(CIMGUI_DIR)\/%.o: $(CIMGUI_DIR)\/%.cpp$/;"	t
 $(BUILD_DIR)/$(LUA_DIR)/%.o	Makefile	/^$(BUILD_DIR)\/$(LUA_DIR)\/%.o: $(LUA_DIR)\/src\/%.c$/;"	t
-$(BUILD_DIR)/%.o	Makefile	/^$(BUILD_DIR)\/%.o: $(SRC_DIR)\/%.c Makefile$/;"	t
+$(BUILD_DIR)/%.o	Makefile	/^$(BUILD_DIR)\/%.o: $(SRC_DIR)\/%.c$/;"	t
 $(BUILD_DIRS)	Makefile	/^$(BUILD_DIRS):$/;"	t
 $(EXE)	extern/cimgui/imgui/examples/example_apple_metal/Makefile	/^$(EXE): $(SOURCES)$/;"	t
 $(EXE)	extern/cimgui/imgui/examples/example_apple_opengl2/Makefile	/^$(EXE): $(SOURCES)$/;"	t
@@ -313,7 +313,7 @@ $(LUA_T)	extern/lua-5.4.8/src/Makefile	/^$(LUA_T): $(LUA_O) $(LUA_A)$/;"	t
 $(OUTPUTNAME)	extern/cimgui/Makefile	/^$(OUTPUTNAME):$(OBJS)$/;"	t
 $(PLATS)	extern/lua-5.4.8/Makefile	/^$(PLATS) help test clean:$/;"	t
 $(RC_OBJ)	Makefile	/^$(RC_OBJ): $(RC_SRC)$/;"	t
-$(RES_OBJ)	Makefile	/^$(RES_OBJ): $(RES_SRC) $(RESOURCES) Makefile$/;"	t
+$(RES_OBJ)	Makefile	/^$(RES_OBJ): $(RES_SRC) $(RESOURCES)$/;"	t
 $(RE_OBJ)	Makefile	/^$(RE_OBJ): $(RE_SRC)$/;"	t
 $(TRIANG_OBJ)	Makefile	/^$(TRIANG_OBJ): $(TRIANG_SRC)$/;"	t
 %.o	extern/cimgui/imgui/examples/example_glfw_metal/Makefile	/^%.o:$(IMGUI_DIR)\/%.cpp$/;"	t
@@ -8345,9 +8345,10 @@ APPLE_HAS_BUTTON_OPTIONS	extern/cimgui/imgui/backends/imgui_impl_osx.mm	/^#defin
 APPLE_HAS_CONTROLLER	extern/cimgui/imgui/backends/imgui_impl_osx.mm	/^#define APPLE_HAS_CONTROLLER     (__IPHONE_OS_VERSION_MIN_REQUIRED >= 140000 || __MAC_OS_X_VERSI/;"	M
 APPLE_HAS_THUMBSTICKS	extern/cimgui/imgui/backends/imgui_impl_osx.mm	/^#define APPLE_HAS_THUMBSTICKS    (__IPHONE_OS_VERSION_MIN_REQUIRED >= 120100 || __MAC_OS_X_VERSI/;"	M
 APPLICATION	Makefile	/^    APPLICATION := $(APPLICATION).exe$/;"	m
-APPLICATION	Makefile	/^APPLICATION := editor2$/;"	m
+APPLICATION	Makefile	/^APPLICATION := $(APPLICATION_NAME).$(ARCH)$/;"	m
 APPLICATION	extern/triangulate/Makefile	/^    APPLICATION := $(APPLICATION).exe$/;"	m
 APPLICATION	extern/triangulate/Makefile	/^APPLICATION := triangulate$/;"	m
+APPLICATION_NAME	Makefile	/^APPLICATION_NAME := editor2$/;"	m
 APP_NUM_BACK_BUFFERS	extern/cimgui/imgui/examples/example_win32_directx12/main.cpp	/^static const int APP_NUM_BACK_BUFFERS = 2;$/;"	v	typeref:typename:const int	file:
 APP_NUM_FRAMES_IN_FLIGHT	extern/cimgui/imgui/examples/example_win32_directx12/main.cpp	/^static const int APP_NUM_FRAMES_IN_FLIGHT = 2;$/;"	v	typeref:typename:const int	file:
 APP_SRV_HEAP_SIZE	extern/cimgui/imgui/examples/example_win32_directx12/main.cpp	/^static const int APP_SRV_HEAP_SIZE = 64;$/;"	v	typeref:typename:const int	file:
@@ -8359,6 +8360,7 @@ APP_USE_VULKAN_DEBUG_REPORT	extern/cimgui/imgui/examples/example_sdl3_vulkan/mai
 APP_USE_VULKAN_DEBUG_REPORT	extern/cimgui/imgui/examples/example_win32_vulkan/main.cpp	/^#define APP_USE_VULKAN_DEBUG_REPORT$/;"	d	file:
 AR	extern/cimgui/Makefile	/^AR := ar -rc$/;"	m
 AR	extern/lua-5.4.8/src/Makefile	/^AR= ar rcu$/;"	m
+ARCH	Makefile	/^ARCH ?= $(shell uname -m)$/;"	m
 ARENA_ASSERT	extern/tsoding/arena.h	/^#define ARENA_ASSERT /;"	d
 ARENA_BACKEND	extern/tsoding/arena.h	/^#define ARENA_BACKEND ARENA_BACKEND_/;"	d
 ARENA_BACKEND_LIBC_MALLOC	extern/tsoding/arena.h	/^#define ARENA_BACKEND_LIBC_MALLOC /;"	d
@@ -8717,9 +8719,9 @@ BOLDYELLOW	extern/cglm/test/include/common.h	/^#define BOLDYELLOW$/;"	d
 BUFFER_SIZE	src/editor.c	/^#define BUFFER_SIZE /;"	d	file:
 BUFVFS	extern/lua-5.4.8/src/lobject.c	/^#define BUFVFS	/;"	d	file:
 BUILDDIR	extern/cglm/docs/make.bat	/^set BUILDDIR=build$/;"	v
-BUILDING_LIBRARY	extern/ftplib-4.0-1/src/ftplib.c	/^#define BUILDING_LIBRARY$/;"	d	file:
-BUILD_DIR	Makefile	/^BUILD_DIR := build$/;"	m
+BUILD_DIR	Makefile	/^BUILD_DIR := $(BUILD_DIR_BASE)\/$(PLATFORM)\/$(ARCH)$/;"	m
 BUILD_DIRS	Makefile	/^BUILD_DIRS := $(addprefix $(BUILD_DIR)\/,$(SRC_SUBDIRS)) $(BUILD_DIR)\/$(RES_DIR)$/;"	m
+BUILD_DIR_BASE	Makefile	/^BUILD_DIR_BASE := build$/;"	m
 BUILD_GMOCK	extern/triangulate/earcut/CMakeLists.txt	/^    set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)$/;"	v
 BUILD_GTEST	extern/triangulate/earcut/CMakeLists.txt	/^    set(BUILD_GTEST ON CACHE BOOL "" FORCE)$/;"	v
 BUILD_SHARED_LIBS	extern/cimgui/backend_test/example_glfw_dx11/CMakeLists.txt	/^	set(BUILD_SHARED_LIBS ON CACHE BOOL "" FORCE)$/;"	v
@@ -9266,6 +9268,7 @@ CT_Text	extern/cimgui/imgui/imgui_demo.cpp	/^        enum ContentsType { CT_Text
 CT_Text	extern/cimgui/imgui/imgui_demo.cpp	/^        enum ContentsType { CT_Text, CT_FillButton };$/;"	e	enum:DemoWindowTables::ContentsType	file:
 CUSTOMVERTEX	extern/cimgui/imgui/backends/imgui_impl_dx9.cpp	/^struct CUSTOMVERTEX$/;"	s	file:
 CW_ORIENT	src/geometry.h	/^    CW_ORIENT,$/;"	e	enum:orientation_t
+CXX	Makefile	/^CXX ?= g++$/;"	m
 CXX	extern/cimgui/imgui/examples/example_apple_metal/Makefile	/^CXX = clang++$/;"	m
 CXX	extern/cimgui/imgui/examples/example_apple_opengl2/Makefile	/^CXX = clang++$/;"	m
 CXXFLAGS	extern/cimgui/Makefile	/^CXXFLAGS=-O2 -fno-exceptions -fno-rtti$/;"	m
@@ -12368,7 +12371,6 @@ GLM_ZUP	extern/cglm/include/cglm/vec3.h	/^#define GLM_ZUP /;"	d
 GLM_ZYX	extern/cglm/include/cglm/vec3.h	/^#define GLM_ZYX /;"	d
 GLM_ZZZ	extern/cglm/include/cglm/vec3.h	/^#define GLM_ZZZ /;"	d
 GLM_ZZZZ	extern/cglm/include/cglm/vec4.h	/^#define GLM_ZZZZ /;"	d
-GLOBALDEF	extern/ftplib-4.0-1/src/ftplib.h	/^#define GLOBALDEF /;"	d
 GLOBALDEF	extern/ftplib-4.0-1/src/ftplib.h	/^#define GLOBALDEF$/;"	d
 GLOBALREF	extern/ftplib-4.0-1/src/ftplib.h	/^#define GLOBALREF /;"	d
 GLVULKANPROCNV	extern/cimgui/imgui/backends/imgui_impl_opengl3_loader.h	/^typedef void (APIENTRY  *GLVULKANPROCNV)(void);$/;"	t	typeref:typename:void (APIENTRY *)(void)
@@ -14941,7 +14943,6 @@ INCLUDE_IMSTB_TEXTEDIT_H	extern/cimgui/imgui/imstb_textedit.h	/^#define INCLUDE_
 INCTXT	extern/incbin/incbin.h	/^#  define INCTXT(/;"	d
 INCTXT_EXTERN	extern/incbin/incbin.h	/^#define INCTXT_EXTERN(/;"	d
 INC_DIR	Makefile	/^INC_DIR := $(EXTERN_DIR)\/stb$/;"	m
-INC_DIRS	Makefile	/^INC_DIRS := $(SRC_DIR)$/;"	m
 INIT_SIZE	extern/triangulate/earcut/test/comparison/libtess2/priorityq.c	/^#define INIT_SIZE	/;"	d	file:
 INSTALL	extern/lua-5.4.8/Makefile	/^INSTALL= install -p$/;"	m
 INSTALL_BIN	extern/lua-5.4.8/Makefile	/^INSTALL_BIN= $(INSTALL_TOP)\/bin$/;"	m
@@ -21670,7 +21671,7 @@ L	extern/lua-5.4.8/src/lzio.h	/^  lua_State *L;			\/* Lua state (for reader) *\/
 LClosure	extern/lua-5.4.8/src/lobject.h	/^typedef struct LClosure {$/;"	s
 LClosure	extern/lua-5.4.8/src/lobject.h	/^} LClosure;$/;"	t	typeref:struct:LClosure
 LD	Makefile	/^LD := $(CC)$/;"	m
-LDFLAGS	Makefile	/^LDFLAGS := -pthread -fuse-ld=gold$/;"	m
+LDFLAGS	Makefile	/^LDFLAGS := -pthread$/;"	m
 LDFLAGS	extern/ftplib-4.0-1/src/Makefile	/^LDFLAGS = -L.$/;"	m
 LDFLAGS	extern/lua-5.4.8/src/Makefile	/^LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)$/;"	m
 LEQ	extern/triangulate/earcut/test/comparison/libtess2/priorityq.c	/^#define LEQ(/;"	d	file:
@@ -21824,7 +21825,7 @@ LUA_CPATH_DEFAULT	extern/lua-5.4.8/src/luaconf.h	/^#define LUA_CPATH_DEFAULT /;"
 LUA_CPATH_VAR	extern/lua-5.4.8/src/loadlib.c	/^#define LUA_CPATH_VAR /;"	d	file:
 LUA_CSUBSEP	extern/lua-5.4.8/src/loadlib.c	/^#define LUA_CSUBSEP	/;"	d	file:
 LUA_DBLIBNAME	extern/lua-5.4.8/src/lualib.h	/^#define LUA_DBLIBNAME	/;"	d
-LUA_DEF	Makefile	/^LUA_DEF :=$/;"	m
+LUA_DEF	Makefile	/^LUA_DEF ?=$/;"	m
 LUA_DIR	Makefile	/^LUA_DIR := $(EXTERN_DIR)\/lua-5.4.8$/;"	m
 LUA_DIRSEP	extern/lua-5.4.8/src/luaconf.h	/^#define LUA_DIRSEP	/;"	d
 LUA_DL_DLL	extern/lua-5.4.8/src/luaconf.h	/^#define LUA_DL_DLL	/;"	d
@@ -22387,6 +22388,7 @@ MEMALLOC_H	extern/triangulate/earcut/test/comparison/libtess2/bucketalloc.h	/^#d
 MEMERRMSG	extern/lua-5.4.8/src/lstring.h	/^#define MEMERRMSG /;"	d
 MESH_H	extern/triangulate/earcut/test/comparison/libtess2/mesh.h	/^#define MESH_H$/;"	d
 MIN	extern/triangulate/earcut/test/comparison/libtess2/sweep.c	/^#define MIN(/;"	d	file:
+MINGW	Makefile	/^    MINGW = 1$/;"	m
 MINSIZEARRAY	extern/lua-5.4.8/src/lmem.c	/^#define MINSIZEARRAY	/;"	d	file:
 MINSTRTABSIZE	extern/lua-5.4.8/src/llimits.h	/^#define MINSTRTABSIZE	/;"	d
 MIN_FOV	src/editor.h	/^#define MIN_FOV /;"	d
@@ -24095,11 +24097,13 @@ PI	extern/lua-5.4.8/src/lmathlib.c	/^#define PI	/;"	d	file:
 PI	src/vecmath.h	/^#define PI /;"	d
 PI2	src/vecmath.h	/^#define PI2 /;"	d
 PIHALF	src/vecmath.h	/^#define PIHALF /;"	d
+PKG_CONFIG	Makefile	/^PKG_CONFIG ?= pkg-config$/;"	m
 PLACES_BOOKMARK_DEFAULT_OPEPEND	extern/imguifiledialog/ImGuiFileDialog.cpp	/^#define PLACES_BOOKMARK_DEFAULT_OPEPEND /;"	d	file:
 PLACES_DEVICES_DEFAULT_OPEPEND	extern/imguifiledialog/ImGuiFileDialog.cpp	/^#define PLACES_DEVICES_DEFAULT_OPEPEND /;"	d	file:
 PLACES_PANE_DEFAULT_SHOWN	extern/imguifiledialog/ImGuiFileDialog.cpp	/^#define PLACES_PANE_DEFAULT_SHOWN /;"	d	file:
 PLAT	extern/lua-5.4.8/Makefile	/^PLAT= guess$/;"	m
 PLAT	extern/lua-5.4.8/src/Makefile	/^PLAT= guess$/;"	m
+PLATFORM	Makefile	/^PLATFORM ?= $(shell uname -s)$/;"	m
 PLATS	extern/lua-5.4.8/Makefile	/^PLATS= guess aix bsd c89 freebsd generic ios linux linux-readline macosx mingw posix solaris$/;"	m
 PLATS	extern/lua-5.4.8/src/Makefile	/^PLATS= guess aix bsd c89 freebsd generic ios linux linux-readline macosx mingw posix solaris$/;"	m
 PLUS	extern/re/re.c	/^enum { UNUSED, DOT, BEGIN, END, QUESTIONMARK, STAR, PLUS, CHAR, CHAR_CLASS, INV_CHAR_CLASS, DIGI/;"	e	enum:__anonde010e180103	file:
@@ -24554,6 +24558,7 @@ PushTabStop	extern/cimgui/imgui/imgui.h	/^    static inline void  PushTabStop(bo
 PushTextWrapPos	extern/cimgui/imgui/imgui.cpp	/^void ImGui::PushTextWrapPos(float wrap_pos_x)$/;"	f	class:ImGui	typeref:typename:void
 PushTexture	extern/cimgui/imgui/imgui_draw.cpp	/^void ImDrawList::PushTexture(ImTextureRef tex_ref)$/;"	f	class:ImDrawList	typeref:typename:void
 PushTextureID	extern/cimgui/imgui/imgui.h	/^    inline    void  PushTextureID(ImTextureRef tex_ref) { PushTexture(tex_ref); }   \/\/ RENAMED/;"	f	struct:ImDrawList	typeref:typename:void
+Q	Makefile	/^    Q := @$/;"	m
 Q&A: Basics	extern/cimgui/imgui/docs/FAQ.md	/^# Q&A: Basics$/;"	c
 Q&A: Community	extern/cimgui/imgui/docs/FAQ.md	/^# Q&A: Community$/;"	c
 Q&A: Concerns	extern/cimgui/imgui/docs/FAQ.md	/^# Q&A: Concerns$/;"	c
@@ -24626,7 +24631,7 @@ REMFILE	extern/ftplib-4.0-1/src/qftp.c	/^struct REMFILE {$/;"	s	file:
 REPLACE_TEXTUREID	extern/cimgui/generator/cpp2ffi.lua	/^local function REPLACE_TEXTUREID(FP)$/;"	f
 REQ_GL_MAJOR	src/editor_main.c	/^#define REQ_GL_MAJOR /;"	d	file:
 REQ_GL_MINOR	src/editor_main.c	/^#define REQ_GL_MINOR /;"	d	file:
-RES	Makefile	/^RES := windres$/;"	m
+RES	Makefile	/^RES ?= windres$/;"	m
 RESERVED	extern/lua-5.4.8/src/llex.h	/^enum RESERVED {$/;"	g
 RESERVEDSLOT	extern/lua-5.4.8/src/lbaselib.c	/^#define RESERVEDSLOT	/;"	d	file:
 RESET	extern/cglm/test/include/common.h	/^#define RESET /;"	d
@@ -25018,7 +25023,7 @@ SDL_HAS_SHOW_WINDOW_ACTIVATION_HINT	extern/cimgui/imgui/backends/imgui_impl_sdl2
 SDL_HAS_USABLE_DISPLAY_BOUNDS	extern/cimgui/imgui/backends/imgui_impl_sdl2.cpp	/^#define SDL_HAS_USABLE_DISPLAY_BOUNDS /;"	d	file:
 SDL_HAS_VULKAN	extern/cimgui/imgui/backends/imgui_impl_sdl2.cpp	/^#define SDL_HAS_VULKAN /;"	d	file:
 SDL_HAS_WINDOW_ALPHA	extern/cimgui/imgui/backends/imgui_impl_sdl2.cpp	/^#define SDL_HAS_WINDOW_ALPHA /;"	d	file:
-SDL_INC	Makefile	/^SDL_INC :=$/;"	m
+SDL_INC	Makefile	/^SDL_INC ?=$/;"	m
 SDL_MAIN_HANDLED	extern/cimgui/backend_test/example_sdl3_vulkan/main.c	/^#define SDL_MAIN_HANDLED$/;"	d	file:
 SDL_MAIN_HANDLED	extern/cimgui/backend_test/example_sdl_opengl3/main.c	/^#define SDL_MAIN_HANDLED$/;"	d	file:
 SDL_MAIN_HANDLED	extern/cimgui/backend_test/example_sdl_vulkan/main.c	/^#define SDL_MAIN_HANDLED$/;"	d	file:
@@ -27858,7 +27863,6 @@ UIStatusBarHidden	extern/cimgui/imgui/examples/example_apple_metal/iOS/Info-iOS.
 UISupportedInterfaceOrientations	extern/cimgui/imgui/examples/example_apple_metal/iOS/Info-iOS.plist	/^	<key>UISupportedInterfaceOrientations<\/key>$/;"	k
 UISupportedInterfaceOrientations~ipad	extern/cimgui/imgui/examples/example_apple_metal/iOS/Info-iOS.plist	/^	<key>UISupportedInterfaceOrientations~ipad<\/key>$/;"	k
 UNAME	extern/lua-5.4.8/src/Makefile	/^UNAME= uname$/;"	m
-UNAME_S	Makefile	/^    UNAME_S := $(shell uname -s)$/;"	m
 UNAME_S	extern/cimgui/Makefile	/^UNAME_S := $(shell uname -s)$/;"	m
 UNAME_S	extern/cimgui/imgui/examples/example_glfw_opengl2/Makefile	/^UNAME_S := $(shell uname -s)$/;"	m
 UNAME_S	extern/cimgui/imgui/examples/example_glfw_opengl3/Makefile	/^UNAME_S := $(shell uname -s)$/;"	m
@@ -65066,6 +65070,7 @@ ptr	extern/cimgui/imgui/backends/imgui_impl_opengl3_loader.h	/^    GL3WglProc pt
 ptr	extern/cimgui/imgui/imgui.cpp	/^    union { void* ptr; int integer; } tex_id_opaque;$/;"	m	union:FormatTextureIDForDebugDisplay::__anon5637c86d030a	typeref:typename:void *	file:
 ptr_from_offset	extern/cimgui/imgui/imgui_internal.h	/^    T*      ptr_from_offset(int off)    { IM_ASSERT(off >= 4 && off < Buf.Size); return (T*)(voi/;"	f	struct:ImChunkStream	typeref:typename:T *
 puUseCustomLocale	extern/imguifiledialog/ImGuiFileDialog.h	/^    bool puUseCustomLocale = false;            \/\/ custom user locale$/;"	m	class:IGFD::FileDialogInternal	typeref:typename:bool
+purge	Makefile	/^purge:$/;"	t
 push_back	extern/cimgui/imgui/imgui.h	/^    inline void         push_back(const T& v)               { if (Size == Capacity) reserve(_gro/;"	f	struct:ImVector	typeref:typename:void
 push_back	extern/cimgui/imgui/imgui_draw.cpp	/^    void    push_back(ImTriangulatorNode* node) { Data[Size++] = node; }$/;"	f	struct:ImTriangulatorNodeSpan	typeref:typename:void	file:
 push_back	extern/cimgui/imgui/imgui_internal.h	/^    inline T*           push_back(const T& v)       { int i = Size; IM_ASSERT(i >= 0); if (Size /;"	f	struct:ImStableVector	typeref:typename:T *
