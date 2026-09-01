@@ -50,7 +50,7 @@ static void CenterSector(EdState *state, MapSector *sector)
     GotoPos(state, (Vec2){ .x = (w/2) + bb.min.x, .y = (h/2) + bb.min.y });
 }
 
-static void TextureField(EdState *state, const char *label, char **textureName)
+static void TextureField(EdState *state, const char *label, char **textureName, Vec2 *textureOffset)
 {
     Texture *texture = tc_get(&state->textures, *textureName);
     igText(label);
@@ -59,6 +59,7 @@ static void TextureField(EdState *state, const char *label, char **textureName)
     char buffer[128] = { 0 };
     snprintf(buffer, sizeof buffer, "%sTexture", label);
     igImageButton(buffer, (ImTextureRef){ ._TexID = texId }, size, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1, }, (ImVec4){ 0, 0, 0, 0 }, (ImVec4){ 1, 1, 1, 1 });
+    snprintf(buffer, sizeof buffer, "%s Offset", label);
     if(igIsItemHovered(0) && igIsMouseReleased_Nil(ImGuiMouseButton_Right) && texture)
     {
         free(*textureName);
@@ -78,6 +79,7 @@ static void TextureField(EdState *state, const char *label, char **textureName)
         }
         igEndDragDropTarget();
     }
+    igInputFloat2(buffer, (float*)textureOffset, NULL, 0);
 }
 
 static void MapProperties(EdState *state)
@@ -131,12 +133,12 @@ static void LineProperties(EdState *state)
         snprintf(title, sizeof title, "Line %d Properties", (int)selectedLine->idx);
         igSeparatorTextEx(0, title, NULL, 0);
 
-        TextureField(state, "Front Upper", &selectedLine->data.front.upperTex);
-        TextureField(state, "Front Middle", &selectedLine->data.front.middleTex);
-        TextureField(state, "Front Lower", &selectedLine->data.front.lowerTex);
-        TextureField(state, "Back Upper", &selectedLine->data.back.upperTex);
-        TextureField(state, "Back Middle", &selectedLine->data.back.middleTex);
-        TextureField(state, "Back Lower", &selectedLine->data.back.lowerTex);
+        TextureField(state, "Front Upper", &selectedLine->data.front.upperTex, &selectedLine->data.front.upperOffset);
+        TextureField(state, "Front Middle", &selectedLine->data.front.middleTex, &selectedLine->data.front.middleOffset);
+        TextureField(state, "Front Lower", &selectedLine->data.front.lowerTex, &selectedLine->data.front.lowerOffset);
+        TextureField(state, "Back Upper", &selectedLine->data.back.upperTex, &selectedLine->data.back.upperOffset);
+        TextureField(state, "Back Middle", &selectedLine->data.back.middleTex, &selectedLine->data.back.middleOffset);
+        TextureField(state, "Back Lower", &selectedLine->data.back.lowerTex, &selectedLine->data.back.lowerOffset);
 
         igText("Vertex A: %zu", selectedLine->a->idx);
         igSameLine(0, 4);
@@ -207,13 +209,12 @@ static void SectorProperties(EdState *state)
             state->map.dirty = true;
         }
 
-        TextureField(state, "Floor", &selectedSector->data.floorTex);
-        TextureField(state, "Ceiling", &selectedSector->data.ceilTex);
+        TextureField(state, "Floor", &selectedSector->data.floorTex, &selectedSector->data.floorOffset);
+        TextureField(state, "Ceiling", &selectedSector->data.ceilTex, &selectedSector->data.ceilOffset);
 
         igText("Number of inner line loops: %zu", selectedSector->numInnerLines);
         for(size_t i = 0; i < selectedSector->numInnerLines; ++i)
         {
-            size_t n = selectedSector->numInnerLinesNum[i];
             igText("Lineloop %lld:", i);
             igSameLine(0, 4);
             char label[32] = {0};

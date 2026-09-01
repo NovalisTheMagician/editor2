@@ -32,7 +32,7 @@ ifeq ($(CONFIG),release)
     CCFLAGS += -O2
 else
     DEFINES += _DEBUG
-    CCFLAGS += -g
+    CCFLAGS += -ggdb
 endif
 
 SDL_INC ?=
@@ -58,11 +58,15 @@ ifdef MINGW
 else
     ifeq ($(PLATFORM),Linux)
         LIBS += GL dl
-        CCFLAGS += $(shell $(PKG_CONFIG) --cflags sdl2) -fsanitize=address
-        LDFLAGS += $(shell $(PKG_CONFIG) --libs sdl2) -fsanitize=address
+        CCFLAGS += $(shell $(PKG_CONFIG) --cflags sdl2)
+        LDFLAGS += $(shell $(PKG_CONFIG) --libs sdl2)
         SDL_INC += $(shell $(PKG_CONFIG) --cflags sdl2)
         DEFINES +=
         LUA_DEF += -DLUA_USE_POSIX
+        ifneq ($(CONFIG),release)
+            CCFLAGS += -fsanitize=address
+            LDFLAGS += -fsanitize=address
+        endif
     endif
     ifeq ($(PLATFORM),Darwin)
     endif
@@ -159,6 +163,14 @@ FTP_OBJ := $(BUILD_DIR)/$(FTP_DIR)/ftplib.o
 INC_DIRS += $(FTP_DIR)/src
 BUILD_DIRS += $(BUILD_DIR)/$(FTP_DIR)
 
+# libmapfile
+MAPFILE_DIR := $(EXTERN_DIR)/libmapfile
+MAPFILE_SRC := $(MAPFILE_DIR)/mapfile.c
+MAPFILE_OBJ := $(BUILD_DIR)/$(MAPFILE_DIR)/mapfile.o
+
+INC_DIRS += $(MAPFILE_DIR)
+BUILD_DIRS += $(BUILD_DIR)/$(MAPFILE_DIR)
+
 # stb
 INC_DIR := $(EXTERN_DIR)/stb
 
@@ -182,7 +194,7 @@ $(BUILD_DIRS):
 	@echo "MD $@"
 	$(Q)mkdir -p $@
 
-$(APPLICATION): $(OBJS) $(RES_OBJ) $(RC_OBJ) $(GLAD_OBJ) $(RE_OBJ) $(IGFD_OBJ) $(CIMGUI_OBJS) $(TRIANG_OBJ) $(LUA_OBJS) $(FTP_OBJ)
+$(APPLICATION): $(OBJS) $(RES_OBJ) $(RC_OBJ) $(GLAD_OBJ) $(RE_OBJ) $(IGFD_OBJ) $(CIMGUI_OBJS) $(TRIANG_OBJ) $(LUA_OBJS) $(FTP_OBJ) $(MAPFILE_OBJ)
 	@echo "LD $@"
 	$(Q)$(LD) $(LDFLAGS) -o $@ $^ $(LIB_FLAGS)
 
@@ -225,6 +237,10 @@ $(BUILD_DIR)/$(LUA_DIR)/%.o: $(LUA_DIR)/src/%.c
 $(FTP_OBJ): $(FTP_SRC)
 	@echo "CC $< (External ftplib)"
 	$(Q)$(CC) -O2 -c $< -o $@ -D_FILE_OFFSET_BITS=64 -DBUILDING_LIBRARY
+
+$(MAPFILE_OBJ): $(MAPFILE_SRC)
+	@echo "CC $< (External libmapfile)"
+	$(Q)$(CC) -c $< -o $@ -O2
 
 .PHONY: clean purge echo
 clean:

@@ -73,8 +73,11 @@ typedef struct MapVertex
 typedef struct Side
 {
     char *upperTex;
+    Vec2 upperOffset;
     char *middleTex;
+    Vec2 middleOffset;
     char *lowerTex;
+    Vec2 lowerOffset;
 } Side;
 
 typedef struct LineData
@@ -103,6 +106,8 @@ typedef struct SectorData
 {
     uint32_t type;
 
+	Vec2 floorOffset;
+    Vec2 ceilOffset;
     int32_t floorHeight;
     int32_t ceilHeight;
     uint8_t lightLevel;

@@ -1,9 +1,51 @@
 #include "../gwindows.h"
 #include "cimgui.h"
 
+#include "arena.h"
+
+#include "../map/query.h"
+
+static Arena arena = { 0 };
+
 static vec3s screenToWorld(Vec2 screenCoord)
 {
     return (vec3s){ 0 };
+}
+
+static size_t GetStartIndexOfLine(MapSector *sector, MapLine *line)
+{
+    for(size_t i = 0; i < sector->numOuterLines; ++i)
+        if(sector->outerLines[i] == line)
+            return i;
+    assert(false && "line is not part of the sector");
+}
+
+static bool LineFilter(const MapLine *current, const MapLine *next)
+{
+    if(next->frontSector && next->backSector && next->frontSector->data.floorHeight == next->backSector->data.floorHeight && next->frontSector->data.ceilHeight == next->backSector->data.ceilHeight)
+        return true;
+    return false;
+}
+
+static bool AlignTextures(MapLine *startLine, bool front)
+{
+#if 0
+    real_t totalLength = vec2_distance(vec2_from_fvec2(startLine->a->pos), vec2_from_fvec2(startLine->b->pos)) + startLine->data.textureOffset.x;
+    MapSector *sector = front ? startLine->frontSector : startLine->backSector;
+    assert(sector);
+
+    MapLine **loop = arena_alloc(&arena, 1024 * sizeof *loop);
+    size_t n = FindOuterLineLoopPredicate(startLine, loop, 1024, !front, LineFilter);
+
+    for(size_t i = 1; i < n; ++i)
+    {
+        MapLine *line = loop[i];
+        line->data.textureOffset.x = totalLength;
+        totalLength += vec2_distance(vec2_from_fvec2(line->a->pos), vec2_from_fvec2(line->b->pos));
+    }
+    return n > 0;
+#endif
+    return false;
 }
 
 void RealtimeWindow(bool *p_open, EdState *state)
@@ -98,6 +140,12 @@ void RealtimeWindow(bool *p_open, EdState *state)
                     cameraPosition = vec3_add(cameraPosition, vec3_scale(globalUp, -speed * dt));
                 }
 
+                if(igIsKeyPressed_Bool(ImGuiKey_H, false) && state->data.selectionMode == MODE_LINE && state->data.numSelectedElements == 1)
+                {
+                    MapLine *startLine = state->data.selectedElements[0];
+                    if(AlignTextures(startLine, true))
+                        state->map.dirty = true;
+                }
 
                 state->realtime.cameraRight = cameraRight;
                 state->realtime.cameraDirection = cameraDirection;
@@ -121,4 +169,5 @@ void RealtimeWindow(bool *p_open, EdState *state)
         state->ui.render3d = false;
     }
     igEnd();
+    arena_reset(&arena);
 }

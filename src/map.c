@@ -7,6 +7,8 @@
 #include "serialization.h"
 #include "utils/string.h"
 
+#include "mapfile.h"
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,6 +25,17 @@
 #define KEY_SECTORS "sectors"
 
 #define KEY_IS(k) strcasecmp(key, k) == 0
+
+static void Log(int severity, const char *msg)
+{
+    switch(severity)
+    {
+    case MS_INFO: LogInfo(msg); break;
+    case MS_WARNING: LogWarning(msg); break;
+    case MS_ERROR: LogError(msg); break;
+    default: LogError(msg); break;
+    }
+}
 
 static void FreeVertList(MapVertex *head)
 {
@@ -194,46 +207,38 @@ void NewMap(Map *map)
     map->gravity = 9.80f;
 }
 
-enum ParseMode
+static void assignSide(Side *side, MapfileLineSide *lineSide)
 {
-    PARSE_PROPS,
-    PARSE_VERTICES,
-    PARSE_LINES,
-    PARSE_SECTORS
-};
+    side->upperOffset = (Vec2){ lineSide->upperOffsetX, lineSide->upperOffsetY };
+    if(lineSide->upperTex)
+    {
+        side->upperTex = malloc(lineSide->upperTexLen+1);
+        memcpy(side->upperTex, lineSide->upperTex, lineSide->upperTexLen);
+        side->upperTex[lineSide->upperTexLen] = '\0';
+    }
 
-static char* parseSide(char *line, Side *side)
-{
-    char *tex;
-    line = ParseLineString(line, &tex);
-    if(!line) return NULL;
-    if(strcmp(tex, "NULL") != 0)
+    side->middleOffset = (Vec2){ lineSide->middleOffsetX, lineSide->middleOffsetY };
+    if(lineSide->middleTex)
     {
-        side->lowerTex = malloc(strlen(tex)+1);
-        strcpy(side->lowerTex, tex);
+        side->middleTex = malloc(lineSide->middleTexLen+1);
+        memcpy(side->middleTex, lineSide->middleTex, lineSide->middleTexLen);
+        side->middleTex[lineSide->middleTexLen] = '\0';
     }
-    line = ParseLineString(line, &tex);
-    if(!line) return NULL;
-    if(strcmp(tex, "NULL") != 0)
+
+    side->lowerOffset = (Vec2){ lineSide->lowerOffsetX, lineSide->lowerOffsetY };
+    if(lineSide->lowerTex)
     {
-        side->middleTex = malloc(strlen(tex)+1);
-        strcpy(side->middleTex, tex);
+        side->lowerTex = malloc(lineSide->lowerTexLen+1);
+        memcpy(side->lowerTex, lineSide->lowerTex, lineSide->lowerTexLen);
+        side->lowerTex[lineSide->lowerTexLen] = '\0';
     }
-    line = ParseLineString(line, &tex);
-    if(!line) return NULL;
-    if(strcmp(tex, "NULL") != 0)
-    {
-        side->upperTex = malloc(strlen(tex)+1);
-        strcpy(side->upperTex, tex);
-    }
-    return line;
 }
 
 bool LoadMap(Map *map, const char *filename)
 {
     if(filename == NULL) return false;
 
-    FILE *file = fopen(filename, "r");
+    FILE *file = fopen(filename, "rb");
     if(!file)
     {
         LogError("Failed to load map file %s: %s", map->file, strerror(errno));
@@ -244,206 +249,95 @@ bool LoadMap(Map *map, const char *filename)
 
     map->file = CopyString(filename);
     map->vertexIdx = map->lineIdx = map->sectorIdx = 0;
-    bool inBlock = false;
-    enum ParseMode mode = PARSE_PROPS;
-    char readline[1024] = { 0 };
-    int lineNr = 1;
-    while(fgets(readline, sizeof readline, file))
+
+    MapfileSetLogFunc(Log);
+
+    Mapfile mapfile;
+    if(!MapfileParse(file, &mapfile, 0))
     {
-        char *line = Trim(readline);
-        if(!inBlock)
+        fclose(file);
+        LogError("Failed to parse mapfile `%s'", map->file);
+        return false;
+    }
+
+    map->gravity = mapfile.gravity;
+    map->textureScale = mapfile.textureScale;
+
+    for(MapfileIterator iterator = MapfileVerticesIterator(&mapfile); !MapfileIteratorEnd(&iterator); MapfileIteratorNextVertex(&iterator))
+    {
+        MapfileVertex v = { 0 };
+        if(MapfileIteratorGetVertex(&iterator, &v))
         {
-            char *delim = strchr(line, '=');
-            if(!delim || delim == line)
-            {
-                LogError("Failed to parse map file %s: Error on line %d", map->file, lineNr);
-                break;
-            }
+            MapVertex *vertex = EditAddVertex(map, fvec2_from_vec2((Vec2){ v.x, v.y }));;
+            vertex->idx = v.index++;
 
-            *delim = '\0';
-            char *key = Trim(line);
-            char *value = Trim(delim + 1);
-
-            if(mode != PARSE_PROPS)
-            {
-                if(strcmp(value, "{") == 0)
-                {
-                    inBlock = true;
-                    continue;
-                }
-            }
-
-            if(KEY_IS(KEY_VERTICES))
-            {
-                mode = PARSE_VERTICES;
-                inBlock = strcmp(value, "{") == 0;
-                continue;
-            }
-            if(KEY_IS(KEY_LINES))
-            {
-                mode = PARSE_LINES;
-                inBlock = strcmp(value, "{") == 0;
-                continue;
-            }
-            if(KEY_IS(KEY_SECTORS))
-            {
-                mode = PARSE_SECTORS;
-                inBlock = strcmp(value, "{") == 0;
-                continue;
-            }
-
-            if(KEY_IS(KEY_VERSION))
-            {
-                int version;
-                if(!ParseInt(value, &version))
-                {
-                    LogError("Failed to parse the version");
-                    break;
-                }
-                else if(version != MAP_VERSION)
-                {
-                    LogError("Map format version too new (%d > %d)", version, MAP_VERSION);
-                    break;
-                }
-            }
-
-            if(KEY_IS(KEY_GRAVITY))
-            {
-                if(!ParseFloat(value, &map->gravity))
-                {
-                    LogWarning("Failed to parse the gravity");
-                    LogWarning("Using default gravity");
-                    map->gravity = 9.8f;
-                }
-            }
-
-            if(KEY_IS(KEY_TEXTURESCALE))
-            {
-                if(ParseInt(value, &map->textureScale))
-                {
-                    LogWarning("Failed to parse the textureScale");
-                    LogWarning("Using default textureScale");
-                    map->textureScale = 1;
-                }
-            }
+            if(v.index > map->vertexIdx) map->vertexIdx = v.index;
         }
-        else
+    }
+
+    for(MapfileIterator iterator = MapfileLinesIterator(&mapfile); !MapfileIteratorEnd(&iterator); MapfileIteratorNextLine(&iterator))
+    {
+        MapfileLine l = { 0 };
+        if(MapfileIteratorGetLine(&iterator, &l))
         {
-            if(strcmp(line, "}") == 0)
+            LineData data = { 0 };
+
+            assignSide(&data.front, &l.front);
+            assignSide(&data.back, &l.back);
+
+            MapVertex *vA = GetVertex(map, l.vertexA);
+            if(!vA) continue;
+            MapVertex *vB = GetVertex(map, l.vertexB);
+            if(!vB) continue;
+            MapLine *mapLine = EditAddLine(map, vA, vB, data);
+            mapLine->idx = l.index++;
+
+            if(l.index > map->lineIdx) map->lineIdx = l.index;
+
+            FreeLineData(data);
+        }
+    }
+
+    for(MapfileIterator iterator = MapfileSectorsIterator(&mapfile); !MapfileIteratorEnd(&iterator); MapfileIteratorNextSector(&iterator))
+    {
+        MapfileSector s = { 0 };
+        if(MapfileIteratorGetSector(&iterator, &s))
+        {
+            SectorData data = { 0 };
+
+            data.floorHeight = s.floorHeight;
+            data.ceilHeight = s.ceilHeight;
+            data.lightLevel = s.lightLevel;
+
+            data.floorOffset = (Vec2){ s.floorOffsetX, s.floorOffsetY };
+            if(s.floorTex)
             {
-                inBlock = false;
-                mode = PARSE_PROPS;
+                data.floorTex = malloc(s.floorTexLen+1);
+                memcpy(data.floorTex, s.floorTex, s.floorTexLen);
+                data.floorTex[s.floorTexLen] = '\0';
+            }
+
+            data.ceilOffset = (Vec2){ s.ceilOffsetX, s.ceilOffsetY };
+            if(s.ceilTex)
+            {
+                data.ceilTex = malloc(s.ceilTexLen+1);
+                memcpy(data.ceilTex, s.ceilTex, s.ceilTexLen);
+                data.ceilTex[s.ceilTexLen] = '\0';
+            }
+
+            MapLine *outerLine = GetLine(map, s.firstLine);
+            if(!outerLine)
+            {
+                LogError("Failed to find line");
                 continue;
             }
 
-            switch(mode)
-            {
-            case PARSE_VERTICES:
-                {
-                    size_t idx;
-                    line = ParseLineIndex(line, &idx);
-                    if(!line) continue;
-                    Vec2 pos;
-                    line = ParseLineReal(line, &pos.x);
-                    if(!line) continue;
-                    line = ParseLineReal(line, &pos.y);
+            MapSector *sector = MakeMapSector(map, outerLine, !s.firstLineFront, data);
+            sector->idx = s.index++;
+            if(s.index > map->sectorIdx) map->sectorIdx = s.index;
 
-                    MapVertex *vertex = EditAddVertex(map, fvec2_from_vec2(pos));;
-                    vertex->idx = idx++;
-
-                    if(idx > map->vertexIdx) map->vertexIdx = idx;
-                }
-                break;
-            case PARSE_LINES:
-                {
-                    LineData data = { 0 };
-
-                    size_t idx;
-                    line = ParseLineIndex(line, &idx);
-                    if(!line) continue;
-                    size_t vertexA;
-                    line = ParseLineIndex(line, &vertexA);
-                    if(!line) continue;
-                    size_t vertexB;
-                    line = ParseLineIndex(line, &vertexB);
-                    if(!line) continue;
-                    line = ParseLineUint(line, &data.type);
-                    if(!line) continue;
-                    line = parseSide(line, &data.front);
-                    if(!line) continue;
-                    line = parseSide(line, &data.back);
-
-                    MapVertex *vA = GetVertex(map, vertexA);
-                    if(!vA) continue;
-                    MapVertex *vB = GetVertex(map, vertexB);
-                    if(!vB) continue;
-                    MapLine *mapLine = EditAddLine(map, vA, vB, data);
-                    mapLine->idx = idx++;
-
-                    if(idx > map->lineIdx) map->lineIdx = idx;
-
-                    FreeLineData(data);
-                }
-                break;
-            case PARSE_SECTORS:
-                {
-                    SectorData data = { 0 };
-
-                    size_t idx;
-                    line = ParseLineIndex(line, &idx);
-                    if(!line) continue;
-
-					size_t lineIdx;
-					line = ParseLineIndex(line, &lineIdx);
-					if(!line) goto nextLine;
-					MapLine *outerLine = GetLine(map, lineIdx);
-					if(!outerLine) goto nextLine;
-					int isFront;
-					line = ParseLineInt(line, &isFront);
-					if(!line) continue;
-
-                    line = ParseLineInt(line, &data.floorHeight);
-                    if(!line) continue;
-                    line = ParseLineInt(line, &data.ceilHeight);
-                    if(!line) continue;
-                    line = ParseLineUint(line, &data.type);
-					if(!line) continue;
-					uint32_t ll;
-					line = ParseLineUint(line, &ll);
-					if(ll > 255) ll = 255;
-					data.lightLevel = ll;
-					if(!line) continue;
-
-                    char *floorTexture;
-                    line = ParseLineTexture(line, &floorTexture);
-                    if(!line) continue;
-                    if(floorTexture)
-                    {
-                        data.floorTex = malloc(strlen(floorTexture)+1);
-                        strcpy(data.floorTex, floorTexture);
-                    }
-                    char *ceilTexture;
-                    line = ParseLineTexture(line, &ceilTexture);
-                    if(ceilTexture)
-                    {
-                        data.ceilTex = malloc(strlen(ceilTexture)+1);
-                        strcpy(data.ceilTex, ceilTexture);
-                    }
-
-                    MapSector *sector = MakeMapSector(map, outerLine, !isFront, data);
-                    sector->idx = idx++;
-                    if(idx > map->sectorIdx) map->sectorIdx = idx;
-
-                    FreeSectorData(data);
-                }
-                break;
-            default:
-                break;
-            }
-nextLine:
+            FreeSectorData(data);
         }
-
-        lineNr++;
     }
 
     fclose(file);
@@ -454,6 +348,18 @@ nextLine:
 static char* getTextureName(char *texname)
 {
     return texname ? texname : "NULL";
+}
+
+static void writeSideTexture(FILE *file, const char *texture, Vec2 offset)
+{
+    fprintf(file, "%s %.4f %.4f ", texture, offset.x, offset.y);
+}
+
+static void writeSide(FILE *file, Side side)
+{
+    writeSideTexture(file, getTextureName(side.lowerTex), side.lowerOffset);
+    writeSideTexture(file, getTextureName(side.middleTex), side.middleOffset);
+    writeSideTexture(file, getTextureName(side.upperTex), side.upperOffset);
 }
 
 void SaveMap(Map *map)
@@ -483,8 +389,9 @@ void SaveMap(Map *map)
     for(MapLine *line = map->headLine; line; line = line->next)
     {
         fprintf(file, "\t%zu %zu %zu %u ", line->idx, line->a->idx, line->b->idx, line->data.type);
-        fprintf(file, "%s %s %s ", getTextureName(line->data.front.lowerTex), getTextureName(line->data.front.middleTex), getTextureName(line->data.front.upperTex));
-        fprintf(file, "%s %s %s\n", getTextureName(line->data.back.lowerTex), getTextureName(line->data.back.middleTex), getTextureName(line->data.back.upperTex));
+        writeSide(file, line->data.front);
+        writeSide(file, line->data.back);
+        fprintf(file, "\n");
     }
     fprintf(file, "}\n");
 
@@ -493,6 +400,8 @@ void SaveMap(Map *map)
     {
         fprintf(file, "\t%zu %zu %d ", sector->idx, sector->outerLines[0]->idx, sector->outerLines[0]->frontSector == sector);
 		fprintf(file, "%d %d %u ", sector->data.floorHeight, sector->data.ceilHeight, sector->data.type);
+        fprintf(file, "%.4f %.4f ", sector->data.floorOffset.x, sector->data.floorOffset.y);
+        fprintf(file, "%.4f %.4f ", sector->data.ceilOffset.x, sector->data.ceilOffset.y);
         fprintf(file, "%u ", sector->data.lightLevel);
         fprintf(file, "%s %s\n", getTextureName(sector->data.floorTex), getTextureName(sector->data.ceilTex));
     }

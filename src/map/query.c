@@ -125,7 +125,7 @@ typedef struct DeadList
 
 static Arena arena = { 0 };
 
-size_t FindLineLoop(MapLine *startLine, MapLine **sectorLines, size_t maxLoopLength, bool reversed, int(*cmpFunc)(const void*, const void*))
+size_t FindLineLoop(MapLine *startLine, MapLine **sectorLines, size_t maxLoopLength, bool reversed, bool(*linePredicateFunc)(const MapLine*, const MapLine*), int(*cmpFunc)(const void*, const void*))
 {
     assert(maxLoopLength > 0);
     arena_reset(&arena);
@@ -165,6 +165,9 @@ size_t FindLineLoop(MapLine *startLine, MapLine **sectorLines, size_t maxLoopLen
                 }
             }
             if(isDead)
+                continue;
+
+            if(linePredicateFunc && linePredicateFunc(currentLine, attLine))
                 continue;
 
             MapVertex *otherVertex = nextVertex == attLine->a ? attLine->b : attLine->a;
