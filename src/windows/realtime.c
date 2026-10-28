@@ -98,6 +98,7 @@ void RealtimeWindow(bool *p_open, EdState *state)
                     yaw += dragDelta.x * dt;
                     pitch += -dragDelta.y * dt;
                     igResetMouseDragDelta(ImGuiMouseButton_Right);
+                    igSetWindowFocus_Nil();
                     
                     if(pitch > pitchMax)
                         pitch = pitchMax;

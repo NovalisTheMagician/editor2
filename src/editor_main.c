@@ -216,7 +216,7 @@ int EditorMain(int argc, char *argv[])
 
         quit = DoGui(state, quit);
 
-        if(!state->ui.render3d && state->gl.editorColorTexture > 0)
+        if(state->gl.editorColorTexture > 0)
         {
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -228,7 +228,7 @@ int EditorMain(int argc, char *argv[])
             glDisable(GL_BLEND);
         }
 
-        if(state->ui.render3d && state->gl.realtimeColorTexture > 0)
+        if(state->gl.realtimeColorTexture > 0)
         {
             glEnable(GL_DEPTH_TEST);
             glEnable(GL_CULL_FACE);
