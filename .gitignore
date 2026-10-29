@@ -18,3 +18,5 @@ logs.txt
 editor2.*
 
 build/
+
+extern/libmapfile/test

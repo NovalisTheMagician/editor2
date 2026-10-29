@@ -8475,7 +8475,7 @@ AddCustomRectRegular	extern/cimgui/imgui/imgui.h	/^    inline ImFontAtlasRectId 
 AddDrawCmd	extern/cimgui/imgui/imgui_draw.cpp	/^void ImDrawList::AddDrawCmd()$/;"	f	class:ImDrawList	typeref:typename:void
 AddDrawList	extern/cimgui/imgui/imgui_draw.cpp	/^void ImDrawData::AddDrawList(ImDrawList* draw_list)$/;"	f	class:ImDrawData	typeref:typename:void
 AddDrawListToDrawDataEx	extern/cimgui/imgui/imgui_draw.cpp	/^void ImGui::AddDrawListToDrawDataEx(ImDrawData* draw_data, ImVector<ImDrawList*>* out_list, ImDr/;"	f	class:ImGui	typeref:typename:void
-AddEditVertex	src/windows/geditor.c	/^static void AddEditVertex(EdState *state, FVec2 v)$/;"	f	typeref:typename:void	file:
+AddEditVertex	src/windows/geditor.c	/^static void AddEditVertex(EdState *state, Vec2 v)$/;"	f	typeref:typename:void	file:
 AddEllipse	extern/cimgui/imgui/imgui_draw.cpp	/^void ImDrawList::AddEllipse(const ImVec2& center, const ImVec2& radius, ImU32 col, float rot, in/;"	f	class:ImDrawList	typeref:typename:void
 AddEllipseFilled	extern/cimgui/imgui/imgui_draw.cpp	/^void ImDrawList::AddEllipseFilled(const ImVec2& center, const ImVec2& radius, ImU32 col, float r/;"	f	class:ImDrawList	typeref:typename:void
 AddFocusEvent	extern/cimgui/imgui/imgui.cpp	/^void ImGuiIO::AddFocusEvent(bool focused)$/;"	f	class:ImGuiIO	typeref:typename:void
@@ -8520,7 +8520,7 @@ AddRightEdges	extern/triangulate/earcut/test/comparison/libtess2/sweep.c	/^stati
 AddRootWindowToDrawData	extern/cimgui/imgui/imgui.cpp	/^static inline void AddRootWindowToDrawData(ImGuiWindow* window)$/;"	f	typeref:typename:void	file:
 AddSentinel	extern/triangulate/earcut/test/comparison/libtess2/sweep.c	/^static void AddSentinel( TESStesselator *tess, TESSreal smin, TESSreal smax, TESSreal t )$/;"	f	typeref:typename:void	file:
 AddSettingsHandler	extern/cimgui/imgui/imgui.cpp	/^void ImGui::AddSettingsHandler(const ImGuiSettingsHandler* handler)$/;"	f	class:ImGui	typeref:typename:void
-AddSplitPoint	src/map/insert.c	/^static void AddSplitPoint(LineWork *w, Frac t, FVec2 pos)$/;"	f	typeref:typename:void	file:
+AddSplitPoint	src/map/insert.c	/^static void AddSplitPoint(LineWork *w, real_t t, Vec2 pos)$/;"	f	typeref:typename:void	file:
 AddText	extern/cimgui/imgui/imgui_draw.cpp	/^void ImDrawList::AddText(ImFont* font, float font_size, const ImVec2& pos, ImU32 col, const char/;"	f	class:ImDrawList	typeref:typename:void
 AddText	extern/cimgui/imgui/imgui_draw.cpp	/^void ImDrawList::AddText(const ImVec2& pos, ImU32 col, const char* text_begin, const char* text_/;"	f	class:ImDrawList	typeref:typename:void
 AddText	extern/cimgui/imgui/imgui_draw.cpp	/^void ImFontGlyphRangesBuilder::AddText(const char* text, const char* text_end)$/;"	f	class:ImFontGlyphRangesBuilder	typeref:typename:void
@@ -8930,8 +8930,7 @@ BorderX2	extern/cimgui/imgui/imgui_internal.h	/^    float                       
 BoundingBox	src/map.h	/^typedef struct BoundingBox$/;"	s
 BoundingBox	src/map.h	/^} BoundingBox;$/;"	t	typeref:struct:BoundingBox
 BoundingBoxFromMapLines	src/geometry.c	/^BoundingBox BoundingBoxFromMapLines(size_t numLines, MapLine *lines[static numLines])$/;"	f	typeref:typename:BoundingBox
-BoundingBoxFromVertices	src/geometry.c	/^BoundingBox BoundingBoxFromVertices(size_t numVertices, FVec2 vertices[static numVertices])$/;"	f	typeref:typename:BoundingBox
-BoundingBoxFromVerticesReal	src/geometry.c	/^BoundingBox BoundingBoxFromVerticesReal(size_t numVertices, Vec2 vertices[static numVertices])$/;"	f	typeref:typename:BoundingBox
+BoundingBoxFromVertices	src/geometry.c	/^BoundingBox BoundingBoxFromVertices(size_t numVertices, Vec2 vertices[static numVertices])$/;"	f	typeref:typename:BoundingBox
 BoundingBoxIntersect	src/geometry.c	/^bool BoundingBoxIntersect(BoundingBox a, BoundingBox b)$/;"	f	typeref:typename:bool
 BoxSelectActivateDrag	extern/cimgui/imgui/imgui_widgets.cpp	/^static void BoxSelectActivateDrag(ImGuiBoxSelectState* bs, ImGuiWindow* window)$/;"	f	typeref:typename:void	file:
 BoxSelectDeactivateDrag	extern/cimgui/imgui/imgui_widgets.cpp	/^static void BoxSelectDeactivateDrag(ImGuiBoxSelectState* bs)$/;"	f	typeref:typename:void	file:
@@ -9956,7 +9955,7 @@ CreateSector	src/map/create.c	/^CreateResult CreateSector(Map *map, size_t numLi
 CreateShader	extern/cimgui/imgui/backends/imgui_impl_opengl3_loader.h	/^        PFNGLCREATESHADERPROC             CreateShader;$/;"	m	struct:ImGL3WProcs::__anon0d3434fa0108	typeref:typename:PFNGLCREATESHADERPROC
 CreateSwapChain	extern/cimgui/imgui/examples/example_glfw_wgpu/main.cpp	/^static void CreateSwapChain(int width, int height)$/;"	f	typeref:typename:void	file:
 CreateThumbnailFun	extern/imguifiledialog/ImGuiFileDialog.h	/^    typedef std::function<void(IGFD_Thumbnail_Info*)> CreateThumbnailFun;   \/\/ texture 2d crea/;"	t	class:IGFD::ThumbnailFeature
-CreateVertex	src/map/create.c	/^CreateResult CreateVertex(Map *map, FVec2 pos)$/;"	f	typeref:typename:CreateResult
+CreateVertex	src/map/create.c	/^CreateResult CreateVertex(Map *map, Vec2 pos)$/;"	f	typeref:typename:CreateResult
 Credits	extern/cimgui/imgui/docs/README.md	/^Credits$/;"	s	chapter:Dear ImGui
 Credits/Licenses For Fonts Included In Repository	extern/cimgui/imgui/docs/FONTS.md	/^## Credits\/Licenses For Fonts Included In Repository$/;"	s
 Ctx	extern/cimgui/cimgui.h	/^    ImGuiContext* Ctx;$/;"	m	struct:ImGuiIO	typeref:typename:ImGuiContext *
@@ -10912,7 +10911,6 @@ EPSILON	src/utils.h	/^#define EPSILON /;"	d
 ERRFUNC	extern/lua-5.4.8/src/loadlib.c	/^#define ERRFUNC	/;"	d	file:
 ERRLIB	extern/lua-5.4.8/src/loadlib.c	/^#define ERRLIB	/;"	d	file:
 ERRORSTACKSIZE	extern/lua-5.4.8/src/ldo.c	/^#define ERRORSTACKSIZE	/;"	d	file:
-ERROR_NEXT	src/map.c	/^#define ERROR_NEXT(/;"	d	file:
 ESTATE_ADDVERTEX	src/editor.h	/^    ESTATE_ADDVERTEX$/;"	e	enum:EditState
 ESTATE_NORMAL	src/editor.h	/^    ESTATE_NORMAL,$/;"	e	enum:EditState
 EXE	extern/cimgui/imgui/examples/example_glfw_metal/Makefile	/^EXE = example_glfw_metal$/;"	m
@@ -10967,15 +10965,15 @@ EdgePair	extern/triangulate/earcut/test/comparison/libtess2/mesh.c	/^typedef str
 EdgeSign	extern/triangulate/earcut/test/comparison/libtess2/geom.h	/^#define EdgeSign(/;"	d
 EditAddLine	src/edit.c	/^MapLine* EditAddLine(Map *map, MapVertex *v0, MapVertex *v1, LineData data)$/;"	f	typeref:typename:MapLine *
 EditAddSector	src/edit.c	/^MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLines], size_t numI/;"	f	typeref:typename:MapSector *
-EditAddVertex	src/edit.c	/^MapVertex* EditAddVertex(Map *map, FVec2 pos)$/;"	f	typeref:typename:MapVertex *
-EditApplyLines	src/edit.c	/^bool EditApplyLines(EdState *state, size_t num, FVec2 points[static num])$/;"	f	typeref:typename:bool
-EditApplySector	src/edit.c	/^bool EditApplySector(EdState *state, size_t num, FVec2 points[static num])$/;"	f	typeref:typename:bool
+EditAddVertex	src/edit.c	/^MapVertex* EditAddVertex(Map *map, Vec2 pos)$/;"	f	typeref:typename:MapVertex *
+EditApplyLines	src/edit.c	/^bool EditApplyLines(EdState *state, size_t num, Vec2 points[static num])$/;"	f	typeref:typename:bool
+EditApplySector	src/edit.c	/^bool EditApplySector(EdState *state, size_t num, Vec2 points[static num])$/;"	f	typeref:typename:bool
 EditCopy	src/edit.c	/^void EditCopy(EdState *state)$/;"	f	typeref:typename:void
 EditCut	src/edit.c	/^void EditCut(EdState *state)$/;"	f	typeref:typename:void
-EditGetClosestLine	src/edit.c	/^MapLine* EditGetClosestLine(Map *map, FVec2 pos, fixed_t maxDist)$/;"	f	typeref:typename:MapLine *
-EditGetClosestVertex	src/edit.c	/^MapVertex* EditGetClosestVertex(Map *map, FVec2 pos, fixed_t maxDist)$/;"	f	typeref:typename:MapVertex *
-EditGetSector	src/edit.c	/^MapSector* EditGetSector(Map *map, FVec2 pos)$/;"	f	typeref:typename:MapSector *
-EditGetVertex	src/edit.c	/^MapVertex* EditGetVertex(Map *map, FVec2 pos)$/;"	f	typeref:typename:MapVertex *
+EditGetClosestLine	src/edit.c	/^MapLine* EditGetClosestLine(Map *map, Vec2 pos, real_t maxDist)$/;"	f	typeref:typename:MapLine *
+EditGetClosestVertex	src/edit.c	/^MapVertex* EditGetClosestVertex(Map *map, Vec2 pos, real_t maxDist)$/;"	f	typeref:typename:MapVertex *
+EditGetSector	src/edit.c	/^MapSector* EditGetSector(Map *map, Vec2 pos)$/;"	f	typeref:typename:MapSector *
+EditGetVertex	src/edit.c	/^MapVertex* EditGetVertex(Map *map, Vec2 pos)$/;"	f	typeref:typename:MapVertex *
 EditPaste	src/edit.c	/^void EditPaste(EdState *state)$/;"	f	typeref:typename:void
 EditRemoveLines	src/edit.c	/^void EditRemoveLines(Map *map, size_t num, MapLine *lines[static num])$/;"	f	typeref:typename:void
 EditRemoveSectors	src/edit.c	/^void EditRemoveSectors(Map *map, size_t num, MapSector *sectors[static num])$/;"	f	typeref:typename:void
@@ -11161,12 +11159,6 @@ FILTER_COMBO_MIN_WIDTH	extern/imguifiledialog/ImGuiFileDialog.cpp	/^#define FILT
 FINALIZEDBIT	extern/lua-5.4.8/src/lgc.h	/^#define FINALIZEDBIT	/;"	d
 FINAL_TEXT	extern/cglm/test/include/common.h	/^# define FINAL_TEXT /;"	d
 FIRST_RESERVED	extern/lua-5.4.8/src/llex.h	/^#define FIRST_RESERVED	/;"	d
-FIXEDW_MAX	src/vecmath.h	/^#define FIXEDW_MAX /;"	d
-FIXEDW_MIN	src/vecmath.h	/^#define FIXEDW_MIN /;"	d
-FIXED_MAX	src/vecmath.h	/^#define FIXED_MAX /;"	d
-FIXED_MIN	src/vecmath.h	/^#define FIXED_MIN /;"	d
-FIXED_ONE	src/vecmath.h	/^#define FIXED_ONE /;"	d
-FIXED_SHIFT	src/vecmath.h	/^#define FIXED_SHIFT /;"	d
 FONT_ATLAS_DEFAULT_TEX_CURSOR_DATA	extern/cimgui/imgui/imgui_draw.cpp	/^static const ImVec2 FONT_ATLAS_DEFAULT_TEX_CURSOR_DATA[ImGuiMouseCursor_COUNT][3] =$/;"	v	typeref:typename:const ImVec2[][3]	file:
 FONT_ATLAS_DEFAULT_TEX_DATA_H	extern/cimgui/imgui/imgui_draw.cpp	/^const int FONT_ATLAS_DEFAULT_TEX_DATA_H = 27;$/;"	v	typeref:typename:const int
 FONT_ATLAS_DEFAULT_TEX_DATA_PIXELS	extern/cimgui/imgui/imgui_draw.cpp	/^static const char FONT_ATLAS_DEFAULT_TEX_DATA_PIXELS[FONT_ATLAS_DEFAULT_TEX_DATA_W * FONT_ATLAS_/;"	v	typeref:typename:const char[]	file:
@@ -11209,7 +11201,6 @@ FTPlib Client FTP Library	extern/ftplib-4.0-1/html/ftplib.html	/^<title>FTPlib C
 FT_CEIL	extern/cimgui/imgui/misc/freetype/imgui_freetype.cpp	/^#define FT_CEIL(/;"	d	file:
 FT_SCALEFACTOR	extern/cimgui/imgui/misc/freetype/imgui_freetype.cpp	/^#define FT_SCALEFACTOR /;"	d	file:
 FUNCTION	extern/lua-5.4.8/src/luac.c	/^#define FUNCTION /;"	d	file:
-FVec2	src/vecmath.h	/^} FVec2;$/;"	t	typeref:struct:__anone350707a0408
 FallbackAdvanceX	extern/cimgui/cimgui.h	/^    float FallbackAdvanceX;$/;"	m	struct:ImFontBaked	typeref:typename:float
 FallbackAdvanceX	extern/cimgui/imgui/imgui.h	/^    float                       FallbackAdvanceX;   \/\/ 4     \/\/ out \/\/ FindGlyph(FallbackC/;"	m	struct:ImFontBaked	typeref:typename:float
 FallbackChar	extern/cimgui/cimgui.h	/^    ImWchar FallbackChar;$/;"	m	struct:ImFont	typeref:typename:ImWchar
@@ -11272,7 +11263,7 @@ FindBestWindowPosForPopup	extern/cimgui/imgui/imgui.cpp	/^ImVec2 ImGui::FindBest
 FindBestWindowPosForPopupEx	extern/cimgui/imgui/imgui.cpp	/^ImVec2 ImGui::FindBestWindowPosForPopupEx(const ImVec2& ref_pos, const ImVec2& size, ImGuiDir* l/;"	f	class:ImGui	typeref:typename:ImVec2
 FindBlockingModal	extern/cimgui/imgui/imgui.cpp	/^ImGuiWindow* ImGui::FindBlockingModal(ImGuiWindow* window)$/;"	f	class:ImGui	typeref:typename:ImGuiWindow *
 FindBottomMostVisibleWindowWithinBeginStack	extern/cimgui/imgui/imgui.cpp	/^ImGuiWindow* ImGui::FindBottomMostVisibleWindowWithinBeginStack(ImGuiWindow* parent_window)$/;"	f	class:ImGui	typeref:typename:ImGuiWindow *
-FindClosestVertex	src/map/query.c	/^MapVertex* FindClosestVertex(const Map *map, FVec2 pos, fixed_t radius)$/;"	f	typeref:typename:MapVertex *
+FindClosestVertex	src/map/query.c	/^MapVertex* FindClosestVertex(const Map *map, Vec2 pos, real_t radius)$/;"	f	typeref:typename:MapVertex *
 FindEquivalentSector	src/map/query.c	/^MapSector* FindEquivalentSector(Map *map, size_t numLines, MapLine *lines[static numLines])$/;"	f	typeref:typename:MapSector *
 FindFrontMostVisibleChildWindow	extern/cimgui/imgui/imgui.cpp	/^static ImGuiWindow* FindFrontMostVisibleChildWindow(ImGuiWindow* window)$/;"	f	typeref:typename:ImGuiWindow *	file:
 FindGlyph	extern/cimgui/imgui/imgui_draw.cpp	/^ImFontGlyph* ImFontBaked::FindGlyph(ImWchar c)$/;"	f	class:ImFontBaked	typeref:typename:ImFontGlyph *
@@ -11484,7 +11475,6 @@ Format	extern/ftplib-4.0-1/html/qftp.html	/^<h2>Format<\/h2>$/;"	i
 FormatFileSize	extern/imguifiledialog/ImGuiFileDialog.cpp	/^std::string IGFD::Utils::FormatFileSize(size_t vByteSize) {$/;"	f	class:IGFD::Utils	typeref:typename:std::string
 FormatTextureIDForDebugDisplay	extern/cimgui/imgui/imgui.cpp	/^static const char* FormatTextureIDForDebugDisplay(char* buf, int buf_size, ImTextureID tex_id)$/;"	f	typeref:typename:const char *	file:
 FormatTextureIDForDebugDisplay	extern/cimgui/imgui/imgui.cpp	/^static const char* FormatTextureIDForDebugDisplay(char* buf, int buf_size, const ImDrawCmd* cmd)$/;"	f	typeref:typename:const char *	file:
-Frac	src/vecmath.h	/^} Frac;$/;"	t	typeref:struct:__anone350707a0508
 FragmentShader	extern/cimgui/imgui/backends/imgui_impl_sdlgpu3.cpp	/^    SDL_GPUShader*               FragmentShader         = nullptr;$/;"	m	struct:ImGui_ImplSDLGPU3_Data	typeref:typename:SDL_GPUShader *	file:
 FrameBorderSize	extern/cimgui/cimgui.h	/^    float FrameBorderSize;$/;"	m	struct:ImGuiStyle	typeref:typename:float
 FrameBorderSize	extern/cimgui/imgui/imgui.h	/^    float       FrameBorderSize;            \/\/ Thickness of border around frames. Generally se/;"	m	struct:ImGuiStyle	typeref:typename:float
@@ -14157,7 +14147,7 @@ GetMultiSelectState	extern/cimgui/imgui/imgui_internal.h	/^    inline ImGuiMulti
 GetName	extern/cimgui/imgui/imgui_internal.h	/^    char* GetName()             { return (char*)(this + 1); }$/;"	f	struct:ImGuiWindowSettings	typeref:typename:char *
 GetNavTweakPressedAmount	extern/cimgui/imgui/imgui.cpp	/^float ImGui::GetNavTweakPressedAmount(ImGuiAxis axis)$/;"	f	class:ImGui	typeref:typename:float
 GetNeighbourFace	extern/triangulate/earcut/test/comparison/libtess2/tess.c	/^static TESSindex GetNeighbourFace(TESShalfEdge* edge)$/;"	f	typeref:typename:TESSindex	file:
-GetNextLine	extern/libmapfile/mapfile.c	/^static char* GetNextLine(size_t from, size_t *next, int *lineNr, FILE *file, size_t end)$/;"	f	typeref:typename:char *	file:
+GetNextLine	extern/libmapfile/mapfile.c	/^static char* GetNextLine(long from, long *next, int *lineNr, FILE *file, long end)$/;"	f	typeref:typename:char *	file:
 GetNextSelectedItem	extern/cimgui/imgui/imgui_widgets.cpp	/^bool ImGuiSelectionBasicStorage::GetNextSelectedItem(void** opaque_it, ImGuiID* out_id)$/;"	f	class:ImGuiSelectionBasicStorage	typeref:typename:bool
 GetNextTriangle	extern/cimgui/imgui/imgui_draw.cpp	/^void ImTriangulator::GetNextTriangle(unsigned int out_triangle[3])$/;"	f	class:ImTriangulator	typeref:typename:void
 GetOpenedKey	extern/imguifiledialog/ImGuiFileDialog.cpp	/^std::string IGFD::FileDialog::GetOpenedKey() const {$/;"	f	class:IGFD::FileDialog	typeref:typename:std::string
@@ -21282,7 +21272,7 @@ InputTextState	extern/cimgui/imgui/imgui_internal.h	/^    ImGuiInputTextState   
 InputTextWithHint	extern/cimgui/imgui/imgui_widgets.cpp	/^bool ImGui::InputTextWithHint(const char* label, const char* hint, char* buf, size_t buf_size, I/;"	f	class:ImGui	typeref:typename:bool
 InputTextWithHint	extern/cimgui/imgui/misc/cpp/imgui_stdlib.cpp	/^bool ImGui::InputTextWithHint(const char* label, const char* hint, std::string* str, ImGuiInputT/;"	f	class:ImGui	typeref:typename:bool
 InsertChars	extern/cimgui/imgui/imgui_widgets.cpp	/^void ImGuiInputTextCallbackData::InsertChars(int pos, const char* new_text, const char* new_text/;"	f	class:ImGuiInputTextCallbackData	typeref:typename:void
-InsertLinesIntoMap	src/map/insert.c	/^bool InsertLinesIntoMap(Map *map, size_t numVerts, FVec2 vertices[static numVerts], bool isLoop)$/;"	f	typeref:typename:bool
+InsertLinesIntoMap	src/map/insert.c	/^bool InsertLinesIntoMap(Map *map, size_t numVerts, Vec2 vertices[static numVerts], bool isLoop)$/;"	f	typeref:typename:bool
 Install Dirent for All Programs	extern/imguifiledialog/dirent/README.md	/^## Install Dirent for All Programs$/;"	s	chapter:Installation
 Installation	extern/imguifiledialog/dirent/README.md	/^# Installation$/;"	c
 InstalledCallbacks	extern/cimgui/imgui/backends/imgui_impl_glfw.cpp	/^    bool                    InstalledCallbacks;$/;"	m	struct:ImGui_ImplGlfw_Data	typeref:typename:bool	file:
@@ -22178,11 +22168,10 @@ LineData	src/map.h	/^typedef struct LineData$/;"	s
 LineData	src/map.h	/^} LineData;$/;"	t	typeref:struct:LineData
 LineEq	src/geometry.h	/^static inline bool LineEq(line_t a, line_t b)$/;"	f	typeref:typename:bool
 LineFilter	src/windows/realtime.c	/^static bool LineFilter(const MapLine *current, const MapLine *next)$/;"	f	typeref:typename:bool	file:
-LineGetClosestPoint	src/geometry.c	/^FVec2 LineGetClosestPoint(line_t line, FVec2 pos)$/;"	f	typeref:typename:FVec2
-LineGetClosestPointGrid	src/geometry.c	/^FVec2 LineGetClosestPointGrid(line_t line, FVec2 pos, int gridSize)$/;"	f	typeref:typename:FVec2
+LineGetClosestPoint	src/geometry.c	/^Vec2 LineGetClosestPoint(line_t line, Vec2 pos)$/;"	f	typeref:typename:Vec2
+LineGetClosestPointGrid	src/geometry.c	/^Vec2 LineGetClosestPointGrid(line_t line, Vec2 pos, int gridSize)$/;"	f	typeref:typename:Vec2
 LineIntersection	src/geometry.c	/^bool LineIntersection(line_t la, line_t lb, intersection_res_t *res)$/;"	f	typeref:typename:bool
-LineLoopOrientation	src/geometry.c	/^enum orientation_t LineLoopOrientation(size_t numVertices, FVec2 vertices[static numVertices])$/;"	f	typeref:enum:orientation_t
-LineLoopOrientationReal	src/geometry.c	/^enum orientation_t LineLoopOrientationReal(size_t numVertices, Vec2 vertices[static numVertices]/;"	f	typeref:enum:orientation_t
+LineLoopOrientation	src/geometry.c	/^enum orientation_t LineLoopOrientation(size_t numVertices, Vec2 vertices[static numVertices])$/;"	f	typeref:enum:orientation_t
 LineMaxY	extern/cimgui/cimgui.h	/^    float LineMinY, LineMaxY;$/;"	m	struct:ImGuiOldColumns	typeref:typename:float
 LineMaxY	extern/cimgui/imgui/imgui_internal.h	/^    float               LineMinY, LineMaxY;$/;"	m	struct:ImGuiOldColumns	typeref:typename:float
 LineMinY	extern/cimgui/cimgui.h	/^    float LineMinY, LineMaxY;$/;"	m	struct:ImGuiOldColumns	typeref:typename:float
@@ -22475,7 +22464,7 @@ MainWindowRenderBuffers	extern/cimgui/imgui/backends/imgui_impl_vulkan.cpp	/^   
 MakeEdge	extern/triangulate/earcut/test/comparison/libtess2/mesh.c	/^static TESShalfEdge *MakeEdge( TESSmesh* mesh, TESShalfEdge *eNext )$/;"	f	typeref:typename:TESShalfEdge *	file:
 MakeFace	extern/triangulate/earcut/test/comparison/libtess2/mesh.c	/^static void MakeFace( TESSface *newFace, TESShalfEdge *eOrig, TESSface *fNext )$/;"	f	typeref:typename:void	file:
 MakeMapSector	src/map/insert.c	/^MapSector* MakeMapSector(Map *map, MapLine *startLine, bool reversed, SectorData data)$/;"	f	typeref:typename:MapSector *
-MakePolygon	src/map/util.c	/^struct Polygon* MakePolygon(Arena *arena, size_t numVertices, FVec2 vertices[static numVertices]/;"	f	typeref:struct:Polygon *
+MakePolygon	src/map/util.c	/^struct Polygon* MakePolygon(Arena *arena, size_t numVertices, Vec2 vertices[static numVertices])$/;"	f	typeref:struct:Polygon *
 MakeScaledSize	extern/cimgui/imgui/backends/imgui_impl_metal.mm	/^inline static CGSize MakeScaledSize(CGSize size, CGFloat scale)$/;"	f
 MakeVertex	extern/triangulate/earcut/test/comparison/libtess2/mesh.c	/^static void MakeVertex( TESSvertex *newVertex,$/;"	f	typeref:typename:void	file:
 MakeWall	src/realtime.c	/^static void MakeWall(Vec2 a, Vec2 b, real_t zb, real_t zt, RealtimeVertexType *vertices, RenderD/;"	f	typeref:typename:void	file:
@@ -22546,7 +22535,7 @@ MarkTouched	src/map/insert.c	/^static void MarkTouched(TouchedLines *touched, Ma
 MarkTouchedWithSector	src/map/insert.c	/^static void MarkTouchedWithSector(TouchedLines *touched, MapLine *line, SectorData data, bool wa/;"	f	typeref:typename:void	file:
 MatchState	extern/lua-5.4.8/src/lstrlib.c	/^typedef struct MatchState {$/;"	s	file:
 MatchState	extern/lua-5.4.8/src/lstrlib.c	/^} MatchState;$/;"	t	typeref:struct:MatchState	file:
-Materialize	src/geometry.c	/^FVec2 Materialize(FVec2 origin, FVec2 dir, Frac t)$/;"	f	typeref:typename:FVec2
+Materialize	src/geometry.c	/^Vec2 Materialize(Vec2 origin, Vec2 dir, real_t t)$/;"	f	typeref:typename:Vec2
 Max	extern/cimgui/cimgui.h	/^    ImVec2 Max;$/;"	m	struct:ImRect	typeref:typename:ImVec2
 Max	extern/cimgui/cimgui.h	/^    int Max;$/;"	m	struct:ImGuiListClipperRange	typeref:typename:int
 Max	extern/cimgui/imgui/imgui_internal.h	/^    ImVec2      Max;    \/\/ Lower-right$/;"	m	struct:ImRect	typeref:typename:ImVec2
@@ -22623,7 +22612,7 @@ MinAllocationSize	extern/cimgui/cimgui_impl.h	/^    VkDeviceSize MinAllocationSi
 MinAllocationSize	extern/cimgui/imgui/backends/imgui_impl_vulkan.h	/^    VkDeviceSize                    MinAllocationSize;          \/\/ Minimum allocation size. Se/;"	m	struct:ImGui_ImplVulkan_InitInfo	typeref:typename:VkDeviceSize
 MinColumnWidth	extern/cimgui/cimgui.h	/^    float MinColumnWidth;$/;"	m	struct:ImGuiTable	typeref:typename:float
 MinColumnWidth	extern/cimgui/imgui/imgui_internal.h	/^    float                       MinColumnWidth;$/;"	m	struct:ImGuiTable	typeref:typename:float
-MinDistToLine	src/geometry.c	/^real_t MinDistToLine(FVec2 fa, FVec2 fb, FVec2 fpoint)$/;"	f	typeref:typename:real_t
+MinDistToLine	src/geometry.c	/^real_t MinDistToLine(Vec2 a, Vec2 b, Vec2 point)$/;"	f	typeref:typename:real_t
 MinImageCount	extern/cimgui/cimgui_impl.h	/^    uint32_t MinImageCount;$/;"	m	struct:ImGui_ImplVulkan_InitInfo	typeref:typename:uint32_t
 MinImageCount	extern/cimgui/imgui/backends/imgui_impl_vulkan.h	/^    uint32_t                        MinImageCount;              \/\/ >= 2$/;"	m	struct:ImGui_ImplVulkan_InitInfo	typeref:typename:uint32_t
 MinX	extern/cimgui/cimgui.h	/^    float MinX;$/;"	m	struct:ImGuiTableColumn	typeref:typename:float
@@ -23407,10 +23396,6 @@ PARAMETERS	extern/ftplib-4.0-1/html/FtpSize.html	/^<h2>PARAMETERS<\/h2>$/;"	i
 PARAMETERS	extern/ftplib-4.0-1/html/FtpSizeLong.html	/^<h2>PARAMETERS<\/h2>$/;"	i
 PARAMETERS	extern/ftplib-4.0-1/html/FtpSysType.html	/^<h2>PARAMETERS<\/h2>$/;"	i
 PARAMETERS	extern/ftplib-4.0-1/html/FtpWrite.html	/^<h2>PARAMETERS<\/h2>$/;"	i
-PARSE_LINES	src/map.c	/^    PARSE_LINES,$/;"	e	enum:ParseMode	file:
-PARSE_PROPS	src/map.c	/^    PARSE_PROPS,$/;"	e	enum:ParseMode	file:
-PARSE_SECTORS	src/map.c	/^    PARSE_SECTORS$/;"	e	enum:ParseMode	file:
-PARSE_VERTICES	src/map.c	/^    PARSE_VERTICES,$/;"	e	enum:ParseMode	file:
 PATH	extern/cimgui/generator/generator.bat	/^:: set PATH=%PATH%;C:\\luaGL;C:\\i686-7.2.0-release-posix-dwarf-rt_v5-rev1\\mingw32\\bin;$/;"	v
 PATH	extern/cimgui/generator/generator.bat	/^:: set PATH=%PATH%;C:\\luaGL\\sources\\luajit-master\\luajit-master\\bin\\mingw32;C:\\mingw32\\b/;"	v
 PATH	extern/cimgui/generator/generator.bat	/^set PATH=%PATH%;C:\\anima;C:\\mingws\\i686-7.2.0-release-posix-dwarf-rt_v5-rev1\\mingw32\\bin;$/;"	v
@@ -24282,7 +24267,6 @@ ParseLineSide	extern/libmapfile/mapfile.c	/^static bool ParseLineSide(LinePart *
 ParseLineString	src/serialization.c	/^char* ParseLineString(char *line, char **str)$/;"	f	typeref:typename:char *
 ParseLineTexture	src/serialization.c	/^char* ParseLineTexture(char *line, char **texture)$/;"	f	typeref:typename:char *
 ParseLineUint	src/serialization.c	/^char* ParseLineUint(char *line, uint32_t *i)$/;"	f	typeref:typename:char *
-ParseMode	src/map.c	/^enum ParseMode$/;"	g	file:
 ParsePathFileName	extern/imguifiledialog/ImGuiFileDialog.cpp	/^    IGFD::Utils::PathStruct ParsePathFileName(const std::string& vPathFileName) override {$/;"	f	class:FileSystemDirent	typeref:typename:IGFD::Utils::PathStruct	file:
 ParsePathFileName	extern/imguifiledialog/ImGuiFileDialog.cpp	/^    IGFD::Utils::PathStruct ParsePathFileName(const std::string& vPathFileName) override {$/;"	f	class:FileSystemStd	typeref:typename:IGFD::Utils::PathStruct	file:
 ParseReal	src/serialization.c	/^bool ParseReal(char *str, real_t *val)$/;"	f	typeref:typename:bool
@@ -24465,16 +24449,16 @@ Plugin_HasPrerequisite	src/script.h	/^    Plugin_HasPrerequisite = (1<<1),$/;"	e
 Plugin_None	src/script.h	/^    Plugin_None = 0,$/;"	e	enum:PluginFlags
 Point	extern/triangulate/earcut/include/mapbox/earcut.hpp	/^    using Point = typename Ring::value_type;$/;"	t	function:mapbox::detail::Earcut::linkedList	typeref:typename:Ring::value_type
 Point	extern/triangulate/earcut/test/test.cpp	/^    using Point = typename Ring::value_type;$/;"	t	function:ringArea	typeref:typename:Ring::value_type	file:
-PointInPolygon	src/geometry.c	/^bool PointInPolygon(polygon_t *polygon, FVec2 point)$/;"	f	typeref:typename:bool
-PointInPolygonVector	src/geometry.c	/^bool PointInPolygonVector(size_t numVertices, FVec2 vertices[static numVertices], FVec2 point)$/;"	f	typeref:typename:bool
-PointInSector	src/geometry.c	/^bool PointInSector(MapSector *sector, FVec2 point)$/;"	f	typeref:typename:bool
-PointInSector2	src/geometry.c	/^bool PointInSector2(MapSector *sector, FVec2 point)$/;"	f	typeref:typename:bool
+PointInPolygon	src/geometry.c	/^bool PointInPolygon(polygon_t *polygon, Vec2 point)$/;"	f	typeref:typename:bool
+PointInPolygonVector	src/geometry.c	/^bool PointInPolygonVector(size_t numVertices, Vec2 vertices[static numVertices], Vec2 point)$/;"	f	typeref:typename:bool
+PointInSector	src/geometry.c	/^bool PointInSector(MapSector *sector, Vec2 point)$/;"	f	typeref:typename:bool
+PointInSector2	src/geometry.c	/^bool PointInSector2(MapSector *sector, Vec2 point)$/;"	f	typeref:typename:bool
 PollUnicodeChars	extern/cimgui/imgui/examples/example_android_opengl3/main.cpp	/^static int PollUnicodeChars()$/;"	f	typeref:typename:int	file:
 Polygon	extern/triangulate/earcut/test/fixtures/geometries.hpp	/^using Polygon = std::vector<std::vector<T>>;$/;"	t	namespace:mapbox::fixtures	typeref:typename:std::vector<std::vector<T>>
 Polygon	extern/triangulate/triangulate.h	/^struct Polygon$/;"	s
 PolygonFromMapLines	src/map/util.c	/^polygon_t* PolygonFromMapLines(size_t numLines, MapLine *lines[static numLines])$/;"	f	typeref:typename:polygon_t *
 PolygonFromMapLinesArena	src/map/util.c	/^polygon_t* PolygonFromMapLinesArena(Arena *arena, size_t numLines, MapLine *lines[static numLine/;"	f	typeref:typename:polygon_t *
-PolygonFromVectors	src/map/util.c	/^polygon_t* PolygonFromVectors(size_t numVectors, FVec2 vectors[static numVectors])$/;"	f	typeref:typename:polygon_t *
+PolygonFromVectors	src/map/util.c	/^polygon_t* PolygonFromVectors(size_t numVectors, Vec2 vectors[static numVectors])$/;"	f	typeref:typename:polygon_t *
 PolygonFromVertices	src/map/util.c	/^polygon_t* PolygonFromVertices(size_t numVertices, EditorVertexType vertices[static numVertices]/;"	f	typeref:typename:polygon_t *
 PolygonMode	extern/cimgui/imgui/backends/imgui_impl_opengl3_loader.h	/^        PFNGLPOLYGONMODEPROC              PolygonMode;$/;"	m	struct:ImGL3WProcs::__anon0d3434fa0108	typeref:typename:PFNGLPOLYGONMODEPROC
 PopButtonRepeat	extern/cimgui/imgui/imgui.h	/^    static inline void  PopButtonRepeat()                                       { PopItemFlag();/;"	f	namespace:ImGui	typeref:typename:void
@@ -25029,7 +25013,7 @@ ResultPathBuf	extern/cimgui/cimgui.h	/^    ImGuiTextBuffer ResultPathBuf;$/;"	m	
 ResultPathBuf	extern/cimgui/imgui/imgui_internal.h	/^    ImGuiTextBuffer         ResultPathBuf;$/;"	m	struct:ImGuiIDStackTool	typeref:typename:ImGuiTextBuffer
 Results	extern/cimgui/cimgui.h	/^    ImVector_ImGuiStackLevelInfo Results;$/;"	m	struct:ImGuiIDStackTool	typeref:typename:ImVector_ImGuiStackLevelInfo
 Results	extern/cimgui/imgui/imgui_internal.h	/^    ImVector<ImGuiStackLevelInfo> Results;$/;"	m	struct:ImGuiIDStackTool	typeref:typename:ImVector<ImGuiStackLevelInfo>
-ReverseVertexOrder	src/map/insert.c	/^static void ReverseVertexOrder(size_t numVerts, FVec2 vertices[static numVerts])$/;"	f	typeref:typename:void	file:
+ReverseVertexOrder	src/map/insert.c	/^static void ReverseVertexOrder(size_t numVerts, Vec2 vertices[static numVerts])$/;"	f	typeref:typename:void	file:
 Rface	extern/triangulate/earcut/test/comparison/libtess2/mesh.h	/^#define Rface /;"	d
 RightMostEnabledColumn	extern/cimgui/cimgui.h	/^    ImGuiTableColumnIdx RightMostEnabledColumn;$/;"	m	struct:ImGuiTable	typeref:typename:ImGuiTableColumnIdx
 RightMostEnabledColumn	extern/cimgui/imgui/imgui_internal.h	/^    ImGuiTableColumnIdx         RightMostEnabledColumn;     \/\/ Index of right-most non-hidden /;"	m	struct:ImGuiTable	typeref:typename:ImGuiTableColumnIdx
@@ -26290,8 +26274,8 @@ Shutdown	extern/cimgui/imgui/examples/example_android_opengl3/main.cpp	/^void Sh
 Shutdown	extern/cimgui/imgui/imgui.cpp	/^void ImGui::Shutdown()$/;"	f	class:ImGui	typeref:typename:void
 Side	src/map.h	/^typedef struct Side$/;"	s
 Side	src/map.h	/^} Side;$/;"	t	typeref:struct:Side
-SideOfLine	src/geometry.c	/^int SideOfLine(FVec2 a, FVec2 b, FVec2 point)$/;"	f	typeref:typename:int
-SideOfMapLine	src/geometry.c	/^int SideOfMapLine(MapLine *line, FVec2 point)$/;"	f	typeref:typename:int
+SideOfLine	src/geometry.c	/^int SideOfLine(Vec2 a, Vec2 b, Vec2 point)$/;"	f	typeref:typename:int
+SideOfMapLine	src/geometry.c	/^int SideOfMapLine(MapLine *line, Vec2 point)$/;"	f	typeref:typename:int
 Simple Usage :	extern/imguifiledialog/README.md	/^### Simple Usage :$/;"	S	section:ImGuiFileDialog""Features
 Sin	extern/cimgui/imgui/imgui_demo.cpp	/^            static float Sin(void*, int i) { return sinf(i * 0.1f); }$/;"	f	struct:DemoWindowWidgetsPlotting::Funcs	typeref:typename:float	file:
 Single Dialog :	extern/imguifiledialog/Documentation.md	/^### Single Dialog :$/;"	S	section:ImGuiFileDialog""Features
@@ -26455,7 +26439,7 @@ SliderInt4	extern/cimgui/imgui/imgui_widgets.cpp	/^bool ImGui::SliderInt4(const 
 SliderScalar	extern/cimgui/imgui/imgui_widgets.cpp	/^bool ImGui::SliderScalar(const char* label, ImGuiDataType data_type, void* p_data, const void* p/;"	f	class:ImGui	typeref:typename:bool
 SliderScalarN	extern/cimgui/imgui/imgui_widgets.cpp	/^bool ImGui::SliderScalarN(const char* label, ImGuiDataType data_type, void* v, int components, c/;"	f	class:ImGui	typeref:typename:bool
 SmallButton	extern/cimgui/imgui/imgui_widgets.cpp	/^bool ImGui::SmallButton(const char* label)$/;"	f	class:ImGui	typeref:typename:bool
-SnapInputVertices	src/map/insert.c	/^static void SnapInputVertices(Map *map, size_t numVerts, FVec2 vertices[static numVerts])$/;"	f	typeref:typename:void	file:
+SnapInputVertices	src/map/insert.c	/^static void SnapInputVertices(Map *map, size_t numVerts, Vec2 vertices[static numVerts])$/;"	f	typeref:typename:void	file:
 Some of these libraries seem redundant to existing open source libraries. Are they better somehow?	extern/imguifiledialog/stb/README.md	/^#### Some of these libraries seem redundant to existing open source libraries. Are they better s/;"	t	section:This project discusses security-relevant bugs in public in Github Issues and Pull Requests, and it may take significant time for security fixes to be implemented or merged. If this poses an unreasonable risk to your project, do not use stb libraries.""FAQ
 SortDirection	extern/cimgui/cimgui.h	/^    ImGuiSortDirection SortDirection;$/;"	m	struct:ImGuiTableColumnSortSpecs	typeref:typename:ImGuiSortDirection
 SortDirection	extern/cimgui/cimgui.h	/^    ImU8 SortDirection : 2;$/;"	m	struct:ImGuiTableColumn	typeref:typename:ImU8:2
@@ -26508,7 +26492,7 @@ Spacing	extern/cimgui/cimgui.h	/^    ImU16 Spacing;$/;"	m	struct:ImGuiMenuColumn
 Spacing	extern/cimgui/imgui/imgui_internal.h	/^    ImU16       Spacing;$/;"	m	struct:ImGuiMenuColumns	typeref:typename:ImU16
 Spacing	extern/cimgui/imgui/imgui_widgets.cpp	/^    float               Spacing;                \/\/ Horizontal spacing at the end of the sectio/;"	m	struct:ImGuiTabBarSection	typeref:typename:float	file:
 Spacing	extern/cimgui/imgui/imgui_widgets.cpp	/^void ImGui::Spacing()$/;"	f	class:ImGui	typeref:typename:void
-SpawnLeftover	src/map/insert.c	/^static void SpawnLeftover(WorkSet *ws, size_t *newLineIdx, size_t *numNewLines, size_t cap, FVec/;"	f	typeref:typename:void	file:
+SpawnLeftover	src/map/insert.c	/^static void SpawnLeftover(WorkSet *ws, size_t *newLineIdx, size_t *numNewLines, size_t cap, Vec2/;"	f	typeref:typename:void	file:
 Specs	extern/cimgui/cimgui.h	/^    const ImGuiTableColumnSortSpecs* Specs;$/;"	m	struct:ImGuiTableSortSpecs	typeref:typename:const ImGuiTableColumnSortSpecs *
 Specs	extern/cimgui/imgui/imgui.h	/^    const ImGuiTableColumnSortSpecs* Specs;     \/\/ Pointer to sort spec array.$/;"	m	struct:ImGuiTableSortSpecs	typeref:typename:const ImGuiTableColumnSortSpecs *
 SpecsCount	extern/cimgui/cimgui.h	/^    int SpecsCount;$/;"	m	struct:ImGuiTableSortSpecs	typeref:typename:int
@@ -27969,7 +27953,6 @@ UNUSED	extern/lua-5.4.8/src/llimits.h	/^#define UNUSED(/;"	d
 UNUSED	extern/re/re.c	/^enum { UNUSED, DOT, BEGIN, END, QUESTIONMARK, STAR, PLUS, CHAR, CHAR_CLASS, INV_CHAR_CLASS, DIGI/;"	e	enum:__anonde010e180103	file:
 UONE	extern/lua-5.4.8/src/lmathlib.c	/^#define UONE	/;"	d	file:
 UPVALNAME	extern/lua-5.4.8/src/luac.c	/^#define UPVALNAME(/;"	d	file:
-USE_128_INT_TYPE	src/geometry.c	/^#define USE_128_INT_TYPE$/;"	d	file:
 USYNERGY_CLIPBOARD_FORMAT_BITMAP	extern/cimgui/imgui/examples/libs/usynergy/uSynergy.h	/^	USYNERGY_CLIPBOARD_FORMAT_BITMAP				= 1,			\/* Bitmap format, BMP 24\/32bpp, BI_RGB *\/$/;"	e	enum:uSynergyClipboardFormat
 USYNERGY_CLIPBOARD_FORMAT_HTML	extern/cimgui/imgui/examples/libs/usynergy/uSynergy.h	/^	USYNERGY_CLIPBOARD_FORMAT_HTML					= 2,			\/* HTML format, HTML fragment, UTF-8, newline is LF /;"	e	enum:uSynergyClipboardFormat
 USYNERGY_CLIPBOARD_FORMAT_TEXT	extern/cimgui/imgui/examples/libs/usynergy/uSynergy.h	/^	USYNERGY_CLIPBOARD_FORMAT_TEXT					= 0,			\/* Text format, UTF-8, newline is LF *\/$/;"	e	enum:uSynergyClipboardFormat
@@ -29087,8 +29070,6 @@ __anonde010e18020a	extern/re/re.c	/^  {$/;"	u	struct:regex_t	file:
 __anone350707a0108	src/vecmath.h	/^{$/;"	s
 __anone350707a0208	src/vecmath.h	/^{$/;"	s
 __anone350707a0308	src/vecmath.h	/^{ $/;"	s
-__anone350707a0408	src/vecmath.h	/^{$/;"	s
-__anone350707a0508	src/vecmath.h	/^{$/;"	s
 __anone48a2a060108	extern/lua-5.4.8/src/lparser.c	/^static const struct {$/;"	s	file:
 __anone48a2a0b0103	extern/lua-5.4.8/src/lparser.h	/^typedef enum {$/;"	g
 __anone48a2a0b020a	extern/lua-5.4.8/src/lparser.h	/^  union {$/;"	u	struct:expdesc
@@ -29158,7 +29139,7 @@ a	extern/cimgui/generator/output/definitions.json	/^        "a": "255"$/;"	s	obj
 a	extern/cimgui/generator/output/definitions.json	/^        "a": "4"$/;"	s	object:ImSpanAllocator_Reserve.0.defaults
 a	extern/lua-5.4.8/doc/lua.css	/^a {$/;"	s
 a	extern/lua-5.4.8/src/Makefile	/^a:	$(ALL_A)$/;"	t
-a	src/geometry.h	/^    FVec2 a, b;$/;"	m	struct:line_t	typeref:typename:FVec2
+a	src/geometry.h	/^    Vec2 a, b;$/;"	m	struct:line_t	typeref:typename:Vec2
 a	src/map.h	/^    MapVertex *a, *b;$/;"	m	struct:MapLine	typeref:typename:MapVertex *
 a	src/vecmath.h	/^    float r, g, b, a;$/;"	m	struct:__anone350707a0308	typeref:typename:float
 a:link	extern/lua-5.4.8/doc/lua.css	/^a:link {$/;"	s
@@ -34371,7 +34352,7 @@ b	extern/cimgui/imgui/imgui.h	/^        const char*     b;$/;"	m	struct:ImGuiTex
 b	extern/lua-5.4.8/src/lauxlib.h	/^    char b[LUAL_BUFFERSIZE];  \/* initial buffer *\/$/;"	m	union:luaL_Buffer::__anon1dbda5a3010a	typeref:typename:char[]
 b	extern/lua-5.4.8/src/lauxlib.h	/^  char *b;  \/* buffer address *\/$/;"	m	struct:luaL_Buffer	typeref:typename:char *
 b	extern/lua-5.4.8/src/ldo.c	/^  luai_jmpbuf b;$/;"	m	struct:lua_longjmp	typeref:typename:luai_jmpbuf	file:
-b	src/geometry.h	/^    FVec2 a, b;$/;"	m	struct:line_t	typeref:typename:FVec2
+b	src/geometry.h	/^    Vec2 a, b;$/;"	m	struct:line_t	typeref:typename:Vec2
 b	src/map.h	/^    MapVertex *a, *b;$/;"	m	struct:MapLine	typeref:typename:MapVertex *
 b	src/vecmath.h	/^    float r, g, b, a;$/;"	m	struct:__anone350707a0308	typeref:typename:float
 bVertIndex	src/map.h	/^    size_t aVertIndex, bVertIndex;$/;"	m	struct:MapLine	typeref:typename:size_t
@@ -41678,7 +41659,6 @@ deletelist	extern/lua-5.4.8/src/lgc.c	/^static void deletelist (lua_State *L, GC
 delta	extern/imguifiledialog/stb/stb_image.h	/^   int    delta[17];   \/\/ old 'firstsymbol' - old 'firstcode'$/;"	m	struct:__anon47b0cd7d0708	typeref:typename:int[17]
 delta	extern/lua-5.4.8/src/lobject.h	/^    unsigned short delta;$/;"	m	struct:StackValue::__anon319ae5950108	typeref:typename:unsigned short
 delta	extern/stb/stb_image.h	/^   int    delta[17];   \/\/ old 'firstsymbol' - old 'firstcode'$/;"	m	struct:__anon5b03bf430708	typeref:typename:int[17]
-den	src/vecmath.h	/^    fixedw_t den;$/;"	m	struct:__anone350707a0508	typeref:typename:fixedw_t
 density	extern/cimgui/generator/output/definitions.json	/^        "density": "-1.0f"$/;"	s	object:ImFont_GetFontBaked.0.defaults
 depend	extern/ftplib-4.0-1/src/Makefile	/^depend :$/;"	t
 depend	extern/lua-5.4.8/src/Makefile	/^depend:$/;"	t
@@ -41928,14 +41908,14 @@ edgeBucket	extern/triangulate/earcut/test/comparison/libtess2/mesh.h	/^	struct B
 edgeTables	extern/triangulate/earcut/test/viz.cpp	/^    std::vector<std::vector<Edge>> edgeTables; \/* contains all edges sorted by yMin *\/$/;"	m	class:DrawableScanLineFill	typeref:typename:std::vector<std::vector<Edge>>	file:
 edge_sizes	extern/imguifiledialog/stb/stb_image_resize2.h	/^  int edge_sizes[2];    \/\/ this can be less than filter_pixel_margin, if the filter and scalin/;"	m	struct:__anon99fb08200a08	typeref:typename:int[2]
 editBuffer	extern/imguifiledialog/ImGuiFileDialog.h	/^        char editBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";     \/\/ temp buffer for name edition$/;"	m	struct:IGFD::PlacesFeature::GroupStruct	typeref:typename:char[]
-editDragMouse	src/editor.h	/^        FVec2 editVertexBuffer[EDIT_VERTEXBUFFER_CAP], editVertexMouse, editDragMouse, editVerte/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:FVec2
+editDragMouse	src/editor.h	/^        Vec2 editVertexBuffer[EDIT_VERTEXBUFFER_CAP], editVertexMouse, editDragMouse, editVertex/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:Vec2
 editPathButtonString	extern/imguifiledialog/ImGuiFileDialog.cpp	/^#define editPathButtonString /;"	d	file:
 editPlaceButtonString	extern/imguifiledialog/ImGuiFileDialog.cpp	/^#define editPlaceButtonString /;"	d	file:
 editState	src/editor.h	/^        EditState editState;$/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:EditState
-editVertexBuffer	src/editor.h	/^        FVec2 editVertexBuffer[EDIT_VERTEXBUFFER_CAP], editVertexMouse, editDragMouse, editVerte/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:FVec2[]
+editVertexBuffer	src/editor.h	/^        Vec2 editVertexBuffer[EDIT_VERTEXBUFFER_CAP], editVertexMouse, editDragMouse, editVertex/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:Vec2[]
 editVertexBufferSize	src/editor.h	/^        size_t editVertexBufferSize;$/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:size_t
-editVertexDrag	src/editor.h	/^        FVec2 editVertexBuffer[EDIT_VERTEXBUFFER_CAP], editVertexMouse, editDragMouse, editVerte/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:FVec2[3]
-editVertexMouse	src/editor.h	/^        FVec2 editVertexBuffer[EDIT_VERTEXBUFFER_CAP], editVertexMouse, editDragMouse, editVerte/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:FVec2
+editVertexDrag	src/editor.h	/^        Vec2 editVertexBuffer[EDIT_VERTEXBUFFER_CAP], editVertexMouse, editDragMouse, editVertex/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:Vec2[3]
+editVertexMouse	src/editor.h	/^        Vec2 editVertexBuffer[EDIT_VERTEXBUFFER_CAP], editVertexMouse, editDragMouse, editVertex/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:Vec2
 editorBackProg	src/editor.h	/^        } editorBackProg;$/;"	m	struct:EdState::__anonf14592f90208	typeref:struct:EdState::__anonf14592f90208::__anonf14592f90308
 editorBufferFence	src/editor.h	/^        GLsync editorBufferFence[NUM_BUFFERS];$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:GLsync[]
 editorColorTexture	src/editor.h	/^        GLuint editorColorTexture, editorColorTextureMS;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:GLuint
@@ -41996,7 +41976,7 @@ end	extern/cimgui/imgui/imgui_internal.h	/^    inline const T*     end() const  
 end	extern/imguifiledialog/ImGuiFileDialog.h	/^    typename std::vector<T>::const_iterator end() const {$/;"	f	class:IGFD::SearchableVector	typeref:typename:std::vector<T>::const_iterator
 end	extern/imguifiledialog/ImGuiFileDialog.h	/^    typename std::vector<T>::iterator end() {$/;"	f	class:IGFD::SearchableVector	typeref:typename:std::vector<T>::iterator
 end	extern/tsoding/arena.h	/^    Region *begin, *end;$/;"	m	struct:__anon3d9ca04e0108	typeref:typename:Region *
-endDrag	src/editor.h	/^        FVec2 startDrag, endDrag;$/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:FVec2
+endDrag	src/editor.h	/^        Vec2 startDrag, endDrag;$/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:Vec2
 end_capture	extern/lua-5.4.8/src/lstrlib.c	/^static const char *end_capture (MatchState *ms, const char *s,$/;"	f	typeref:typename:const char *	file:
 end_input_y	extern/imguifiledialog/stb/stb_image_resize2.h	/^  int start_input_y, end_input_y;  \/\/ used in scatter only$/;"	m	struct:__anon99fb08200b08	typeref:typename:int
 end_output_y	extern/imguifiledialog/stb/stb_image_resize2.h	/^  int start_output_y, end_output_y;$/;"	m	struct:__anon99fb08200b08	typeref:typename:int
@@ -42247,16 +42227,7 @@ firsttry	extern/lua-5.4.8/src/lmem.c	/^static void *firsttry (global_State *g, v
 fitsBx	extern/lua-5.4.8/src/lcode.c	/^static int fitsBx (lua_Integer i) {$/;"	f	typeref:typename:int	file:
 fitsC	extern/lua-5.4.8/src/lcode.c	/^static int fitsC (lua_Integer i) {$/;"	f	typeref:typename:int	file:
 fixUpperEdge	extern/triangulate/earcut/test/comparison/libtess2/sweep.h	/^	int fixUpperEdge;	\/* marks temporary edges introduced when$/;"	m	struct:ActiveRegion	typeref:typename:int
-fixed_div	src/vecmath.h	/^static inline fixed_t fixed_div(fixed_t a, fixed_t b)$/;"	f	typeref:typename:fixed_t
-fixed_from_int	src/vecmath.h	/^static inline fixed_t fixed_from_int(int i) { return (fixed_t)i << FIXED_SHIFT; }$/;"	f	typeref:typename:fixed_t
-fixed_from_real	src/vecmath.h	/^static inline fixed_t fixed_from_real(real_t f) { return (fixed_t)(f * (real_t)FIXED_ONE); }$/;"	f	typeref:typename:fixed_t
-fixed_mul	src/vecmath.h	/^static inline fixed_t fixed_mul(fixed_t a, fixed_t b)$/;"	f	typeref:typename:fixed_t
-fixed_t	src/vecmath.h	/^typedef int32_t fixed_t;$/;"	t	typeref:typename:int32_t
-fixed_to_int	src/vecmath.h	/^static inline int fixed_to_int(fixed_t f) { return (int)(f >> FIXED_SHIFT); }$/;"	f	typeref:typename:int
-fixed_to_real	src/vecmath.h	/^static inline real_t fixed_to_real(fixed_t f) { return (real_t)f \/ (real_t)FIXED_ONE; }$/;"	f	typeref:typename:real_t
 fixedgc	extern/lua-5.4.8/src/lstate.h	/^  GCObject *fixedgc;  \/* list of objects not to be collected *\/$/;"	m	struct:global_State	typeref:typename:GCObject *
-fixedw_t	src/vecmath.h	/^typedef int64_t fixedw_t;$/;"	t	typeref:typename:int64_t
-fixedww_t	src/geometry.c	/^typedef __int128 fixedww_t;$/;"	t	typeref:typename:__int128	file:
 fixforjump	extern/lua-5.4.8/src/lparser.c	/^static void fixforjump (FuncState *fs, int pc, int dest, int back) {$/;"	f	typeref:typename:void	file:
 fixjump	extern/lua-5.4.8/src/lcode.c	/^static void fixjump (FuncState *fs, int pc, int dest) {$/;"	f	typeref:typename:void	file:
 fixtures	extern/triangulate/earcut/CMakeLists.txt	/^add_library(fixtures OBJECT ${FIXTURE_SOURCE_FILES})$/;"	t
@@ -42421,7 +42392,6 @@ floorOffsetY	extern/libmapfile/mapfile.h	/^    float floorOffsetX, floorOffsetY;
 floorTex	extern/libmapfile/mapfile.h	/^    char *floorTex; size_t floorTexLen;$/;"	m	struct:MapfileSector	typeref:typename:char *
 floorTex	src/map.h	/^    char *floorTex;$/;"	m	struct:SectorData	typeref:typename:char *
 floorTexLen	extern/libmapfile/mapfile.h	/^    char *floorTex; size_t floorTexLen;$/;"	m	struct:MapfileSector	typeref:typename:size_t
-floordiv	src/geometry.c	/^static inline int64_t floordiv(fixed_t a, fixed_t b)$/;"	f	typeref:typename:int64_t	file:
 fltvalue	extern/lua-5.4.8/src/lobject.h	/^#define fltvalue(/;"	d
 fltvalueraw	extern/lua-5.4.8/src/lobject.h	/^#define fltvalueraw(/;"	d
 fnm	extern/ftplib-4.0-1/src/qftp.c	/^    char *fnm;$/;"	m	struct:REMFILE	typeref:typename:char *	file:
@@ -42485,13 +42455,6 @@ fornum	extern/lua-5.4.8/src/lparser.c	/^static void fornum (LexState *ls, TStrin
 forprep	extern/lua-5.4.8/src/lvm.c	/^static int forprep (lua_State *L, StkId ra) {$/;"	f	typeref:typename:int	file:
 forstat	extern/lua-5.4.8/src/lparser.c	/^static void forstat (LexState *ls, int line) {$/;"	f	typeref:typename:void	file:
 fp32_to_srgb8_tab4	extern/imguifiledialog/stb/stb_image_resize2.h	/^static const stbir_uint32 fp32_to_srgb8_tab4[104] = {$/;"	v	typeref:typename:const stbir_uint32[104]
-frac_gt_one	src/vecmath.h	/^static inline bool frac_gt_one(Frac f) { return f.num > f.den; }$/;"	f	typeref:typename:bool
-frac_gte_one	src/vecmath.h	/^static inline bool frac_gte_one(Frac f) { return f.num >= f.den; }$/;"	f	typeref:typename:bool
-frac_is_one	src/vecmath.h	/^static inline bool frac_is_one(Frac f) { return f.num == f.den; }$/;"	f	typeref:typename:bool
-frac_is_zero	src/vecmath.h	/^static inline bool frac_is_zero(Frac f) { return f.num == 0; }$/;"	f	typeref:typename:bool
-frac_lt_zero	src/vecmath.h	/^static inline bool frac_lt_zero(Frac f) { return f.num < 0; }$/;"	f	typeref:typename:bool
-frac_lte_zero	src/vecmath.h	/^static inline bool frac_lte_zero(Frac f) { return f.num <= 0; }$/;"	f	typeref:typename:bool
-frac_make	src/vecmath.h	/^static inline Frac frac_make(fixedw_t num, fixedw_t den)$/;"	f	typeref:typename:Frac
 frame	extern/triangulate/earcut/test/comparison/libtess2/dict.h	/^	void *frame;$/;"	m	struct:Dict	typeref:typename:void *
 frameIndex	extern/cimgui/imgui/backends/imgui_impl_wgpu.cpp	/^    unsigned int            frameIndex = UINT_MAX;$/;"	m	struct:ImGui_ImplWGPU_Data	typeref:typename:unsigned int	file:
 framebufferDescriptor	extern/cimgui/imgui/backends/imgui_impl_metal.mm	/^@property (nonatomic, strong) FramebufferDescriptor*        framebufferDescriptor; \/\/ framebuf/;"	p	interface:MetalContext
@@ -44168,27 +44131,6 @@ funcstat	extern/lua-5.4.8/src/lparser.c	/^static void funcstat (LexState *ls, in
 functions	extern/lua-5.4.8/doc/contents.html	/^<H3><A NAME="functions">Lua functions<\/A><\/H3>$/;"	a
 fvalue	extern/lua-5.4.8/src/lobject.h	/^#define fvalue(/;"	d
 fvalueraw	extern/lua-5.4.8/src/lobject.h	/^#define fvalueraw(/;"	d
-fvec2_add	src/vecmath.h	/^static inline FVec2 fvec2_add(FVec2 a, FVec2 b)$/;"	f	typeref:typename:FVec2
-fvec2_cross	src/vecmath.h	/^static inline fixed_t fvec2_cross(FVec2 a, FVec2 b)$/;"	f	typeref:typename:fixed_t
-fvec2_crossw	src/vecmath.h	/^static inline fixedw_t fvec2_crossw(FVec2 a, FVec2 b)$/;"	f	typeref:typename:fixedw_t
-fvec2_distance	src/vecmath.h	/^static inline fixed_t fvec2_distance(FVec2 a, FVec2 b)$/;"	f	typeref:typename:fixed_t
-fvec2_distance2	src/vecmath.h	/^static inline fixedw_t fvec2_distance2(FVec2 a, FVec2 b)$/;"	f	typeref:typename:fixedw_t
-fvec2_dot	src/vecmath.h	/^static inline fixed_t fvec2_dot(FVec2 a, FVec2 b)$/;"	f	typeref:typename:fixed_t
-fvec2_dotw	src/vecmath.h	/^static inline fixedw_t fvec2_dotw(FVec2 a, FVec2 b)$/;"	f	typeref:typename:fixedw_t
-fvec2_eq	src/vecmath.h	/^static inline bool fvec2_eq(FVec2 a, FVec2 b)$/;"	f	typeref:typename:bool
-fvec2_from_vec2	src/vecmath.h	/^static inline FVec2 fvec2_from_vec2(Vec2 v)$/;"	f	typeref:typename:FVec2
-fvec2_len	src/vecmath.h	/^static inline fixed_t fvec2_len(FVec2 a)$/;"	f	typeref:typename:fixed_t
-fvec2_len2	src/vecmath.h	/^static inline fixedw_t fvec2_len2(FVec2 a)$/;"	f	typeref:typename:fixedw_t
-fvec2_len_real	src/vecmath.h	/^static inline real_t fvec2_len_real(FVec2 a)$/;"	f	typeref:typename:real_t
-fvec2_make	src/vecmath.h	/^static inline FVec2 fvec2_make(real_t x, real_t y)$/;"	f	typeref:typename:FVec2
-fvec2_max	src/vecmath.h	/^static inline FVec2 fvec2_max(FVec2 a, FVec2 b)$/;"	f	typeref:typename:FVec2
-fvec2_min	src/vecmath.h	/^static inline FVec2 fvec2_min(FVec2 a, FVec2 b)$/;"	f	typeref:typename:FVec2
-fvec2_mul	src/vecmath.h	/^static inline FVec2 fvec2_mul(FVec2 a, FVec2 b)$/;"	f	typeref:typename:FVec2
-fvec2_normalize	src/vecmath.h	/^static inline FVec2 fvec2_normalize(FVec2 v)$/;"	f	typeref:typename:FVec2
-fvec2_scale	src/vecmath.h	/^static inline FVec2 fvec2_scale(FVec2 a, fixed_t b)$/;"	f	typeref:typename:FVec2
-fvec2_scalef	src/vecmath.h	/^static inline FVec2 fvec2_scalef(FVec2 a, real_t b)$/;"	f	typeref:typename:FVec2
-fvec2_sub	src/vecmath.h	/^static inline FVec2 fvec2_sub(FVec2 a, FVec2 b)$/;"	f	typeref:typename:FVec2
-fvec2_within	src/vecmath.h	/^static inline int fvec2_within(FVec2 a, FVec2 b, fixed_t radius)$/;"	f	typeref:typename:int
 fx	extern/cimgui/imgui/imstb_truetype.h	/^   float fx,fdx,fdy;$/;"	m	struct:stbtt__active_edge	typeref:typename:float
 g	extern/cglm/include/cglm/types-struct.h	/^    float g;$/;"	m	struct:vec3s::__anon5ac3d9de0608	typeref:typename:float
 g	extern/cglm/include/cglm/types-struct.h	/^    float g;$/;"	m	struct:vec4s::__anon5ac3d9de1008	typeref:typename:float
@@ -52022,7 +51964,7 @@ line0	extern/stb/stb_image.h	/^   stbi_uc *line0,*line1;$/;"	m	struct:__anon5b03
 line1	extern/imguifiledialog/stb/stb_image.h	/^   stbi_uc *line0,*line1;$/;"	m	struct:__anon47b0cd7d0a08	typeref:typename:stbi_uc *
 line1	extern/stb/stb_image.h	/^   stbi_uc *line0,*line1;$/;"	m	struct:__anon5b03bf430a08	typeref:typename:stbi_uc *
 lineIdx	src/map.h	/^    size_t vertexIdx, lineIdx, sectorIdx;$/;"	m	struct:Map	typeref:typename:size_t
-lineLoc	extern/libmapfile/mapfile.h	/^    size_t lineLoc, nextLoc;$/;"	m	struct:MapfileIterator	typeref:typename:size_t
+lineLoc	extern/libmapfile/mapfile.h	/^    long lineLoc, nextLoc;$/;"	m	struct:MapfileIterator	typeref:typename:long
 lineNr	extern/libmapfile/mapfile.h	/^    int lineNr;$/;"	m	struct:MapfileIterator	typeref:typename:int
 line_size	extern/imguifiledialog/stb/stb_image.h	/^   int line_size;$/;"	m	struct:__anon47b0cd7d1308	typeref:typename:int
 line_size	extern/stb/stb_image.h	/^   int line_size;$/;"	m	struct:__anon5b03bf431308	typeref:typename:int
@@ -52036,8 +51978,8 @@ linedefined	extern/lua-5.4.8/src/lua.h	/^  int linedefined;	\/* (S) *\/$/;"	m	st
 lineinfo	extern/lua-5.4.8/src/lobject.h	/^  ls_byte *lineinfo;  \/* information about source lines (debug information) *\/$/;"	m	struct:Proto	typeref:typename:ls_byte *
 linenumber	extern/lua-5.4.8/src/llex.h	/^  int linenumber;  \/* input line counter *\/$/;"	m	struct:LexState	typeref:typename:int
 lines	src/logging.h	/^    char **lines;$/;"	m	struct:LogBuffer	typeref:typename:char **
-linesBegin	extern/libmapfile/mapfile.h	/^    size_t linesBegin, linesEnd;$/;"	m	struct:Mapfile	typeref:typename:size_t
-linesEnd	extern/libmapfile/mapfile.h	/^    size_t linesBegin, linesEnd;$/;"	m	struct:Mapfile	typeref:typename:size_t
+linesBegin	extern/libmapfile/mapfile.h	/^    long linesBegin, linesEnd;$/;"	m	struct:Mapfile	typeref:typename:long
+linesEnd	extern/libmapfile/mapfile.h	/^    long linesBegin, linesEnd;$/;"	m	struct:Mapfile	typeref:typename:long
 linesStartLineNr	extern/libmapfile/mapfile.h	/^    int linesStartLineNr;$/;"	m	struct:Mapfile	typeref:typename:int
 linit.o	extern/lua-5.4.8/src/Makefile	/^linit.o: linit.c lprefix.h lua.h luaconf.h lualib.h lauxlib.h$/;"	t
 linit_c	extern/lua-5.4.8/src/linit.c	/^#define linit_c$/;"	d	file:
@@ -55577,7 +55519,6 @@ mtkView:drawableSizeWillChange:	extern/cimgui/imgui/examples/example_apple_metal
 mtx	src/editor.h	/^        int mx, my, mtx, mty;$/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:int
 mty	src/editor.h	/^        int mx, my, mtx, mty;$/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:int
 mul_	src/scripts/vec2.c	/^static int mul_(lua_State *L)$/;"	f	typeref:typename:int	file:
-muldiv_round	src/geometry.c	/^static fixed_t muldiv_round(fixed_t a, fixedw_t b, fixedw_t c)$/;"	f	typeref:typename:fixed_t	file:
 multiline	extern/lua-5.4.8/src/lua.c	/^static int multiline (lua_State *L) {$/;"	f	typeref:typename:int	file:
 murmurhash3	src/utils/hash.c	/^uint64_t murmurhash3(const char* str)$/;"	f	typeref:typename:uint64_t
 mvp	extern/cimgui/imgui/backends/imgui_impl_dx10.cpp	/^    float   mvp[4][4];$/;"	m	struct:VERTEX_CONSTANT_BUFFER_DX10	typeref:typename:float[4][4]	file:
@@ -62638,7 +62579,7 @@ next	src/map.h	/^    struct MapLine *next, *prev;$/;"	m	struct:MapLine	typeref:s
 next	src/map.h	/^    struct MapSector *next, *prev;$/;"	m	struct:MapSector	typeref:struct:MapSector *
 next	src/map.h	/^    struct MapVertex *next, *prev;$/;"	m	struct:MapVertex	typeref:struct:MapVertex *
 next (table [, index])	extern/lua-5.4.8/doc/manual.html	/^<hr><h3><a name="pdf-next"><code>next (table [, index])<\/code><\/a><\/h3>$/;"	j
-nextLoc	extern/libmapfile/mapfile.h	/^    size_t lineLoc, nextLoc;$/;"	m	struct:MapfileIterator	typeref:typename:size_t
+nextLoc	extern/libmapfile/mapfile.h	/^    long lineLoc, nextLoc;$/;"	m	struct:MapfileIterator	typeref:typename:long
 nextVertex	src/map/query.c	/^    MapVertex *nextVertex;$/;"	m	struct:Path	typeref:typename:MapVertex *	file:
 nextVertex	src/map/query.c	/^    MapVertex *nextVertex;$/;"	m	struct:StackEntry	typeref:typename:MapVertex *	file:
 nextZ	extern/triangulate/earcut/include/mapbox/earcut.hpp	/^        Node* nextZ = nullptr;$/;"	m	struct:mapbox::detail::Earcut::Node	typeref:typename:Node *
@@ -62757,7 +62698,6 @@ nth	extern/triangulate/triangulate.cpp	/^    struct nth<0, Vertex> {$/;"	s	names
 nth	extern/triangulate/triangulate.cpp	/^    struct nth<1, Vertex> {$/;"	s	namespace:mapbox::util	file:
 ntransfer	extern/lua-5.4.8/src/lstate.h	/^      unsigned short ntransfer;  \/* number of values transferred *\/$/;"	m	struct:CallInfo::__anon8d579ebf040a::__anon8d579ebf0508	typeref:typename:unsigned short
 ntransfer	extern/lua-5.4.8/src/lua.h	/^  unsigned short ntransfer;   \/* (r) number of transferred values *\/$/;"	m	struct:lua_Debug	typeref:typename:unsigned short
-num	src/vecmath.h	/^    fixedw_t num;$/;"	m	struct:__anone350707a0508	typeref:typename:fixedw_t
 num2straux	extern/lua-5.4.8/src/lstrlib.c	/^static int num2straux (char *buff, int sz, lua_Number x) {$/;"	f	typeref:typename:int	file:
 numAttachedLines	src/map.h	/^    size_t numAttachedLines;$/;"	m	struct:MapVertex	typeref:typename:size_t
 numBuffers	src/async_load.h	/^    size_t numBuffers;$/;"	m	struct:Batch	typeref:typename:size_t
@@ -64687,8 +64627,8 @@ p	extern/triangulate/earcut/test/comparison/libtess2/priorityq.c	/^	struct { PQk
 p.logos a:link:hover	extern/lua-5.4.8/doc/lua.css	/^p.logos a:link:hover, p.logos a:visited:hover {$/;"	s
 p.logos a:visited:hover	extern/lua-5.4.8/doc/lua.css	/^p.logos a:link:hover, p.logos a:visited:hover {$/;"	s
 p.menubar	extern/lua-5.4.8/doc/lua.css	/^p.menubar {$/;"	c
-p0	src/geometry.h	/^    FVec2 p0, p1;$/;"	m	struct:intersection_res_t	typeref:typename:FVec2
-p1	src/geometry.h	/^    FVec2 p0, p1;$/;"	m	struct:intersection_res_t	typeref:typename:FVec2
+p0	src/geometry.h	/^    Vec2 p0, p1;$/;"	m	struct:intersection_res_t	typeref:typename:Vec2
+p1	src/geometry.h	/^    Vec2 p0, p1;$/;"	m	struct:intersection_res_t	typeref:typename:Vec2
 pBlendState	extern/cimgui/imgui/backends/imgui_impl_dx10.cpp	/^    ID3D10BlendState*           pBlendState;$/;"	m	struct:ImGui_ImplDX10_Data	typeref:typename:ID3D10BlendState *	file:
 pBlendState	extern/cimgui/imgui/backends/imgui_impl_dx11.cpp	/^    ID3D11BlendState*           pBlendState;$/;"	m	struct:ImGui_ImplDX11_Data	typeref:typename:ID3D11BlendState *	file:
 pCommandQueue	extern/cimgui/imgui/backends/imgui_impl_dx12.cpp	/^    ID3D12CommandQueue*         pCommandQueue;$/;"	m	struct:ImGui_ImplDX12_Data	typeref:typename:ID3D12CommandQueue *	file:
@@ -64775,7 +64715,6 @@ parseImGuiHeader	extern/cimgui/generator/generator.lua	/^local function parseImG
 parseItems	extern/cimgui/generator/cpp2ffi.lua	/^	function par:parseItems()$/;"	f	unknown:par
 parseItems	extern/cimgui/generator/cpp2ffi.lua	/^local function parseItems(txt,linenumdict, itparent, dumpit)$/;"	f
 parseItemsR2	extern/cimgui/generator/cpp2ffi.lua	/^	function par:parseItemsR2(txt, itparent)$/;"	f	unknown:par
-parseSide	src/map.c	/^static char* parseSide(char *line, Side *side)$/;"	f	typeref:typename:char *	file:
 parse_array	extern/cimgui/generator/json.lua	/^local function parse_array(str, i)$/;"	f
 parse_enum_value	extern/cimgui/generator/cpp2ffi.lua	/^local function parse_enum_value(value, allenums,dontpost)$/;"	f
 parse_literal	extern/cimgui/generator/json.lua	/^local function parse_literal(str, i)$/;"	f
@@ -65101,8 +65040,8 @@ pos	extern/cimgui/cimgui.h	/^    ImVec2 pos;$/;"	m	struct:ImDrawVert	typeref:typ
 pos	extern/cimgui/imgui/backends/imgui_impl_allegro5.cpp	/^    ImVec2          pos;$/;"	m	struct:ImDrawVertAllegro	typeref:typename:ImVec2	file:
 pos	extern/cimgui/imgui/backends/imgui_impl_dx9.cpp	/^    float    pos[3];$/;"	m	struct:CUSTOMVERTEX	typeref:typename:float[3]	file:
 pos	extern/cimgui/imgui/imgui.h	/^    ImVec2  pos;$/;"	m	struct:ImDrawVert	typeref:typename:ImVec2
-pos	src/map.h	/^    FVec2 pos;$/;"	m	struct:MapVertex	typeref:typename:FVec2
-pos	src/map/insert.c	/^    FVec2 pos;$/;"	m	struct:SplitPoint	typeref:typename:FVec2	file:
+pos	src/map.h	/^    Vec2 pos;$/;"	m	struct:MapVertex	typeref:typename:Vec2
+pos	src/map/insert.c	/^    Vec2 pos;$/;"	m	struct:SplitPoint	typeref:typename:Vec2	file:
 position	src/vertex_types.h	/^    Vec2 position;$/;"	m	struct:EditorVertexType	typeref:typename:Vec2
 position	src/vertex_types.h	/^    Vec3 position;$/;"	m	struct:RealtimeVertexType	typeref:typename:Vec3
 posix	extern/lua-5.4.8/src/Makefile	/^posix:$/;"	t
@@ -67079,9 +67018,6 @@ rot	extern/cimgui/generator/output/definitions.json	/^        "rot": "0.0f",$/;"
 rotl	extern/lua-5.4.8/src/lmathlib.c	/^static Rand64 rotl (Rand64 i, int n) {$/;"	f	typeref:typename:Rand64	file:
 rotl	extern/lua-5.4.8/src/lmathlib.c	/^static Rand64 rotl (Rand64 x, int n) {$/;"	f	typeref:typename:Rand64	file:
 rotl1	extern/lua-5.4.8/src/lmathlib.c	/^static Rand64 rotl1 (Rand64 i, int n) {$/;"	f	typeref:typename:Rand64	file:
-roundDivWide	src/geometry.c	/^static fixed_t roundDivWide(fixedw_t num, fixedw_t den)$/;"	f	typeref:typename:fixed_t	file:
-roundDivWide128	src/geometry.c	/^static fixed_t roundDivWide128(fixedww_t num, fixedww_t den)$/;"	f	typeref:typename:fixed_t	file:
-round_div	src/vecmath.h	/^static inline fixed_t round_div(fixed_t a, fixed_t b)$/;"	f	typeref:typename:fixed_t
 rounding	extern/cimgui/generator/output/definitions.json	/^        "rounding": "0.0f"$/;"	s	object:ImDrawList_AddRectFilled.0.defaults
 rounding	extern/cimgui/generator/output/definitions.json	/^        "rounding": "0.0f"$/;"	s	object:ImDrawList_PathRect.0.defaults
 rounding	extern/cimgui/generator/output/definitions.json	/^        "rounding": "0.0f"$/;"	s	object:igRenderColorRectWithAlphaCheckerboard.0.defaults
@@ -67183,8 +67119,8 @@ searchupvalue	extern/lua-5.4.8/src/lparser.c	/^static int searchupvalue (FuncSta
 searchvar	extern/lua-5.4.8/src/lparser.c	/^static int searchvar (FuncState *fs, TString *n, expdesc *var) {$/;"	f	typeref:typename:int	file:
 sectorContainsSector	extern/triangulate/earcut/include/mapbox/earcut.hpp	/^bool Earcut<N>::sectorContainsSector(const Node* m, const Node* p) {$/;"	f	class:mapbox::detail::Earcut	typeref:typename:bool
 sectorIdx	src/map.h	/^    size_t vertexIdx, lineIdx, sectorIdx;$/;"	m	struct:Map	typeref:typename:size_t
-sectorsBegin	extern/libmapfile/mapfile.h	/^    size_t sectorsBegin, sectorsEnd;$/;"	m	struct:Mapfile	typeref:typename:size_t
-sectorsEnd	extern/libmapfile/mapfile.h	/^    size_t sectorsBegin, sectorsEnd;$/;"	m	struct:Mapfile	typeref:typename:size_t
+sectorsBegin	extern/libmapfile/mapfile.h	/^    long sectorsBegin, sectorsEnd;$/;"	m	struct:Mapfile	typeref:typename:long
+sectorsEnd	extern/libmapfile/mapfile.h	/^    long sectorsBegin, sectorsEnd;$/;"	m	struct:Mapfile	typeref:typename:long
 sectorsStartLineNr	extern/libmapfile/mapfile.h	/^    int sectorsStartLineNr;$/;"	m	struct:Mapfile	typeref:typename:int
 seed	extern/cimgui/generator/output/definitions.json	/^        "seed": "0"$/;"	s	object:igImHashData.0.defaults
 seed	extern/cimgui/generator/output/definitions.json	/^        "seed": "0"$/;"	s	object:igImHashStr.0.defaults
@@ -69164,8 +69100,7 @@ skip_missing	extern/cimgui/imgui/imstb_truetype.h	/^   int   skip_missing;$/;"	m
 skip_sep	extern/lua-5.4.8/src/llex.c	/^static size_t skip_sep (LexState *ls) {$/;"	f	typeref:typename:size_t	file:
 skipcomment	extern/lua-5.4.8/src/lauxlib.c	/^static int skipcomment (FILE *f, int *cp) {$/;"	f	typeref:typename:int	file:
 slots	src/texture_collection.h	/^    } *slots;$/;"	m	struct:TextureCollection	typeref:struct:TextureCollection::__anone70b214e0108 *
-snapToGrid	src/geometry.c	/^static inline fixed_t snapToGrid(fixed_t value, fixed_t gridSize, fixed_t halfGrid)$/;"	f	typeref:typename:fixed_t	file:
-snapToGridPow2	src/geometry.c	/^static inline fixed_t snapToGridPow2(fixed_t value, int gridSize)$/;"	f	typeref:typename:fixed_t	file:
+snapToGrid	src/geometry.c	/^static inline real_t snapToGrid(real_t value, int gridSize)$/;"	f	typeref:typename:real_t	file:
 snprintf	extern/cimgui/imgui/imgui_demo.cpp	/^#define snprintf    _snprintf$/;"	d	file:
 socket_wait	extern/ftplib-4.0-1/src/ftplib.c	/^static int socket_wait(netbuf *ctl)$/;"	f	typeref:typename:int	file:
 sof	extern/lua-5.4.8/src/ltablib.c	/^#define sof(/;"	d	file:
@@ -69215,7 +69150,7 @@ stackinuse	extern/lua-5.4.8/src/ldo.c	/^static int stackinuse (lua_State *L) {$/
 stacksize	extern/lua-5.4.8/src/lstate.h	/^#define stacksize(/;"	d
 standard library	extern/lua-5.4.8/doc/contents.html	/^<H3><A NAME="library">standard library<\/A><\/H3>$/;"	j
 start	src/logging.h	/^    size_t start, length;$/;"	m	struct:LogBuffer	typeref:typename:size_t
-startDrag	src/editor.h	/^        FVec2 startDrag, endDrag;$/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:FVec2
+startDrag	src/editor.h	/^        Vec2 startDrag, endDrag;$/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:Vec2
 start_capture	extern/lua-5.4.8/src/lstrlib.c	/^static const char *start_capture (MatchState *ms, const char *s,$/;"	f	typeref:typename:const char *	file:
 start_input_y	extern/imguifiledialog/stb/stb_image_resize2.h	/^  int start_input_y, end_input_y;  \/\/ used in scatter only$/;"	m	struct:__anon99fb08200b08	typeref:typename:int
 start_output_y	extern/imguifiledialog/stb/stb_image_resize2.h	/^  int start_output_y, end_output_y;$/;"	m	struct:__anon99fb08200b08	typeref:typename:int
@@ -72280,7 +72215,7 @@ t	extern/lua-5.4.8/src/lparser.c	/^  expdesc *t;  \/* table descriptor *\/$/;"	m
 t	extern/lua-5.4.8/src/lparser.h	/^      lu_byte t;  \/* table (register or upvalue) *\/$/;"	m	struct:expdesc::__anone48a2a0b020a::__anone48a2a0b0308	typeref:typename:lu_byte
 t	extern/lua-5.4.8/src/lparser.h	/^  int t;  \/* patch list of 'exit when true' *\/$/;"	m	struct:expdesc	typeref:typename:int
 t	extern/triangulate/earcut/test/comparison/libtess2/mesh.h	/^	TESSreal s, t;       \/* projection onto the sweep plane *\/$/;"	m	struct:TESSvertex	typeref:typename:TESSreal
-t	src/map/insert.c	/^    Frac t;$/;"	m	struct:SplitPoint	typeref:typename:Frac	file:
+t	src/map/insert.c	/^    real_t t;$/;"	m	struct:SplitPoint	typeref:typename:real_t	file:
 t0	extern/cimgui/imgui/imstb_truetype.h	/^   float x0,y0,s0,t0; \/\/ top-left$/;"	m	struct:__anon417bfbb70308	typeref:typename:float
 t1	extern/cimgui/imgui/imstb_truetype.h	/^   float x1,y1,s1,t1; \/\/ bottom-right$/;"	m	struct:__anon417bfbb70308	typeref:typename:float
 tUnit	extern/triangulate/earcut/test/comparison/libtess2/tess.h	/^	TESSreal tUnit[3];	\/* unit vector in t-direction (debugging) *\/$/;"	m	struct:TESStesselator	typeref:typename:TESSreal[3]
@@ -77941,7 +77876,7 @@ u	extern/lua-5.4.8/src/lstate.h	/^  struct Udata u;$/;"	m	union:GCUnion	typeref:
 u	extern/lua-5.4.8/src/lstate.h	/^  } u;$/;"	m	struct:CallInfo	typeref:union:CallInfo::__anon8d579ebf010a
 u	extern/lua-5.4.8/src/lstrlib.c	/^  struct cD { char c; union { LUAI_MAXALIGN; } u; };$/;"	m	struct:getoption::cD	typeref:union:getoption::cD::__anon5f656ce9030a	file:
 u	extern/re/re.c	/^  } u;$/;"	m	struct:regex_t	typeref:union:regex_t::__anonde010e18020a	file:
-u	src/geometry.h	/^    Frac u, v;$/;"	m	struct:intersection_res_t	typeref:typename:Frac
+u	src/geometry.h	/^    real_t u, v;$/;"	m	struct:intersection_res_t	typeref:typename:real_t
 u2	extern/lua-5.4.8/src/lstate.h	/^  } u2;$/;"	m	struct:CallInfo	typeref:union:CallInfo::__anon8d579ebf040a
 uSynergyBool	extern/cimgui/imgui/examples/libs/usynergy/uSynergy.h	/^typedef int			uSynergyBool;$/;"	t	typeref:typename:int
 uSynergyClipboardCallback	extern/cimgui/imgui/examples/libs/usynergy/uSynergy.h	/^typedef void		(*uSynergyClipboardCallback)(uSynergyCookie cookie, enum uSynergyClipboardFormat f/;"	t	typeref:typename:void (*)(uSynergyCookie cookie,enum uSynergyClipboardFormat format,const uint8_t * data,uint32_t size)
@@ -77969,11 +77904,9 @@ ud_warn	extern/lua-5.4.8/src/lstate.h	/^  void *ud_warn;         \/* auxiliary d
 udata2finalize	extern/lua-5.4.8/src/lgc.c	/^static GCObject *udata2finalize (global_State *g) {$/;"	f	typeref:typename:GCObject *	file:
 udatamemoffset	extern/lua-5.4.8/src/lobject.h	/^#define udatamemoffset(/;"	d
 udatatypename	extern/lua-5.4.8/src/ltm.c	/^static const char udatatypename[] = "userdata";$/;"	v	typeref:typename:const char[]	file:
-udiv128	src/geometry.c	/^static uint64_t udiv128(uint64_t hi, uint64_t lo, uint64_t divisor)$/;"	f	typeref:typename:uint64_t	file:
 ui	src/editor.h	/^    } ui;$/;"	m	struct:EdState	typeref:struct:EdState::__anonf14592f90108
 ul	extern/lua-5.4.8/doc/index.css	/^ul {$/;"	s
 ul.contents	extern/lua-5.4.8/doc/index.css	/^ul.contents {$/;"	c
-umul64	src/geometry.c	/^static void umul64(uint64_t a, uint64_t b, uint64_t *hi, uint64_t *lo)$/;"	f	typeref:typename:void	file:
 unalpha	extern/imguifiledialog/stb/stb_image_resize2.h	/^    struct { stbir_uint64 total, looping, vertical, horizontal, decode, encode, alpha, unalpha; /;"	m	struct:__anon99fb08200b08::__anon99fb08200c0a::__anon99fb08200d08	typeref:typename:stbir_uint64
 undefgoto	extern/lua-5.4.8/src/lparser.c	/^static l_noret undefgoto (LexState *ls, Labeldesc *gt) {$/;"	f	typeref:typename:l_noret	file:
 undo_char	extern/cimgui/imgui/imstb_textedit.h	/^   IMSTB_TEXTEDIT_CHARTYPE  undo_char[IMSTB_TEXTEDIT_UNDOCHARCOUNT];$/;"	m	struct:__anon7a1c51c00208	typeref:typename:IMSTB_TEXTEDIT_CHARTYPE[]
@@ -78079,7 +78012,7 @@ v	extern/lua-5.4.8/src/lobject.h	/^  } v;$/;"	m	struct:UpVal	typeref:union:UpVal
 v	extern/lua-5.4.8/src/lparser.c	/^  expdesc v;  \/* last list item read *\/$/;"	m	struct:ConsControl	typeref:typename:expdesc	file:
 v	extern/lua-5.4.8/src/lparser.c	/^  expdesc v;  \/* variable (global, local, upvalue, or indexed) *\/$/;"	m	struct:LHS_assign	typeref:typename:expdesc	file:
 v	extern/stb/stb_image.h	/^      int h,v;$/;"	m	struct:__anon5b03bf430808::__anon5b03bf430908	typeref:typename:int
-v	src/geometry.h	/^    Frac u, v;$/;"	m	struct:intersection_res_t	typeref:typename:Frac
+v	src/geometry.h	/^    real_t u, v;$/;"	m	struct:intersection_res_t	typeref:typename:real_t
 v0.12.1	extern/triangulate/earcut/CHANGELOG.md	/^### v0.12.1$/;"	S	section:Earcut.hpp changelog
 v0.12.2	extern/triangulate/earcut/CHANGELOG.md	/^### v0.12.2$/;"	S	section:Earcut.hpp changelog
 v0.12.3	extern/triangulate/earcut/CHANGELOG.md	/^### v0.12.3$/;"	S	section:Earcut.hpp changelog
@@ -79189,12 +79122,11 @@ vec2_cross	src/vecmath.h	/^static inline real_t vec2_cross(Vec2 a, Vec2 b)$/;"	f
 vec2_distance	src/vecmath.h	/^static inline real_t vec2_distance(Vec2 a, Vec2 b)$/;"	f	typeref:typename:real_t
 vec2_distance2	src/vecmath.h	/^static inline real_t vec2_distance2(Vec2 a, Vec2 b)$/;"	f	typeref:typename:real_t
 vec2_dot	src/vecmath.h	/^static inline real_t vec2_dot(Vec2 a, Vec2 b)$/;"	f	typeref:typename:real_t
-vec2_eqv	src/vecmath.h	/^static inline bool vec2_eqv(Vec2 a, Vec2 b)$/;"	f	typeref:typename:bool
-vec2_from_fvec2	src/vecmath.h	/^static inline Vec2 vec2_from_fvec2(FVec2 v)$/;"	f	typeref:typename:Vec2
+vec2_eq	src/vecmath.h	/^static inline bool vec2_eq(Vec2 a, Vec2 b)$/;"	f	typeref:typename:bool
 vec2_len	src/vecmath.h	/^static inline real_t vec2_len(Vec2 a)$/;"	f	typeref:typename:real_t
 vec2_len2	src/vecmath.h	/^static inline real_t vec2_len2(Vec2 a)$/;"	f	typeref:typename:real_t
-vec2_maxv	src/vecmath.h	/^static inline Vec2 vec2_maxv(Vec2 a, Vec2 b)$/;"	f	typeref:typename:Vec2
-vec2_minv	src/vecmath.h	/^static inline Vec2 vec2_minv(Vec2 a, Vec2 b)$/;"	f	typeref:typename:Vec2
+vec2_max	src/vecmath.h	/^static inline Vec2 vec2_max(Vec2 a, Vec2 b)$/;"	f	typeref:typename:Vec2
+vec2_min	src/vecmath.h	/^static inline Vec2 vec2_min(Vec2 a, Vec2 b)$/;"	f	typeref:typename:Vec2
 vec2_mul	src/vecmath.h	/^static inline Vec2 vec2_mul(Vec2 a, Vec2 b)$/;"	f	typeref:typename:Vec2
 vec2_normalize	src/vecmath.h	/^static inline Vec2 vec2_normalize(Vec2 a)$/;"	f	typeref:typename:Vec2
 vec2_scale	src/vecmath.h	/^static inline Vec2 vec2_scale(Vec2 a, real_t b)$/;"	f	typeref:typename:Vec2
@@ -79262,10 +79194,10 @@ vertices	extern/triangulate/earcut/test/comparison/libtess2.hpp	/^    auto verti
 vertices	extern/triangulate/earcut/test/comparison/libtess2/tess.h	/^	TESSreal *vertices;$/;"	m	struct:TESStesselator	typeref:typename:TESSreal *
 vertices	extern/triangulate/earcut/test/fixtures/geometries.hpp	/^        std::vector<std::array<double, 2>> const& vertices;$/;"	m	struct:mapbox::fixtures::FixtureTester::TesselatorResult	typeref:typename:std::vector<std::array<double,2>> const &
 vertices	extern/triangulate/triangulate.h	/^    Vertex vertices[];$/;"	m	struct:Polygon	typeref:typename:Vertex[]
-vertices	src/geometry.h	/^    FVec2 vertices[];$/;"	m	struct:polygon_t	typeref:typename:FVec2[]
+vertices	src/geometry.h	/^    Vec2 vertices[];$/;"	m	struct:polygon_t	typeref:typename:Vec2[]
 vertices	src/map.h	/^    Vec2 *vertices;$/;"	m	struct:TriangleData	typeref:typename:Vec2 *
-verticesBegin	extern/libmapfile/mapfile.h	/^    size_t verticesBegin, verticesEnd;$/;"	m	struct:Mapfile	typeref:typename:size_t
-verticesEnd	extern/libmapfile/mapfile.h	/^    size_t verticesBegin, verticesEnd;$/;"	m	struct:Mapfile	typeref:typename:size_t
+verticesBegin	extern/libmapfile/mapfile.h	/^    long verticesBegin, verticesEnd;$/;"	m	struct:Mapfile	typeref:typename:long
+verticesEnd	extern/libmapfile/mapfile.h	/^    long verticesBegin, verticesEnd;$/;"	m	struct:Mapfile	typeref:typename:long
 verticesPerTriangle	extern/triangulate/earcut/test/comparison/libtess2.hpp	/^    static const int verticesPerTriangle = 3;$/;"	m	class:Libtess2Tesselator	typeref:typename:const int
 verticesStartLineNr	extern/libmapfile/mapfile.h	/^    int verticesStartLineNr;$/;"	m	struct:Mapfile	typeref:typename:int
 vertices_	extern/triangulate/earcut/test/comparison/earcut.hpp	/^    Vertices vertices_;$/;"	m	class:EarcutTesselator	typeref:typename:Vertices
@@ -79381,7 +79313,7 @@ window_class	extern/cimgui/generator/output/definitions.json	/^        "window_c
 window_flags	extern/cimgui/generator/output/definitions.json	/^        "window_flags": "0"$/;"	s	object:igBeginChild.0.defaults
 window_flags	extern/cimgui/generator/output/definitions.json	/^        "window_flags": "0"$/;"	s	object:igBeginChild.1.defaults
 window_size_callback	extern/cimgui/backend_test/example_glfw_dx11/main.c	/^void window_size_callback(GLFWwindow* window, int width, int height)$/;"	f	typeref:typename:void
-within	src/windows/geditor.c	/^static bool within(FVec2 min, FVec2 max, FVec2 v)$/;"	f	typeref:typename:bool	file:
+within	src/windows/geditor.c	/^static bool within(Vec2 min, Vec2 max, Vec2 v)$/;"	f	typeref:typename:bool	file:
 withvariant	extern/lua-5.4.8/src/lobject.h	/^#define withvariant(/;"	d
 wopendir	extern/imguifiledialog/dirent/dirent.h	/^#define wopendir _wopendir$/;"	d
 workArena	src/map/insert.c	/^static Arena workArena = { 0 };$/;"	v	typeref:typename:Arena	file:
@@ -79433,7 +79365,6 @@ x	extern/imguifiledialog/stb/stb_image.h	/^      int x,y,w2,h2;$/;"	m	struct:__a
 x	extern/libmapfile/mapfile.h	/^    float x, y;$/;"	m	struct:MapfileVertex	typeref:typename:float
 x	extern/stb/stb_image.h	/^      int x,y,w2,h2;$/;"	m	struct:__anon5b03bf430808::__anon5b03bf430908	typeref:typename:int
 x	extern/triangulate/earcut/include/mapbox/earcut.hpp	/^        const double x;$/;"	m	struct:mapbox::detail::Earcut::Node	typeref:typename:const double
-x	src/vecmath.h	/^    fixed_t x, y;$/;"	m	struct:__anone350707a0408	typeref:typename:fixed_t
 x	src/vecmath.h	/^    real_t x, y, z, w;$/;"	m	struct:__anone350707a0208	typeref:typename:real_t
 x	src/vecmath.h	/^    real_t x, y, z;$/;"	m	struct:__anone350707a0108	typeref:typename:real_t
 x	src/vecmath.h	/^    real_t x, y;$/;"	m	struct:Vec2	typeref:typename:real_t
@@ -79487,7 +79418,6 @@ y	extern/imguifiledialog/stb/stb_image.h	/^      int x,y,w2,h2;$/;"	m	struct:__a
 y	extern/libmapfile/mapfile.h	/^    float x, y;$/;"	m	struct:MapfileVertex	typeref:typename:float
 y	extern/stb/stb_image.h	/^      int x,y,w2,h2;$/;"	m	struct:__anon5b03bf430808::__anon5b03bf430908	typeref:typename:int
 y	extern/triangulate/earcut/include/mapbox/earcut.hpp	/^        const double y;$/;"	m	struct:mapbox::detail::Earcut::Node	typeref:typename:const double
-y	src/vecmath.h	/^    fixed_t x, y;$/;"	m	struct:__anone350707a0408	typeref:typename:fixed_t
 y	src/vecmath.h	/^    real_t x, y, z, w;$/;"	m	struct:__anone350707a0208	typeref:typename:real_t
 y	src/vecmath.h	/^    real_t x, y, z;$/;"	m	struct:__anone350707a0108	typeref:typename:real_t
 y	src/vecmath.h	/^    real_t x, y;$/;"	m	struct:Vec2	typeref:typename:real_t
