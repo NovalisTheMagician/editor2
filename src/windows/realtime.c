@@ -30,7 +30,7 @@ static bool LineFilter(const MapLine *current, const MapLine *next)
 static bool AlignTextures(MapLine *startLine, bool front)
 {
 #if 0
-    real_t totalLength = vec2_distance(vec2_from_fvec2(startLine->a->pos), vec2_from_fvec2(startLine->b->pos)) + startLine->data.textureOffset.x;
+    real_t totalLength = vec2_distance(startLine->a->pos, startLine->b->pos) + startLine->data.textureOffset.x;
     MapSector *sector = front ? startLine->frontSector : startLine->backSector;
     assert(sector);
 
@@ -41,7 +41,7 @@ static bool AlignTextures(MapLine *startLine, bool front)
     {
         MapLine *line = loop[i];
         line->data.textureOffset.x = totalLength;
-        totalLength += vec2_distance(vec2_from_fvec2(line->a->pos), vec2_from_fvec2(line->b->pos));
+        totalLength += vec2_distance(line->a->pos, line->b->pos);
     }
     return n > 0;
 #endif

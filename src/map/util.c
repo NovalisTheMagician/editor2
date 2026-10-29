@@ -7,14 +7,14 @@
 #include "remove.h"
 #include "triangulate.h"
 
-struct Polygon* MakePolygon(Arena *arena, size_t numVertices, FVec2 vertices[static numVertices])
+struct Polygon* MakePolygon(Arena *arena, size_t numVertices, Vec2 vertices[static numVertices])
 {
     //struct Polygon *polygon = calloc(1, sizeof *polygon + numVertices * sizeof *polygon->vertices);
     struct Polygon *polygon = arena_alloc(arena, sizeof *polygon + numVertices * sizeof *polygon->vertices);
     for(size_t i = 0; i < numVertices; ++i)
     {
-       polygon->vertices[i][0] = (double)fixed_to_real(vertices[i].x);
-       polygon->vertices[i][1] = (double)fixed_to_real(vertices[i].y);
+       polygon->vertices[i][0] = (double)vertices[i].x;
+       polygon->vertices[i][1] = (double)vertices[i].y;
     }
     polygon->length = numVertices;
     return polygon;
@@ -35,7 +35,6 @@ static void AssertNoOrphanReference(Map *map, MapLine *line)
 
 SplitResult SplitMapLine(Map *map, MapLine *line, MapVertex *vertex)
 {
-	//AssertNoOrphanReference(map, line);
     LineData dataCopy = CopyLineData(line->data);
 
     MapVertex *va = line->a;
@@ -116,7 +115,7 @@ polygon_t* PolygonFromVertices(size_t numVertices, EditorVertexType vertices[sta
     return NULL;
 }
 
-polygon_t* PolygonFromVectors(size_t numVectors, FVec2 vectors[static numVectors])
+polygon_t* PolygonFromVectors(size_t numVectors, Vec2 vectors[static numVectors])
 {
     polygon_t *polygon = calloc(1, sizeof *polygon + numVectors * sizeof *polygon->vertices);
     polygon->length = numVectors;
@@ -137,8 +136,8 @@ MapLine* GetMapLine(Map *map, line_t line)
 {
     for(MapLine *mline = map->headLine; mline; mline = mline->next)
     {
-        if((fvec2_eq(mline->a->pos, line.a) && fvec2_eq(mline->b->pos, line.b)) ||
-           (fvec2_eq(mline->b->pos, line.a) && fvec2_eq(mline->a->pos, line.b)))
+        if((vec2_eq(mline->a->pos, line.a) && vec2_eq(mline->b->pos, line.b)) ||
+           (vec2_eq(mline->b->pos, line.a) && vec2_eq(mline->a->pos, line.b)))
            return mline;
     }
     return NULL;

@@ -178,7 +178,7 @@ static size_t CollectWalls(const EdState *state, size_t vertexOffset, RenderList
             if(line->frontSector->data.ceilHeight == line->backSector->data.ceilHeight) // no lower texture needed here
                 noTopExpose = true;
 
-            Vec2 a = vec2_from_fvec2(line->a->pos), b = vec2_from_fvec2(line->b->pos);
+            Vec2 a = line->a->pos, b = line->b->pos;
             if(!noBottomExpose)
             {
                 if(frontBottomExposed)
@@ -245,7 +245,7 @@ static size_t CollectWalls(const EdState *state, size_t vertexOffset, RenderList
         else // single sided line -> only uses mid textures
         {
             bool front = line->frontSector != NULL;
-            Vec2 a = vec2_from_fvec2(line->a->pos), b = vec2_from_fvec2(line->b->pos);
+            Vec2 a = line->a->pos, b = line->b->pos;
 
             if(front)
             {

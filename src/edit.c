@@ -56,7 +56,7 @@ void EditCut(EdState *state)
     LogDebug("Cut!!\n");
 }
 
-MapVertex* EditAddVertex(Map *map, FVec2 pos)
+MapVertex* EditAddVertex(Map *map, Vec2 pos)
 {
     MapVertex *existing = FindClosestVertex(map, pos, STITCHING_DIST);
     if(existing) return existing;
@@ -128,7 +128,7 @@ void EditRemoveVertices(Map *map, size_t num, MapVertex *vertices[static num])
     map->dirty = true;
 }
 
-MapVertex* EditGetVertex(Map *map, FVec2 pos)
+MapVertex* EditGetVertex(Map *map, Vec2 pos)
 {
     for(MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
     {
@@ -140,7 +140,7 @@ MapVertex* EditGetVertex(Map *map, FVec2 pos)
     return NULL;
 }
 
-MapVertex* EditGetClosestVertex(Map *map, FVec2 pos, fixed_t maxDist)
+MapVertex* EditGetClosestVertex(Map *map, Vec2 pos, real_t maxDist)
 {
     return FindClosestVertex(map, pos, maxDist);
 }
@@ -214,11 +214,11 @@ void EditRemoveLines(Map *map, size_t num, MapLine *lines[static num])
     map->dirty = true;
 }
 
-MapLine* EditGetClosestLine(Map *map, FVec2 pos, fixed_t maxDist)
+MapLine* EditGetClosestLine(Map *map, Vec2 pos, real_t maxDist)
 {
     MapLine *closestLine = NULL;
     real_t closestDist = FLT_MAX;
-    real_t md = fixed_to_real(maxDist);
+    real_t md = maxDist;
     for(MapLine *line = map->headLine; line; line = line->next)
     {
         real_t dist = MinDistToLine(line->a->pos, line->b->pos, pos);
@@ -264,8 +264,8 @@ static struct Polygon* constructPolygon(Arena *arena, size_t numLines, MapLine *
     MapVertex *vertex, *nextVertex;
     GetLoopStart(lines[0], lines[1], &vertex, &nextVertex);
 
-    polygon->vertices[0][0] = fixed_to_real(vertex->pos.x);
-    polygon->vertices[0][1] = fixed_to_real(vertex->pos.y);
+    polygon->vertices[0][0] = vertex->pos.x;
+    polygon->vertices[0][1] = vertex->pos.y;
     for(size_t i = 1; i < numLines; ++i)
     {
         MapLine *mapLine = lines[i];
@@ -273,8 +273,8 @@ static struct Polygon* constructPolygon(Arena *arena, size_t numLines, MapLine *
         vertex = front ? mapLine->a : mapLine->b;
         nextVertex = front ? mapLine->b : mapLine->a;
 
-        polygon->vertices[i][0] = fixed_to_real(vertex->pos.x);
-        polygon->vertices[i][1] = fixed_to_real(vertex->pos.y);
+        polygon->vertices[i][0] = vertex->pos.x;
+        polygon->vertices[i][1] = vertex->pos.y;
     }
     polygon->length = numLines;
     return polygon;
@@ -344,7 +344,7 @@ MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLin
         offset += innerPolygons[i]->length;
     }
 
-    sector->bb = BoundingBoxFromVerticesReal(td->numVertices, td->vertices);
+    sector->bb = BoundingBoxFromVertices(td->numVertices, td->vertices);
 
     return sector;
 }
@@ -360,7 +360,7 @@ void EditRemoveSectors(Map *map, size_t num, MapSector *sectors[static num])
     map->dirty = true;
 }
 
-MapSector* EditGetSector(Map *map, FVec2 pos)
+MapSector* EditGetSector(Map *map, Vec2 pos)
 {
     for(MapSector *sector = map->headSector; sector; sector = sector->next)
     {
@@ -370,13 +370,13 @@ MapSector* EditGetSector(Map *map, FVec2 pos)
     return NULL;
 }
 
-bool EditApplyLines(EdState *state, size_t num, FVec2 points[static num])
+bool EditApplyLines(EdState *state, size_t num, Vec2 points[static num])
 {
     Map *map = &state->map;
     return InsertLinesIntoMap(map, num, points, false);
 }
 
-bool EditApplySector(EdState *state, size_t num, FVec2 points[static num])
+bool EditApplySector(EdState *state, size_t num, Vec2 points[static num])
 {
     Map *map = &state->map;
     return InsertLinesIntoMap(map, num, points, true);

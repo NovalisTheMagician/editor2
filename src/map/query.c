@@ -62,13 +62,13 @@ MapSector* FindEquivalentSector(Map *map, size_t numLines, MapLine *lines[static
     return NULL;
 }
 
-MapVertex* FindClosestVertex(const Map *map, FVec2 pos, fixed_t radius)
+MapVertex* FindClosestVertex(const Map *map, Vec2 pos, real_t radius)
 {
     MapVertex *closestVertex = NULL;
-    fixedw_t closestDistSq = 0, maxDistSq = (fixedw_t)radius * radius;
+    real_t closestDistSq = 0, maxDistSq = radius * radius;
     for(MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
     {
-        fixedw_t distSq = fvec2_distance2(vertex->pos, pos);
+        real_t distSq = vec2_distance2(vertex->pos, pos);
         if(distSq > maxDistSq) continue;
         if(closestVertex == NULL || distSq < closestDistSq)
         {

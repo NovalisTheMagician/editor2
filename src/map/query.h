@@ -7,7 +7,7 @@ MapLine* GetLine(Map *map, size_t idx);
 MapSector* GetSector(Map *map, size_t idx);
 MapSector* FindEquivalentSector(Map *map, size_t numLines, MapLine *lines[static numLines]);
 
-MapVertex* FindClosestVertex(const Map *map, FVec2 position, fixed_t radius);
+MapVertex* FindClosestVertex(const Map *map, Vec2 position, real_t radius);
 
 int angleSortOuter(const void *a, const void *b);
 int angleSortInner(const void *a, const void *b);

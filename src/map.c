@@ -268,7 +268,7 @@ bool LoadMap(Map *map, const char *filename)
         MapfileVertex v = { 0 };
         if(MapfileIteratorGetVertex(&iterator, &v))
         {
-            MapVertex *vertex = EditAddVertex(map, fvec2_from_vec2((Vec2){ v.x, v.y }));;
+            MapVertex *vertex = EditAddVertex(map, (Vec2){ v.x, v.y });;
             vertex->idx = v.index++;
 
             if(v.index > map->vertexIdx) map->vertexIdx = v.index;
@@ -381,7 +381,7 @@ void SaveMap(Map *map)
     fprintf(file, "vertices = {\n");
     for(MapVertex *vertex = map->headVertex; vertex; vertex = vertex->next)
     {
-        fprintf(file, "\t%zu %.4f %.4f\n", vertex->idx, fixed_to_real(vertex->pos.x), fixed_to_real(vertex->pos.y));
+        fprintf(file, "\t%zu %.4f %.4f\n", vertex->idx, vertex->pos.x, vertex->pos.y);
     }
     fprintf(file, "}\n");
 

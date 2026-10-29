@@ -257,9 +257,9 @@ typedef struct EdState
         mat4s editorProjection;
 
         bool isDragging;
-        FVec2 startDrag, endDrag;
+        Vec2 startDrag, endDrag;
 
-        FVec2 editVertexBuffer[EDIT_VERTEXBUFFER_CAP], editVertexMouse, editDragMouse, editVertexDrag[3];
+        Vec2 editVertexBuffer[EDIT_VERTEXBUFFER_CAP], editVertexMouse, editDragMouse, editVertexDrag[3];
         size_t editVertexBufferSize;
 
         EditState editState;

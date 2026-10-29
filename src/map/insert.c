@@ -23,8 +23,8 @@ static Arena workArena = { 0 };
 
 typedef struct SplitPoint
 {
-    Frac t;
-    FVec2 pos;
+    real_t t;
+    Vec2 pos;
     MapVertex *vertex;
 } SplitPoint;
 
@@ -100,7 +100,7 @@ static bool LoopIsValidHole(polygon_t *outerPoly, size_t n, MapLine *loop[static
 
 static orientation_t LoopIsBoundedFace(size_t numLines, MapLine *lines[static numLines])
 {
-    FVec2 verts[MAX_LINES_PER_SECTOR];
+    Vec2 verts[MAX_LINES_PER_SECTOR];
 
     MapVertex *v, *nextV;
     GetLoopStart(lines[0], lines[1], &v, &nextV);
@@ -427,28 +427,28 @@ static LineWork* GetOrCreateWork(WorkSet *ws, MapLine *originalLine, line_t orig
     return &ws->items[ws->count - 1];
 }
 
-static void AddSplitPoint(LineWork *w, Frac t, FVec2 pos)
+static void AddSplitPoint(LineWork *w, real_t t, Vec2 pos)
 {
     for(size_t i = 0; i < w->count; ++i)
-        if(t.num == w->items[i].t.num && t.den == w->items[i].t.den)
+        if(t == w->items[i].t)
             return;
 
     SplitPoint sp = { .t = t, .pos = pos };
     arena_da_append(&workArena, w, sp);
 }
 
-static void ReverseVertexOrder(size_t numVerts, FVec2 vertices[static numVerts])
+static void ReverseVertexOrder(size_t numVerts, Vec2 vertices[static numVerts])
 {
     size_t half = numVerts / 2;
     for(size_t i = 0; i < half; ++i)
     {
-        FVec2 tmp = vertices[i];
+        Vec2 tmp = vertices[i];
         vertices[i] = vertices[numVerts - i - 1];
         vertices[numVerts - i - 1] = tmp;
     }
 }
 
-static void SnapInputVertices(Map *map, size_t numVerts, FVec2 vertices[static numVerts])
+static void SnapInputVertices(Map *map, size_t numVerts, Vec2 vertices[static numVerts])
 {
     for(size_t i = 0; i < numVerts; ++i)
     {
@@ -459,21 +459,22 @@ static void SnapInputVertices(Map *map, size_t numVerts, FVec2 vertices[static n
 
 static bool TrySnapEndpointToLine(WorkSet *ws, LineWork *nw, bool useA, MapLine *mapLine, line_t mline)
 {
-    FVec2 endpoint = useA ? nw->original.a : nw->original.b;
+    Vec2 endpoint = useA ? nw->original.a : nw->original.b;
     real_t dist = MinDistToLine(mline.a, mline.b, endpoint);
-    if(fixed_from_real(dist) > STITCHING_DIST) 
+    if(dist > STITCHING_DIST)
         return false;
 
-    FVec2 dir = fvec2_sub(mline.b, mline.a);
-    Frac t = frac_make(fvec2_dotw(fvec2_sub(endpoint, mline.a), dir), fvec2_dotw(dir, dir));
-    if(frac_lt_zero(t) || frac_gt_one(t))
+    Vec2 dir = vec2_sub(mline.b, mline.a);
+    real_t t = vec2_dot(vec2_sub(endpoint, mline.a), dir) / vec2_dot(dir, dir);
+    if(t < 0 || t > 1)
         return false;
 
-    FVec2 exactPoint = Materialize(mline.a, dir, t);
+    Vec2 exactPoint = Materialize(mline.a, dir, t);
 
-    if(frac_is_zero(t) || frac_is_one(t) || fvec2_eq(exactPoint, mline.a) || fvec2_eq(exactPoint, mline.b))
+    //if(frac_is_zero(t) || frac_is_one(t) || fvec2_eq(exactPoint, mline.a) || fvec2_eq(exactPoint, mline.b))
+    if(t == 0 || t == 1 || vec2_eq(exactPoint, mline.a) || vec2_eq(exactPoint, mline.b))
     {
-        FVec2 target = frac_is_zero(t) ? mline.a : mline.b;
+        Vec2 target = t == 0 ? mline.a : mline.b;
         if(useA)
             nw->original.a = target;
         else
@@ -491,9 +492,9 @@ static bool TrySnapEndpointToLine(WorkSet *ws, LineWork *nw, bool useA, MapLine 
     return true;
 }
 
-static void SpawnLeftover(WorkSet *ws, size_t *newLineIdx, size_t *numNewLines, size_t cap, FVec2 a, FVec2 b)
+static void SpawnLeftover(WorkSet *ws, size_t *newLineIdx, size_t *numNewLines, size_t cap, Vec2 a, Vec2 b)
 {
-    if(fvec2_eq(a, b))
+    if(vec2_eq(a, b))
         return;
     assert(*numNewLines < cap);
 
@@ -520,22 +521,24 @@ static bool CollectIntersections(Map *map, WorkSet *ws, size_t numNewLines, size
             {
                 LineWork *mw = GetOrCreateWork(ws, mapLine, mline);
 
-                bool uInside = !frac_lte_zero(res.u) && !frac_gte_one(res.u);
-                bool vInside = !frac_lte_zero(res.v) && !frac_gte_one(res.v);
+                //bool uInside = !frac_lte_zero(res.u) && !frac_gte_one(res.u);
+                bool uInside = !(res.u <= 0) && !(res.u >= 1);
+                //bool vInside = !frac_lte_zero(res.v) && !frac_gte_one(res.v);
+                bool vInside = !(res.v <= 0) && !(res.v >= 1);
 
                 if(uInside)
                     AddSplitPoint(mw, res.u, res.p0);
                 if(vInside)
                     AddSplitPoint(mw, res.v, res.p1);
 
-                if(frac_lte_zero(res.u))
+                if(res.u <= 0)
                     SpawnLeftover(ws, newLineIdx, &numNewLines, newLineCapacity, nw->original.a, mline.a);
-                else if(frac_gte_one(res.u))
+                else if(res.u >= 1)
                     SpawnLeftover(ws, newLineIdx, &numNewLines, newLineCapacity, mline.b, nw->original.a);
 
-                if(frac_gte_one(res.v))
+                if(res.v >= 1)
                     SpawnLeftover(ws, newLineIdx, &numNewLines, newLineCapacity, mline.b, nw->original.b);
-                else if(frac_lte_zero(res.v))
+                else if(res.v <= 0)
                     SpawnLeftover(ws, newLineIdx, &numNewLines, newLineCapacity, nw->original.b, mline.a);
 
                 nw->consumed = true;
@@ -543,8 +546,10 @@ static bool CollectIntersections(Map *map, WorkSet *ws, size_t numNewLines, size
             }
             else if(LineIntersection(mline, nw->original, &res))
             {
-                bool uInside = !frac_is_zero(res.u) && !frac_is_one(res.u);
-                bool vInside = !frac_is_zero(res.v) && !frac_is_one(res.v);
+                //bool uInside = !frac_is_zero(res.u) && !frac_is_one(res.u);
+                bool uInside = !(res.u == 0) && !(res.u == 1);
+                //bool vInside = !frac_is_zero(res.v) && !frac_is_one(res.v);
+                bool vInside = !(res.v == 0) && !(res.v == 1);
 
                 if(uInside)
                 {
@@ -597,8 +602,8 @@ static void ResolveSplitPoints(Map *map, WorkSet *ws)
 static int CompareSplitPoints(const void *a, const void *b)
 {
     const SplitPoint *sa = a, *sb = b;
-    double ta = (double)sa->t.num / (double)sa->t.den;
-    double tb = (double)sb->t.num / (double)sb->t.den;
+    real_t ta = sa->t;
+    real_t tb = sb->t;
     if(ta < tb) return -1;
     if(ta > tb) return 1;
     return (sa->vertex > sb->vertex) - (sa->vertex < sb->vertex);
@@ -705,7 +710,7 @@ static void DetectEnclosingSectors(Map *map, TouchedLines *touched)
         if(rep->frontSector || rep->backSector)
             continue;
         
-        FVec2 midpoint = fvec2_scale(fvec2_add(rep->a->pos, rep->b->pos), fixed_from_real(0.5f));
+        Vec2 midpoint = vec2_scale(vec2_add(rep->a->pos, rep->b->pos), 0.5f);
         for(MapSector *s = map->headSector; s; s = s->next)
         {
             if(!PointInSector2(s, midpoint))
@@ -721,7 +726,7 @@ static void DetectEnclosingSectors(Map *map, TouchedLines *touched)
     }
 }
 
-bool InsertLinesIntoMap(Map *map, size_t numVerts, FVec2 vertices[static numVerts], bool isLoop)
+bool InsertLinesIntoMap(Map *map, size_t numVerts, Vec2 vertices[static numVerts], bool isLoop)
 {
     size_t end = isLoop ? numVerts : numVerts - 1;
 
@@ -737,7 +742,7 @@ bool InsertLinesIntoMap(Map *map, size_t numVerts, FVec2 vertices[static numVert
     for(size_t i = 0; i < end; ++i)
     {
         line_t seg = { vertices[i], vertices[(i+1) % numVerts] };
-        if(fvec2_eq(seg.a, seg.b)) continue;
+        if(vec2_eq(seg.a, seg.b)) continue;
         LineWork w = { .original = seg };
         arena_da_append(&workArena, &ws, w);
         newLineIdx[numNewLines++] = ws.count - 1;

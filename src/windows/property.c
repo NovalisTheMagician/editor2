@@ -31,14 +31,14 @@ static void GotoPos(EdState *state, Vec2 pos)
 
 static void CenterVertex(EdState *state, MapVertex *vertex)
 {
-    GotoPos(state, vec2_from_fvec2(vertex->pos));
+    GotoPos(state, vertex->pos);
 }
 
 static void CenterLine(EdState *state, MapLine *line)
 {
-    Vec2 d = vec2_sub(vec2_from_fvec2(line->b->pos), vec2_from_fvec2(line->a->pos));
+    Vec2 d = vec2_sub(line->b->pos, line->a->pos);
     d = vec2_scale(d, 0.5f);
-    d = vec2_add(d, vec2_from_fvec2(line->a->pos));
+    d = vec2_add(d, line->a->pos);
     GotoPos(state, d);
 }
 
@@ -99,7 +99,7 @@ static void VertexProperties(EdState *state)
         igSeparatorTextEx(0, title, NULL, 0);
 
         igText("Attached lines: %d", selectedVertex->numAttachedLines);
-        igText("Position: (%.2f %.2f)", fixed_to_real(selectedVertex->pos.x), fixed_to_real(selectedVertex->pos.y));
+        igText("Position: (%.2f %.2f)", selectedVertex->pos.x, selectedVertex->pos.y);
         //igSeparatorEx(ImGuiSeparatorFlags_Horizontal, 2);
         for(size_t i = 0; i < selectedVertex->numAttachedLines; ++i)
         {

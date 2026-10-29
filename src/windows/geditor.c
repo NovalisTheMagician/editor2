@@ -15,8 +15,8 @@
 #include "map/insert.h"
 
 #define DEFAULT_WHITE { 1, 1, 1, 1 }
-#define LINE_DIST fixed_from_int(10)
-#define VERTEX_DIST fixed_from_int(5)
+#define LINE_DIST 10
+#define VERTEX_DIST 5
 
 static void SubmitEditData(EdState *state, bool isLoop)
 {
@@ -34,7 +34,7 @@ static void SubmitEditData(EdState *state, bool isLoop)
     state->data.editVertexBufferSize = 0;
 }
 
-static bool within(FVec2 min, FVec2 max, FVec2 v)
+static bool within(Vec2 min, Vec2 max, Vec2 v)
 {
     return v.x >= min.x && v.y >= min.y && v.x <= max.x && v.y <= max.y;
 }
@@ -51,8 +51,8 @@ static bool contains(size_t numElements, void *elements[static numElements], voi
 
 static void RectSelect(EdState *state, bool add)
 {
-    FVec2 min = fvec2_min(state->data.startDrag, state->data.endDrag);
-    FVec2 max = fvec2_max(state->data.startDrag, state->data.endDrag);
+    Vec2 min = vec2_min(state->data.startDrag, state->data.endDrag);
+    Vec2 max = vec2_max(state->data.startDrag, state->data.endDrag);
 
     if(!add)
         state->data.numSelectedElements = 0;
@@ -101,7 +101,7 @@ static void RectSelect(EdState *state, bool add)
     }
 }
 
-static void AddEditVertex(EdState *state, FVec2 v)
+static void AddEditVertex(EdState *state, Vec2 v)
 {
     size_t idx = state->data.editVertexBufferSize++;
     state->data.editVertexBuffer[idx] = v;
@@ -221,8 +221,8 @@ void EditorWindow(bool *p_open, EdState *state)
             ScreenToEditorSpace(state, &edX, &edY);
             ScreenToEditorSpaceGrid(state, state->data.gridSize, &edSX, &edSY);
 
-            fixed_t x1 = fixed_from_real(edX), y1 = fixed_from_real(edY);
-            fixed_t x2 = fixed_from_real(edSX), y2 = fixed_from_real(edSY);
+            real_t x1 = edX, y1 = edY;
+            real_t x2 = edSX, y2 = edSY;
 
             bool shiftDown = igGetIO_Nil()->KeyShift;
             bool altDown = igGetIO_Nil()->KeyAlt;
@@ -233,17 +233,17 @@ void EditorWindow(bool *p_open, EdState *state)
             {
                 if(altDown)
                 {
-                    MapLine *closestLine = EditGetClosestLine(map, (FVec2){ x1, y1 }, LINE_DIST + fixed_from_int(128));
+                    MapLine *closestLine = EditGetClosestLine(map, (Vec2){ x1, y1 }, LINE_DIST + 128);
                     if(closestLine)
                     {
-                        FVec2 closestPoint = LineGetClosestPointGrid((line_t){ closestLine->a->pos, closestLine->b->pos }, (FVec2){ x1, y1 }, shiftDown ? state->data.altGridSize : state->data.gridSize);
+                        Vec2 closestPoint = LineGetClosestPointGrid((line_t){ closestLine->a->pos, closestLine->b->pos }, (Vec2){ x1, y1 }, shiftDown ? state->data.altGridSize : state->data.gridSize);
                         x2 = closestPoint.x;
                         y2 = closestPoint.y;
                     }
                 }
                 else if(ctrlDown)
                 {
-                    MapVertex *closestVertex = EditGetClosestVertex(map, (FVec2){ .x = x1, .y = y1 }, VERTEX_DIST + fixed_from_int(64));
+                    MapVertex *closestVertex = EditGetClosestVertex(map, (Vec2){ .x = x1, .y = y1 }, VERTEX_DIST + 64);
                     if(closestVertex)
                     {
                         x2 = closestVertex->pos.x;
@@ -254,21 +254,21 @@ void EditorWindow(bool *p_open, EdState *state)
                 {
                     edSX = relX, edSY = relY;
                     ScreenToEditorSpaceGrid(state, state->data.altGridSize, &edSX, &edSY);
-                    x2 = fixed_from_real(edSX);
-                    y2 = fixed_from_real(edSY);
+                    x2 = edSX;
+                    y2 = edSY;
                 }
             }
 
             if(hovored)
             {
 #ifdef _DEBUG
-                state->data.mx = fixed_to_real(x1);
-                state->data.my = fixed_to_real(y1);
-                state->data.mtx = fixed_to_real(x2);
-                state->data.mty = fixed_to_real(y2);
+                state->data.mx = x1;
+                state->data.my = y1;
+                state->data.mtx = x2;
+                state->data.mty = y2;
 #endif
-                FVec2 mouseVertex = { x1, y1 };
-                state->data.editVertexMouse = (FVec2){ .x = x2, .y = y2 };
+                Vec2 mouseVertex = { x1, y1 };
+                state->data.editVertexMouse = (Vec2){ .x = x2, .y = y2 };
                 state->data.editDragMouse = mouseVertex;
                 if(state->data.editState == ESTATE_NORMAL)
                 {
@@ -326,7 +326,7 @@ void EditorWindow(bool *p_open, EdState *state)
 
                 if(igIsMouseClicked_Bool(ImGuiMouseButton_Left, false) && !state->data.isDragging)
                 {
-                    FVec2 mouseVertexSnap = { x2, y2 };
+                    Vec2 mouseVertexSnap = { x2, y2 };
                     if(state->data.editState == ESTATE_ADDVERTEX)
                     {
                         if(state->data.editVertexBufferSize == 0)
@@ -335,7 +335,7 @@ void EditorWindow(bool *p_open, EdState *state)
                         }
                         else
                         {
-                            FVec2 first = state->data.editVertexBuffer[0];
+                            Vec2 first = state->data.editVertexBuffer[0];
                             if(mouseVertexSnap.x == first.x && mouseVertexSnap.y == first.y && state->data.editVertexBufferSize >= 3)
                             {
                                 // submit to edit
@@ -345,7 +345,7 @@ void EditorWindow(bool *p_open, EdState *state)
                             }
                             else
                             {
-                                FVec2 last = state->data.editVertexBuffer[state->data.editVertexBufferSize-1];
+                                Vec2 last = state->data.editVertexBuffer[state->data.editVertexBufferSize-1];
                                 if(!(mouseVertexSnap.x == last.x && mouseVertexSnap.y == last.y))
                                 {
                                     AddEditVertex(state, mouseVertexSnap);
@@ -406,7 +406,7 @@ void EditorWindow(bool *p_open, EdState *state)
                     state->data.zoomLevel += wheelData->AnalogValue * 0.05f;
                     state->data.zoomLevel = clamp(MIN_ZOOM, MAX_ZOOM, state->data.zoomLevel);
 
-                    float edXAfter = relX, edYAfter = relY;
+                    real_t edXAfter = relX, edYAfter = relY;
                     ScreenToEditorSpace(state, &edXAfter, &edYAfter);
 
                     state->data.viewPosition.x += (edX - edXAfter) * state->data.zoomLevel;
@@ -438,10 +438,10 @@ void EditorWindow(bool *p_open, EdState *state)
                 {
                     if(state->data.editState == ESTATE_NORMAL)
                     {
-                        MapLine *line = EditGetClosestLine(map, (FVec2){ x1, y1 }, fixed_from_int(128));
+                        MapLine *line = EditGetClosestLine(map, (Vec2){ x1, y1 }, 128);
                         if(line)
                         {
-                            bool front = SideOfMapLine(line, (FVec2){ x1, y1 }) > 0;
+                            bool front = SideOfMapLine(line, (Vec2){ x1, y1 }) > 0;
                             if((front && line->frontSector == NULL) || (!front && line->backSector == NULL))
                             {
                                 MapSector *sector = MakeMapSector(map, line, !front, DefaultSectorData());

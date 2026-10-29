@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "vecmath.h"
 
-#define STITCHING_DIST fixed_from_int(2)
+#define STITCHING_DIST 2
 
 #define MAP_VERSION 2
 
@@ -58,7 +58,7 @@ struct MapSector;
 
 typedef struct MapVertex
 {
-    FVec2 pos;
+    Vec2 pos;
 
     size_t idx;
 
