@@ -4,10 +4,14 @@
 - SDL2
 
 #### Archlinux
-`# pacman -S sdl2-compat`
+```
+# pacman -S sdl2-compat
+```
 
 #### Debian/Ubuntu
-`# apt install libsdl2-dev`
+```
+# apt install libsdl2-dev
+```
 
 # Building
 ```
