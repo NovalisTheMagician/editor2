@@ -62,7 +62,6 @@ bool PointInPolygonVector(size_t numVertices, Vec2 vertices[static numVertices],
     return inside;
 }
 
-// this is only used for selection so use normal floating point math
 real_t MinDistToLine(Vec2 a, Vec2 b, Vec2 point)
 {
     real_t l2 = vec2_distance2(a, b);
@@ -136,6 +135,7 @@ angle_t AngleDifference(angle_t a, angle_t b)
 
 angle_t AngleLine(MapLine *line)
 {
+    (void)line;
     return 0;
 }
 
@@ -168,66 +168,22 @@ angle_t AngleOf(Vec2 a, Vec2 b, Vec2 c)
     while(diff < 0) diff += PI2;
     while(diff >= PI2) diff -= PI2;
     return diff;
-#if 0
-    Vec2 ab = {b.x - a.x, b.y - a.y};
-    Vec2 cb = {b.x - c.x, b.y - c.y};
-
-    // dot product
-    real_t dot = (ab.x * cb.x + ab.y * cb.y);
-
-    // length square of both vectors
-    real_t abSqr = ab.x * ab.x + ab.y * ab.y;
-    real_t cbSqr = cb.x * cb.x + cb.y * cb.y;
-
-    // square of cosine of the needed angle
-    real_t cosSqr = dot * dot / abSqr / cbSqr;
-
-    // this is a known trigonometric equality:
-    // cos(alpha * 2) = [ cos(alpha) ]^2 * 2 - 1
-    real_t cos2 = 2.0f * cosSqr - 1.0f;
-
-    // Here's the only invocation of the heavy function.
-    // It's a good idea to check explicitly if cos2 is within [-1 .. 1] range
-    real_t alpha2 =
-        (cos2 <= -1) ? PI :
-        (cos2 >= 1) ? 0.0 :
-        acos(cos2);
-
-    real_t rs = alpha2 * 0.5;
-
-    // Now revolve the ambiguities.
-    // 1. If dot product of two vectors is negative - the angle is definitely
-    // above 90 degrees. Still we have no information regarding the sign of the angle.
-
-    // NOTE: This ambiguity is the consequence of our method: calculating the cosine
-    // of the double angle. This allows us to get rid of calling sqrt.
-    if(dot < 0) rs = PI - rs;
-
-    // 2. Determine the sign. For this we'll use the Determinant of two vectors.
-    real_t det = (ab.x * cb.y - ab.y * cb.x);
-    if(det < 0) rs = (2.0 * PI) - rs;
-
-    return rs;
-#endif
 }
 
 Vec2 LineGetClosestPoint(line_t line, Vec2 pos)
 {
-#if 0
     Vec2 dir = vec2_normalize(vec2_sub(line.b, line.a));
     real_t len = vec2_distance(line.a, line.b);
     Vec2 lhs = vec2_sub(pos, line.a);
     real_t dotP = vec2_dot(lhs, dir);
     dotP = clamp(0.0f, len, dotP);
     return vec2_add(line.a, vec2_scale(dir, dotP));
-#endif
-    return (Vec2){ 0 };
 }
 
 static inline real_t snapToGrid(real_t value, int gridSize)
 {
     real_t halfGrid = (real_t)gridSize / 2;
-    int cells = ((int)(value + halfGrid) / gridSize);
+    int cells = floor((value + halfGrid) / gridSize);
     return (cells * gridSize);
 }
 
@@ -242,7 +198,7 @@ Vec2 LineGetClosestPointGrid(line_t line, Vec2 pos, int gridSize)
     real_t minY = min(line.a.y, line.b.y);
     real_t maxY = max(line.a.y, line.b.y);
 
-    if (dx == 0)
+    if (eq(dx, 0))
     {
         // Vertical line: x is fixed, snap y to nearest grid line, clamped to the segment
         //fixed_t y = snapToGridPow2(pos.y, gridSize);
@@ -251,7 +207,7 @@ Vec2 LineGetClosestPointGrid(line_t line, Vec2 pos, int gridSize)
         return (Vec2){ .x = line.a.x, .y = y };
     }
 
-    if (dy == 0)
+    if (eq(dy, 0))
     {
         // Horizontal line: y is fixed, snap x to nearest grid line, clamped to the segment
         real_t x = snapToGrid(pos.x, gridSize);
@@ -271,7 +227,7 @@ Vec2 LineGetClosestPointGrid(line_t line, Vec2 pos, int gridSize)
     // Candidate B: snap y to nearest horizontal grid line, solve x along the line
     real_t candYy = snapToGrid(pos.y, gridSize);
     candYy = clamp(candYy, minY, maxY);
-    real_t candYx = line.a.x + ((candYy - line.a.y) * m);
+    real_t candYx = line.a.x + ((candYy - line.a.y) / m);
     candYx = clamp(candYx, minX, maxX);
     Vec2 candY = { .x = candYx, .y = candYy };
 
@@ -311,8 +267,8 @@ bool LineOverlap(line_t la, line_t lb, intersection_res_t *res)
         num1 = w2.y;
     }
 
-    real_t t0 = num0 / denom; //frac_make(num0, denom);
-    real_t t1 = num1 / denom; //frac_make(num1, denom);
+    real_t t0 = num0 / denom;
+    real_t t1 = num1 / denom;
 
    if((t0 <= 0 && t1 <= 0) || (t0 >= 1 && t1 >= 1))
        return false;
@@ -358,10 +314,10 @@ bool LineIntersection(line_t la, line_t lb, intersection_res_t *res)
 
     if(res)
     {
-        bool sIs0 = sI == 0; //frac_is_zero(sI);
-        bool sIs1 = sI == 1; //frac_is_one(sI);
-        bool tIs0 = tI == 0; //frac_is_zero(tI);
-        bool tIs1 = tI == 1; //frac_is_one(tI);
+        bool sIs0 = eq(sI, 0); //frac_is_zero(sI);
+        bool sIs1 = eq(sI, 1); //frac_is_one(sI);
+        bool tIs0 = eq(tI, 0); //frac_is_zero(tI);
+        bool tIs1 = eq(tI, 1); //frac_is_one(tI);
 
         if(sIs0)        res->p0 = la.a;
         else if(sIs1)   res->p0 = la.b;

@@ -109,7 +109,7 @@ static void AddEditVertex(EdState *state, Vec2 v)
 
 static void GotoLocation(EdState *state, real_t x, real_t y)
 {
-    state->data.viewPosition = (Vec2){ x - (state->gl.editorFramebufferWidth / 2.0f), x - (state->gl.editorFramebufferHeight / 2.0f) };
+    state->data.viewPosition = (Vec2){ x - (state->gl.editorFramebufferWidth / 2.0f), y - (state->gl.editorFramebufferHeight / 2.0f) };
 }
 
 void EditorWindow(bool *p_open, EdState *state)

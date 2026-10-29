@@ -217,7 +217,7 @@ void EditRemoveLines(Map *map, size_t num, MapLine *lines[static num])
 MapLine* EditGetClosestLine(Map *map, Vec2 pos, real_t maxDist)
 {
     MapLine *closestLine = NULL;
-    real_t closestDist = FLT_MAX;
+    real_t closestDist = REAL_MAX;
     real_t md = maxDist;
     for(MapLine *line = map->headLine; line; line = line->next)
     {

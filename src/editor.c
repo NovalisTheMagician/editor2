@@ -163,7 +163,7 @@ bool InitEditor(EdState *state, char *error, size_t errorSize)
 
     state->data.selectedElements = calloc(SELECTION_CAPACITY, sizeof *state->data.selectedElements);
 
-    state->realtime.cameraPosition = (Vec3){ 0, 0, 0 };
+    state->realtime.cameraPosition = (Vec3){ 0, 32, 0 };
     state->realtime.cameraDirection = (Vec3){ 0, 0, 1 };
     state->realtime.cameraRight = (Vec3){ -1, 0, 0 };
 

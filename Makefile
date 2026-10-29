@@ -42,6 +42,11 @@ else
     CCFLAGS += -ggdb
 endif
 
+ifdef PROFILE
+    CCFLAGS += -fno-omit-frame-pointer
+endif
+
+
 SDL_INC ?=
 LUA_DEF ?=
 

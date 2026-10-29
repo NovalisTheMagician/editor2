@@ -20,19 +20,6 @@ struct Polygon* MakePolygon(Arena *arena, size_t numVertices, Vec2 vertices[stat
     return polygon;
 }
 
-static void AssertNoOrphanReference(Map *map, MapLine *line)
-{
-	for(MapSector *s = map->headSector; s; s = s->next)
-	{
-		if(s == line->frontSector || s == line->backSector) continue;
-		for(size_t i = 0; i < s->numOuterLines; ++i)
-			assert(s->outerLines[i] != line && "sector references a line to be freed, but doesn't own it");
-		for(size_t i = 0; i < s->numInnerLines; ++i)
-			for(size_t j = 0; j < s->numInnerLinesNum[i]; ++j)
-				assert(s->innerLines[i][j] != line && "sector references a line to be freed, but doesn't own it");
-	}
-}
-
 SplitResult SplitMapLine(Map *map, MapLine *line, MapVertex *vertex)
 {
     LineData dataCopy = CopyLineData(line->data);
@@ -103,7 +90,6 @@ polygon_t* PolygonFromMapLinesArena(Arena *arena, size_t numLines, MapLine *line
 
 polygon_t* PolygonFromVertices(size_t numVertices, EditorVertexType vertices[static numVertices])
 {
-#if 0
     polygon_t *polygon = calloc(1, sizeof *polygon + numVertices * sizeof *polygon->vertices);
     polygon->length = numVertices;
     for(size_t i = 0; i < numVertices; ++i)
@@ -111,8 +97,6 @@ polygon_t* PolygonFromVertices(size_t numVertices, EditorVertexType vertices[sta
         polygon->vertices[i] = vertices[i].position;
     }
     return polygon;
-#endif
-    return NULL;
 }
 
 polygon_t* PolygonFromVectors(size_t numVectors, Vec2 vectors[static numVectors])
