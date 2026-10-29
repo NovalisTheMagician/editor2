@@ -22,6 +22,13 @@ PKG_CONFIG ?= pkg-config
 #CC := gcc
 CXX ?= g++
 
+ifdef CROSS_COMPILE
+    CC := $(CROSS_COMPILE)$(CC)
+    CXX := $(CROSS_COMPILE)$(CXX)
+    PKG_CONFIG := $(CROSS_COMPILE)$(PKG_CONFIG)
+    RES := $(CROSS_COMPILE)$(RES)
+endif
+
 CCFLAGS := -Wall -Wextra -std=gnu23 -Wstrict-prototypes
 
 LD := $(CC)
@@ -63,7 +70,7 @@ else
         SDL_INC += $(shell $(PKG_CONFIG) --cflags sdl2)
         DEFINES +=
         LUA_DEF += -DLUA_USE_POSIX
-        ifneq ($(CONFIG),release)
+        ifdef SANITIZE
             CCFLAGS += -fsanitize=address
             LDFLAGS += -fsanitize=address
         endif
