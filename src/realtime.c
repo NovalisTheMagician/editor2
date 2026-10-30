@@ -277,7 +277,9 @@ void RenderRealtimeView(EdState *state)
     Vec3 up = vec3_cross(state->realtime.cameraRight, state->realtime.cameraDirection);
     float fov = glm_rad(state->settings.realtimeFov);
     float aspect = (float)state->gl.realtimeFramebufferWidth / state->gl.realtimeFramebufferHeight;
-    mat4s projection = glms_perspective(fov, aspect, 0.01f, 1000.0f);
+    float near = state->settings.realtimeNear;
+    float far = state->settings.realtimeFar;
+    mat4s projection = glms_perspective(fov, aspect, near, far);
     mat4s view = glms_lookat(*(vec3s*)&state->realtime.cameraPosition, *(vec3s*)&center, *(vec3s*)&up);
     mat4s viewProj = glms_mul(projection, view);
 

@@ -10,6 +10,8 @@
 #define KEY_SHOWMAJORAXIS "show_major_axis"
 #define KEY_SHOWLINEDIR "show_line_dir"
 #define KEY_3DFOV "preview_fov"
+#define KEY_NEARPLANE "preview_near"
+#define KEY_FARPLANE "preview_far"
 #define KEY_GAMEPATH "game_path"
 #define KEY_LAUNCHARGS "launch_arguments"
 #define KEY_SHOWFRAMERATE "show_framerate"
@@ -80,13 +82,15 @@ void ResetSettings(EdSettings *settings)
     memset(settings->gamePath, 0, sizeof settings->gamePath);
     strncpy(settings->launchArguments, "-debug -map %1", MAX_GAMEPATH_LEN);
 
-    settings->theme = 0;
+    settings->theme = 1;
 
     settings->showGridLines = true;
     settings->showMajorAxis = true;
     settings->vertexPointSize = 7.0f;
 
     settings->realtimeFov = 90;
+    settings->realtimeNear = 0.01f;
+    settings->realtimeFar = 1000;
 
     settings->showFramerate = settings->showFrametime = true;
 }
@@ -124,6 +128,8 @@ bool LoadSettings(const char *settingsPath, EdSettings *settings)
             if(KEY_IS(KEY_LAUNCHARGS)) { strncpy(settings->launchArguments, value, sizeof settings->launchArguments); continue; }
             if(KEY_IS(KEY_SHOWFRAMERATE)) { if(ParseBool(value, &settings->showFramerate)) continue; }
             if(KEY_IS(KEY_SHOWFRAMETIME)) { if(ParseBool(value, &settings->showFrametime)) continue; }
+            if(KEY_IS(KEY_NEARPLANE)) { if(ParseFloat(value, &settings->realtimeNear)) continue; }
+            if(KEY_IS(KEY_FARPLANE)) { if(ParseFloat(value, &settings->realtimeFar)) continue; }
 parseError:
             LogWarning("Failed to parse `%s` on line: %d", settingsPath, lineNr);
         }
@@ -150,6 +156,8 @@ void SaveSettings(const char *settingsPath, const EdSettings *settings)
 
         fprintf(file, "// 3D View\n");
         fprintf(file, KEY_3DFOV"=%d\n", settings->realtimeFov);
+        fprintf(file, KEY_NEARPLANE"=%.2f\n", settings->realtimeNear);
+        fprintf(file, KEY_FARPLANE"=%.2f\n", settings->realtimeFar);
 
         fprintf(file, "// Base\n");
         fprintf(file, KEY_GAMEPATH"=%s\n", settings->gamePath);

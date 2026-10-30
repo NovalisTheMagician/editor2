@@ -33,8 +33,9 @@
 #include "logging.h"
 #include "script.h"
 #include "utils/string.h"
+#include "utils/system.h"
 
-#define SETTINGS_FILE "./settings.ini"
+#define SETTINGS_FILE "settings.ini"
 #define DEFAULT_WINDOW_WIDTH 1920
 #define DEFAULT_WINDOW_HEIGHT 1080
 
@@ -53,10 +54,12 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context, char *error, si
 static SDL_GLContext InitOpenGL(SDL_Window *window, char *error, size_t errorSize);
 static void InitFont(SDL_Window *window);
 
+static const char *settingsPath;
+
 static void HandleArguments(int argc, char *argv[], EdState *state)
 {
     int c;
-    const char *settingsPath = SETTINGS_FILE;
+    settingsPath = CopyString(combinePaths(getPreferredFolder(NULL), SETTINGS_FILE));
     while((c = getopt(argc, argv, "s:p:m:")) != -1)
     {
         switch(c)
@@ -253,7 +256,7 @@ int EditorMain(int argc, char *argv[])
         SDL_GL_SwapWindow(window);
     }
 
-    SaveSettings(SETTINGS_FILE, &state->settings);
+    SaveSettings(settingsPath, &state->settings);
 
     FreeGui();
 

@@ -7,6 +7,11 @@
 #include <time.h>
 #include <stdio.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+#include "utils/system.h"
 
 #define LOGBUFFER_CAPACITY 1024
 #define LOGBUFFER_LINE_LEN 512
@@ -58,7 +63,11 @@ void LogInit(LogBuffer *logBuffer)
     struct tm *tm_info = localtime(&timer);
     strftime(timeBuffer, sizeof timeBuffer, "%Y-%m-%d_%H-%M-%S.log", tm_info);
 
-    logFile = fopen(timeBuffer, "w");
+    const char *path = getPreferredFolder("logs");
+    char pathBuffer[1024] = { 0 };
+    snprintf(pathBuffer, sizeof pathBuffer, "%s/%s", path, timeBuffer);
+
+    logFile = fopen(pathBuffer, "w");
     if(!logFile)
         LogWarning("Failed to create logfile: %s", strerror(errno));
 }

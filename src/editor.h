@@ -105,6 +105,7 @@ typedef struct EdSettings
     float vertexPointSize;
     bool showGridLines, showMajorAxis;
     int realtimeFov;
+    float realtimeNear, realtimeFar;
 
     bool showFramerate, showFrametime;
 
@@ -272,7 +273,6 @@ typedef struct EdState
     struct {
         Vec3 cameraPosition, cameraDirection, cameraRight;
         mat4s realtimeProjection;
-        float realtimeFov;
     } realtime;
 
     struct

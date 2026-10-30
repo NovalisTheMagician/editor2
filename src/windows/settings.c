@@ -42,6 +42,8 @@ void SettingsWindow(bool *p_open, EdState *state)
             if(igBeginTabItem("3D View", NULL, 0))
             {
                 igSliderInt("Field of View", &state->settings.realtimeFov, MIN_FOV, MAX_FOV, "%d°", 0);
+                igSliderFloat("Near Clipping Plane", &state->settings.realtimeNear, 0.01f, 100, NULL, 0);
+                igSliderFloat("Far Clipping Plane", &state->settings.realtimeFar, 101, 10000, NULL, 0);
                 igEndTabItem();
             }
 

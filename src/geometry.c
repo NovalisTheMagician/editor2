@@ -243,13 +243,13 @@ bool LineOverlap(line_t la, line_t lb, intersection_res_t *res)
     Vec2 v = vec2_sub(lb.b, lb.a);
     Vec2 w = vec2_sub(lb.a, la.a);
 
-    if(u.x == 0 && u.y == 0)
+    if(eq(u.x, 0) && eq(u.y, 0))
         return false;
 
-    if(vec2_cross(u, v) != 0)
+    if(!eq(vec2_cross(u, v), 0))
         return false;
 
-    if(vec2_cross(u, w) != 0)
+    if(!eq(vec2_cross(u, w), 0))
         return false;
 
     Vec2 w2 = vec2_sub(lb.b, la.a);
@@ -301,7 +301,7 @@ bool LineIntersection(line_t la, line_t lb, intersection_res_t *res)
     Vec2 w = vec2_sub(la.a, lb.a);
 
     real_t D = vec2_cross(u, v);
-    if(D == 0)
+    if(eq(D, 0))
         return false;
 
     real_t sI = vec2_cross(v, w) / D;
