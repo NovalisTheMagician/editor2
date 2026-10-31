@@ -29,10 +29,10 @@ ifdef CROSS_COMPILE
     RES := $(CROSS_COMPILE)$(RES)
 endif
 
-CCFLAGS := -Wall -Wextra -std=gnu23 -Wstrict-prototypes
+CCFLAGS += -Wall -Wextra -std=gnu23 -Wstrict-prototypes
 
 LD := $(CC)
-LDFLAGS := -pthread
+LDFLAGS += -pthread
 
 ifeq ($(CONFIG),release)
     DEFINES += NDEBUG
@@ -46,22 +46,17 @@ ifdef PROFILE
     CCFLAGS += -fno-omit-frame-pointer
 endif
 
-
-SDL_INC ?=
-LUA_DEF ?=
-
-ifeq ($(OS),Window_NT)
+ifeq ($(OS),Windows_NT)
     MINGW = 1
 endif
 
 ifdef MINGW
     LIBS += dinput8 dxguid dxerr8 user32 gdi32 winmm imm32 ole32 oleaut32 shell32 setupapi version uuid ws2_32 iphlpapi comctl32 gdi32 comdlg32 opengl32
     APPLICATION := $(APPLICATION).exe
-    #LIB_DIRS += $(LIB_GCC_PATH)
-    #INC_DIRS += $(INC_PATH)
     LDFLAGS += -static
-    #SDL_INC += -I$(INC_PATH)/SDL2
-    SDL_INC += $(shell $(PKG_CONFIG) --cflags sdl2)
+    ifdef NO_PKGCONFIG
+        SDL_INC += $(shell $(PKG_CONFIG) --cflags sdl2)
+    endif
     ifeq ($(CONFIG),release)
         LDFLAGS += -mwindows
     else
