@@ -60,11 +60,15 @@ static void TextureField(EdState *state, const char *label, char **textureName, 
     snprintf(buffer, sizeof buffer, "%sTexture", label);
     igImageButton(buffer, (ImTextureRef){ ._TexID = texId }, size, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1, }, (ImVec4){ 0, 0, 0, 0 }, (ImVec4){ 1, 1, 1, 1 });
     snprintf(buffer, sizeof buffer, "%s Offset", label);
-    if(igIsItemHovered(0) && igIsMouseReleased_Nil(ImGuiMouseButton_Right) && texture)
+    if(igIsItemHovered(0) && texture)
     {
-        free(*textureName);
-        *textureName = NULL;
-        state->map.dirty = true;
+        if(igIsMouseReleased_Nil(ImGuiMouseButton_Right))
+        {
+            free(*textureName);
+            *textureName = NULL;
+            state->map.dirty = true;
+        }
+        igSetTooltip("Name: %s\nSize: %dx%d", texture->name, (int)size.x, (int)size.y);
     }
 
     if(igBeginDragDropTarget())

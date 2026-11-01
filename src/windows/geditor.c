@@ -125,7 +125,7 @@ void EditorWindow(bool *p_open, EdState *state)
     if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_Y, ImGuiInputFlags_RouteGlobal))
         LogDebug("Redo!");
 
-    ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize;
+    ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar /*| ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize*/;
     if(state->map.dirty)
         flags |= ImGuiWindowFlags_UnsavedDocument;
 

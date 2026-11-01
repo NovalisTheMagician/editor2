@@ -311,9 +311,9 @@ static SDL_Window* InitSDL(char *error, size_t errorSize)
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
 
     uint32_t flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
-#ifndef _DEBUG
+//#ifndef _DEBUG
     flags |= SDL_WINDOW_MAXIMIZED;
-#endif
+//#endif
 
     SDL_Window *window = SDL_CreateWindow("Editor2", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT, flags);
     if(!window)
@@ -351,7 +351,7 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context, char *error, si
 
     InitFont(window);
 
-    ioptr->IniFilename = NULL;
+    ioptr->IniFilename = CopyString(combinePaths(getPreferredFolder(NULL), "imgui.ini"));
 
     if(!ImGui_ImplSDL2_InitForOpenGL(window, context))
     {
