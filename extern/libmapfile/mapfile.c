@@ -331,7 +331,7 @@ static char* GetNextLine(long from, long *next, int *lineNr, FILE *file, long en
     *next = ftell(file);
     if(*next == end)
         *next = 0;
-    *lineNr++;
+    (*lineNr)++;
     return line;
 }
 
