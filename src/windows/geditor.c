@@ -84,8 +84,9 @@ static void RectSelect(EdState *state, bool add)
     Vec2 min = vec2_min(state->data.startDrag, state->data.endDrag);
     Vec2 max = vec2_max(state->data.startDrag, state->data.endDrag);
 
-    if(!add)
-        state->data.numSelectedElements = 0;
+    size_t count = 0;
+    if(add)
+        count += state->data.numSelectedElements;
 
     switch(state->data.selectionMode)
     {
@@ -93,9 +94,9 @@ static void RectSelect(EdState *state, bool add)
         {
             for(MapVertex *vertex = state->map.headVertex; vertex; vertex = vertex->next)
             {
-                if(within(min, max, vertex->pos) && !contains(state->data.numSelectedElements, state->data.selectedElements, vertex))
+                if(within(min, max, vertex->pos) && (!add || !contains(state->data.numSelectedElements, state->data.selectedElements, vertex)))
                 {
-                    state->data.selectedElements[state->data.numSelectedElements++] = vertex;
+                    state->data.selectedElements[count++] = vertex;
                 }
             }
         }
@@ -104,9 +105,9 @@ static void RectSelect(EdState *state, bool add)
         {
             for(MapLine *line = state->map.headLine; line; line = line->next)
             {
-                if(within(min, max, line->a->pos) && within(min, max, line->b->pos) && !contains(state->data.numSelectedElements, state->data.selectedElements, line))
+                if(within(min, max, line->a->pos) && within(min, max, line->b->pos) && (!add || !contains(state->data.numSelectedElements, state->data.selectedElements, line)))
                 {
-                    state->data.selectedElements[state->data.numSelectedElements++] = line;
+                    state->data.selectedElements[count++] = line;
                 }
             }
         }
@@ -121,14 +122,16 @@ static void RectSelect(EdState *state, bool add)
                     allPointsIn &= within(min, max, sector->outerLines[i]->a->pos);
                 }
 
-                if(allPointsIn && !contains(state->data.numSelectedElements, state->data.selectedElements, sector))
+                if(allPointsIn && (!add || !contains(state->data.numSelectedElements, state->data.selectedElements, sector)))
                 {
-                    state->data.selectedElements[state->data.numSelectedElements++] = sector;
+                    state->data.selectedElements[count++] = sector;
                 }
             }
         }
         break;
     }
+    if(add || (!add && count > 0))
+        state->data.numSelectedElements = count;
 }
 
 static void AddEditVertex(EdState *state, Vec2 v)
@@ -136,6 +139,7 @@ static void AddEditVertex(EdState *state, Vec2 v)
     size_t idx = state->data.editVertexBufferSize++;
     state->data.editVertexBuffer[idx] = v;
 }
+
 static void MoveElements(EdState *state, Vec2 firstPosition)
 {
     
