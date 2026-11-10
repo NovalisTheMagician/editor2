@@ -196,7 +196,6 @@ static void HandleInput(EdState *state, Vec2 mousePos)
     {
         igSetWindowFocus_Nil();
     }
-
     
     if(igIsKeyPressed_Bool(ImGuiKey_F, false))
     {
@@ -518,6 +517,9 @@ void EditorWindow(bool *p_open, EdState *state)
             HandleDrag(state, focused);
             if(focused)
             {
+                if(state->data.mouseDragCapture == 0)
+                    igSetWindowFocus_Nil();
+
                 HandleShortcuts(state);
 
                 HandleDragSelect(state, mousePos, shiftDown);

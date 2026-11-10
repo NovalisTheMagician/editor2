@@ -91,6 +91,40 @@ static void HandleDrag(EdState *state, bool focused, Vec3 *forward, Vec3 *right,
     }
 }
 
+static void HandleMovement(EdState *state, bool focused, Vec3 *position, Vec3 forward, Vec3 right, Vec3 up, float delta)
+{
+    bool ctrlDown = igGetIO_Nil()->KeyCtrl;
+    const real_t speed = 78;
+   
+    if(!focused && state->data.mouseDragCapture != REALTIME_ID)
+        return;
+
+    if(igIsKeyDown_Nil(ImGuiKey_W) && !ctrlDown)
+    {
+        *position = vec3_add(*position, vec3_scale(forward, speed * delta));
+    }
+    if(igIsKeyDown_Nil(ImGuiKey_S) && !ctrlDown)
+    {
+        *position = vec3_add(*position, vec3_scale(forward, -speed * delta));
+    }
+    if(igIsKeyDown_Nil(ImGuiKey_D) && !ctrlDown)
+    {
+        *position = vec3_add(*position, vec3_scale(right, speed * delta));
+    }
+    if(igIsKeyDown_Nil(ImGuiKey_A) && !ctrlDown)
+    {
+        *position = vec3_add(*position, vec3_scale(right, -speed * delta));
+    }
+    if(igIsKeyDown_Nil(ImGuiKey_Q) && !ctrlDown)
+    {
+        *position = vec3_add(*position, vec3_scale(up, speed * delta));
+    }
+    if(igIsKeyDown_Nil(ImGuiKey_E) && !ctrlDown)
+    {
+        *position = vec3_add(*position, vec3_scale(up, -speed * delta));
+    }
+}
+
 void RealtimeWindow(bool *p_open, EdState *state)
 {
     if(igBegin("3D View", p_open, ImGuiWindowFlags_NoScrollbar))
@@ -115,7 +149,6 @@ void RealtimeWindow(bool *p_open, EdState *state)
             ImGuiIO *ioptr = igGetIO_Nil();
             float dt = ioptr->DeltaTime;
 
-            const real_t speed = 78;
 
             Vec3 cameraPosition = state->realtime.cameraPosition;
             Vec3 cameraDirection = state->realtime.cameraDirection;
@@ -124,38 +157,13 @@ void RealtimeWindow(bool *p_open, EdState *state)
             Vec3 globalUp = { 0, 1, 0 };
 
             HandleDrag(state, focused, &cameraDirection, &cameraRight, dt);
+            HandleMovement(state, focused, &cameraPosition, cameraDirection, cameraRight, globalUp, dt);
 
             if(focused)
             {
-                bool shiftDown = igGetIO_Nil()->KeyShift;
-                bool altDown = igGetIO_Nil()->KeyAlt;
-                bool ctrlDown = igGetIO_Nil()->KeyCtrl;
-               
-                if(igIsKeyDown_Nil(ImGuiKey_W) && !ctrlDown)
-                {
-                    cameraPosition = vec3_add(cameraPosition, vec3_scale(cameraDirection, speed * dt));
-                }
-                if(igIsKeyDown_Nil(ImGuiKey_S) && !ctrlDown)
-                {
-                    cameraPosition = vec3_add(cameraPosition, vec3_scale(cameraDirection, -speed * dt));
-                }
-                if(igIsKeyDown_Nil(ImGuiKey_D) && !ctrlDown)
-                {
-                    cameraPosition = vec3_add(cameraPosition, vec3_scale(cameraRight, speed * dt));
-                }
-                if(igIsKeyDown_Nil(ImGuiKey_A) && !ctrlDown)
-                {
-                    cameraPosition = vec3_add(cameraPosition, vec3_scale(cameraRight, -speed * dt));
-                }
-                if(igIsKeyDown_Nil(ImGuiKey_Q) && !ctrlDown)
-                {
-                    cameraPosition = vec3_add(cameraPosition, vec3_scale(globalUp, speed * dt));
-                }
-                if(igIsKeyDown_Nil(ImGuiKey_E) && !ctrlDown)
-                {
-                    cameraPosition = vec3_add(cameraPosition, vec3_scale(globalUp, -speed * dt));
-                }
-
+                if(state->data.mouseDragCapture == 0)
+                    igSetWindowFocus_Nil();
+                
                 if(igIsKeyPressed_Bool(ImGuiKey_H, false) && state->data.selectionMode == MODE_LINE && state->data.numSelectedElements == 1)
                 {
                     MapLine *startLine = state->data.selectedElements[0];
@@ -163,6 +171,7 @@ void RealtimeWindow(bool *p_open, EdState *state)
                         state->map.dirty = true;
                 }
             }
+
             state->realtime.cameraRight = cameraRight;
             state->realtime.cameraDirection = cameraDirection;
             state->realtime.cameraPosition = cameraPosition;
