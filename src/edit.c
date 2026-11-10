@@ -16,31 +16,6 @@
 #include "map/insert.h"
 #include "map/create.h"
 
-void ScreenToEditorSpace(const EdState *state, real_t *x, real_t *y)
-{
-    const float z = state->data.zoomLevel;
-    *x = (*x + state->data.viewPosition.x) / z;
-    *y = (*y + state->data.viewPosition.y) / z;
-}
-
-void EditorToScreenSpace(const EdState *state, real_t *x, real_t *y)
-{
-    const float z = state->data.zoomLevel;
-    *x = ((*x - state->data.viewPosition.x) * z);
-    *y = ((*y - state->data.viewPosition.y) * z);
-}
-
-void ScreenToEditorSpaceGrid(const EdState *state, int gridsize, real_t *x, real_t *y)
-{
-    ScreenToEditorSpace(state, x, y);
-    const int offset = gridsize / 2;
-    real_t xt = (int)(*x), yt = (int)(*y);
-    xt += xt < 0 ? -offset : offset;
-    *x = (int)xt / gridsize * gridsize;
-    yt += yt < 0 ? -offset : offset;
-    *y = (int)yt / gridsize * gridsize;
-}
-
 void EditCopy(EdState *state)
 {
     LogDebug("Copy!!\n");

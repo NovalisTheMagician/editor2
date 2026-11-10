@@ -3,10 +3,6 @@
 #include "editor.h"
 #include "vecmath.h"
 
-void ScreenToEditorSpace(const EdState *state, real_t *x, real_t *y);
-void EditorToScreenSpace(const EdState *state, real_t *x, real_t *y);
-void ScreenToEditorSpaceGrid(const EdState *state, int gridsize, real_t *x, real_t *y);
-
 void EditCopy(EdState *state);
 void EditPaste(EdState *state);
 void EditCut(EdState *state);

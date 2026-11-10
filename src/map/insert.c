@@ -194,8 +194,8 @@ MapSector* MakeMapSector(Map *map, MapLine *startLine, bool reversed, SectorData
     if(orientation == DEGENERATE_ORIENT || orientation != EXPECTED_BOUNDED_ORIENTATION)
         return NULL;
 
-    MapSector *s;
-    if((s = FindEquivalentSector(map, numLines, sectorLines)))
+    MapSector *s = FindEquivalentSector(map, numLines, sectorLines);
+    if(s)
         return s;
 
     if(!TraceTargetsAreFree(numLines, sectorLines, false))

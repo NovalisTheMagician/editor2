@@ -85,8 +85,6 @@
 !_TAG_KIND_DESCRIPTION!HTML	i,heading2	/H2 headings/
 !_TAG_KIND_DESCRIPTION!HTML	j,heading3	/H3 headings/
 !_TAG_KIND_DESCRIPTION!HTML	t,title	/titles/
-!_TAG_KIND_DESCRIPTION!Iniconf	k,key	/keys/
-!_TAG_KIND_DESCRIPTION!Iniconf	s,section	/sections/
 !_TAG_KIND_DESCRIPTION!JSON	a,array	/arrays/
 !_TAG_KIND_DESCRIPTION!JSON	b,boolean	/booleans/
 !_TAG_KIND_DESCRIPTION!JSON	n,number	/numbers/
@@ -210,7 +208,6 @@
 !_TAG_PARSER_VERSION!Forth	0.0	/current.age/
 !_TAG_PARSER_VERSION!Gdbinit	0.0	/current.age/
 !_TAG_PARSER_VERSION!HTML	0.0	/current.age/
-!_TAG_PARSER_VERSION!Iniconf	0.0	/current.age/
 !_TAG_PARSER_VERSION!JSON	0.0	/current.age/
 !_TAG_PARSER_VERSION!JavaScript	1.1	/current.age/
 !_TAG_PARSER_VERSION!Kotlin	0.0	/current.age/
@@ -8628,6 +8625,7 @@ ArcFastRadiusCutoff	extern/cimgui/cimgui.h	/^    float ArcFastRadiusCutoff;$/;"	
 ArcFastRadiusCutoff	extern/cimgui/imgui/imgui_internal.h	/^    float           ArcFastRadiusCutoff;                        \/\/ Cutoff radius after which a/;"	m	struct:ImDrawListSharedData	typeref:typename:float
 ArcFastVtx	extern/cimgui/cimgui.h	/^    ImVec2 ArcFastVtx[48];$/;"	m	struct:ImDrawListSharedData	typeref:typename:ImVec2[48]
 ArcFastVtx	extern/cimgui/imgui/imgui_internal.h	/^    ImVec2          ArcFastVtx[IM_DRAWLIST_ARCFAST_TABLE_SIZE]; \/\/ Sample points on the quarte/;"	m	struct:ImDrawListSharedData	typeref:typename:ImVec2[]
+Archlinux	README.md	/^#### Archlinux$/;"	t	chapter:Dependencies
 Arena	extern/tsoding/arena.h	/^} Arena;$/;"	t	typeref:struct:__anon3d9ca04e0108
 Arena_Mark	extern/tsoding/arena.h	/^} Arena_Mark;$/;"	t	typeref:struct:__anon3d9ca04e0208
 Array API - Inline (Default)	extern/cglm/docs/source/api_inline_array.rst	/^Array API - Inline (Default)$/;"	H
@@ -8637,7 +8635,6 @@ ArrowButtonEx	extern/cimgui/imgui/imgui_widgets.cpp	/^bool ImGui::ArrowButtonEx(
 Ascent	extern/cimgui/cimgui.h	/^    float Ascent, Descent;$/;"	m	struct:ImFontBaked	typeref:typename:float
 Ascent	extern/cimgui/imgui/imgui.h	/^    float                       Ascent, Descent;    \/\/ 4+4   \/\/ out \/\/ Ascent: distance fr/;"	m	struct:ImFontBaked	typeref:typename:float
 AspectRatio	extern/cimgui/imgui/imgui_demo.cpp	/^        static void AspectRatio(ImGuiSizeCallbackData* data)$/;"	f	struct:ShowExampleAppConstrainedResize::CustomConstraints	typeref:typename:void	file:
-AssertNoOrphanReference	src/map/util.c	/^static void AssertNoOrphanReference(Map *map, MapLine *line)$/;"	f	typeref:typename:void	file:
 AssetPath	src/project.h	/^typedef struct AssetPath$/;"	s
 AssetPath	src/project.h	/^} AssetPath;$/;"	t	typeref:struct:AssetPath
 AssetPathType	src/project.h	/^typedef enum AssetPathType$/;"	g
@@ -8995,6 +8992,7 @@ BuildWorkInsetMin	extern/cimgui/cimgui.h	/^    ImVec2 BuildWorkInsetMin;$/;"	m	s
 BuildWorkInsetMin	extern/cimgui/imgui/imgui_internal.h	/^    ImVec2              BuildWorkInsetMin;      \/\/ Work Area inset accumulator for current fra/;"	m	struct:ImGuiViewportP	typeref:typename:ImVec2
 Builder	extern/cimgui/cimgui.h	/^    ImFontAtlasBuilder* Builder;$/;"	m	struct:ImFontAtlas	typeref:typename:ImFontAtlasBuilder *
 Builder	extern/cimgui/imgui/imgui.h	/^    ImFontAtlasBuilder*         Builder;            \/\/ Opaque interface to our data that doesn/;"	m	struct:ImFontAtlas	typeref:typename:ImFontAtlasBuilder *
+Building	README.md	/^# Building$/;"	c
 Building	extern/cimgui/backend_test/example_sdlgpu3/README.md	/^## Building$/;"	s	chapter:SDLGPU3
 Building Lua	extern/lua-5.4.8/doc/readme.html	/^<H3>Building Lua<\/H3>$/;"	j
 Building Lua on other systems	extern/lua-5.4.8/doc/readme.html	/^<H3><A NAME="other">Building Lua on other systems<\/A><\/H3>$/;"	j
@@ -9269,6 +9267,7 @@ CT_Text	extern/cimgui/imgui/imgui_demo.cpp	/^        enum ContentsType { CT_Text
 CT_Text	extern/cimgui/imgui/imgui_demo.cpp	/^        enum ContentsType { CT_Text, CT_FillButton };$/;"	e	enum:DemoWindowTables::ContentsType	file:
 CUSTOMVERTEX	extern/cimgui/imgui/backends/imgui_impl_dx9.cpp	/^struct CUSTOMVERTEX$/;"	s	file:
 CW_ORIENT	src/geometry.h	/^    CW_ORIENT,$/;"	e	enum:orientation_t
+CXX	Makefile	/^    CXX := $(CROSS_COMPILE)$(CXX)$/;"	m
 CXX	Makefile	/^CXX ?= g++$/;"	m
 CXX	extern/cimgui/imgui/examples/example_apple_metal/Makefile	/^CXX = clang++$/;"	m
 CXX	extern/cimgui/imgui/examples/example_apple_opengl2/Makefile	/^CXX = clang++$/;"	m
@@ -10242,6 +10241,7 @@ Dear ImGui Emscripten+GLFW+WebGPU example	extern/cimgui/imgui/examples/example_g
 Dear ImGui: Backends	extern/cimgui/imgui/docs/BACKENDS.md	/^# Dear ImGui: Backends$/;"	c
 Dear ImGui: Examples	extern/cimgui/imgui/docs/EXAMPLES.md	/^## Dear ImGui: Examples$/;"	s
 Dear ImGui: Using Fonts	extern/cimgui/imgui/docs/FONTS.md	/^## Dear ImGui: Using Fonts$/;"	s
+Debian/Ubuntu	README.md	/^#### Debian\/Ubuntu$/;"	t	chapter:Dependencies
 Debug Tools	extern/cimgui/imgui/docs/FONTS.md	/^## Debug Tools$/;"	s
 DebugAllocHook	extern/cimgui/imgui/imgui.cpp	/^void ImGui::DebugAllocHook(ImGuiDebugAllocInfo* info, int frame_count, void* ptr, size_t size)$/;"	f	class:ImGui	typeref:typename:void
 DebugAllocInfo	extern/cimgui/cimgui.h	/^    ImGuiDebugAllocInfo DebugAllocInfo;$/;"	m	struct:ImGuiContext	typeref:typename:ImGuiDebugAllocInfo
@@ -10431,6 +10431,7 @@ DemoWindowWidgetsTextInput	extern/cimgui/imgui/imgui_demo.cpp	/^static void Demo
 DemoWindowWidgetsTooltips	extern/cimgui/imgui/imgui_demo.cpp	/^static void DemoWindowWidgetsTooltips()$/;"	f	typeref:typename:void	file:
 DemoWindowWidgetsTreeNodes	extern/cimgui/imgui/imgui_demo.cpp	/^static void DemoWindowWidgetsTreeNodes()$/;"	f	typeref:typename:void	file:
 DemoWindowWidgetsVerticalSliders	extern/cimgui/imgui/imgui_demo.cpp	/^static void DemoWindowWidgetsVerticalSliders()$/;"	f	typeref:typename:void	file:
+Dependencies	README.md	/^# Dependencies$/;"	c
 Dependencies	extern/triangulate/earcut/README.md	/^### Dependencies$/;"	S	section:Additional build instructions
 Depth	extern/cimgui/imgui/imgui.cpp	/^    char                Depth;$/;"	m	struct:ImGuiDockNodeSettings	typeref:typename:char	file:
 DepthStencilFormat	extern/cimgui/imgui/backends/imgui_impl_wgpu.h	/^    WGPUTextureFormat       DepthStencilFormat = WGPUTextureFormat_Undefined;$/;"	m	struct:ImGui_ImplWGPU_InitInfo	typeref:typename:WGPUTextureFormat
@@ -10911,7 +10912,8 @@ EPSILON	src/utils.h	/^#define EPSILON /;"	d
 ERRFUNC	extern/lua-5.4.8/src/loadlib.c	/^#define ERRFUNC	/;"	d	file:
 ERRLIB	extern/lua-5.4.8/src/loadlib.c	/^#define ERRLIB	/;"	d	file:
 ERRORSTACKSIZE	extern/lua-5.4.8/src/ldo.c	/^#define ERRORSTACKSIZE	/;"	d	file:
-ESTATE_ADDVERTEX	src/editor.h	/^    ESTATE_ADDVERTEX$/;"	e	enum:EditState
+ESTATE_ADDVERTEX	src/editor.h	/^    ESTATE_ADDVERTEX,$/;"	e	enum:EditState
+ESTATE_MOVE_ELEMENT	src/editor.h	/^    ESTATE_MOVE_ELEMENT,$/;"	e	enum:EditState
 ESTATE_NORMAL	src/editor.h	/^    ESTATE_NORMAL,$/;"	e	enum:EditState
 EXE	extern/cimgui/imgui/examples/example_glfw_metal/Makefile	/^EXE = example_glfw_metal$/;"	m
 EXE	extern/cimgui/imgui/examples/example_glfw_opengl2/Makefile	/^EXE = example_glfw_opengl2$/;"	m
@@ -11159,6 +11161,8 @@ FILTER_COMBO_MIN_WIDTH	extern/imguifiledialog/ImGuiFileDialog.cpp	/^#define FILT
 FINALIZEDBIT	extern/lua-5.4.8/src/lgc.h	/^#define FINALIZEDBIT	/;"	d
 FINAL_TEXT	extern/cglm/test/include/common.h	/^# define FINAL_TEXT /;"	d
 FIRST_RESERVED	extern/lua-5.4.8/src/llex.h	/^#define FIRST_RESERVED	/;"	d
+FOLDER_NAME	src/utils/system.c	/^#define FOLDER_NAME /;"	d	file:
+FOLDER_NAME_HIDDEN	src/utils/system.c	/^#define FOLDER_NAME_HIDDEN /;"	d	file:
 FONT_ATLAS_DEFAULT_TEX_CURSOR_DATA	extern/cimgui/imgui/imgui_draw.cpp	/^static const ImVec2 FONT_ATLAS_DEFAULT_TEX_CURSOR_DATA[ImGuiMouseCursor_COUNT][3] =$/;"	v	typeref:typename:const ImVec2[][3]	file:
 FONT_ATLAS_DEFAULT_TEX_DATA_H	extern/cimgui/imgui/imgui_draw.cpp	/^const int FONT_ATLAS_DEFAULT_TEX_DATA_H = 27;$/;"	v	typeref:typename:const int
 FONT_ATLAS_DEFAULT_TEX_DATA_PIXELS	extern/cimgui/imgui/imgui_draw.cpp	/^static const char FONT_ATLAS_DEFAULT_TEX_DATA_PIXELS[FONT_ATLAS_DEFAULT_TEX_DATA_W * FONT_ATLAS_/;"	v	typeref:typename:const char[]	file:
@@ -14304,7 +14308,12 @@ GroupStruct	extern/imguifiledialog/ImGuiFileDialog.h	/^    struct GroupStruct {$
 HOOKKEY	extern/lua-5.4.8/src/ldblib.c	/^static const char *const HOOKKEY = "_HOOKKEY";$/;"	v	typeref:typename:const char * const	file:
 HSV	extern/cimgui/imgui/imgui.h	/^    static ImColor HSV(float h, float s, float v, float a = 1.0f)   { float r, g, b; ImGui::Colo/;"	f	struct:ImColor	typeref:typename:ImColor
 HandleArguments	src/editor_main.c	/^static void HandleArguments(int argc, char *argv[], EdState *state)$/;"	f	typeref:typename:void	file:
+HandleDrag	src/windows/geditor.c	/^static void HandleDrag(EdState *state)$/;"	f	typeref:typename:void	file:
+HandleDragSelect	src/windows/geditor.c	/^static void HandleDragSelect(EdState *state, Vec2 mousePos, bool additive)$/;"	f	typeref:typename:void	file:
+HandleInput	src/windows/geditor.c	/^static void HandleInput(EdState *state, Vec2 mousePos)$/;"	f	typeref:typename:void	file:
 HandleShortcuts	src/gui.c	/^static void HandleShortcuts(EdState *state)$/;"	f	typeref:typename:void	file:
+HandleShortcuts	src/windows/geditor.c	/^static void HandleShortcuts(EdState *state)$/;"	f	typeref:typename:void	file:
+HandleZoom	src/windows/geditor.c	/^static void HandleZoom(EdState *state, Vec2 rawMousePos, Vec2 mousePos)$/;"	f	typeref:typename:void	file:
 HasBeenEditedBefore	extern/cimgui/cimgui.h	/^    bool HasBeenEditedBefore;$/;"	m	struct:ImGuiDeactivatedItemData	typeref:typename:bool
 HasBeenEditedBefore	extern/cimgui/imgui/imgui_internal.h	/^    bool        HasBeenEditedBefore;$/;"	m	struct:ImGuiDeactivatedItemData	typeref:typename:bool
 HasCentralNodeChild	extern/cimgui/cimgui.h	/^    bool HasCentralNodeChild :1;$/;"	m	struct:ImGuiDockNode	typeref:typename:bool:1
@@ -21563,6 +21572,7 @@ KC	extern/lua-5.4.8/src/lvm.c	/^#define KC(/;"	d	file:
 KEY_3DFOV	src/settings.c	/^#define KEY_3DFOV /;"	d	file:
 KEY_EDITOR	extern/libmapfile/mapfile.c	/^#define KEY_EDITOR /;"	d	file:
 KEY_EDITOR	src/map.c	/^#define KEY_EDITOR /;"	d	file:
+KEY_FARPLANE	src/settings.c	/^#define KEY_FARPLANE /;"	d	file:
 KEY_GAMEPATH	src/settings.c	/^#define KEY_GAMEPATH /;"	d	file:
 KEY_GRAVITY	extern/libmapfile/mapfile.c	/^#define KEY_GRAVITY /;"	d	file:
 KEY_GRAVITY	src/map.c	/^#define KEY_GRAVITY /;"	d	file:
@@ -21573,6 +21583,7 @@ KEY_IS	src/settings.c	/^#define KEY_IS(/;"	d	file:
 KEY_LAUNCHARGS	src/settings.c	/^#define KEY_LAUNCHARGS /;"	d	file:
 KEY_LINES	extern/libmapfile/mapfile.c	/^#define KEY_LINES /;"	d	file:
 KEY_LINES	src/map.c	/^#define KEY_LINES /;"	d	file:
+KEY_NEARPLANE	src/settings.c	/^#define KEY_NEARPLANE /;"	d	file:
 KEY_SECTORS	extern/libmapfile/mapfile.c	/^#define KEY_SECTORS /;"	d	file:
 KEY_SECTORS	src/map.c	/^#define KEY_SECTORS /;"	d	file:
 KEY_SHOWFRAMERATE	src/settings.c	/^#define KEY_SHOWFRAMERATE /;"	d	file:
@@ -21682,7 +21693,6 @@ L	extern/lua-5.4.8/src/lzio.h	/^  lua_State *L;			\/* Lua state (for reader) *\/
 LClosure	extern/lua-5.4.8/src/lobject.h	/^typedef struct LClosure {$/;"	s
 LClosure	extern/lua-5.4.8/src/lobject.h	/^} LClosure;$/;"	t	typeref:struct:LClosure
 LD	Makefile	/^LD := $(CC)$/;"	m
-LDFLAGS	Makefile	/^LDFLAGS := -pthread$/;"	m
 LDFLAGS	extern/ftplib-4.0-1/src/Makefile	/^LDFLAGS = -L.$/;"	m
 LDFLAGS	extern/lua-5.4.8/src/Makefile	/^LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)$/;"	m
 LEQ	extern/triangulate/earcut/test/comparison/libtess2/priorityq.c	/^#define LEQ(/;"	d	file:
@@ -21837,7 +21847,6 @@ LUA_CPATH_DEFAULT	extern/lua-5.4.8/src/luaconf.h	/^#define LUA_CPATH_DEFAULT /;"
 LUA_CPATH_VAR	extern/lua-5.4.8/src/loadlib.c	/^#define LUA_CPATH_VAR /;"	d	file:
 LUA_CSUBSEP	extern/lua-5.4.8/src/loadlib.c	/^#define LUA_CSUBSEP	/;"	d	file:
 LUA_DBLIBNAME	extern/lua-5.4.8/src/lualib.h	/^#define LUA_DBLIBNAME	/;"	d
-LUA_DEF	Makefile	/^LUA_DEF ?=$/;"	m
 LUA_DIR	Makefile	/^LUA_DIR := $(EXTERN_DIR)\/lua-5.4.8$/;"	m
 LUA_DIRSEP	extern/lua-5.4.8/src/luaconf.h	/^#define LUA_DIRSEP	/;"	d
 LUA_DL_DLL	extern/lua-5.4.8/src/luaconf.h	/^#define LUA_DL_DLL	/;"	d
@@ -22741,6 +22750,7 @@ MouseWindow	extern/cimgui/imgui/backends/imgui_impl_glfw.cpp	/^    GLFWwindow*  
 MouseWindowID	extern/cimgui/imgui/backends/imgui_impl_sdl2.cpp	/^    Uint32                  MouseWindowID;$/;"	m	struct:ImGui_ImplSDL2_Data	typeref:typename:Uint32	file:
 MouseWindowID	extern/cimgui/imgui/backends/imgui_impl_sdl3.cpp	/^    Uint32                  MouseWindowID;$/;"	m	struct:ImGui_ImplSDL3_Data	typeref:typename:Uint32	file:
 MoveAll	extern/cimgui/imgui/imgui_demo.cpp	/^    void MoveAll(int src, int dst)$/;"	f	struct:ExampleDualListBox	typeref:typename:void	file:
+MoveElements	src/windows/geditor.c	/^static void MoveElements(EdState *state, Vec2 firstPosition)$/;"	f	typeref:typename:void	file:
 MoveId	extern/cimgui/cimgui.h	/^    ImGuiID MoveId;$/;"	m	struct:ImGuiWindow	typeref:typename:ImGuiID
 MoveId	extern/cimgui/imgui/imgui_internal.h	/^    ImGuiID                 MoveId;                             \/\/ == window->GetID("#MOVE")$/;"	m	struct:ImGuiWindow	typeref:typename:ImGuiID
 MoveSelected	extern/cimgui/imgui/imgui_demo.cpp	/^    void MoveSelected(int src, int dst)$/;"	f	struct:ExampleDualListBox	typeref:typename:void	file:
@@ -24160,6 +24170,7 @@ PI	extern/lua-5.4.8/src/lmathlib.c	/^#define PI	/;"	d	file:
 PI	src/vecmath.h	/^#define PI /;"	d
 PI2	src/vecmath.h	/^#define PI2 /;"	d
 PIHALF	src/vecmath.h	/^#define PIHALF /;"	d
+PKG_CONFIG	Makefile	/^    PKG_CONFIG := $(CROSS_COMPILE)$(PKG_CONFIG)$/;"	m
 PKG_CONFIG	Makefile	/^PKG_CONFIG ?= pkg-config$/;"	m
 PLACES_BOOKMARK_DEFAULT_OPEPEND	extern/imguifiledialog/ImGuiFileDialog.cpp	/^#define PLACES_BOOKMARK_DEFAULT_OPEPEND /;"	d	file:
 PLACES_DEVICES_DEFAULT_OPEPEND	extern/imguifiledialog/ImGuiFileDialog.cpp	/^#define PLACES_DEVICES_DEFAULT_OPEPEND /;"	d	file:
@@ -24700,6 +24711,7 @@ REMFILE	extern/ftplib-4.0-1/src/qftp.c	/^struct REMFILE {$/;"	s	file:
 REPLACE_TEXTUREID	extern/cimgui/generator/cpp2ffi.lua	/^local function REPLACE_TEXTUREID(FP)$/;"	f
 REQ_GL_MAJOR	src/editor_main.c	/^#define REQ_GL_MAJOR /;"	d	file:
 REQ_GL_MINOR	src/editor_main.c	/^#define REQ_GL_MINOR /;"	d	file:
+RES	Makefile	/^    RES := $(CROSS_COMPILE)$(RES)$/;"	m
 RES	Makefile	/^RES ?= windres$/;"	m
 RESERVED	extern/lua-5.4.8/src/llex.h	/^enum RESERVED {$/;"	g
 RESERVEDSLOT	extern/lua-5.4.8/src/lbaselib.c	/^#define RESERVEDSLOT	/;"	d	file:
@@ -25093,7 +25105,6 @@ SDL_HAS_SHOW_WINDOW_ACTIVATION_HINT	extern/cimgui/imgui/backends/imgui_impl_sdl2
 SDL_HAS_USABLE_DISPLAY_BOUNDS	extern/cimgui/imgui/backends/imgui_impl_sdl2.cpp	/^#define SDL_HAS_USABLE_DISPLAY_BOUNDS /;"	d	file:
 SDL_HAS_VULKAN	extern/cimgui/imgui/backends/imgui_impl_sdl2.cpp	/^#define SDL_HAS_VULKAN /;"	d	file:
 SDL_HAS_WINDOW_ALPHA	extern/cimgui/imgui/backends/imgui_impl_sdl2.cpp	/^#define SDL_HAS_WINDOW_ALPHA /;"	d	file:
-SDL_INC	Makefile	/^SDL_INC ?=$/;"	m
 SDL_MAIN_HANDLED	extern/cimgui/backend_test/example_sdl3_vulkan/main.c	/^#define SDL_MAIN_HANDLED$/;"	d	file:
 SDL_MAIN_HANDLED	extern/cimgui/backend_test/example_sdl_opengl3/main.c	/^#define SDL_MAIN_HANDLED$/;"	d	file:
 SDL_MAIN_HANDLED	extern/cimgui/backend_test/example_sdl_vulkan/main.c	/^#define SDL_MAIN_HANDLED$/;"	d	file:
@@ -25740,6 +25751,7 @@ SYNOPSIS	extern/lua-5.4.8/doc/luac.1	/^.SH SYNOPSIS$/;"	s	title:LUAC
 SYSCFLAGS	extern/lua-5.4.8/src/Makefile	/^SYSCFLAGS=$/;"	m
 SYSLDFLAGS	extern/lua-5.4.8/src/Makefile	/^SYSLDFLAGS=$/;"	m
 SYSLIBS	extern/lua-5.4.8/src/Makefile	/^SYSLIBS=$/;"	m
+SYSTEM_H_	src/utils/system.h	/^#define SYSTEM_H_$/;"	d
 SZINT	extern/lua-5.4.8/src/lstrlib.c	/^#define SZINT	/;"	d	file:
 S_IEXEC	extern/imguifiledialog/dirent/dirent.h	/^#   define S_IEXEC _S_IEXEC$/;"	d
 S_IFBLK	extern/imguifiledialog/dirent/dirent.h	/^#   define S_IFBLK /;"	d
@@ -34497,6 +34509,7 @@ buff	extern/lua-5.4.8/src/liolib.c	/^  char buff[L_MAXLENNUM + 1];  \/* +1 for e
 buff	extern/lua-5.4.8/src/llex.h	/^  Mbuffer *buff;  \/* buffer for tokens *\/$/;"	m	struct:LexState	typeref:typename:Mbuffer *
 buffer	extern/cimgui/imgui/backends/imgui_impl_metal.mm	/^@property (nonatomic, strong) id<MTLBuffer> buffer;$/;"	p	interface:MetalBuffer
 buffer	extern/lua-5.4.8/src/lzio.h	/^  char *buffer;$/;"	m	struct:Mbuffer	typeref:typename:char *
+buffer	src/utils/system.c	/^static char buffer[1024];$/;"	v	typeref:typename:char[1024]	file:
 bufferCache	extern/cimgui/imgui/backends/imgui_impl_metal.mm	/^@property (nonatomic, strong) NSMutableArray<MetalBuffer*>* bufferCache;$/;"	p	interface:MetalContext
 bufferSizes	src/async_load.h	/^    size_t bufferSizes[BATCH_SIZE];$/;"	m	struct:Batch	typeref:typename:size_t[]
 buffer_start	extern/imguifiledialog/stb/stb_image.h	/^   stbi_uc buffer_start[128];$/;"	m	struct:__anon47b0cd7d0308	typeref:typename:stbi_uc[128]
@@ -37592,7 +37605,9 @@ chardata_for_range	extern/cimgui/imgui/imstb_truetype.h	/^   stbtt_packedchar *c
 charstrings	extern/cimgui/imgui/imstb_truetype.h	/^   stbtt__buf charstrings;            \/\/ the charstring index$/;"	m	struct:stbtt_fontinfo	typeref:typename:stbtt__buf
 check	extern/cglm/test/CMakeLists.txt	/^add_custom_target(check$/;"	t
 check	extern/lua-5.4.8/src/lparser.c	/^static void check (LexState *ls, int c) {$/;"	f	typeref:typename:void	file:
+checkAndMakeFolder	src/utils/system.c	/^static const char* checkAndMakeFolder(const char *path, const char *folderName)$/;"	f	typeref:typename:const char *	file:
 checkCFLAGS	extern/cglm/Makefile.am	/^checkCFLAGS = $(AM_CFLAGS) \\$/;"	m
+checkFolder	src/utils/system.c	/^static int checkFolder(const char *path)$/;"	f	typeref:typename:int	file:
 checkFunc	plugins/test.lua	/^local function checkFunc()$/;"	f
 checkGC	extern/lua-5.4.8/src/lvm.c	/^#define checkGC(/;"	d	file:
 checkHeader	extern/lua-5.4.8/src/lundump.c	/^static void checkHeader (LoadState *S) {$/;"	f	typeref:typename:void	file:
@@ -39541,6 +39556,8 @@ column_n	extern/cimgui/generator/output/definitions.json	/^        "column_n": "
 column_n	extern/cimgui/generator/output/definitions.json	/^        "column_n": "-1"$/;"	s	object:igTableSetBgColor.0.defaults
 comb	extern/re/scripts/exrex.py	/^def comb(g, i):$/;"	f
 combine	extern/lua-5.4.8/src/luac.c	/^static const Proto* combine(lua_State* L, int n)$/;"	f	typeref:typename:const Proto *	file:
+combinePaths	src/utils/system.h	/^#define combinePaths(...) combinePaths_/;"	d
+combinePaths_	src/utils/system.c	/^const char* combinePaths_(const char *first, ...)$/;"	f	typeref:typename:const char *
 commandQueue	extern/cimgui/imgui/examples/example_apple_metal/main.mm	/^@property (nonatomic, strong) id <MTLCommandQueue> commandQueue;$/;"	p	interface:AppViewController
 commandQueueOwned	extern/cimgui/imgui/backends/imgui_impl_dx12.cpp	/^    bool                        commandQueueOwned;$/;"	m	struct:ImGui_ImplDX12_Data	typeref:typename:bool	file:
 common	extern/triangulate/earcut/CMakeLists.txt	/^add_library(common INTERFACE)$/;"	t
@@ -44275,7 +44292,6 @@ g_pd3dSrvDescHeapAlloc	extern/cimgui/imgui/examples/example_win32_directx12/main
 g_read	extern/lua-5.4.8/src/liolib.c	/^static int g_read (lua_State *L, FILE *f, int first) {$/;"	f	typeref:typename:int	file:
 g_write	extern/lua-5.4.8/src/liolib.c	/^static int g_write (lua_State *L, FILE *f, int arg) {$/;"	f	typeref:typename:int	file:
 gamePath	src/editor.h	/^    char gamePath[MAX_GAMEPATH_LEN];$/;"	m	struct:EdSettings	typeref:typename:char[]
-game_path	settings.ini	/^game_path=$/;"	k
 gather_prescatter_coefficient_width	extern/imguifiledialog/stb/stb_image_resize2.h	/^  int gather_prescatter_coefficient_width;$/;"	m	struct:__anon99fb08200908	typeref:typename:int
 gather_prescatter_coefficients	extern/imguifiledialog/stb/stb_image_resize2.h	/^  float * gather_prescatter_coefficients;$/;"	m	struct:__anon99fb08200908	typeref:typename:float *
 gather_prescatter_coefficients_size	extern/imguifiledialog/stb/stb_image_resize2.h	/^  int gather_prescatter_coefficients_size;$/;"	m	struct:__anon99fb08200908	typeref:typename:int
@@ -44343,6 +44359,7 @@ getGtable	extern/lua-5.4.8/src/lapi.c	/^#define getGtable(/;"	d	file:
 getLeftmost	extern/triangulate/earcut/include/mapbox/earcut.hpp	/^typename Earcut<N>::Node* Earcut<N>::getLeftmost(Node* start) {$/;"	f	class:mapbox::detail::Earcut	typeref:typename:Earcut<N>::Node *
 getNextIndex	src/logging.c	/^static size_t getNextIndex(LogBuffer *logBuffer)$/;"	f	typeref:typename:size_t	file:
 getOpMode	extern/lua-5.4.8/src/lopcodes.h	/^#define getOpMode(/;"	d
+getPreferredFolder	src/utils/system.c	/^const char* getPreferredFolder(const char *subpath)$/;"	f	typeref:typename:const char *
 getRE	extern/cimgui/generator/cpp2ffi.lua	/^local function getRE()$/;"	f
 getS	extern/lua-5.4.8/src/lauxlib.c	/^static const char *getS (lua_State *L, void *ud, size_t *size) {$/;"	f	typeref:typename:const char *	file:
 getSeverity	extern/libmapfile/test.c	/^const char* getSeverity(int severity)$/;"	f	typeref:typename:const char *
@@ -51871,7 +51888,6 @@ lasttarget	extern/lua-5.4.8/src/lparser.h	/^  int lasttarget;   \/* 'label' of l
 latex_documents	extern/cglm/docs/source/conf.py	/^latex_documents = [$/;"	v
 latex_elements	extern/cglm/docs/source/conf.py	/^latex_elements = {$/;"	v
 launchArguments	src/editor.h	/^    char launchArguments[MAX_GAMEARGUMENTS_LEN];$/;"	m	struct:EdSettings	typeref:typename:char[]
-launch_arguments	settings.ini	/^launch_arguments=-debug -map %1$/;"	k
 lauxlib.o	extern/lua-5.4.8/src/Makefile	/^lauxlib.o: lauxlib.c lprefix.h lua.h luaconf.h lauxlib.h$/;"	t
 lauxlib_c	extern/lua-5.4.8/src/lauxlib.c	/^#define lauxlib_c$/;"	d	file:
 lauxlib_h	extern/lua-5.4.8/src/lauxlib.h	/^#define lauxlib_h$/;"	d
@@ -55254,6 +55270,7 @@ major	extern/cimgui/imgui/backends/imgui_impl_opengl3_loader.h	/^static struct {
 majorIndex	src/editor.h	/^    int majorIndex;$/;"	m	struct:BackgroundShaderData	typeref:typename:int
 majorTint	src/editor.h	/^    Color majorTint;$/;"	m	struct:BackgroundShaderData	typeref:typename:Color
 makeDrawable	extern/triangulate/earcut/test/viz.cpp	/^std::unique_ptr<DrawablePolygon> DrawablePolygon::makeDrawable(std::size_t index,$/;"	f	class:DrawablePolygon	typeref:typename:std::unique_ptr<DrawablePolygon>
+makeFolder	src/utils/system.c	/^static void makeFolder(const char *path)$/;"	f	typeref:typename:void	file:
 makefile	extern/re/clib.json	/^  "makefile": "Makefile",$/;"	s
 makemask	extern/lua-5.4.8/src/ldblib.c	/^static int makemask (const char *smask, int count) {$/;"	f	typeref:typename:int	file:
 makevariant	extern/lua-5.4.8/src/lobject.h	/^#define makevariant(/;"	d
@@ -65095,7 +65112,6 @@ prev	src/map.h	/^    struct MapVertex *next, *prev;$/;"	m	struct:MapVertex	typer
 prevZ	extern/triangulate/earcut/include/mapbox/earcut.hpp	/^        Node* prevZ = nullptr;$/;"	m	struct:mapbox::detail::Earcut::Node	typeref:typename:Node *
 prev_first	extern/cimgui/imgui/imstb_textedit.h	/^   int prev_first;  \/\/ first char of previous row$/;"	m	struct:__anon7a1c51c00408	typeref:typename:int
 prev_link	extern/cimgui/imgui/imstb_rectpack.h	/^   stbrp_node **prev_link;$/;"	m	struct:__anon2a0fbde20308	typeref:typename:stbrp_node **
-preview_fov	settings.ini	/^preview_fov=70$/;"	k
 previous	extern/lua-5.4.8/src/ldo.c	/^  struct lua_longjmp *previous;$/;"	m	struct:lua_longjmp	typeref:struct:lua_longjmp *	file:
 previous	extern/lua-5.4.8/src/lobject.h	/^      struct UpVal **previous;$/;"	m	struct:UpVal::__anon319ae595060a::__anon319ae5950708	typeref:struct:UpVal **
 previous	extern/lua-5.4.8/src/lparser.c	/^  struct BlockCnt *previous;  \/* chain *\/$/;"	m	struct:BlockCnt	typeref:struct:BlockCnt *	file:
@@ -65269,7 +65285,7 @@ realtimeBufferFence	src/editor.h	/^        GLsync realtimeBufferFence[NUM_BUFFER
 realtimeColorTexture	src/editor.h	/^        GLuint realtimeColorTexture;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:GLuint
 realtimeCurrentBuffer	src/editor.h	/^        int realtimeCurrentBuffer;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:int
 realtimeDepthTexture	src/editor.h	/^        GLuint realtimeDepthTexture;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:GLuint
-realtimeFov	src/editor.h	/^        float realtimeFov;$/;"	m	struct:EdState::__anonf14592f90908	typeref:typename:float
+realtimeFar	src/editor.h	/^    float realtimeNear, realtimeFar;$/;"	m	struct:EdSettings	typeref:typename:float
 realtimeFov	src/editor.h	/^    int realtimeFov;$/;"	m	struct:EdSettings	typeref:typename:int
 realtimeFramebuffer	src/editor.h	/^        GLuint realtimeFramebuffer;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:GLuint
 realtimeFramebufferHeight	src/editor.h	/^        int realtimeFramebufferHeight;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:int
@@ -65277,6 +65293,7 @@ realtimeFramebufferWidth	src/editor.h	/^        int realtimeFramebufferWidth;$/;
 realtimeIndexBuffer	src/editor.h	/^        GLuint realtimeVertexBuffer, realtimeIndexBuffer, realtimeShaderDataBuffer;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:GLuint
 realtimeIndexBufferOffset	src/editor.h	/^        size_t realtimeIndexBufferOffset[NUM_BUFFERS];$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:size_t[]
 realtimeIndexMap	src/editor.h	/^        Index_t *realtimeIndexMap;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:Index_t *
+realtimeNear	src/editor.h	/^    float realtimeNear, realtimeFar;$/;"	m	struct:EdSettings	typeref:typename:float
 realtimeProgram	src/editor.h	/^        } realtimeProgram;$/;"	m	struct:EdState::__anonf14592f90208	typeref:struct:EdState::__anonf14592f90208::__anonf14592f90708
 realtimeProjection	src/editor.h	/^        mat4s realtimeProjection;$/;"	m	struct:EdState::__anonf14592f90908	typeref:typename:mat4s
 realtimeShaderDataBuffer	src/editor.h	/^        GLuint realtimeVertexBuffer, realtimeIndexBuffer, realtimeShaderDataBuffer;$/;"	m	struct:EdState::__anonf14592f90208	typeref:typename:GLuint
@@ -67103,7 +67120,6 @@ scan_n	extern/imguifiledialog/stb/stb_image.h	/^   int scan_n, order[4];$/;"	m	s
 scan_n	extern/stb/stb_image.h	/^   int scan_n, order[4];$/;"	m	struct:__anon5b03bf430808	typeref:typename:int
 scandir	extern/imguifiledialog/dirent/dirent.h	/^scandir($/;"	f	typeref:typename:int
 scanline_extents	extern/imguifiledialog/stb/stb_image_resize2.h	/^  stbir__extents scanline_extents;$/;"	m	struct:stbir__info	typeref:typename:stbir__extents
-screenToWorld	src/windows/realtime.c	/^static vec3s screenToWorld(Vec2 screenCoord)$/;"	f	typeref:typename:vec3s	file:
 script	src/editor.h	/^    Script script;$/;"	m	struct:EdState	typeref:typename:Script
 searchBuffer	extern/imguifiledialog/ImGuiFileDialog.h	/^    char searchBuffer[MAX_FILE_DIALOG_NAME_BUFFER] = "";$/;"	m	class:IGFD::SearchManager	typeref:typename:char[]
 searchInputIsActive	extern/imguifiledialog/ImGuiFileDialog.h	/^    bool searchInputIsActive                       = false;$/;"	m	class:IGFD::SearchManager	typeref:typename:bool
@@ -67218,6 +67234,7 @@ settabss	extern/lua-5.4.8/src/ldblib.c	/^static void settabss (lua_State *L, con
 setthvalue	extern/lua-5.4.8/src/lobject.h	/^#define setthvalue(/;"	d
 setthvalue2s	extern/lua-5.4.8/src/lobject.h	/^#define setthvalue2s(/;"	d
 settings	src/editor.h	/^    EdSettings settings;$/;"	m	struct:EdState	typeref:typename:EdSettings
+settingsPath	src/editor_main.c	/^static const char *settingsPath;$/;"	v	typeref:typename:const char *	file:
 settraps	extern/lua-5.4.8/src/ldebug.c	/^static void settraps (CallInfo *ci) {$/;"	f	typeref:typename:void	file:
 settt_	extern/lua-5.4.8/src/lobject.h	/^#define settt_(/;"	d
 setupMenu	extern/cimgui/imgui/examples/example_apple_opengl2/main.mm	/^-(void)setupMenu$/;"	m	implementation:AppDelegate
@@ -67260,11 +67277,6 @@ showStats	src/editor.h	/^        bool showStats;$/;"	m	struct:EdState::__anonf14
 showTextures	src/editor.h	/^        bool showTextures;$/;"	m	struct:EdState::__anonf14592f90108	typeref:typename:bool
 show_another_window	extern/cimgui/imgui/examples/example_glut_opengl2/main.cpp	/^static bool show_another_window = false;$/;"	v	typeref:typename:bool	file:
 show_demo_window	extern/cimgui/imgui/examples/example_glut_opengl2/main.cpp	/^static bool show_demo_window = true;$/;"	v	typeref:typename:bool	file:
-show_framerate	settings.ini	/^show_framerate=1$/;"	k
-show_frametime	settings.ini	/^show_frametime=1$/;"	k
-show_grid_lines	settings.ini	/^show_grid_lines=1$/;"	k
-show_line_dir	settings.ini	/^show_line_dir=0$/;"	k
-show_major_axis	settings.ini	/^show_major_axis=1$/;"	k
 show_output	extern/cglm/test/include/common.h	/^  int    show_output;$/;"	m	struct:test_entry_t	typeref:typename:int
 shrink	extern/cimgui/imgui/imgui.h	/^    inline void         shrink(int new_size)                { IM_ASSERT(new_size <= Size); Size /;"	f	struct:ImVector	typeref:typename:void
 shrlen	extern/lua-5.4.8/src/lobject.h	/^  lu_byte shrlen;  \/* length for short strings, 0xFF for long strings *\/$/;"	m	struct:TString	typeref:typename:lu_byte
@@ -72640,7 +72652,6 @@ textures	src/editor.h	/^    TextureCollection textures;$/;"	m	struct:EdState	typ
 textures	src/texture_collection.h	/^        Texture textures[NUM_BUCKETS];$/;"	m	struct:TextureCollection::__anone70b214e0108	typeref:typename:Texture[]
 texturesPath	src/project.h	/^    char texturesPath[MAX_ASSETPATH_LEN];$/;"	m	struct:Project	typeref:typename:char[]
 th	extern/lua-5.4.8/src/lstate.h	/^  struct lua_State th;  \/* thread *\/$/;"	m	union:GCUnion	typeref:struct:lua_State
-theme	settings.ini	/^theme=1$/;"	k
 theme	src/editor.h	/^    int theme;$/;"	m	struct:EdSettings	typeref:typename:int
 thickness	extern/cimgui/generator/output/definitions.json	/^        "thickness": "1.0f"$/;"	s	object:ImDrawList_AddCircle.0.defaults
 thickness	extern/cimgui/generator/output/definitions.json	/^        "thickness": "1.0f"$/;"	s	object:ImDrawList_AddEllipse.0.defaults
@@ -79178,7 +79189,6 @@ vertexIndices	extern/triangulate/earcut/test/comparison/libtess2/tess.h	/^	TESSi
 vertexOffset	src/editor.c	/^    size_t vertexOffset;$/;"	m	struct:RenderData	typeref:typename:size_t	file:
 vertexPointSize	src/editor.h	/^    float vertexPointSize;$/;"	m	struct:EdSettings	typeref:typename:float
 vertexSize	extern/triangulate/earcut/test/comparison/libtess2.hpp	/^    static const int vertexSize = 2;$/;"	m	class:Libtess2Tesselator	typeref:typename:const int
-vertex_point_size	settings.ini	/^vertex_point_size=7.00$/;"	k
 vertical	extern/imguifiledialog/stb/stb_image_resize2.h	/^    struct { stbir_uint64 total, build, alloc, horizontal, vertical, cleanup, pivot; } named;$/;"	m	struct:stbir__info::__anon99fb08200e0a::__anon99fb08200f08	typeref:typename:stbir_uint64
 vertical	extern/imguifiledialog/stb/stb_image_resize2.h	/^    struct { stbir_uint64 total, looping, vertical, horizontal, decode, encode, alpha, unalpha; /;"	m	struct:__anon99fb08200b08::__anon99fb08200c0a::__anon99fb08200d08	typeref:typename:stbir_uint64
 vertical	extern/imguifiledialog/stb/stb_image_resize2.h	/^  stbir__sampler vertical;$/;"	m	struct:stbir__info	typeref:typename:stbir__sampler

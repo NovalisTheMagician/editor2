@@ -5,12 +5,9 @@
 
 #include "../map/query.h"
 
-static Arena arena = { 0 };
+#define REALTIME_ID 1001
 
-static vec3s screenToWorld(Vec2 screenCoord)
-{
-    return (vec3s){ 0 };
-}
+static Arena arena = { 0 };
 
 static size_t GetStartIndexOfLine(MapSector *sector, MapLine *line)
 {
@@ -48,11 +45,57 @@ static bool AlignTextures(MapLine *startLine, bool front)
     return false;
 }
 
+static void HandleDrag(EdState *state, bool focused, Vec3 *forward, Vec3 *right, float delta)
+{
+    const real_t pitchMax = PIHALF - deg2rad(1);
+
+    if(igIsMouseDragging(ImGuiMouseButton_Right, 1))
+    {
+        if(state->data.mouseDragCapture == 0 || state->data.mouseDragCapture == REALTIME_ID)
+        {
+            if(state->data.mouseDragCapture == 0 && !focused)
+                return;
+            else if(state->data.mouseDragCapture == 0 && focused)
+            {
+                state->data.mouseDragCapture = REALTIME_ID;
+                igSetWindowFocus_Nil();
+            }
+
+            ImVec2 dragDelta;
+            real_t yaw = atan2((*forward).z, (*forward).x);
+            real_t pitch = asin((*forward).y);
+            igGetMouseDragDelta(&dragDelta, ImGuiMouseButton_Right, 1);
+            yaw += dragDelta.x * delta;
+            pitch += -dragDelta.y * delta;
+            igResetMouseDragDelta(ImGuiMouseButton_Right);
+            
+            if(pitch > pitchMax)
+                pitch = pitchMax;
+            else if(pitch < -pitchMax)
+                pitch = -pitchMax;
+
+            while(yaw >= PI2)
+                yaw -= PI2;
+            while(yaw < 0)
+                yaw += PI2;
+            
+            real_t xzLen = cos(pitch);
+            *forward = vec3_normalize((Vec3){ xzLen*cos(yaw), sin(pitch), xzLen*sin(yaw) });
+            *right = vec3_normalize((Vec3){ -(*forward).z, 0, (*forward).x });
+            //cameraUp = vec3_normalize(vec3_cross(cameraRight, cameraDirection));
+        }
+    }
+    else if(state->data.mouseDragCapture == REALTIME_ID)
+    {
+        state->data.mouseDragCapture = 0;
+    }
+}
+
 void RealtimeWindow(bool *p_open, EdState *state)
 {
     if(igBegin("3D View", p_open, ImGuiWindowFlags_NoScrollbar))
     {
-        if(igBeginChild_ID(1000, (ImVec2){ 0, 0 }, false, ImGuiWindowFlags_NoMove))
+        if(igBeginChild_ID(REALTIME_ID, (ImVec2){ 0, 0 }, false, ImGuiWindowFlags_NoMove))
         {
             ImVec2 clientArea;
             igGetContentRegionAvail(&clientArea);
@@ -60,8 +103,7 @@ void RealtimeWindow(bool *p_open, EdState *state)
             ImVec2 clientPos;
             igGetWindowPos(&clientPos);
 
-            bool hovored = igIsWindowHovered(0);
-            bool focused = igIsWindowFocused(0);
+            bool focused = igIsWindowHovered(0);
 
             ImVec2 mpos;
             igGetMousePos(&mpos);
@@ -75,47 +117,20 @@ void RealtimeWindow(bool *p_open, EdState *state)
 
             const real_t speed = 78;
 
-            if(hovored)
+            Vec3 cameraPosition = state->realtime.cameraPosition;
+            Vec3 cameraDirection = state->realtime.cameraDirection;
+            Vec3 cameraRight = state->realtime.cameraRight;
+            //Vec3 cameraUp = vec3_cross(cameraRight, cameraDirection);
+            Vec3 globalUp = { 0, 1, 0 };
+
+            HandleDrag(state, focused, &cameraDirection, &cameraRight, dt);
+
+            if(focused)
             {
                 bool shiftDown = igGetIO_Nil()->KeyShift;
                 bool altDown = igGetIO_Nil()->KeyAlt;
                 bool ctrlDown = igGetIO_Nil()->KeyCtrl;
-
-                Vec3 cameraPosition = state->realtime.cameraPosition;
-                Vec3 cameraDirection = state->realtime.cameraDirection;
-                Vec3 cameraRight = state->realtime.cameraRight;
-                //Vec3 cameraUp = vec3_cross(cameraRight, cameraDirection);
-                Vec3 globalUp = { 0, 1, 0 };
-
-                real_t pitchMax = PIHALF - deg2rad(1);
-
-                if(igIsMouseDragging(ImGuiMouseButton_Right, 1))
-                {
-                    ImVec2 dragDelta;
-                    real_t yaw = atan2(cameraDirection.z, cameraDirection.x);
-                    real_t pitch = asin(cameraDirection.y);
-                    igGetMouseDragDelta(&dragDelta, ImGuiMouseButton_Right, 1);
-                    yaw += dragDelta.x * dt;
-                    pitch += -dragDelta.y * dt;
-                    igResetMouseDragDelta(ImGuiMouseButton_Right);
-                    igSetWindowFocus_Nil();
-                    
-                    if(pitch > pitchMax)
-                        pitch = pitchMax;
-                    else if(pitch < -pitchMax)
-                        pitch = -pitchMax;
-
-                    while(yaw >= PI2)
-                        yaw -= PI2;
-                    while(yaw < 0)
-                        yaw += PI2;
-                    
-                    real_t xzLen = cos(pitch);
-                    cameraDirection = vec3_normalize((Vec3){ xzLen*cos(yaw), sin(pitch), xzLen*sin(yaw) });
-                    cameraRight = vec3_normalize((Vec3){ -cameraDirection.z, 0, cameraDirection.x });
-                    //cameraUp = vec3_normalize(vec3_cross(cameraRight, cameraDirection));
-                }
-
+               
                 if(igIsKeyDown_Nil(ImGuiKey_W) && !ctrlDown)
                 {
                     cameraPosition = vec3_add(cameraPosition, vec3_scale(cameraDirection, speed * dt));
@@ -147,16 +162,10 @@ void RealtimeWindow(bool *p_open, EdState *state)
                     if(AlignTextures(startLine, true))
                         state->map.dirty = true;
                 }
-
-                state->realtime.cameraRight = cameraRight;
-                state->realtime.cameraDirection = cameraDirection;
-                state->realtime.cameraPosition = cameraPosition;
             }
-
-            if(focused)
-            {
-
-            }
+            state->realtime.cameraRight = cameraRight;
+            state->realtime.cameraDirection = cameraDirection;
+            state->realtime.cameraPosition = cameraPosition;
 
             ResizeRealtimeView(state, clientArea.x, clientArea.y);
             igImage((ImTextureRef){ ._TexID = state->gl.realtimeColorTexture }, clientArea, (ImVec2){ 0, 1 }, (ImVec2){ 1, 0 });

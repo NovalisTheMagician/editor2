@@ -254,6 +254,8 @@ int EditorMain(int argc, char *argv[])
         ImGui_ImplOpenGL3_RenderDrawData(igGetDrawData());
 
         SDL_GL_SwapWindow(window);
+
+        
     }
 
     SaveSettings(settingsPath, &state->settings);
@@ -347,7 +349,7 @@ static bool InitImgui(SDL_Window *window, SDL_GLContext context, char *error, si
     igCreateContext(NULL);
 
     ImGuiIO *ioptr = igGetIO_Nil();
-    ioptr->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_DockingEnable;
+    ioptr->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     InitFont(window);
 

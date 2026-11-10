@@ -92,7 +92,8 @@ typedef enum SelectionMode
 typedef enum EditState
 {
     ESTATE_NORMAL,
-    ESTATE_ADDVERTEX
+    ESTATE_ADDVERTEX,
+    ESTATE_MOVE_ELEMENT,
 } EditState;
 
 typedef struct EdSettings
@@ -259,6 +260,7 @@ typedef struct EdState
 
         bool isDragging;
         Vec2 startDrag, endDrag;
+        int mouseDragCapture;
 
         Vec2 editVertexBuffer[EDIT_VERTEXBUFFER_CAP], editVertexMouse, editDragMouse, editVertexDrag[3];
         size_t editVertexBufferSize;

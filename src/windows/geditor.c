@@ -14,9 +14,39 @@
 
 #include "map/insert.h"
 
+#define EDITOR_ID 1000
+
 #define DEFAULT_WHITE { 1, 1, 1, 1 }
 #define LINE_DIST 10
 #define VERTEX_DIST 5
+
+static Vec2 ScreenToEditorSpace(const EdState *state, Vec2 pos)
+{
+    const real_t z = state->data.zoomLevel;
+    pos.x = (pos.x + state->data.viewPosition.x) / z;
+    pos.y = (pos.y + state->data.viewPosition.y) / z;
+    return pos;
+}
+
+static Vec2 EditorToScreenSpace(const EdState *state, Vec2 pos)
+{
+    const real_t z = state->data.zoomLevel;
+    pos.x = ((pos.x - state->data.viewPosition.x) * z);
+    pos.y = ((pos.y - state->data.viewPosition.y) * z);
+    return pos;
+}
+
+static Vec2 ScreenToEditorSpaceGrid(const EdState *state, int gridsize, Vec2 pos)
+{
+    pos = ScreenToEditorSpace(state, pos);
+    const int offset = gridsize / 2;
+    real_t xt = (int)(pos.x), yt = (int)(pos.y);
+    xt += xt < 0 ? -offset : offset;
+    pos.x = (int)xt / gridsize * gridsize;
+    yt += yt < 0 ? -offset : offset;
+    pos.y = (int)yt / gridsize * gridsize;
+    return pos;
+}
 
 static void SubmitEditData(EdState *state, bool isLoop)
 {
@@ -106,44 +136,277 @@ static void AddEditVertex(EdState *state, Vec2 v)
     size_t idx = state->data.editVertexBufferSize++;
     state->data.editVertexBuffer[idx] = v;
 }
+static void MoveElements(EdState *state, Vec2 firstPosition)
+{
+    
+    switch(state->data.selectionMode)
+    {
+    case MODE_VERTEX:
+        break;
+    case MODE_LINE:
+        break;
+    case MODE_SECTOR:
+        break;
+    }
+}
 
 static void GotoLocation(EdState *state, real_t x, real_t y)
 {
     state->data.viewPosition = (Vec2){ x - (state->gl.editorFramebufferWidth / 2.0f), y - (state->gl.editorFramebufferHeight / 2.0f) };
 }
 
-void EditorWindow(bool *p_open, EdState *state)
+static void HandleShortcuts(EdState *state)
 {
-    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_C, ImGuiInputFlags_RouteGlobal))
+    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_C, 0))
         EditCopy(state);
-    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_V, ImGuiInputFlags_RouteGlobal))
+    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_V, 0))
         EditPaste(state);
-    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_X, ImGuiInputFlags_RouteGlobal))
+    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_X, 0))
         EditCut(state);
-    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_Z, ImGuiInputFlags_RouteGlobal))
+    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_Z, 0))
         LogDebug("Undo!");
-    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_Y, ImGuiInputFlags_RouteGlobal))
+    if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_Y, 0))
         LogDebug("Redo!");
 
+    if(igShortcut_Nil(ImGuiKey_1, 0))
+    {
+        ChangeMode(state, MODE_VERTEX);
+        //igSetWindowFocus_Str("Editor");
+    }
+    if(igShortcut_Nil(ImGuiKey_2, 0))
+    {
+        ChangeMode(state, MODE_LINE);
+        //igSetWindowFocus_Str("Editor");
+    }
+    if(igShortcut_Nil(ImGuiKey_3, 0))
+    {
+        ChangeMode(state, MODE_SECTOR);
+        //igSetWindowFocus_Str("Editor");
+    }
+}
+
+static void HandleInput(EdState *state, Vec2 mousePos)
+{
+    Map *map = &state->map;
+    if(igIsMouseClicked_Bool(ImGuiMouseButton_Middle, false))
+    {
+        igSetWindowFocus_Nil();
+    }
+
+    
+    if(igIsKeyPressed_Bool(ImGuiKey_F, false))
+    {
+        if(state->data.editState == ESTATE_NORMAL && state->data.selectionMode == MODE_LINE)
+        {
+            //assert(false && "Not yet fully implemented");
+            for(size_t i = 0; i < state->data.numSelectedElements; ++i)
+            {
+                MapLine *line = state->data.selectedElements[i];
+                MapSector *front = line->frontSector, *back = line->backSector;
+                MapVertex *tmp = line->b;
+                line->b = line->a;
+                line->a = tmp;
+
+                line->frontSector = back;
+                line->backSector = front;
+            }
+        }
+    }
+
+    if(igIsKeyPressed_Bool(ImGuiKey_M, false))
+    {
+        if(state->data.editState == ESTATE_NORMAL)
+        {
+            MapLine *line = EditGetClosestLine(map, mousePos, 128);
+            if(line)
+            {
+                bool front = SideOfMapLine(line, mousePos) > 0;
+                if((front && line->frontSector == NULL) || (!front && line->backSector == NULL))
+                {
+                    MapSector *sector = MakeMapSector(map, line, !front, DefaultSectorData());
+                    if(!sector)
+                        LogError("Failed to make sector");
+                }
+                else
+                {
+                    LogInfo("Sector already exists");
+                }
+            }
+        }
+    }
+
+    if(igIsKeyPressed_Bool(ImGuiKey_G, false) && state->data.editState == ESTATE_NORMAL)
+    {
+        if(state->data.numSelectedElements > 0)
+        {
+            state->data.editState = ESTATE_MOVE_ELEMENT;
+        }
+    }
+
+    if(igIsKeyPressed_Bool(ImGuiKey_Space, false))
+    {
+        switch(state->data.editState)
+        {
+        case ESTATE_NORMAL:
+        {
+            state->data.editState = ESTATE_ADDVERTEX;
+            state->data.numSelectedElements = 0;
+            state->data.hoveredElement = NULL;
+        }
+        break;
+        case ESTATE_ADDVERTEX:
+        {
+            if(state->data.editVertexBufferSize >= 2)
+            {
+                // submit edit data
+                SubmitEditData(state, false);
+                state->data.editState = ESTATE_NORMAL;
+            }
+        }
+        break;
+        }
+    }
+
+    if(igIsKeyPressed_Bool(ImGuiKey_Backspace, false))
+    {
+        if(state->data.editState == ESTATE_ADDVERTEX)
+        {
+            if(state->data.editVertexBufferSize > 0)
+            {
+                state->data.editVertexBufferSize--;
+            }
+        }
+    }
+
+    if(igIsKeyPressed_Bool(ImGuiKey_Delete, false))
+    {
+        if(state->data.editState == ESTATE_NORMAL)
+        {
+            switch(state->data.selectionMode)
+            {
+            case MODE_VERTEX: EditRemoveVertices(map, state->data.numSelectedElements, (MapVertex**)state->data.selectedElements); break;
+            case MODE_LINE: EditRemoveLines(map, state->data.numSelectedElements, (MapLine**)state->data.selectedElements); break;
+            case MODE_SECTOR: EditRemoveSectors(map, state->data.numSelectedElements, (MapSector**)state->data.selectedElements); break;
+            }
+            state->data.numSelectedElements = 0;
+            state->data.hoveredElement = NULL;
+        }
+    }
+
+    if(igIsKeyPressed_Bool(ImGuiKey_Escape, false))
+    {
+        if(state->data.editState == ESTATE_ADDVERTEX)
+        {
+            state->data.editVertexBufferSize = 0;
+            state->data.editState = ESTATE_NORMAL;
+        }
+        else if(state->data.editState == ESTATE_NORMAL)
+        {
+            if(state->data.numSelectedElements > 0)
+                state->data.numSelectedElements = 0;
+        }
+    }
+
+    if(igIsKeyPressed_Bool(ImGuiKey_Tab, false))
+    {
+        if(state->data.editState == ESTATE_ADDVERTEX)
+        {
+            if(state->data.editVertexBufferSize > 2)
+            {
+                // submit edit data
+                SubmitEditData(state, true);
+                state->data.editVertexBufferSize = 0;
+                state->data.editState = ESTATE_NORMAL;
+            }
+        }
+    }
+}
+
+static void HandleDragSelect(EdState *state, Vec2 mousePos, bool additive)
+{
+    if(state->data.isDragging)
+    {
+        state->data.endDrag = mousePos;
+
+        state->data.editVertexDrag[1].y = mousePos.y;
+        state->data.editVertexDrag[2].x = mousePos.x;
+    }
+   
+    if(igIsMouseDragging(ImGuiMouseButton_Left, 2) && state->data.editState != ESTATE_ADDVERTEX)
+    {
+        igSetWindowFocus_Nil();
+        igResetMouseDragDelta(ImGuiMouseButton_Left);
+
+        if(!state->data.isDragging)
+        {
+            state->data.isDragging = true;
+            state->data.startDrag = mousePos;
+            state->data.endDrag = mousePos;
+
+            state->data.editVertexDrag[0] = mousePos; // start position
+            state->data.editVertexDrag[1] = mousePos; // top right
+            state->data.editVertexDrag[2] = mousePos; // bottom left
+        }
+    }
+    else if(!igIsMouseDown_Nil(ImGuiMouseButton_Left))
+    {
+        if(state->data.isDragging)
+        {
+            state->data.isDragging = false;
+            RectSelect(state, additive);
+        }
+    }
+}
+
+static void HandleDrag(EdState *state, bool focused)
+{
+    if(igIsMouseDragging(ImGuiMouseButton_Right, 2))
+    {
+        if(state->data.mouseDragCapture == 0 || state->data.mouseDragCapture == EDITOR_ID)
+        {
+            if(state->data.mouseDragCapture == 0 && !focused)
+                return;
+            else if(state->data.mouseDragCapture == 0 && focused)
+            {
+                state->data.mouseDragCapture = EDITOR_ID;
+                igSetWindowFocus_Nil();
+            }
+
+            ImVec2 dragDelta;
+            igGetMouseDragDelta(&dragDelta, ImGuiMouseButton_Right, 2);
+            igResetMouseDragDelta(ImGuiMouseButton_Right);
+
+            state->data.viewPosition.x -= dragDelta.x;
+            state->data.viewPosition.y -= dragDelta.y;
+        }
+    }
+    else if(state->data.mouseDragCapture == EDITOR_ID)
+    {
+        state->data.mouseDragCapture = 0;
+    }
+}
+
+static void HandleZoom(EdState *state, Vec2 rawMousePos, Vec2 mousePos)
+{
+    ImGuiKeyData *wheelData = igGetKeyData_Key(ImGuiKey_MouseWheelY);
+    if(wheelData->AnalogValue != 0)
+    {
+        igSetWindowFocus_Nil();
+        state->data.zoomLevel += wheelData->AnalogValue * 0.05f;
+        state->data.zoomLevel = clamp(MIN_ZOOM, MAX_ZOOM, state->data.zoomLevel);
+
+        Vec2 mousePosAfter = ScreenToEditorSpace(state, rawMousePos);
+
+        state->data.viewPosition.x += (mousePos.x - mousePosAfter.x) * state->data.zoomLevel;
+        state->data.viewPosition.y += (mousePos.y - mousePosAfter.y) * state->data.zoomLevel;
+    }
+}
+
+void EditorWindow(bool *p_open, EdState *state)
+{
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar /*| ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize*/;
     if(state->map.dirty)
         flags |= ImGuiWindowFlags_UnsavedDocument;
-
-    if(igShortcut_Nil(ImGuiKey_1, ImGuiInputFlags_RouteGlobal))
-    {
-        ChangeMode(state, MODE_VERTEX);
-        igSetWindowFocus_Str("Editor");
-    }
-    if(igShortcut_Nil(ImGuiKey_2, ImGuiInputFlags_RouteGlobal))
-    {
-        ChangeMode(state, MODE_LINE);
-        igSetWindowFocus_Str("Editor");
-    }
-    if(igShortcut_Nil(ImGuiKey_3, ImGuiInputFlags_RouteGlobal))
-    {
-        ChangeMode(state, MODE_SECTOR);
-        igSetWindowFocus_Str("Editor");
-    }
 
     if(igBegin("Editor", p_open, flags))
     {
@@ -201,7 +464,7 @@ void EditorWindow(bool *p_open, EdState *state)
             igEndPopup();
         }
 
-        if(igBeginChild_ID(1000, (ImVec2){ 0, 0 }, false, ImGuiWindowFlags_NoMove))
+        if(igBeginChild_ID(EDITOR_ID, (ImVec2){ 0, 0 }, false, ImGuiWindowFlags_NoMove))
         {
             ImVec2 clientArea;
             igGetContentRegionAvail(&clientArea);
@@ -209,20 +472,15 @@ void EditorWindow(bool *p_open, EdState *state)
             ImVec2 clientPos;
             igGetWindowPos(&clientPos);
 
-            bool hovored = igIsWindowHovered(0);
-            bool focused = igIsWindowFocused(0);
+            bool focused = igIsWindowHovered(0);
 
             ImVec2 mpos;
             igGetMousePos(&mpos);
             int relX = (int)mpos.x - (int)clientPos.x;
             int relY = (int)mpos.y - (int)clientPos.y;
 
-            real_t edX = relX, edSX = relX, edY = relY, edSY = relY;
-            ScreenToEditorSpace(state, &edX, &edY);
-            ScreenToEditorSpaceGrid(state, state->data.gridSize, &edSX, &edSY);
-
-            real_t x1 = edX, y1 = edY;
-            real_t x2 = edSX, y2 = edSY;
+            Vec2 mousePos = ScreenToEditorSpace(state, (Vec2){ relX, relY });
+            Vec2 vertexPos = ScreenToEditorSpaceGrid(state, state->data.gridSize, (Vec2){ relX, relY });
 
             bool shiftDown = igGetIO_Nil()->KeyShift;
             bool altDown = igGetIO_Nil()->KeyAlt;
@@ -233,110 +491,64 @@ void EditorWindow(bool *p_open, EdState *state)
             {
                 if(altDown)
                 {
-                    MapLine *closestLine = EditGetClosestLine(map, (Vec2){ x1, y1 }, LINE_DIST + 128);
+                    MapLine *closestLine = EditGetClosestLine(map, mousePos, LINE_DIST + 128);
                     if(closestLine)
                     {
-                        Vec2 closestPoint = LineGetClosestPointGrid((line_t){ closestLine->a->pos, closestLine->b->pos }, (Vec2){ x1, y1 }, shiftDown ? state->data.altGridSize : state->data.gridSize);
-                        x2 = closestPoint.x;
-                        y2 = closestPoint.y;
+                        vertexPos = LineGetClosestPointGrid((line_t){ closestLine->a->pos, closestLine->b->pos }, mousePos, shiftDown ? state->data.altGridSize : state->data.gridSize);
                     }
                 }
                 else if(ctrlDown)
                 {
-                    MapVertex *closestVertex = EditGetClosestVertex(map, (Vec2){ .x = x1, .y = y1 }, VERTEX_DIST + 64);
+                    MapVertex *closestVertex = EditGetClosestVertex(map, mousePos, VERTEX_DIST + 64);
                     if(closestVertex)
                     {
-                        x2 = closestVertex->pos.x;
-                        y2 = closestVertex->pos.y;
+                        vertexPos = closestVertex->pos;
                     }
                 }
                 else if(shiftDown)
                 {
-                    edSX = relX, edSY = relY;
-                    ScreenToEditorSpaceGrid(state, state->data.altGridSize, &edSX, &edSY);
-                    x2 = edSX;
-                    y2 = edSY;
+                    vertexPos = ScreenToEditorSpaceGrid(state, state->data.altGridSize, (Vec2){ relX, relY });
                 }
             }
-
-            if(hovored)
+            
+            HandleDrag(state, focused);
+            if(focused)
             {
+                HandleShortcuts(state);
+
+                HandleDragSelect(state, mousePos, shiftDown);
+                HandleZoom(state, (Vec2){ relX, relY }, mousePos);
+
 #ifdef _DEBUG
-                state->data.mx = x1;
-                state->data.my = y1;
-                state->data.mtx = x2;
-                state->data.mty = y2;
+                state->data.mx = mousePos.x;
+                state->data.my = mousePos.y;
+                state->data.mtx = vertexPos.x;
+                state->data.mty = vertexPos.y;
 #endif
-                Vec2 mouseVertex = { x1, y1 };
-                state->data.editVertexMouse = (Vec2){ .x = x2, .y = y2 };
-                state->data.editDragMouse = mouseVertex;
+                state->data.editVertexMouse = vertexPos;
+                state->data.editDragMouse = mousePos;
                 if(state->data.editState == ESTATE_NORMAL)
                 {
                     switch(state->data.selectionMode)
                     {
-                    case MODE_VERTEX: state->data.hoveredElement = EditGetClosestVertex(map, mouseVertex, VERTEX_DIST); break;
-                    case MODE_LINE: state->data.hoveredElement = EditGetClosestLine(map, mouseVertex, LINE_DIST); break;
-                    case MODE_SECTOR: state->data.hoveredElement = EditGetSector(map, mouseVertex); break;
-                    }
-                }
-
-                if(state->data.isDragging)
-                {
-                    state->data.endDrag = mouseVertex;
-
-                    state->data.editVertexDrag[1].y = mouseVertex.y;
-                    state->data.editVertexDrag[2].x = mouseVertex.x;
-                }
-
-                if(igIsMouseDragging(ImGuiMouseButton_Right, 2))
-                {
-                    ImVec2 dragDelta;
-                    igGetMouseDragDelta(&dragDelta, ImGuiMouseButton_Right, 2);
-                    state->data.viewPosition.x -= dragDelta.x;
-                    state->data.viewPosition.y -= dragDelta.y;
-                    igResetMouseDragDelta(ImGuiMouseButton_Right);
-
-                    igSetWindowFocus_Nil();
-                }
-
-                if(igIsMouseDragging(ImGuiMouseButton_Left, 2) && state->data.editState != ESTATE_ADDVERTEX)
-                {
-                    igResetMouseDragDelta(ImGuiMouseButton_Left);
-                    igSetWindowFocus_Nil();
-
-                    if(!state->data.isDragging)
-                    {
-                        state->data.isDragging = true;
-                        state->data.startDrag = mouseVertex;
-                        state->data.endDrag = mouseVertex;
-
-                        state->data.editVertexDrag[0] = mouseVertex; // start position
-                        state->data.editVertexDrag[1] = mouseVertex; // top right
-                        state->data.editVertexDrag[2] = mouseVertex; // bottom left
-                    }
-                }
-                else if(!igIsMouseDown_Nil(ImGuiMouseButton_Left))
-                {
-                    if(state->data.isDragging)
-                    {
-                        state->data.isDragging = false;
-                        RectSelect(state, shiftDown);
+                    case MODE_VERTEX: state->data.hoveredElement = EditGetClosestVertex(map, mousePos, VERTEX_DIST); break;
+                    case MODE_LINE: state->data.hoveredElement = EditGetClosestLine(map, mousePos, LINE_DIST); break;
+                    case MODE_SECTOR: state->data.hoveredElement = EditGetSector(map, mousePos); break;
                     }
                 }
 
                 if(igIsMouseClicked_Bool(ImGuiMouseButton_Left, false) && !state->data.isDragging)
                 {
-                    Vec2 mouseVertexSnap = { x2, y2 };
                     if(state->data.editState == ESTATE_ADDVERTEX)
                     {
                         if(state->data.editVertexBufferSize == 0)
                         {
-                            AddEditVertex(state, mouseVertexSnap);
+                            AddEditVertex(state, vertexPos);
                         }
                         else
                         {
                             Vec2 first = state->data.editVertexBuffer[0];
-                            if(mouseVertexSnap.x == first.x && mouseVertexSnap.y == first.y && state->data.editVertexBufferSize >= 3)
+                            if(vec2_eq(vertexPos, first) && state->data.editVertexBufferSize >= 3)
                             {
                                 // submit to edit
                                 SubmitEditData(state, true);
@@ -346,9 +558,9 @@ void EditorWindow(bool *p_open, EdState *state)
                             else
                             {
                                 Vec2 last = state->data.editVertexBuffer[state->data.editVertexBufferSize-1];
-                                if(!(mouseVertexSnap.x == last.x && mouseVertexSnap.y == last.y))
+                                if(!vec2_eq(vertexPos, last))
                                 {
-                                    AddEditVertex(state, mouseVertexSnap);
+                                    AddEditVertex(state, vertexPos);
                                 }
                             }
                         }
@@ -359,9 +571,9 @@ void EditorWindow(bool *p_open, EdState *state)
                         void *selectedElement = NULL;
                         switch(state->data.selectionMode)
                         {
-                        case MODE_VERTEX: selectedElement = EditGetClosestVertex(map, mouseVertex, VERTEX_DIST); break;
-                        case MODE_LINE: selectedElement = EditGetClosestLine(map, mouseVertex, LINE_DIST); break;
-                        case MODE_SECTOR: selectedElement = EditGetSector(map, mouseVertex); break;
+                        case MODE_VERTEX: selectedElement = EditGetClosestVertex(map, mousePos, VERTEX_DIST); break;
+                        case MODE_LINE: selectedElement = EditGetClosestLine(map, mousePos, LINE_DIST); break;
+                        case MODE_SECTOR: selectedElement = EditGetSector(map, mousePos); break;
                         }
 
                         if(selectedElement)
@@ -391,160 +603,18 @@ void EditorWindow(bool *p_open, EdState *state)
                             }
                         }
                     }
-
-                    igSetWindowFocus_Nil();
                 }
 
-                if(igIsMouseClicked_Bool(ImGuiMouseButton_Middle, false))
-                {
-                    igSetWindowFocus_Nil();
-                }
-
-                ImGuiKeyData *wheelData = igGetKeyData_Key(ImGuiKey_MouseWheelY);
-                if(wheelData->AnalogValue != 0)
-                {
-                    state->data.zoomLevel += wheelData->AnalogValue * 0.05f;
-                    state->data.zoomLevel = clamp(MIN_ZOOM, MAX_ZOOM, state->data.zoomLevel);
-
-                    real_t edXAfter = relX, edYAfter = relY;
-                    ScreenToEditorSpace(state, &edXAfter, &edYAfter);
-
-                    state->data.viewPosition.x += (edX - edXAfter) * state->data.zoomLevel;
-                    state->data.viewPosition.y += (edY - edYAfter) * state->data.zoomLevel;
-
-                    igSetWindowFocus_Nil();
-                }
-
-                if(igIsKeyPressed_Bool(ImGuiKey_F, false))
-                {
-                    if(state->data.editState == ESTATE_NORMAL && state->data.selectionMode == MODE_LINE)
-                    {
-                        //assert(false && "Not yet fully implemented");
-                        for(size_t i = 0; i < state->data.numSelectedElements; ++i)
-                        {
-                            MapLine *line = state->data.selectedElements[i];
-                            MapSector *front = line->frontSector, *back = line->backSector;
-                            MapVertex *tmp = line->b;
-                            line->b = line->a;
-                            line->a = tmp;
-
-                            line->frontSector = back;
-                            line->backSector = front;
-                        }
-                    }
-                }
-
-                if(igIsKeyPressed_Bool(ImGuiKey_M, false))
-                {
-                    if(state->data.editState == ESTATE_NORMAL)
-                    {
-                        MapLine *line = EditGetClosestLine(map, (Vec2){ x1, y1 }, 128);
-                        if(line)
-                        {
-                            bool front = SideOfMapLine(line, (Vec2){ x1, y1 }) > 0;
-                            if((front && line->frontSector == NULL) || (!front && line->backSector == NULL))
-                            {
-                                MapSector *sector = MakeMapSector(map, line, !front, DefaultSectorData());
-                                if(!sector)
-                                    LogError("Failed to make sector");
-                            }
-                            else
-                            {
-                                LogInfo("Sector already exists");
-                            }
-                        }
-                    }
-                }
-
-                if(igIsKeyPressed_Bool(ImGuiKey_Space, false))
-                {
-                    switch(state->data.editState)
-                    {
-                    case ESTATE_NORMAL:
-                    {
-                        state->data.editState = ESTATE_ADDVERTEX;
-                        state->data.numSelectedElements = 0;
-                        state->data.hoveredElement = NULL;
-                    }
-                    break;
-                    case ESTATE_ADDVERTEX:
-                    {
-                        if(state->data.editVertexBufferSize >= 2)
-                        {
-                            // submit edit data
-                            SubmitEditData(state, false);
-                            state->data.editState = ESTATE_NORMAL;
-                        }
-                    }
-                    break;
-                    }
-                }
-
-                if(igIsKeyPressed_Bool(ImGuiKey_Backspace, false))
-                {
-                    if(state->data.editState == ESTATE_ADDVERTEX)
-                    {
-                        if(state->data.editVertexBufferSize > 0)
-                        {
-                            state->data.editVertexBufferSize--;
-                        }
-                    }
-                }
-
-                if(igIsKeyPressed_Bool(ImGuiKey_Delete, false))
-                {
-                    if(state->data.editState == ESTATE_NORMAL)
-                    {
-                        switch(state->data.selectionMode)
-                        {
-                        case MODE_VERTEX: EditRemoveVertices(map, state->data.numSelectedElements, (MapVertex**)state->data.selectedElements); break;
-                        case MODE_LINE: EditRemoveLines(map, state->data.numSelectedElements, (MapLine**)state->data.selectedElements); break;
-                        case MODE_SECTOR: EditRemoveSectors(map, state->data.numSelectedElements, (MapSector**)state->data.selectedElements); break;
-                        }
-                        state->data.numSelectedElements = 0;
-                        state->data.hoveredElement = NULL;
-                    }
-                }
-
-                if(igIsKeyPressed_Bool(ImGuiKey_Escape, false))
-                {
-                    if(state->data.editState == ESTATE_ADDVERTEX)
-                    {
-                        state->data.editVertexBufferSize = 0;
-                        state->data.editState = ESTATE_NORMAL;
-                    }
-                    else if(state->data.editState == ESTATE_NORMAL)
-                    {
-                        if(state->data.numSelectedElements > 0)
-                            state->data.numSelectedElements = 0;
-                    }
-                }
-
-                if(igIsKeyPressed_Bool(ImGuiKey_Tab, false))
-                {
-                    if(state->data.editState == ESTATE_ADDVERTEX)
-                    {
-                        if(state->data.editVertexBufferSize > 2)
-                        {
-                            // submit edit data
-                            SubmitEditData(state, true);
-                            state->data.editVertexBufferSize = 0;
-                            state->data.editState = ESTATE_NORMAL;
-                        }
-                    }
-                }
-            }
-
-            if(focused)
-            {
-
+                HandleInput(state, mousePos);
             }
 
             ResizeEditorView(state, clientArea.x, clientArea.y);
             igImage((ImTextureRef){ ._TexID = state->gl.editorColorTexture }, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 });
 
             static bool firstTime = true;
-            if(firstTime)
+            // the clientarea check is a hack due to imgui setting the size to a very low value on startup if it's loaded from a saved layout
+            // before it sets it correctly
+            if(firstTime && clientArea.x > 10 && clientArea.y > 10)
             {
                 firstTime = false;
                 state->data.viewPosition = (Vec2){ -state->gl.editorFramebufferWidth / 2.0f, -state->gl.editorFramebufferHeight / 2.0f };
