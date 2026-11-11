@@ -10794,6 +10794,7 @@ DrawChannelUnfrozen	extern/cimgui/cimgui.h	/^    ImGuiTableDrawChannelIdx DrawCh
 DrawChannelUnfrozen	extern/cimgui/imgui/imgui_internal.h	/^    ImGuiTableDrawChannelIdx DrawChannelUnfrozen;           \/\/ Draw channels for unfrozen rows$/;"	m	struct:ImGuiTableColumn	typeref:typename:ImGuiTableDrawChannelIdx
 DrawChannelsTempMergeBuffer	extern/cimgui/cimgui.h	/^    ImVector_ImDrawChannel DrawChannelsTempMergeBuffer;$/;"	m	struct:ImGuiContext	typeref:typename:ImVector_ImDrawChannel
 DrawChannelsTempMergeBuffer	extern/cimgui/imgui/imgui_internal.h	/^    ImVector<ImDrawChannel>         DrawChannelsTempMergeBuffer;$/;"	m	struct:ImGuiContext	typeref:typename:ImVector<ImDrawChannel>
+DrawComments	src/windows/geditor.c	/^static void DrawComments(EdState *state, Vec2 mousePos)$/;"	f	typeref:typename:void	file:
 DrawData	extern/cimgui/cimgui.h	/^    ImDrawData* DrawData;$/;"	m	struct:ImGuiViewport	typeref:typename:ImDrawData *
 DrawData	extern/cimgui/imgui/imgui.h	/^    ImDrawData*         DrawData;               \/\/ The ImDrawData corresponding to this viewpo/;"	m	struct:ImGuiViewport	typeref:typename:ImDrawData *
 DrawDataBuilder	extern/cimgui/cimgui.h	/^    ImDrawDataBuilder DrawDataBuilder;$/;"	m	struct:ImGuiViewportP	typeref:typename:ImDrawDataBuilder
@@ -10896,6 +10897,7 @@ ECHO_MESSAGE	extern/cimgui/imgui/examples/example_sdl3_sdlrenderer3/Makefile	/^	
 ECHO_MESSAGE	extern/cimgui/imgui/examples/example_sdl3_vulkan/Makefile	/^	ECHO_MESSAGE = "Linux"$/;"	m
 ECHO_MESSAGE	extern/cimgui/imgui/examples/example_sdl3_vulkan/Makefile	/^	ECHO_MESSAGE = "Mac OS X"$/;"	m
 ECHO_MESSAGE	extern/cimgui/imgui/examples/example_sdl3_vulkan/Makefile	/^	ECHO_MESSAGE = "MinGW"$/;"	m
+EDITOR_ID	src/windows/geditor.c	/^#define EDITOR_ID /;"	d	file:
 EDITOR_NAME	src/utils.h	/^#define EDITOR_NAME /;"	d
 EDIT_VERTEXBUFFER_CAP	src/editor.h	/^#define EDIT_VERTEXBUFFER_CAP /;"	d
 EMSCRIPTEN_MAINLOOP_BEGIN	extern/cimgui/imgui/examples/libs/emscripten/emscripten_mainloop_stub.h	/^#define EMSCRIPTEN_MAINLOOP_BEGIN /;"	d
@@ -10989,7 +10991,7 @@ Edited	extern/cimgui/imgui/imgui_internal.h	/^    bool                    Edited
 EditorMain	src/editor_main.c	/^int EditorMain(int argc, char *argv[])$/;"	f	typeref:typename:int
 EditorShaderData	src/editor.h	/^typedef struct EditorShaderData$/;"	s
 EditorShaderData	src/editor.h	/^} EditorShaderData;$/;"	t	typeref:struct:EditorShaderData
-EditorToScreenSpace	src/edit.c	/^void EditorToScreenSpace(const EdState *state, real_t *x, real_t *y)$/;"	f	typeref:typename:void
+EditorToScreenSpace	src/windows/geditor.c	/^static Vec2 EditorToScreenSpace(const EdState *state, Vec2 pos)$/;"	f	typeref:typename:Vec2	file:
 EditorVertexType	src/vertex_types.h	/^typedef struct EditorVertexType$/;"	s
 EditorVertexType	src/vertex_types.h	/^} EditorVertexType;$/;"	t	typeref:struct:EditorVertexType
 EditorWindow	src/windows/geditor.c	/^void EditorWindow(bool *p_open, EdState *state)$/;"	f	typeref:typename:void
@@ -14308,9 +14310,14 @@ GroupStruct	extern/imguifiledialog/ImGuiFileDialog.h	/^    struct GroupStruct {$
 HOOKKEY	extern/lua-5.4.8/src/ldblib.c	/^static const char *const HOOKKEY = "_HOOKKEY";$/;"	v	typeref:typename:const char * const	file:
 HSV	extern/cimgui/imgui/imgui.h	/^    static ImColor HSV(float h, float s, float v, float a = 1.0f)   { float r, g, b; ImGui::Colo/;"	f	struct:ImColor	typeref:typename:ImColor
 HandleArguments	src/editor_main.c	/^static void HandleArguments(int argc, char *argv[], EdState *state)$/;"	f	typeref:typename:void	file:
-HandleDrag	src/windows/geditor.c	/^static void HandleDrag(EdState *state)$/;"	f	typeref:typename:void	file:
+HandleDrag	src/windows/geditor.c	/^static void HandleDrag(EdState *state, bool focused)$/;"	f	typeref:typename:void	file:
+HandleDrag	src/windows/realtime.c	/^static void HandleDrag(EdState *state, bool focused, Vec3 *forward, Vec3 *right, float delta)$/;"	f	typeref:typename:void	file:
 HandleDragSelect	src/windows/geditor.c	/^static void HandleDragSelect(EdState *state, Vec2 mousePos, bool additive)$/;"	f	typeref:typename:void	file:
-HandleInput	src/windows/geditor.c	/^static void HandleInput(EdState *state, Vec2 mousePos)$/;"	f	typeref:typename:void	file:
+HandleInput	src/windows/geditor.c	/^static void HandleInput(EdState *state, Vec2 mousePos, Vec2 vertexPos)$/;"	f	typeref:typename:void	file:
+HandleInput_AddVertex	src/windows/geditor.c	/^static void HandleInput_AddVertex(EdState *state, Vec2 mousePos, Vec2 vertexPos)$/;"	f	typeref:typename:void	file:
+HandleInput_MoveElements	src/windows/geditor.c	/^static void HandleInput_MoveElements(EdState *state, Vec2 mousePos, Vec2 vertexPos)$/;"	f	typeref:typename:void	file:
+HandleInput_Normal	src/windows/geditor.c	/^static void HandleInput_Normal(EdState *state, Vec2 mousePos, Vec2 vertexPos)$/;"	f	typeref:typename:void	file:
+HandleMovement	src/windows/realtime.c	/^static void HandleMovement(EdState *state, bool focused, Vec3 *position, Vec3 forward, Vec3 righ/;"	f	typeref:typename:void	file:
 HandleShortcuts	src/gui.c	/^static void HandleShortcuts(EdState *state)$/;"	f	typeref:typename:void	file:
 HandleShortcuts	src/windows/geditor.c	/^static void HandleShortcuts(EdState *state)$/;"	f	typeref:typename:void	file:
 HandleZoom	src/windows/geditor.c	/^static void HandleZoom(EdState *state, Vec2 rawMousePos, Vec2 mousePos)$/;"	f	typeref:typename:void	file:
@@ -22429,8 +22436,10 @@ MIN_VERTEXPOINTSIZE	src/editor.h	/^#define MIN_VERTEXPOINTSIZE /;"	d
 MIN_ZOOM	src/editor.h	/^#define MIN_ZOOM /;"	d
 MISRA	extern/incbin/README.md	/^## MISRA$/;"	s	chapter:incbin
 MKDIR	extern/lua-5.4.8/Makefile	/^MKDIR= mkdir -p$/;"	m
+MODE_COMMENT	src/editor.h	/^    MODE_COMMENT$/;"	e	enum:SelectionMode
 MODE_LINE	src/editor.h	/^    MODE_LINE,$/;"	e	enum:SelectionMode
-MODE_SECTOR	src/editor.h	/^    MODE_SECTOR$/;"	e	enum:SelectionMode
+MODE_SECTOR	src/editor.h	/^    MODE_SECTOR,$/;"	e	enum:SelectionMode
+MODE_THING	src/editor.h	/^    MODE_THING,$/;"	e	enum:SelectionMode
 MODE_VERTEX	src/editor.h	/^    MODE_VERTEX,$/;"	e	enum:SelectionMode
 MONITOR_DPI_TYPE	extern/cimgui/imgui/backends/imgui_impl_win32.cpp	/^typedef enum { MDT_EFFECTIVE_DPI = 0, MDT_ANGULAR_DPI = 1, MDT_RAW_DPI = 2, MDT_DEFAULT = MDT_EF/;"	t	typeref:enum:__anonb0ae723a0203	file:
 MONOSPACE FONTS	extern/cimgui/imgui/docs/FONTS.md	/^#### MONOSPACE FONTS$/;"	t	section:Font Links
@@ -24702,6 +24711,7 @@ RC_SRC	Makefile	/^RC_SRC :=$/;"	m
 RDKCONST	extern/lua-5.4.8/src/lparser.h	/^#define RDKCONST	/;"	d
 RDKCTC	extern/lua-5.4.8/src/lparser.h	/^#define RDKCTC	/;"	d
 RDKTOCLOSE	extern/lua-5.4.8/src/lparser.h	/^#define RDKTOCLOSE	/;"	d
+REALTIME_ID	src/windows/realtime.c	/^#define REALTIME_ID /;"	d	file:
 REAL_MAX	src/vecmath.h	/^#define REAL_MAX /;"	d
 REAL_MIN	src/vecmath.h	/^#define REAL_MIN /;"	d
 RED	extern/cglm/test/include/common.h	/^#define RED /;"	d
@@ -25841,8 +25851,8 @@ ScissorRectsCount	extern/cimgui/imgui/backends/imgui_impl_dx10.cpp	/^        UIN
 ScissorRectsCount	extern/cimgui/imgui/backends/imgui_impl_dx11.cpp	/^        UINT                        ScissorRectsCount, ViewportsCount;$/;"	m	struct:ImGui_ImplDX11_RenderDrawData::BACKUP_DX11_STATE	typeref:typename:UINT	file:
 ScopeRectMin	extern/cimgui/cimgui.h	/^    ImVec2 ScopeRectMin;$/;"	m	struct:ImGuiMultiSelectTempData	typeref:typename:ImVec2
 ScopeRectMin	extern/cimgui/imgui/imgui_internal.h	/^    ImVec2                  ScopeRectMin;$/;"	m	struct:ImGuiMultiSelectTempData	typeref:typename:ImVec2
-ScreenToEditorSpace	src/edit.c	/^void ScreenToEditorSpace(const EdState *state, real_t *x, real_t *y)$/;"	f	typeref:typename:void
-ScreenToEditorSpaceGrid	src/edit.c	/^void ScreenToEditorSpaceGrid(const EdState *state, int gridsize, real_t *x, real_t *y)$/;"	f	typeref:typename:void
+ScreenToEditorSpace	src/windows/geditor.c	/^static Vec2 ScreenToEditorSpace(const EdState *state, Vec2 pos)$/;"	f	typeref:typename:Vec2	file:
+ScreenToEditorSpaceGrid	src/windows/geditor.c	/^static Vec2 ScreenToEditorSpaceGrid(const EdState *state, int gridsize, Vec2 pos)$/;"	f	typeref:typename:Vec2	file:
 Script	src/script.h	/^typedef struct Script$/;"	s
 Script	src/script.h	/^} Script;$/;"	t	typeref:struct:Script
 ScriptCreateVec2	src/scripts/vec2.c	/^void ScriptCreateVec2(lua_State *L, float x, float y)$/;"	f	typeref:typename:void
@@ -28025,6 +28035,7 @@ UnusedFrames	extern/cimgui/imgui/imgui.h	/^    int                 UnusedFrames;
 UpVal	extern/lua-5.4.8/src/lobject.h	/^typedef struct UpVal {$/;"	s
 UpVal	extern/lua-5.4.8/src/lobject.h	/^} UpVal;$/;"	t	typeref:struct:UpVal
 Update	extern/cimgui/imgui/imgui_widgets.cpp	/^void ImGuiMenuColumns::Update(float spacing, bool window_reappearing)$/;"	f	class:ImGuiMenuColumns	typeref:typename:void
+Update	src/windows/geditor.c	/^static void Update(EdState *state, Vec2 screenPos, Vec2 mousePos, Vec2 *vertexPos)$/;"	f	typeref:typename:void	file:
 UpdateAliasKey	extern/cimgui/imgui/imgui.cpp	/^static void UpdateAliasKey(ImGuiKey key, bool v, float analog_value)$/;"	f	typeref:typename:void	file:
 UpdateCurrentFontSize	extern/cimgui/imgui/imgui.cpp	/^void ImGui::UpdateCurrentFontSize(float restore_font_size_after_scaling)$/;"	f	class:ImGui	typeref:typename:void
 UpdateDebugToolFlashStyleColor	extern/cimgui/imgui/imgui.cpp	/^void ImGui::UpdateDebugToolFlashStyleColor()$/;"	f	class:ImGui	typeref:typename:void
@@ -28059,6 +28070,9 @@ UpdateWindowManualResize	extern/cimgui/imgui/imgui.cpp	/^static int ImGui::Updat
 UpdateWindowParentAndRootLinks	extern/cimgui/imgui/imgui.cpp	/^void ImGui::UpdateWindowParentAndRootLinks(ImGuiWindow* window, ImGuiWindowFlags flags, ImGuiWin/;"	f	class:ImGui	typeref:typename:void
 UpdateWindowSkipRefresh	extern/cimgui/imgui/imgui.cpp	/^void ImGui::UpdateWindowSkipRefresh(ImGuiWindow* window)$/;"	f	class:ImGui	typeref:typename:void
 UpdateWorkRect	extern/cimgui/imgui/imgui_internal.h	/^    void    UpdateWorkRect()            { WorkPos = CalcWorkRectPos(WorkInsetMin); WorkSize = Ca/;"	f	struct:ImGuiViewportP	typeref:typename:void
+Update_AddVertex	src/windows/geditor.c	/^static void Update_AddVertex(EdState *state, Vec2 screenPos, Vec2 mousePos, Vec2 *vertexPos)$/;"	f	typeref:typename:void	file:
+Update_MoveElements	src/windows/geditor.c	/^static void Update_MoveElements(EdState *state, Vec2 screenPos, Vec2 mousePos, Vec2 *vertexPos)$/;"	f	typeref:typename:void	file:
+Update_Normal	src/windows/geditor.c	/^static void Update_Normal(EdState *state, Vec2 screenPos, Vec2 mousePos, Vec2 *vertexPos)$/;"	f	typeref:typename:void	file:
 Updates	extern/cimgui/cimgui.h	/^    ImVector_ImTextureRect Updates;$/;"	m	struct:ImTextureData	typeref:typename:ImVector_ImTextureRect
 Updates	extern/cimgui/imgui/imgui.h	/^    ImVector<ImTextureRect> Updates;            \/\/ w    r   \/\/ Array of individual updates.$/;"	m	struct:ImTextureData	typeref:typename:ImVector<ImTextureRect>
 Upvaldesc	extern/lua-5.4.8/src/lobject.h	/^typedef struct Upvaldesc {$/;"	s
@@ -55516,6 +55530,7 @@ modalAction	src/gui.c	/^static enum SaveModalAction modalAction = SMA_NEW;$/;"	v
 mode	extern/ftplib-4.0-1/src/qftp.c	/^static char mode = 'I';$/;"	v	typeref:typename:char	file:
 mode	extern/lua-5.4.8/src/ldo.c	/^  const char *mode;$/;"	m	struct:SParser	typeref:typename:const char *	file:
 mouseDrag	extern/triangulate/earcut/test/viz.cpp	/^static bool mouseDrag = false;$/;"	v	typeref:typename:bool	file:
+mouseDragCapture	src/editor.h	/^        int mouseDragCapture;$/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:int
 mouse_button	extern/cimgui/generator/output/definitions.json	/^        "mouse_button": "0"$/;"	s	object:igIsItemClicked.0.defaults
 mouse_pos	extern/cimgui/generator/output/definitions.json	/^        "mouse_pos": "NULL"$/;"	s	object:igIsMousePosValid.0.defaults
 move	extern/triangulate/earcut/test/viz.cpp	/^    bool move(double x, double y) {$/;"	f	struct:Camera2D	typeref:typename:bool	file:

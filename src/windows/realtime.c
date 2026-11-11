@@ -5,7 +5,7 @@
 
 #include "../map/query.h"
 
-#define REALTIME_ID 1001
+#define REALTIME_ID 2000
 
 static Arena arena = { 0 };
 
@@ -94,7 +94,8 @@ static void HandleDrag(EdState *state, bool focused, Vec3 *forward, Vec3 *right,
 static void HandleMovement(EdState *state, bool focused, Vec3 *position, Vec3 forward, Vec3 right, Vec3 up, float delta)
 {
     bool ctrlDown = igGetIO_Nil()->KeyCtrl;
-    const real_t speed = 78;
+    bool shiftDown = igGetIO_Nil()->KeyShift;
+    const real_t speed = 78 * (shiftDown ? 2 : 1);
    
     if(!focused && state->data.mouseDragCapture != REALTIME_ID)
         return;
@@ -148,7 +149,6 @@ void RealtimeWindow(bool *p_open, EdState *state)
 
             ImGuiIO *ioptr = igGetIO_Nil();
             float dt = ioptr->DeltaTime;
-
 
             Vec3 cameraPosition = state->realtime.cameraPosition;
             Vec3 cameraDirection = state->realtime.cameraDirection;

@@ -86,7 +86,9 @@ typedef enum SelectionMode
 {
     MODE_VERTEX,
     MODE_LINE,
-    MODE_SECTOR
+    MODE_SECTOR,
+    MODE_THING,
+    MODE_COMMENT
 } SelectionMode;
 
 typedef enum EditState
