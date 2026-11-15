@@ -54,7 +54,7 @@ ifdef MINGW
     LIBS += dinput8 dxguid dxerr8 user32 gdi32 winmm imm32 ole32 oleaut32 shell32 setupapi version uuid ws2_32 iphlpapi comctl32 gdi32 comdlg32 opengl32
     APPLICATION := $(APPLICATION).exe
     LDFLAGS += -static
-    ifdef NO_PKGCONFIG
+    ifndef NO_PKGCONFIG
         SDL_INC += $(shell $(PKG_CONFIG) --cflags sdl2)
     endif
     ifeq ($(CONFIG),release)
