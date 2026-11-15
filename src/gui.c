@@ -399,6 +399,10 @@ static void MainMenuBar(bool *doQuit, EdState *state)
         if(igBeginMenu("Help", true))
         {
             igMenuItem_BoolPtr("About", "", &state->ui.showAbout, true);
+#ifdef _DEBUG
+            igSeparator();
+            igMenuItem_BoolPtr("Imgui Demo", "", &state->ui.showDemo, true);
+#endif
             igEndMenu();
         }
 

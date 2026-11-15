@@ -538,6 +538,11 @@ static void DrawComments(EdState *state, Vec2 mousePos)
 
 void EditorWindow(bool *p_open, EdState *state)
 {
+#ifdef _DEBUG
+    if(state->ui.showDemo)
+        igShowDemoWindow(&state->ui.showDemo);
+#endif
+
     ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar /*| ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize*/;
     if(state->map.dirty)
         flags |= ImGuiWindowFlags_UnsavedDocument;

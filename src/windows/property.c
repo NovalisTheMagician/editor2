@@ -86,11 +86,94 @@ static void TextureField(EdState *state, const char *label, char **textureName, 
     igInputFloat2(buffer, (float*)textureOffset, NULL, 0);
 }
 
+#include "arena.h"
+static Arena testArena = { 0 };
+
+#define ATTRIBUTE_MAX_LEN 1024
+
+typedef struct Attribute
+{
+    char key[ATTRIBUTE_MAX_LEN];
+    char value[ATTRIBUTE_MAX_LEN];
+} Attribute;
+
+typedef struct AttributeList
+{
+    Attribute *items;
+    size_t count, capacity;
+} AttributeList;
+
+static void AttributeTable(EdState *state, AttributeList *list)
+{
+    if(igBeginTable("attributes", 2, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_Resizable | ImGuiTableFlags_Borders, (ImVec2){0}, 0))
+    {
+        igTableSetupColumn("Key", 0, 0, 0);
+        igTableSetupColumn("Value", 0, 0, 0);
+        igTableHeadersRow();
+
+        static bool focusLastValue = false;
+
+        for(size_t i = 0; i < list->count; ++i)
+        {
+            igTableNextRow(0, 0);
+            igTableSetColumnIndex(0);
+            igPushID_Int(i);
+            igSetNextItemWidth(-FLT_MIN);
+            igInputText("##key", list->items[i].key, ATTRIBUTE_MAX_LEN, ImGuiInputTextFlags_AutoSelectAll, NULL, NULL);
+            if(igIsItemDeactivatedAfterEdit())
+                igSetKeyboardFocusHere(0);
+            igTableSetColumnIndex(1);
+            igSetNextItemWidth(-FLT_MIN);
+            igInputText("##value", list->items[i].value, ATTRIBUTE_MAX_LEN, ImGuiInputTextFlags_AutoSelectAll, NULL, NULL);
+            igPopID();
+            if(focusLastValue && i == list->count - 1)
+            {
+                igSetKeyboardFocusHere(-1);
+                focusLastValue = false;
+            }
+            if(igIsItemDeactivatedAfterEdit())
+                igSetKeyboardFocusHere(0);
+        }
+
+        static char newKeyInput[ATTRIBUTE_MAX_LEN] = { 0 };
+        static char newvalue[1] = { 0 };
+        igTableNextRow(0, 0);
+        igTableSetColumnIndex(0);
+        igPushID_Int(0);
+        igSetNextItemWidth(-FLT_MIN);
+        igInputText("##newkey", newKeyInput, ATTRIBUTE_MAX_LEN, 0, NULL, NULL);
+        if(igIsItemDeactivatedAfterEdit())
+        {
+            if(newKeyInput[0] != '\0')
+            {
+                Attribute attr = { 0 };
+                strcpy(attr.key, newKeyInput);
+                newKeyInput[0] = '\0';
+                arena_da_append(&testArena, list, attr);
+                focusLastValue = true;
+            }
+        }
+        igPopID();
+        igTableSetColumnIndex(1);
+        igPushID_Int(1);
+        igSetNextItemWidth(-FLT_MIN);
+        igInputText("##newvalue", newvalue, 1, ImGuiInputTextFlags_ReadOnly, NULL, NULL);
+        igPopID();
+
+        igEndTable();
+    }
+}
+
 static void MapProperties(EdState *state)
 {
     igSeparatorTextEx(0, "Map Properties", NULL, 0);
     igSliderInt("Texture Scale", &state->map.textureScale, 1, 10, "%dX", 0);
     igInputFloat("Gravity", &state->map.gravity, 0.01f, 0.1f, "%.2f", 0);
+    igSeparatorTextEx(0, "Attributes", NULL, 0);
+
+    static AttributeList list = { 0 };
+
+    AttributeTable(state, &list);
 }
 
 static void VertexProperties(EdState *state)
@@ -119,6 +202,10 @@ static void VertexProperties(EdState *state)
                 igSetWindowFocus_Str("Editor");
             }
         }
+
+        igSeparatorTextEx(0, "Attributes", NULL, 0);
+        static AttributeList list = { 0 };
+        AttributeTable(state, &list);
     }
     else if(state->data.numSelectedElements > 1)
     {
@@ -183,6 +270,11 @@ static void LineProperties(EdState *state)
                 igSetWindowFocus_Str("Editor");
             }
         }
+
+        igSeparatorTextEx(0, "Attributes", NULL, 0);
+        static AttributeList list = { 0 };
+        AttributeTable(state, &list);
+
     }
     else if(state->data.numSelectedElements > 1)
     {
@@ -226,6 +318,10 @@ static void SectorProperties(EdState *state)
             if(igButton(label, (ImVec2){ 0, 0 }))
                 SelectElements(state, selectedSector->numInnerLinesNum[i], (void**)selectedSector->innerLines[i], MODE_LINE);
         }
+
+        igSeparatorTextEx(0, "Attributes", NULL, 0);
+        static AttributeList list = { 0 };
+        AttributeTable(state, &list);
     }
     else if(state->data.numSelectedElements > 1)
     {

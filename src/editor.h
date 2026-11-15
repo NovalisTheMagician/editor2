@@ -163,6 +163,10 @@ typedef struct EdState
         bool showProperties;
 
         bool render3d;
+
+#ifdef _DEBUG
+        bool showDemo;
+#endif
     } ui;
 
     struct
