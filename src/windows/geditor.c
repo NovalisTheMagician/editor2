@@ -90,45 +90,45 @@ static void RectSelect(EdState *state, bool add)
 
     switch(state->data.selectionMode)
     {
-    case MODE_VERTEX:
-        {
-            for(MapVertex *vertex = state->map.headVertex; vertex; vertex = vertex->next)
+        case MODE_VERTEX:
             {
-                if(within(min, max, vertex->pos) && (!add || !contains(state->data.numSelectedElements, state->data.selectedElements, vertex)))
+                for(MapVertex *vertex = state->map.headVertex; vertex; vertex = vertex->next)
                 {
-                    state->data.selectedElements[count++] = vertex;
+                    if(within(min, max, vertex->pos) && (!add || !contains(state->data.numSelectedElements, state->data.selectedElements, vertex)))
+                    {
+                        state->data.selectedElements[count++] = vertex;
+                    }
                 }
             }
-        }
-        break;
-    case MODE_LINE:
-        {
-            for(MapLine *line = state->map.headLine; line; line = line->next)
+            break;
+        case MODE_LINE:
             {
-                if(within(min, max, line->a->pos) && within(min, max, line->b->pos) && (!add || !contains(state->data.numSelectedElements, state->data.selectedElements, line)))
+                for(MapLine *line = state->map.headLine; line; line = line->next)
                 {
-                    state->data.selectedElements[count++] = line;
+                    if(within(min, max, line->a->pos) && within(min, max, line->b->pos) && (!add || !contains(state->data.numSelectedElements, state->data.selectedElements, line)))
+                    {
+                        state->data.selectedElements[count++] = line;
+                    }
                 }
             }
-        }
-        break;
-    case MODE_SECTOR:
-        {
-            for(MapSector *sector = state->map.headSector; sector; sector = sector->next)
+            break;
+        case MODE_SECTOR:
             {
-                bool allPointsIn = true;
-                for(size_t i = 0; i < sector->numOuterLines; ++i)
+                for(MapSector *sector = state->map.headSector; sector; sector = sector->next)
                 {
-                    allPointsIn &= within(min, max, sector->outerLines[i]->a->pos);
-                }
+                    bool allPointsIn = true;
+                    for(size_t i = 0; i < sector->numOuterLines; ++i)
+                    {
+                        allPointsIn &= within(min, max, sector->outerLines[i]->a->pos);
+                    }
 
-                if(allPointsIn && (!add || !contains(state->data.numSelectedElements, state->data.selectedElements, sector)))
-                {
-                    state->data.selectedElements[count++] = sector;
+                    if(allPointsIn && (!add || !contains(state->data.numSelectedElements, state->data.selectedElements, sector)))
+                    {
+                        state->data.selectedElements[count++] = sector;
+                    }
                 }
             }
-        }
-        break;
+            break;
     }
     if(add || (!add && count > 0))
         state->data.numSelectedElements = count;
@@ -154,72 +154,72 @@ static void AddSectorFromVertex(MapVertex *vertex, MapSector **sectors, size_t *
 
 static void CommitMoveElements(EdState *state, Vec2 vertexPos)
 {
-	Vec2 offset;
-	switch(state->data.selectionMode)
-	{
-	case MODE_VERTEX:
-		{
-			MapVertex *first = state->data.selectedElements[0];
-			offset = vec2_sub(vertexPos, first->pos);
-		}
-		break;
-	case MODE_LINE:
-		{
-			MapLine *first = state->data.selectedElements[0];
-			offset = vec2_sub(vertexPos, first->a->pos);
-		}
-		break;
-	case MODE_SECTOR:
-		{
-			MapSector *first = state->data.selectedElements[0];
-			offset = vec2_sub(vertexPos, first->outerLines[0]->a->pos);
-		}
-		break;
-	}
+    Vec2 offset;
+    switch(state->data.selectionMode)
+    {
+        case MODE_VERTEX:
+            {
+                MapVertex *first = state->data.selectedElements[0];
+                offset = vec2_sub(vertexPos, first->pos);
+            }
+            break;
+        case MODE_LINE:
+            {
+                MapLine *first = state->data.selectedElements[0];
+                offset = vec2_sub(vertexPos, first->a->pos);
+            }
+            break;
+        case MODE_SECTOR:
+            {
+                MapSector *first = state->data.selectedElements[0];
+                offset = vec2_sub(vertexPos, first->outerLines[0]->a->pos);
+            }
+            break;
+    }
 
-	static MapSector *sectorsToRebuild[1024];
-	size_t sectorsCount = 0;
+    static MapSector *sectorsToRebuild[1024];
+    size_t sectorsCount = 0;
 
-	for(size_t i = 0; i < state->data.numSelectedElements; ++i)
-	{
-		switch(state->data.selectionMode)
-		{
-		case MODE_VERTEX:
-			{
-				MapVertex *vertex = state->data.selectedElements[i];
-				vertex->pos = vec2_add(vertex->pos, offset);
-                AddSectorFromVertex(vertex, sectorsToRebuild, &sectorsCount);
-			}
-			break;
-		case MODE_LINE:
-			{
-                static MapVertex *verticesToMove[1024];
-                size_t verticesCount = 0;
-                MapLine *line = state->data.selectedElements[i];
-
-                if(!contains(verticesCount, (void**)verticesToMove, line->a))
-                    verticesToMove[verticesCount++] = line->a;
-                if(!contains(verticesCount, (void**)verticesToMove, line->b))
-                    verticesToMove[verticesCount++] = line->b;
-
-                for(size_t v = 0; v < verticesCount; ++v)
+    for(size_t i = 0; i < state->data.numSelectedElements; ++i)
+    {
+        switch(state->data.selectionMode)
+        {
+            case MODE_VERTEX:
                 {
-                    MapVertex *vertex = verticesToMove[v];
+                    MapVertex *vertex = state->data.selectedElements[i];
                     vertex->pos = vec2_add(vertex->pos, offset);
                     AddSectorFromVertex(vertex, sectorsToRebuild, &sectorsCount);
                 }
-            }
-			break;
-		case MODE_SECTOR:
-			LogDebug("Move on sectors not yet implemented");
-			break;
-		}
-	}
+                break;
+            case MODE_LINE:
+                {
+                    static MapVertex *verticesToMove[1024];
+                    size_t verticesCount = 0;
+                    MapLine *line = state->data.selectedElements[i];
 
-	for(size_t i = 0; i < sectorsCount; ++i)
-		EditRebuildSector(sectorsToRebuild[i]);
+                    if(!contains(verticesCount, (void**)verticesToMove, line->a))
+                        verticesToMove[verticesCount++] = line->a;
+                    if(!contains(verticesCount, (void**)verticesToMove, line->b))
+                        verticesToMove[verticesCount++] = line->b;
 
-	state->map.dirty = true;
+                    for(size_t v = 0; v < verticesCount; ++v)
+                    {
+                        MapVertex *vertex = verticesToMove[v];
+                        vertex->pos = vec2_add(vertex->pos, offset);
+                        AddSectorFromVertex(vertex, sectorsToRebuild, &sectorsCount);
+                    }
+                }
+                break;
+            case MODE_SECTOR:
+                LogDebug("Move on sectors not yet implemented");
+                break;
+        }
+    }
+
+    for(size_t i = 0; i < sectorsCount; ++i)
+        EditRebuildSector(sectorsToRebuild[i]);
+
+    state->map.dirty = true;
 }
 
 static void GotoLocation(EdState *state, real_t x, real_t y)
@@ -262,9 +262,9 @@ static void HandleShortcuts(EdState *state)
 
 static void AlterVertexPos(EdState *state, Vec2 screenPos, Vec2 mousePos, Vec2 *vertexPos)
 {
-	Map *map = &state->map;
+    Map *map = &state->map;
 
-	bool shiftDown = igGetIO_Nil()->KeyShift;
+    bool shiftDown = igGetIO_Nil()->KeyShift;
     bool altDown = igGetIO_Nil()->KeyAlt;
     bool ctrlDown = igGetIO_Nil()->KeyCtrl;
 
@@ -355,9 +355,9 @@ static void HandleInput_Normal(EdState *state, Vec2 mousePos, Vec2 vertexPos)
     {
         switch(state->data.selectionMode)
         {
-        case MODE_VERTEX: EditRemoveVertices(map, state->data.numSelectedElements, (MapVertex**)state->data.selectedElements); break;
-        case MODE_LINE: EditRemoveLines(map, state->data.numSelectedElements, (MapLine**)state->data.selectedElements); break;
-        case MODE_SECTOR: EditRemoveSectors(map, state->data.numSelectedElements, (MapSector**)state->data.selectedElements); break;
+            case MODE_VERTEX: EditRemoveVertices(map, state->data.numSelectedElements, (MapVertex**)state->data.selectedElements); break;
+            case MODE_LINE: EditRemoveLines(map, state->data.numSelectedElements, (MapLine**)state->data.selectedElements); break;
+            case MODE_SECTOR: EditRemoveSectors(map, state->data.numSelectedElements, (MapSector**)state->data.selectedElements); break;
         }
         state->data.numSelectedElements = 0;
         state->data.hoveredElement = NULL;
@@ -374,9 +374,9 @@ static void HandleInput_Normal(EdState *state, Vec2 mousePos, Vec2 vertexPos)
         void *selectedElement = NULL;
         switch(state->data.selectionMode)
         {
-        case MODE_VERTEX: selectedElement = EditGetClosestVertex(map, mousePos, VERTEX_DIST); break;
-        case MODE_LINE: selectedElement = EditGetClosestLine(map, mousePos, LINE_DIST); break;
-        case MODE_SECTOR: selectedElement = EditGetSector(map, mousePos); break;
+            case MODE_VERTEX: selectedElement = EditGetClosestVertex(map, mousePos, VERTEX_DIST); break;
+            case MODE_LINE: selectedElement = EditGetClosestLine(map, mousePos, LINE_DIST); break;
+            case MODE_SECTOR: selectedElement = EditGetSector(map, mousePos); break;
         }
 
         if(selectedElement)
@@ -477,12 +477,12 @@ static void HandleInput_AddVertex(EdState *state, Vec2 mousePos, Vec2 vertexPos)
 
 static void HandleInput_MoveElements(EdState *state, Vec2 mousePos, Vec2 vertexPos)
 {
-	(void)mousePos;
-	if(igIsMouseClicked_Bool(ImGuiMouseButton_Left, false) && !state->data.isDragging)
-	{
-		CommitMoveElements(state, vertexPos);
-		state->data.editState = ESTATE_NORMAL;
-	}
+    (void)mousePos;
+    if(igIsMouseClicked_Bool(ImGuiMouseButton_Left, false) && !state->data.isDragging)
+    {
+        CommitMoveElements(state, vertexPos);
+        state->data.editState = ESTATE_NORMAL;
+    }
 
     if(igIsKeyPressed_Bool(ImGuiKey_Escape, false))
     {
@@ -494,9 +494,9 @@ static void HandleInput(EdState *state, Vec2 mousePos, Vec2 vertexPos)
 {
     switch(state->data.editState)
     {
-    case ESTATE_NORMAL: HandleInput_Normal(state, mousePos, vertexPos); break;
-    case ESTATE_ADDVERTEX: HandleInput_AddVertex(state, mousePos, vertexPos); break;
-    case ESTATE_MOVE_ELEMENT: HandleInput_MoveElements(state, mousePos, vertexPos); break;
+        case ESTATE_NORMAL: HandleInput_Normal(state, mousePos, vertexPos); break;
+        case ESTATE_ADDVERTEX: HandleInput_AddVertex(state, mousePos, vertexPos); break;
+        case ESTATE_MOVE_ELEMENT: HandleInput_MoveElements(state, mousePos, vertexPos); break;
     }
 }
 
@@ -509,7 +509,7 @@ static void HandleDragSelect(EdState *state, Vec2 mousePos, bool additive)
         state->data.editVertexDrag[1].y = mousePos.y;
         state->data.editVertexDrag[2].x = mousePos.x;
     }
-   
+
     if(igIsMouseDragging(ImGuiMouseButton_Left, 2) && state->data.editState == ESTATE_NORMAL)
     {
         igSetWindowFocus_Nil();
@@ -583,7 +583,7 @@ static void DrawText(EdState *state, const char *text, Vec2 editorPos, Vec4 colo
 {
     ImVec2 clientPos;
     igGetWindowPos(&clientPos);
-	Vec2 sp = EditorToScreenSpace(state, editorPos);
+    Vec2 sp = EditorToScreenSpace(state, editorPos);
     ImVec2 screenPos = { sp.x + clientPos.x, sp.y + clientPos.y };
     ImVec2 size;
     igCalcTextSize(&size, text, NULL, false, 0);
@@ -642,37 +642,37 @@ static Vec2 ComputeCenter(MapSector *sector)
 
 static void DrawSelectionIndices(EdState *state)
 {
-	static char buffer[1024] = { 0 };
-	for(size_t i = 0; i < state->data.numSelectedElements; ++i)
-	{
-		switch(state->data.selectionMode)
-		{
-		case MODE_VERTEX:
-			{
-				MapVertex *vertex = state->data.selectedElements[i];
-                Vec2 position = vertex->pos;
-				snprintf(buffer, sizeof buffer, "%d", (int)i+1);
-				DrawText(state, buffer, position, (Vec4){ 0, 1, 0, 1 });
-			}
-			break;
-        case MODE_LINE:
-            {
-                MapLine *line = state->data.selectedElements[i];
-                Vec2 position = vec2_add(line->a->pos, vec2_scale(vec2_sub(line->b->pos, line->a->pos), 0.5f));
-                snprintf(buffer, sizeof buffer, "%d", (int)i+1);
-				DrawText(state, buffer, position, (Vec4){ 0, 1, 0, 1 });
-            }
-            break;
-        case MODE_SECTOR:
-            {
-                MapSector *sector = state->data.selectedElements[i];
-                Vec2 position = ComputeCenter(sector);
-                snprintf(buffer, sizeof buffer, "%d", (int)i+1);
-                DrawText(state, buffer, position, (Vec4){ 0, 1, 0, 1 });
-            }
-            break;
-		}
-	}
+    static char buffer[1024] = { 0 };
+    for(size_t i = 0; i < state->data.numSelectedElements; ++i)
+    {
+        switch(state->data.selectionMode)
+        {
+            case MODE_VERTEX:
+                {
+                    MapVertex *vertex = state->data.selectedElements[i];
+                    Vec2 position = vertex->pos;
+                    snprintf(buffer, sizeof buffer, "%d", (int)i+1);
+                    DrawText(state, buffer, position, (Vec4){ 0, 1, 0, 1 });
+                }
+                break;
+            case MODE_LINE:
+                {
+                    MapLine *line = state->data.selectedElements[i];
+                    Vec2 position = vec2_add(line->a->pos, vec2_scale(vec2_sub(line->b->pos, line->a->pos), 0.5f));
+                    snprintf(buffer, sizeof buffer, "%d", (int)i+1);
+                    DrawText(state, buffer, position, (Vec4){ 0, 1, 0, 1 });
+                }
+                break;
+            case MODE_SECTOR:
+                {
+                    MapSector *sector = state->data.selectedElements[i];
+                    Vec2 position = ComputeCenter(sector);
+                    snprintf(buffer, sizeof buffer, "%d", (int)i+1);
+                    DrawText(state, buffer, position, (Vec4){ 0, 1, 0, 1 });
+                }
+                break;
+        }
+    }
 }
 
 void EditorWindow(bool *p_open, EdState *state)
@@ -761,7 +761,7 @@ void EditorWindow(bool *p_open, EdState *state)
             Vec2 vertexPos = ScreenToEditorSpaceGrid(state, state->data.gridSize, (Vec2){ relX, relY });
 
             AlterVertexPos(state, (Vec2){ relX, relY }, mousePos, &vertexPos);
-            
+
             HandleDrag(state, focused);
             if(focused)
             {
@@ -789,12 +789,12 @@ void EditorWindow(bool *p_open, EdState *state)
                 {
                     switch(state->data.selectionMode)
                     {
-                    case MODE_VERTEX: state->data.hoveredElement = EditGetClosestVertex(map, mousePos, VERTEX_DIST); break;
-                    case MODE_LINE: state->data.hoveredElement = EditGetClosestLine(map, mousePos, LINE_DIST); break;
-                    case MODE_SECTOR: state->data.hoveredElement = EditGetSector(map, mousePos); break;
+                        case MODE_VERTEX: state->data.hoveredElement = EditGetClosestVertex(map, mousePos, VERTEX_DIST); break;
+                        case MODE_LINE: state->data.hoveredElement = EditGetClosestLine(map, mousePos, LINE_DIST); break;
+                        case MODE_SECTOR: state->data.hoveredElement = EditGetSector(map, mousePos); break;
                     }
                 }
-                
+
                 HandleInput(state, mousePos, vertexPos);
             }
             else
@@ -806,7 +806,7 @@ void EditorWindow(bool *p_open, EdState *state)
             igImage((ImTextureRef){ ._TexID = state->gl.editorColorTexture }, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 });
 
             //DrawComments(state, mousePos);
-			DrawSelectionIndices(state);
+            DrawSelectionIndices(state);
 
             static bool firstTime = true;
             // the clientarea check is a hack due to imgui setting the size to a very low value on startup if it's loaded from a saved layout
