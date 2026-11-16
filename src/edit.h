@@ -20,6 +20,7 @@ MapLine* EditGetClosestLine(Map *map, Vec2 pos, real_t maxDist);
 MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLines], size_t numInnerLines, size_t numInnerLinesNum[static numInnerLines], MapLine ***innerLines, bool innerOtherSide[static numInnerLines], SectorData data);
 void EditRemoveSectors(Map *map, size_t num, MapSector *sectors[static num]);
 MapSector* EditGetSector(Map *map, Vec2 pos);
+void EditRebuildSector(MapSector *sector);
 
 bool EditApplyLines(EdState *state, size_t num, Vec2 points[static num]);
 bool EditApplySector(EdState *state, size_t num, Vec2 points[static num]);

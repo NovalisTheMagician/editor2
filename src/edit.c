@@ -255,41 +255,26 @@ static struct Polygon* constructPolygon(Arena *arena, size_t numLines, MapLine *
     return polygon;
 }
 
-MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLines], size_t numInnerLines, size_t numInnerLinesNum[static numInnerLines], MapLine ***innerLines, bool innerOtherSide[static numInnerLines], SectorData data)
+void EditRebuildSector(MapSector *sector)
 {
-    CreateResult result = CreateSector(map, numLines, lines, data);
-    if(!result.created) return result.mapElement;
-    MapSector *sector = result.mapElement;
+	size_t numLines = sector->numOuterLines;
+	size_t numInnerLines = sector->numInnerLines;
+	size_t *numInnerLinesNum = sector->numInnerLinesNum;
+	MapLine **lines = sector->outerLines;
+	MapLine ***innerLines = sector->innerLines;
 
-    arena_reset(&arena);
-
-    sector->innerLines = malloc(numInnerLines * sizeof *sector->innerLines);
-    for(size_t i = 0; i < numInnerLines; ++i)
-    {
-        size_t n = numInnerLinesNum[i];
-        if(n == 0)
-            continue;
-        size_t totalSize = n * sizeof *sector->innerLines[i];
-        sector->innerLines[i] = malloc(totalSize);
-        memcpy(sector->innerLines[i], innerLines[i], totalSize);
-    }
-    sector->numInnerLines = numInnerLines;
-    sector->numInnerLinesNum = malloc(numInnerLines * sizeof *sector->numInnerLinesNum);
-    memcpy(sector->numInnerLinesNum, numInnerLinesNum, numInnerLines * sizeof *sector->numInnerLinesNum);
-
-    struct Polygon *polygon = constructPolygon(&arena, numLines, lines);
-    setLineSector(numLines, lines, sector, false);
-
+	struct Polygon *polygon = constructPolygon(&arena, numLines, lines);
     struct Polygon **innerPolygons = arena_alloc(&arena, numInnerLines * sizeof *innerPolygons);
     for(size_t i = 0; i < numInnerLines; ++i)
     {
         if(numInnerLinesNum[i] == 0)
             continue;
         innerPolygons[i] = constructPolygon(&arena, numInnerLinesNum[i], innerLines[i]);
-        setLineSector(numInnerLinesNum[i], innerLines[i], sector, innerOtherSide[i]);
     }
 
     TriangleData *td = &sector->edData;
+	if(td->vertices) free(td->vertices);
+	if(td->indices) free(td->indices);
 
     uint32_t *indices = NULL;
     size_t numIndices = triangulate(polygon, innerPolygons, numInnerLines, &indices);
@@ -320,6 +305,40 @@ MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLin
     }
 
     sector->bb = BoundingBoxFromVertices(td->numVertices, td->vertices);
+}
+
+MapSector* EditAddSector(Map *map, size_t numLines, MapLine *lines[static numLines], size_t numInnerLines, size_t numInnerLinesNum[static numInnerLines], MapLine ***innerLines, bool innerOtherSide[static numInnerLines], SectorData data)
+{
+    CreateResult result = CreateSector(map, numLines, lines, data);
+    if(!result.created) return result.mapElement;
+    MapSector *sector = result.mapElement;
+
+    arena_reset(&arena);
+
+    sector->innerLines = malloc(numInnerLines * sizeof *sector->innerLines);
+    for(size_t i = 0; i < numInnerLines; ++i)
+    {
+        size_t n = numInnerLinesNum[i];
+        if(n == 0)
+            continue;
+        size_t totalSize = n * sizeof *sector->innerLines[i];
+        sector->innerLines[i] = malloc(totalSize);
+        memcpy(sector->innerLines[i], innerLines[i], totalSize);
+    }
+    sector->numInnerLines = numInnerLines;
+    sector->numInnerLinesNum = malloc(numInnerLines * sizeof *sector->numInnerLinesNum);
+    memcpy(sector->numInnerLinesNum, numInnerLinesNum, numInnerLines * sizeof *sector->numInnerLinesNum);
+
+    setLineSector(numLines, lines, sector, false);
+
+    for(size_t i = 0; i < numInnerLines; ++i)
+    {
+        if(numInnerLinesNum[i] == 0)
+            continue;
+        setLineSector(numInnerLinesNum[i], innerLines[i], sector, innerOtherSide[i]);
+    }
+
+	EditRebuildSector(sector);
 
     return sector;
 }

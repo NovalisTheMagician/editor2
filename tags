@@ -8381,6 +8381,7 @@ ASSPATH_FS	src/project.h	/^    ASSPATH_FS,$/;"	e	enum:AssetPathType
 ASSPATH_FTP	src/project.h	/^    ASSPATH_FTP,$/;"	e	enum:AssetPathType
 ASSPATH_SFTP	src/project.h	/^    ASSPATH_SFTP,$/;"	e	enum:AssetPathType
 ASSPATH_WEBDAV	src/project.h	/^    ASSPATH_WEBDAV,$/;"	e	enum:AssetPathType
+ATTRIBUTE_MAX_LEN	src/windows/property.c	/^#define ATTRIBUTE_MAX_LEN /;"	d	file:
 AUTHORS	extern/lua-5.4.8/doc/lua.1	/^.SH AUTHORS$/;"	s	title:LUA
 AUTHORS	extern/lua-5.4.8/doc/luac.1	/^.SH AUTHORS$/;"	s	title:LUAC
 A_MATRIX	extern/cglm/test/src/test_mat3.h	/^#define A_MATRIX /;"	d
@@ -8515,6 +8516,7 @@ AddRegionBelow	extern/triangulate/earcut/test/comparison/libtess2/sweep.c	/^stat
 AddRemapChar	extern/cimgui/imgui/imgui_draw.cpp	/^void ImFont::AddRemapChar(ImWchar from_codepoint, ImWchar to_codepoint)$/;"	f	class:ImFont	typeref:typename:void
 AddRightEdges	extern/triangulate/earcut/test/comparison/libtess2/sweep.c	/^static void AddRightEdges( TESStesselator *tess, ActiveRegion *regUp,$/;"	f	typeref:typename:void	file:
 AddRootWindowToDrawData	extern/cimgui/imgui/imgui.cpp	/^static inline void AddRootWindowToDrawData(ImGuiWindow* window)$/;"	f	typeref:typename:void	file:
+AddSectorFromVertex	src/windows/geditor.c	/^static void AddSectorFromVertex(MapVertex *vertex, MapSector **sectors, size_t *count)$/;"	f	typeref:typename:void	file:
 AddSentinel	extern/triangulate/earcut/test/comparison/libtess2/sweep.c	/^static void AddSentinel( TESStesselator *tess, TESSreal smin, TESSreal smax, TESSreal t )$/;"	f	typeref:typename:void	file:
 AddSettingsHandler	extern/cimgui/imgui/imgui.cpp	/^void ImGui::AddSettingsHandler(const ImGuiSettingsHandler* handler)$/;"	f	class:ImGui	typeref:typename:void
 AddSplitPoint	src/map/insert.c	/^static void AddSplitPoint(LineWork *w, real_t t, Vec2 pos)$/;"	f	typeref:typename:void	file:
@@ -8559,6 +8561,7 @@ Alpha	extern/cimgui/cimgui.h	/^    float Alpha;$/;"	m	struct:ImGuiStyle	typeref:
 Alpha	extern/cimgui/cimgui.h	/^    float Alpha;$/;"	m	struct:ImGuiViewportP	typeref:typename:float
 Alpha	extern/cimgui/imgui/imgui.h	/^    float       Alpha;                      \/\/ Global alpha applies to everything in Dear ImGu/;"	m	struct:ImGuiStyle	typeref:typename:float
 Alpha	extern/cimgui/imgui/imgui_internal.h	/^    float               Alpha;                  \/\/ Window opacity (when dragging dockable wind/;"	m	struct:ImGuiViewportP	typeref:typename:float
+AlterVertexPos	src/windows/geditor.c	/^static void AlterVertexPos(EdState *state, Vec2 screenPos, Vec2 mousePos, Vec2 *vertexPos)$/;"	f	typeref:typename:void	file:
 Alternatives to Dirent	extern/imguifiledialog/dirent/README.md	/^# Alternatives to Dirent$/;"	c
 AnalogValue	extern/cimgui/cimgui.h	/^    float AnalogValue;$/;"	m	struct:ImGuiKeyData	typeref:typename:float
 AnalogValue	extern/cimgui/cimgui.h	/^{ ImGuiKey Key; bool Down; float AnalogValue;$/;"	m	struct:ImGuiInputEventKey	typeref:typename:float
@@ -8652,6 +8655,11 @@ AttribLocationTex	extern/cimgui/imgui/backends/imgui_impl_opengl3.cpp	/^    GLin
 AttribLocationVtxColor	extern/cimgui/imgui/backends/imgui_impl_opengl3.cpp	/^    GLuint          AttribLocationVtxColor;$/;"	m	struct:ImGui_ImplOpenGL3_Data	typeref:typename:GLuint	file:
 AttribLocationVtxPos	extern/cimgui/imgui/backends/imgui_impl_opengl3.cpp	/^    GLuint          AttribLocationVtxPos;    \/\/ Vertex attributes location$/;"	m	struct:ImGui_ImplOpenGL3_Data	typeref:typename:GLuint	file:
 AttribLocationVtxUV	extern/cimgui/imgui/backends/imgui_impl_opengl3.cpp	/^    GLuint          AttribLocationVtxUV;$/;"	m	struct:ImGui_ImplOpenGL3_Data	typeref:typename:GLuint	file:
+Attribute	src/windows/property.c	/^typedef struct Attribute$/;"	s	file:
+Attribute	src/windows/property.c	/^} Attribute;$/;"	t	typeref:struct:Attribute	file:
+AttributeList	src/windows/property.c	/^typedef struct AttributeList$/;"	s	file:
+AttributeList	src/windows/property.c	/^} AttributeList;$/;"	t	typeref:struct:AttributeList	file:
+AttributeTable	src/windows/property.c	/^static void AttributeTable(EdState *state, AttributeList *list)$/;"	f	typeref:typename:void	file:
 AuthorityForPos	extern/cimgui/cimgui.h	/^    ImGuiDataAuthority AuthorityForPos :3;$/;"	m	struct:ImGuiDockNode	typeref:typename:ImGuiDataAuthority:3
 AuthorityForPos	extern/cimgui/imgui/imgui_internal.h	/^    ImGuiDataAuthority      AuthorityForPos         :3;$/;"	m	struct:ImGuiDockNode	typeref:typename:ImGuiDataAuthority:3
 AuthorityForSize	extern/cimgui/cimgui.h	/^    ImGuiDataAuthority AuthorityForSize :3;$/;"	m	struct:ImGuiDockNode	typeref:typename:ImGuiDataAuthority:3
@@ -9741,6 +9749,7 @@ CommandPool	extern/cimgui/imgui/backends/imgui_impl_vulkan.h	/^    VkCommandPool
 CommandQueue	extern/cimgui/imgui/backends/imgui_impl_dx12.cpp	/^    ID3D12CommandQueue*             CommandQueue;$/;"	m	struct:ImGui_ImplDX12_ViewportData	typeref:typename:ID3D12CommandQueue *	file:
 CommandQueue	extern/cimgui/imgui/backends/imgui_impl_dx12.h	/^    ID3D12CommandQueue*         CommandQueue;       \/\/ Command queue used for queuing texture /;"	m	struct:ImGui_ImplDX12_InitInfo	typeref:typename:ID3D12CommandQueue *
 Commands	extern/cimgui/imgui/imgui_demo.cpp	/^    ImVector<const char*> Commands;$/;"	m	struct:ExampleAppConsole	typeref:typename:ImVector<const char * >	file:
+CommitMoveElements	src/windows/geditor.c	/^static void CommitMoveElements(EdState *state, Vec2 vertexPos)$/;"	f	typeref:typename:void	file:
 CommonBindGroup	extern/cimgui/imgui/backends/imgui_impl_wgpu.cpp	/^    WGPUBindGroup       CommonBindGroup = nullptr;      \/\/ Resources bind-group to bind the co/;"	m	struct:RenderResources	typeref:typename:WGPUBindGroup	file:
 CommonHeader	extern/lua-5.4.8/src/lobject.h	/^#define CommonHeader	/;"	d
 CompactCache	extern/cimgui/imgui/imgui_draw.cpp	/^void ImFontAtlas::CompactCache()$/;"	f	class:ImFontAtlas	typeref:typename:void
@@ -9752,6 +9761,7 @@ Comparison	extern/cimgui/imgui/misc/freetype/README.md	/^### Comparison$/;"	S	ch
 CompileShader	extern/cimgui/imgui/backends/imgui_impl_opengl3_loader.h	/^        PFNGLCOMPILESHADERPROC            CompileShader;$/;"	m	struct:ImGL3WProcs::__anon0d3434fa0108	typeref:typename:PFNGLCOMPILESHADERPROC
 CompileShader	src/shaders.c	/^static bool CompileShader(const char *shaderScr, GLuint *shader, char *error, size_t errorSize)$/;"	f	typeref:typename:bool	file:
 ComposeNewPath	extern/imguifiledialog/ImGuiFileDialog.cpp	/^std::string IGFD::FileManager::ComposeNewPath(std::vector<std::string>::iterator vIter) {$/;"	f	class:IGFD::FileManager	typeref:typename:std::string
+ComputeCenter	src/windows/geditor.c	/^static Vec2 ComputeCenter(MapSector *sector)$/;"	f	typeref:typename:Vec2	file:
 ComputeNormal	extern/triangulate/earcut/test/comparison/libtess2/tess.c	/^static void ComputeNormal( TESStesselator *tess, TESSreal norm[3] )$/;"	f	typeref:typename:void	file:
 ComputeWinding	extern/triangulate/earcut/test/comparison/libtess2/sweep.c	/^static void ComputeWinding( TESStesselator *tess, ActiveRegion *reg )$/;"	f	typeref:typename:void	file:
 ConfigDebugBeginReturnValueLoop	extern/cimgui/cimgui.h	/^    bool ConfigDebugBeginReturnValueLoop;$/;"	m	struct:ImGuiIO	typeref:typename:bool
@@ -10824,10 +10834,12 @@ DrawLists	extern/cimgui/imgui/imgui_internal.h	/^    ImVector<ImDrawList*> DrawL
 DrawNode	extern/cimgui/imgui/imgui_demo.cpp	/^                static void DrawNode(ExampleTreeNode* node, ImGuiSelectionBasicStorage* selectio/;"	f	struct:DemoWindowWidgetsSelectionAndMultiSelect::ExampleTreeFuncs	typeref:typename:void	file:
 DrawPathComposer	extern/imguifiledialog/ImGuiFileDialog.cpp	/^void IGFD::FileManager::DrawPathComposer(const FileDialogInternal& vFileDialogInternal) {$/;"	f	class:IGFD::FileManager	typeref:typename:void
 DrawSearchBar	extern/imguifiledialog/ImGuiFileDialog.cpp	/^void IGFD::SearchManager::DrawSearchBar(FileDialogInternal& vFileDialogInternal) {$/;"	f	class:IGFD::SearchManager	typeref:typename:void
+DrawSelectionIndices	src/windows/geditor.c	/^static void DrawSelectionIndices(EdState *state)$/;"	f	typeref:typename:void	file:
 DrawSplitter	extern/cimgui/cimgui.h	/^    ImDrawListSplitter DrawSplitter;$/;"	m	struct:ImGuiTableTempData	typeref:typename:ImDrawListSplitter
 DrawSplitter	extern/cimgui/cimgui.h	/^    ImDrawListSplitter* DrawSplitter;$/;"	m	struct:ImGuiTable	typeref:typename:ImDrawListSplitter *
 DrawSplitter	extern/cimgui/imgui/imgui_internal.h	/^    ImDrawListSplitter          DrawSplitter;$/;"	m	struct:ImGuiTableTempData	typeref:typename:ImDrawListSplitter
 DrawSplitter	extern/cimgui/imgui/imgui_internal.h	/^    ImDrawListSplitter*         DrawSplitter;               \/\/ Shortcut to TempData->DrawSplit/;"	m	struct:ImGuiTable	typeref:typename:ImDrawListSplitter *
+DrawText	src/windows/geditor.c	/^static void DrawText(EdState *state, const char *text, Vec2 editorPos, Vec4 color)$/;"	f	typeref:typename:void	file:
 DrawTreeNode	extern/cimgui/imgui/imgui_demo.cpp	/^    void DrawTreeNode(ExampleTreeNode* node)$/;"	f	struct:ExampleAppPropertyEditor	typeref:typename:void	file:
 DrawableEarcut	extern/triangulate/earcut/test/viz.cpp	/^    explicit DrawableEarcut(mapbox::fixtures::FixtureTester* fixture)$/;"	f	class:DrawableEarcut	file:
 DrawableEarcut	extern/triangulate/earcut/test/viz.cpp	/^class DrawableEarcut : public DrawableTesselator {$/;"	c	file:
@@ -10979,6 +10991,7 @@ EditGetClosestVertex	src/edit.c	/^MapVertex* EditGetClosestVertex(Map *map, Vec2
 EditGetSector	src/edit.c	/^MapSector* EditGetSector(Map *map, Vec2 pos)$/;"	f	typeref:typename:MapSector *
 EditGetVertex	src/edit.c	/^MapVertex* EditGetVertex(Map *map, Vec2 pos)$/;"	f	typeref:typename:MapVertex *
 EditPaste	src/edit.c	/^void EditPaste(EdState *state)$/;"	f	typeref:typename:void
+EditRebuildSector	src/edit.c	/^void EditRebuildSector(MapSector *sector)$/;"	f	typeref:typename:void
 EditRemoveLines	src/edit.c	/^void EditRemoveLines(Map *map, size_t num, MapLine *lines[static num])$/;"	f	typeref:typename:void
 EditRemoveSectors	src/edit.c	/^void EditRemoveSectors(Map *map, size_t num, MapSector *sectors[static num])$/;"	f	typeref:typename:void
 EditRemoveVertices	src/edit.c	/^void EditRemoveVertices(Map *map, size_t num, MapVertex *vertices[static num])$/;"	f	typeref:typename:void
@@ -14957,7 +14970,6 @@ INCLUDES	extern/cimgui/imgui/examples/example_win32_vulkan/build_win64.bat	/^@se
 INCLUDE_IMSTB_TEXTEDIT_H	extern/cimgui/imgui/imstb_textedit.h	/^#define INCLUDE_IMSTB_TEXTEDIT_H$/;"	d
 INCTXT	extern/incbin/incbin.h	/^#  define INCTXT(/;"	d
 INCTXT_EXTERN	extern/incbin/incbin.h	/^#define INCTXT_EXTERN(/;"	d
-INC_DIR	Makefile	/^INC_DIR := $(EXTERN_DIR)\/stb$/;"	m
 INIT_SIZE	extern/triangulate/earcut/test/comparison/libtess2/priorityq.c	/^#define INIT_SIZE	/;"	d	file:
 INSTALL	extern/lua-5.4.8/Makefile	/^INSTALL= install -p$/;"	m
 INSTALL_BIN	extern/lua-5.4.8/Makefile	/^INSTALL_BIN= $(INSTALL_TOP)\/bin$/;"	m
@@ -22759,7 +22771,6 @@ MouseWindow	extern/cimgui/imgui/backends/imgui_impl_glfw.cpp	/^    GLFWwindow*  
 MouseWindowID	extern/cimgui/imgui/backends/imgui_impl_sdl2.cpp	/^    Uint32                  MouseWindowID;$/;"	m	struct:ImGui_ImplSDL2_Data	typeref:typename:Uint32	file:
 MouseWindowID	extern/cimgui/imgui/backends/imgui_impl_sdl3.cpp	/^    Uint32                  MouseWindowID;$/;"	m	struct:ImGui_ImplSDL3_Data	typeref:typename:Uint32	file:
 MoveAll	extern/cimgui/imgui/imgui_demo.cpp	/^    void MoveAll(int src, int dst)$/;"	f	struct:ExampleDualListBox	typeref:typename:void	file:
-MoveElements	src/windows/geditor.c	/^static void MoveElements(EdState *state, Vec2 firstPosition)$/;"	f	typeref:typename:void	file:
 MoveId	extern/cimgui/cimgui.h	/^    ImGuiID MoveId;$/;"	m	struct:ImGuiWindow	typeref:typename:ImGuiID
 MoveId	extern/cimgui/imgui/imgui_internal.h	/^    ImGuiID                 MoveId;                             \/\/ == window->GetID("#MOVE")$/;"	m	struct:ImGuiWindow	typeref:typename:ImGuiID
 MoveSelected	extern/cimgui/imgui/imgui_demo.cpp	/^    void MoveSelected(int src, int dst)$/;"	f	struct:ExampleDualListBox	typeref:typename:void	file:
@@ -28035,7 +28046,6 @@ UnusedFrames	extern/cimgui/imgui/imgui.h	/^    int                 UnusedFrames;
 UpVal	extern/lua-5.4.8/src/lobject.h	/^typedef struct UpVal {$/;"	s
 UpVal	extern/lua-5.4.8/src/lobject.h	/^} UpVal;$/;"	t	typeref:struct:UpVal
 Update	extern/cimgui/imgui/imgui_widgets.cpp	/^void ImGuiMenuColumns::Update(float spacing, bool window_reappearing)$/;"	f	class:ImGuiMenuColumns	typeref:typename:void
-Update	src/windows/geditor.c	/^static void Update(EdState *state, Vec2 screenPos, Vec2 mousePos, Vec2 *vertexPos)$/;"	f	typeref:typename:void	file:
 UpdateAliasKey	extern/cimgui/imgui/imgui.cpp	/^static void UpdateAliasKey(ImGuiKey key, bool v, float analog_value)$/;"	f	typeref:typename:void	file:
 UpdateCurrentFontSize	extern/cimgui/imgui/imgui.cpp	/^void ImGui::UpdateCurrentFontSize(float restore_font_size_after_scaling)$/;"	f	class:ImGui	typeref:typename:void
 UpdateDebugToolFlashStyleColor	extern/cimgui/imgui/imgui.cpp	/^void ImGui::UpdateDebugToolFlashStyleColor()$/;"	f	class:ImGui	typeref:typename:void
@@ -28070,9 +28080,6 @@ UpdateWindowManualResize	extern/cimgui/imgui/imgui.cpp	/^static int ImGui::Updat
 UpdateWindowParentAndRootLinks	extern/cimgui/imgui/imgui.cpp	/^void ImGui::UpdateWindowParentAndRootLinks(ImGuiWindow* window, ImGuiWindowFlags flags, ImGuiWin/;"	f	class:ImGui	typeref:typename:void
 UpdateWindowSkipRefresh	extern/cimgui/imgui/imgui.cpp	/^void ImGui::UpdateWindowSkipRefresh(ImGuiWindow* window)$/;"	f	class:ImGui	typeref:typename:void
 UpdateWorkRect	extern/cimgui/imgui/imgui_internal.h	/^    void    UpdateWorkRect()            { WorkPos = CalcWorkRectPos(WorkInsetMin); WorkSize = Ca/;"	f	struct:ImGuiViewportP	typeref:typename:void
-Update_AddVertex	src/windows/geditor.c	/^static void Update_AddVertex(EdState *state, Vec2 screenPos, Vec2 mousePos, Vec2 *vertexPos)$/;"	f	typeref:typename:void	file:
-Update_MoveElements	src/windows/geditor.c	/^static void Update_MoveElements(EdState *state, Vec2 screenPos, Vec2 mousePos, Vec2 *vertexPos)$/;"	f	typeref:typename:void	file:
-Update_Normal	src/windows/geditor.c	/^static void Update_Normal(EdState *state, Vec2 screenPos, Vec2 mousePos, Vec2 *vertexPos)$/;"	f	typeref:typename:void	file:
 Updates	extern/cimgui/cimgui.h	/^    ImVector_ImTextureRect Updates;$/;"	m	struct:ImTextureData	typeref:typename:ImVector_ImTextureRect
 Updates	extern/cimgui/imgui/imgui.h	/^    ImVector<ImTextureRect> Updates;            \/\/ w    r   \/\/ Array of individual updates.$/;"	m	struct:ImTextureData	typeref:typename:ImVector<ImTextureRect>
 Upvaldesc	extern/lua-5.4.8/src/lobject.h	/^typedef struct Upvaldesc {$/;"	s
@@ -37322,6 +37329,7 @@ capacity	src/map/query.c	/^    size_t count, capacity;$/;"	m	struct:DeadList	typ
 capacity	src/map/query.c	/^    size_t count, capacity;$/;"	m	struct:Stack	typeref:typename:size_t	file:
 capacity	src/realtime.c	/^    size_t count, capacity;$/;"	m	struct:RenderData	typeref:typename:size_t	file:
 capacity	src/realtime.c	/^    size_t count, capacity;$/;"	m	struct:RenderList	typeref:typename:size_t	file:
+capacity	src/windows/property.c	/^    size_t count, capacity;$/;"	m	struct:AttributeList	typeref:typename:size_t	file:
 capture	extern/lua-5.4.8/src/lstrlib.c	/^  } capture[LUA_MAXCAPTURES];$/;"	m	struct:MatchState	typeref:struct:MatchState::__anon5f656ce90108[]	file:
 capture_to_close	extern/lua-5.4.8/src/lstrlib.c	/^static int capture_to_close (MatchState *ms) {$/;"	f	typeref:typename:int	file:
 cast	extern/lua-5.4.8/src/llimits.h	/^#define cast(/;"	d
@@ -39775,6 +39783,7 @@ count	src/map/query.c	/^    size_t count, capacity;$/;"	m	struct:DeadList	typere
 count	src/map/query.c	/^    size_t count, capacity;$/;"	m	struct:Stack	typeref:typename:size_t	file:
 count	src/realtime.c	/^    size_t count, capacity;$/;"	m	struct:RenderData	typeref:typename:size_t	file:
 count	src/realtime.c	/^    size_t count, capacity;$/;"	m	struct:RenderList	typeref:typename:size_t	file:
+count	src/windows/property.c	/^    size_t count, capacity;$/;"	m	struct:AttributeList	typeref:typename:size_t	file:
 countExtDot	extern/imguifiledialog/ImGuiFileDialog.h	/^    size_t countExtDot = 0U;                                          \/\/ count dots in file ex/;"	m	class:IGFD::FileInfos	typeref:typename:size_t
 countSelectionMax	extern/imguifiledialog/ImGuiFileDialog.h	/^    int32_t countSelectionMax  = 1;                          \/\/ count selection max, 0 for inf/;"	m	struct:IGFD::FileDialogConfig	typeref:typename:int32_t
 countSelectionMax	extern/imguifiledialog/ImGuiFileDialog.h	/^    int32_t countSelectionMax;   \/\/ count selection max$/;"	m	struct:IGFD_FileDialog_Config	typeref:typename:int32_t
@@ -51700,6 +51709,7 @@ items	src/map/query.c	/^    MapLine **items;$/;"	m	struct:DeadList	typeref:typen
 items	src/map/query.c	/^    StackEntry *items;$/;"	m	struct:Stack	typeref:typename:StackEntry *	file:
 items	src/realtime.c	/^    Index_t *items;$/;"	m	struct:RenderData	typeref:typename:Index_t *	file:
 items	src/realtime.c	/^    RenderData *items;$/;"	m	struct:RenderList	typeref:typename:RenderData *	file:
+items	src/windows/property.c	/^    Attribute *items;$/;"	m	struct:AttributeList	typeref:typename:Attribute *	file:
 itemsCount	extern/cimgui/generator/cpp2ffi.lua	/^local function itemsCount(items)$/;"	f
 items_count	extern/cimgui/generator/output/definitions.json	/^        "items_count": "-1",$/;"	s	object:igBeginMultiSelect.0.defaults
 items_height	extern/cimgui/generator/output/definitions.json	/^        "items_height": "-1.0f"$/;"	s	object:ImGuiListClipper_Begin.0.defaults
@@ -51745,6 +51755,7 @@ key	extern/cimgui/imgui/imgui.h	/^    ImGuiID     key;$/;"	m	struct:ImGuiStorage
 key	extern/triangulate/earcut/test/comparison/libtess2/dict.h	/^	DictKey	key;$/;"	m	struct:DictNode	typeref:typename:DictKey
 key	extern/triangulate/earcut/test/comparison/libtess2/priorityq.h	/^typedef struct { PQkey key; PQhandle node; } PQhandleElem;$/;"	m	struct:__anonec406ba50208	typeref:typename:PQkey
 key	src/map.h	/^    char key[PROPERTY_KEY_MAX_LENGTH], value[PROPERTY_VALUE_MAX_LENGTH];$/;"	m	struct:Property	typeref:typename:char[]
+key	src/windows/property.c	/^    char key[ATTRIBUTE_MAX_LEN];$/;"	m	struct:Attribute	typeref:typename:char[]	file:
 keyDown:	extern/cimgui/imgui/backends/imgui_impl_osx.mm	/^- (void)keyDown:(NSEvent*)event$/;"	m	implementation:KeyEventResponder
 keyUp:	extern/cimgui/imgui/backends/imgui_impl_osx.mm	/^- (void)keyUp:(NSEvent*)event$/;"	m	implementation:KeyEventResponder
 key_tt	extern/lua-5.4.8/src/lobject.h	/^    lu_byte key_tt;  \/* key type *\/$/;"	m	struct:Node::NodeKey	typeref:typename:lu_byte
@@ -67167,7 +67178,7 @@ selected	src/windows/textures.c	/^    Texture *selected;$/;"	m	struct:IterateDat
 selectedElements	src/editor.h	/^        void **selectedElements;$/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:void **
 selectedPlaceForEdition	extern/imguifiledialog/ImGuiFileDialog.h	/^        int32_t selectedPlaceForEdition              = -1;$/;"	m	struct:IGFD::PlacesFeature::GroupStruct	typeref:typename:int32_t
 selectedRange	extern/cimgui/imgui/backends/imgui_impl_osx.mm	/^- (NSRange)selectedRange$/;"	m	implementation:KeyEventResponder
-selectionMode	src/editor.h	/^        int selectionMode;$/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:int
+selectionMode	src/editor.h	/^        SelectionMode selectionMode;$/;"	m	struct:EdState::__anonf14592f90808	typeref:typename:SelectionMode
 selectionModeToString	src/scripts/editor.c	/^static const char* selectionModeToString(int selectionMode)$/;"	f	typeref:typename:const char *	file:
 selection_size	extern/cimgui/generator/output/definitions.json	/^        "selection_size": "-1"$/;"	s	object:igBeginMultiSelect.0.defaults
 self_touching	extern/triangulate/earcut/test/convert_tests.js	/^        "self_touching": 0.002,$/;"	p	variable:anonymousFunction016472190200.libtessDeviationMap
@@ -67272,6 +67283,7 @@ shortcut	extern/cimgui/generator/output/definitions.json	/^        "shortcut": "
 shortcut	extern/cimgui/generator/output/definitions.json	/^        "shortcut": "NULL"$/;"	s	object:igMenuItemEx.0.defaults
 showAbout	src/editor.h	/^        bool showAbout;$/;"	m	struct:EdState::__anonf14592f90108	typeref:typename:bool
 showBuildLog	src/editor.h	/^        bool showBuildLog;$/;"	m	struct:EdState::__anonf14592f90108	typeref:typename:bool
+showDemo	src/editor.h	/^        bool showDemo;$/;"	m	struct:EdState::__anonf14592f90108	typeref:typename:bool
 showDevices	extern/imguifiledialog/ImGuiFileDialog.h	/^    bool showDevices              = false;                             \/\/ devices are shown (o/;"	m	class:IGFD::FileManager	typeref:typename:bool
 showDialog	extern/imguifiledialog/ImGuiFileDialog.h	/^    bool showDialog           = false;         \/\/ the dialog is shown$/;"	m	class:IGFD::FileDialogInternal	typeref:typename:bool
 showEntities	src/editor.h	/^        bool showEntities;$/;"	m	struct:EdState::__anonf14592f90108	typeref:typename:bool
@@ -72542,6 +72554,7 @@ test	extern/re/Makefile	/^test: all$/;"	t
 test/tests	extern/cglm/Makefile.am	/^check_PROGRAMS = test\/tests$/;"	P	pseudodir:check
 test2	extern/lua-5.4.8/src/liolib.c	/^static int test2 (RN *rn, const char *set) {$/;"	f	typeref:typename:int	file:
 testAMode	extern/lua-5.4.8/src/lopcodes.h	/^#define testAMode(/;"	d
+testArena	src/windows/property.c	/^static Arena testArena = { 0 };$/;"	v	typeref:typename:Arena	file:
 testITMode	extern/lua-5.4.8/src/lopcodes.h	/^#define testITMode(/;"	d
 testMMMode	extern/lua-5.4.8/src/lopcodes.h	/^#define testMMMode(/;"	d
 testOTMode	extern/lua-5.4.8/src/lopcodes.h	/^#define testOTMode(/;"	d
@@ -79127,6 +79140,7 @@ value	extern/imguifiledialog/stb/stb_image.h	/^   stbi__uint16 value[STBI__ZNSYM
 value	extern/lua-5.4.8/src/lobject.h	/^    TValue value;  \/* the value (when closed) *\/$/;"	m	union:UpVal::__anon319ae595060a	typeref:typename:TValue
 value	extern/stb/stb_image.h	/^   stbi__uint16 value[STBI__ZNSYMS];$/;"	m	struct:__anon5b03bf430b08	typeref:typename:stbi__uint16[]
 value	src/map.h	/^    char key[PROPERTY_KEY_MAX_LENGTH], value[PROPERTY_VALUE_MAX_LENGTH];$/;"	m	struct:Property	typeref:typename:char[]
+value	src/windows/property.c	/^    char value[ATTRIBUTE_MAX_LEN];$/;"	m	struct:Attribute	typeref:typename:char[]	file:
 value_type	extern/cimgui/imgui/imgui.h	/^    typedef T                   value_type;$/;"	t	struct:ImVector	typeref:typename:T
 values	extern/imguifiledialog/stb/stb_image.h	/^   stbi_uc  values[256];$/;"	m	struct:__anon47b0cd7d0708	typeref:typename:stbi_uc[256]
 values	extern/stb/stb_image.h	/^   stbi_uc  values[256];$/;"	m	struct:__anon5b03bf430708	typeref:typename:stbi_uc[256]

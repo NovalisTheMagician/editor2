@@ -179,7 +179,7 @@ INC_DIRS += $(MAPFILE_DIR)
 BUILD_DIRS += $(BUILD_DIR)/$(MAPFILE_DIR)
 
 # stb
-INC_DIR := $(EXTERN_DIR)/stb
+INC_DIRS += $(EXTERN_DIR)/stb
 
 CPPFLAGS := $(addprefix -I,$(INC_DIRS)) $(addprefix -D,$(DEFINES)) -MMD -MP
 LIB_FLAGS := $(addprefix -L,$(LIB_DIRS)) $(addprefix -l,$(LIBS))

@@ -140,18 +140,86 @@ static void AddEditVertex(EdState *state, Vec2 v)
     state->data.editVertexBuffer[idx] = v;
 }
 
-static void MoveElements(EdState *state, Vec2 firstPosition)
+static void AddSectorFromVertex(MapVertex *vertex, MapSector **sectors, size_t *count)
 {
-    
-    switch(state->data.selectionMode)
+    for(size_t l = 0; l < vertex->numAttachedLines; ++l)
     {
-    case MODE_VERTEX:
-        break;
-    case MODE_LINE:
-        break;
-    case MODE_SECTOR:
-        break;
+        MapLine *line = vertex->attachedLines[l];
+        if(line->frontSector && !contains(*count, (void**)sectors, line->frontSector))
+            sectors[(*count)++] = line->frontSector;
+        if(line->backSector && !contains(*count, (void**)sectors, line->backSector))
+            sectors[(*count)++] = line->backSector;
     }
+}
+
+static void CommitMoveElements(EdState *state, Vec2 vertexPos)
+{
+	Vec2 offset;
+	switch(state->data.selectionMode)
+	{
+	case MODE_VERTEX:
+		{
+			MapVertex *first = state->data.selectedElements[0];
+			offset = vec2_sub(vertexPos, first->pos);
+		}
+		break;
+	case MODE_LINE:
+		{
+			MapLine *first = state->data.selectedElements[0];
+			offset = vec2_sub(vertexPos, first->a->pos);
+		}
+		break;
+	case MODE_SECTOR:
+		{
+			MapSector *first = state->data.selectedElements[0];
+			offset = vec2_sub(vertexPos, first->outerLines[0]->a->pos);
+		}
+		break;
+	}
+
+	static MapSector *sectorsToRebuild[1024];
+	size_t sectorsCount = 0;
+
+	for(size_t i = 0; i < state->data.numSelectedElements; ++i)
+	{
+		switch(state->data.selectionMode)
+		{
+		case MODE_VERTEX:
+			{
+				MapVertex *vertex = state->data.selectedElements[i];
+				vertex->pos = vec2_add(vertex->pos, offset);
+                AddSectorFromVertex(vertex, sectorsToRebuild, &sectorsCount);
+			}
+			break;
+		case MODE_LINE:
+			{
+                static MapVertex *verticesToMove[1024];
+                size_t verticesCount = 0;
+                MapLine *line = state->data.selectedElements[i];
+
+                if(!contains(verticesCount, (void**)verticesToMove, line->a))
+                    verticesToMove[verticesCount++] = line->a;
+                if(!contains(verticesCount, (void**)verticesToMove, line->b))
+                    verticesToMove[verticesCount++] = line->b;
+
+                for(size_t v = 0; v < verticesCount; ++v)
+                {
+                    MapVertex *vertex = verticesToMove[v];
+                    vertex->pos = vec2_add(vertex->pos, offset);
+                    AddSectorFromVertex(vertex, sectorsToRebuild, &sectorsCount);
+                }
+            }
+			break;
+		case MODE_SECTOR:
+			LogDebug("Move on sectors not yet implemented");
+			break;
+		}
+	}
+
+	for(size_t i = 0; i < sectorsCount; ++i)
+		EditRebuildSector(sectorsToRebuild[i]);
+
+	state->map.dirty = true;
 }
 
 static void GotoLocation(EdState *state, real_t x, real_t y)
@@ -161,6 +229,9 @@ static void GotoLocation(EdState *state, real_t x, real_t y)
 
 static void HandleShortcuts(EdState *state)
 {
+    if(state->data.editState != ESTATE_NORMAL)
+        return;
+
     if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_C, 0))
         EditCopy(state);
     if(igShortcut_Nil(ImGuiMod_Ctrl | ImGuiKey_V, 0))
@@ -189,18 +260,11 @@ static void HandleShortcuts(EdState *state)
     }
 }
 
-static void Update_Normal(EdState *state, Vec2 screenPos, Vec2 mousePos, Vec2 *vertexPos)
+static void AlterVertexPos(EdState *state, Vec2 screenPos, Vec2 mousePos, Vec2 *vertexPos)
 {
-    (void)state;
-    (void)screenPos;
-    (void)mousePos;
-    (void)vertexPos;
-}
+	Map *map = &state->map;
 
-static void Update_AddVertex(EdState *state, Vec2 screenPos, Vec2 mousePos, Vec2 *vertexPos)
-{
-    Map *map = &state->map;
-    bool shiftDown = igGetIO_Nil()->KeyShift;
+	bool shiftDown = igGetIO_Nil()->KeyShift;
     bool altDown = igGetIO_Nil()->KeyAlt;
     bool ctrlDown = igGetIO_Nil()->KeyCtrl;
 
@@ -223,24 +287,6 @@ static void Update_AddVertex(EdState *state, Vec2 screenPos, Vec2 mousePos, Vec2
     else if(shiftDown)
     {
         *vertexPos = ScreenToEditorSpaceGrid(state, state->data.altGridSize, screenPos);
-    }
-}
-
-static void Update_MoveElements(EdState *state, Vec2 screenPos, Vec2 mousePos, Vec2 *vertexPos)
-{
-    (void)state;
-    (void)screenPos;
-    (void)mousePos;
-    (void)vertexPos;
-}
-
-static void Update(EdState *state, Vec2 screenPos, Vec2 mousePos, Vec2 *vertexPos)
-{
-    switch(state->data.editState)
-    {
-    case ESTATE_NORMAL: Update_Normal(state, screenPos, mousePos, vertexPos); break;
-    case ESTATE_ADDVERTEX: Update_AddVertex(state, screenPos, mousePos, vertexPos); break;
-    case ESTATE_MOVE_ELEMENT: Update_MoveElements(state, screenPos, mousePos, vertexPos); break;
     }
 }
 
@@ -291,7 +337,10 @@ static void HandleInput_Normal(EdState *state, Vec2 mousePos, Vec2 vertexPos)
     {
         if(state->data.numSelectedElements > 0)
         {
-            state->data.editState = ESTATE_MOVE_ELEMENT;
+            if(state->data.selectionMode == MODE_SECTOR)
+                LogInfo("Moving of Sectors not (yet) implemented");
+            else
+                state->data.editState = ESTATE_MOVE_ELEMENT;
         }
     }
 
@@ -428,7 +477,17 @@ static void HandleInput_AddVertex(EdState *state, Vec2 mousePos, Vec2 vertexPos)
 
 static void HandleInput_MoveElements(EdState *state, Vec2 mousePos, Vec2 vertexPos)
 {
-    
+	(void)mousePos;
+	if(igIsMouseClicked_Bool(ImGuiMouseButton_Left, false) && !state->data.isDragging)
+	{
+		CommitMoveElements(state, vertexPos);
+		state->data.editState = ESTATE_NORMAL;
+	}
+
+    if(igIsKeyPressed_Bool(ImGuiKey_Escape, false))
+    {
+        state->data.editState = ESTATE_NORMAL;
+    }
 }
 
 static void HandleInput(EdState *state, Vec2 mousePos, Vec2 vertexPos)
@@ -451,7 +510,7 @@ static void HandleDragSelect(EdState *state, Vec2 mousePos, bool additive)
         state->data.editVertexDrag[2].x = mousePos.x;
     }
    
-    if(igIsMouseDragging(ImGuiMouseButton_Left, 2) && state->data.editState != ESTATE_ADDVERTEX)
+    if(igIsMouseDragging(ImGuiMouseButton_Left, 2) && state->data.editState == ESTATE_NORMAL)
     {
         igSetWindowFocus_Nil();
         igResetMouseDragDelta(ImGuiMouseButton_Left);
@@ -520,6 +579,25 @@ static void HandleZoom(EdState *state, Vec2 rawMousePos, Vec2 mousePos)
     }
 }
 
+static void DrawText(EdState *state, const char *text, Vec2 editorPos, Vec4 color)
+{
+    ImVec2 clientPos;
+    igGetWindowPos(&clientPos);
+	Vec2 sp = EditorToScreenSpace(state, editorPos);
+    ImVec2 screenPos = { sp.x + clientPos.x, sp.y + clientPos.y };
+    ImVec2 size;
+    igCalcTextSize(&size, text, NULL, false, 0);
+    screenPos.x = (screenPos.x - size.x / 2);
+    screenPos.y = (screenPos.y - size.y / 2);
+
+    ImVec2 min = { screenPos.x, screenPos.y };
+    ImVec2 max = { screenPos.x + size.x, screenPos.y + size.y };
+
+    ImDrawList *dl = igGetWindowDrawList();
+    ImDrawList_AddRectFilled(dl, min, max, igColorConvertFloat4ToU32((ImVec4){ 0.3, 0.3, 0.3, 0.9 }), 0, 0);
+    ImDrawList_AddText_Vec2(dl, screenPos, igColorConvertFloat4ToU32((ImVec4){ 0, 1, 0, 1 }), text, NULL);
+}
+
 static void DrawComments(EdState *state, Vec2 mousePos)
 {
     Vec2 sp = EditorToScreenSpace(state, mousePos);
@@ -534,6 +612,67 @@ static void DrawComments(EdState *state, Vec2 mousePos)
     igPopFont();
     //igDummy((ImVec2){ 0 });
     //igSetTooltip("Test");
+}
+
+static Vec2 ComputeCenter(MapSector *sector)
+{
+    Vec2 centroid = { 0 };
+    real_t signedArea = 0;
+
+    MapVertex *prevLast = sector->outerLines[sector->numOuterLines-1]->b;
+
+    for(size_t i = 0; i < sector->numOuterLines; ++i)
+    {
+        MapLine *line = sector->outerLines[i];
+        bool swap = prevLast == line->b;
+        Vec2 v0 = (swap ? line->b : line->a)->pos;
+        Vec2 v1 = (swap ? line->a : line->b)->pos;
+        prevLast = swap ? line->a : line->b;
+        real_t a = v0.x*v1.y - v1.x*v0.y;
+        signedArea += a;
+        centroid.x += (v0.x + v1.x) * a;
+        centroid.y += (v0.y + v1.y) * a;
+    }
+
+    signedArea *= 0.5f;
+    centroid = vec2_scale(centroid, 1.0f / (6.0f * signedArea));
+
+    return centroid;
+}
+
+static void DrawSelectionIndices(EdState *state)
+{
+	static char buffer[1024] = { 0 };
+	for(size_t i = 0; i < state->data.numSelectedElements; ++i)
+	{
+		switch(state->data.selectionMode)
+		{
+		case MODE_VERTEX:
+			{
+				MapVertex *vertex = state->data.selectedElements[i];
+                Vec2 position = vertex->pos;
+				snprintf(buffer, sizeof buffer, "%d", (int)i+1);
+				DrawText(state, buffer, position, (Vec4){ 0, 1, 0, 1 });
+			}
+			break;
+        case MODE_LINE:
+            {
+                MapLine *line = state->data.selectedElements[i];
+                Vec2 position = vec2_add(line->a->pos, vec2_scale(vec2_sub(line->b->pos, line->a->pos), 0.5f));
+                snprintf(buffer, sizeof buffer, "%d", (int)i+1);
+				DrawText(state, buffer, position, (Vec4){ 0, 1, 0, 1 });
+            }
+            break;
+        case MODE_SECTOR:
+            {
+                MapSector *sector = state->data.selectedElements[i];
+                Vec2 position = ComputeCenter(sector);
+                snprintf(buffer, sizeof buffer, "%d", (int)i+1);
+                DrawText(state, buffer, position, (Vec4){ 0, 1, 0, 1 });
+            }
+            break;
+		}
+	}
 }
 
 void EditorWindow(bool *p_open, EdState *state)
@@ -621,7 +760,7 @@ void EditorWindow(bool *p_open, EdState *state)
             Vec2 mousePos = ScreenToEditorSpace(state, (Vec2){ relX, relY });
             Vec2 vertexPos = ScreenToEditorSpaceGrid(state, state->data.gridSize, (Vec2){ relX, relY });
 
-            Update(state, (Vec2){ relX, relY }, mousePos, &vertexPos);
+            AlterVertexPos(state, (Vec2){ relX, relY }, mousePos, &vertexPos);
             
             HandleDrag(state, focused);
             if(focused)
@@ -667,6 +806,7 @@ void EditorWindow(bool *p_open, EdState *state)
             igImage((ImTextureRef){ ._TexID = state->gl.editorColorTexture }, clientArea, (ImVec2){ 0, 0 }, (ImVec2){ 1, 1 });
 
             //DrawComments(state, mousePos);
+			DrawSelectionIndices(state);
 
             static bool firstTime = true;
             // the clientarea check is a hack due to imgui setting the size to a very low value on startup if it's loaded from a saved layout

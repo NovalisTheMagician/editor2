@@ -250,7 +250,7 @@ typedef struct EdState
         int altGridSize;
         float zoomLevel;
         Vec2 viewPosition;
-        int selectionMode;
+        SelectionMode selectionMode;
 
         int showSectorTextures;
 
