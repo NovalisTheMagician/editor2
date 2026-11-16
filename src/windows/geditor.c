@@ -369,7 +369,7 @@ static void HandleInput_Normal(EdState *state, Vec2 mousePos, Vec2 vertexPos)
             state->data.numSelectedElements = 0;
     }
 
-    if(igIsMouseClicked_Bool(ImGuiMouseButton_Left, false) && !state->data.isDragging)
+    if(igIsMouseReleased_Nil(ImGuiMouseButton_Left) && !state->data.isDragging)
     {
         void *selectedElement = NULL;
         switch(state->data.selectionMode)
@@ -404,6 +404,11 @@ static void HandleInput_Normal(EdState *state, Vec2 mousePos, Vec2 vertexPos)
                 state->data.numSelectedElements = 1;
                 state->data.selectedElements[0] = selectedElement;
             }
+        }
+        else
+        {
+            if(!shiftDown)
+                state->data.numSelectedElements = 0;
         }
     }
 }
@@ -579,7 +584,7 @@ static void HandleZoom(EdState *state, Vec2 rawMousePos, Vec2 mousePos)
     }
 }
 
-static void DrawText(EdState *state, const char *text, Vec2 editorPos, Vec4 color)
+static void DrawText(EdState *state, const char *text, Vec2 editorPos, Color fg, Color bg)
 {
     ImVec2 clientPos;
     igGetWindowPos(&clientPos);
@@ -594,8 +599,8 @@ static void DrawText(EdState *state, const char *text, Vec2 editorPos, Vec4 colo
     ImVec2 max = { screenPos.x + size.x, screenPos.y + size.y };
 
     ImDrawList *dl = igGetWindowDrawList();
-    ImDrawList_AddRectFilled(dl, min, max, igColorConvertFloat4ToU32((ImVec4){ 0.3, 0.3, 0.3, 0.9 }), 0, 0);
-    ImDrawList_AddText_Vec2(dl, screenPos, igColorConvertFloat4ToU32((ImVec4){ 0, 1, 0, 1 }), text, NULL);
+    ImDrawList_AddRectFilled(dl, min, max, igColorConvertFloat4ToU32((ImVec4){ bg.r, bg.g, bg.b, bg.a }), 0, 0);
+    ImDrawList_AddText_Vec2(dl, screenPos, igColorConvertFloat4ToU32((ImVec4){ fg.r, fg.g, fg.b, fg.a }), text, NULL);
 }
 
 static void DrawComments(EdState *state, Vec2 mousePos)
@@ -643,35 +648,36 @@ static Vec2 ComputeCenter(MapSector *sector)
 static void DrawSelectionIndices(EdState *state)
 {
     static char buffer[1024] = { 0 };
+
+    Color fg = { 0, 1, 0, 1 };
+    Color bg = { 0.3, 0.3, 0.3, 0.9 };
+
     for(size_t i = 0; i < state->data.numSelectedElements; ++i)
     {
+        snprintf(buffer, sizeof buffer, "%d", (int)i+1);
+        Vec2 position = { 0 };
         switch(state->data.selectionMode)
         {
             case MODE_VERTEX:
                 {
                     MapVertex *vertex = state->data.selectedElements[i];
-                    Vec2 position = vertex->pos;
-                    snprintf(buffer, sizeof buffer, "%d", (int)i+1);
-                    DrawText(state, buffer, position, (Vec4){ 0, 1, 0, 1 });
+                    position = vertex->pos;
                 }
                 break;
             case MODE_LINE:
                 {
                     MapLine *line = state->data.selectedElements[i];
-                    Vec2 position = vec2_add(line->a->pos, vec2_scale(vec2_sub(line->b->pos, line->a->pos), 0.5f));
-                    snprintf(buffer, sizeof buffer, "%d", (int)i+1);
-                    DrawText(state, buffer, position, (Vec4){ 0, 1, 0, 1 });
+                    position = vec2_add(line->a->pos, vec2_scale(vec2_sub(line->b->pos, line->a->pos), 0.5f));
                 }
                 break;
             case MODE_SECTOR:
                 {
                     MapSector *sector = state->data.selectedElements[i];
-                    Vec2 position = ComputeCenter(sector);
-                    snprintf(buffer, sizeof buffer, "%d", (int)i+1);
-                    DrawText(state, buffer, position, (Vec4){ 0, 1, 0, 1 });
+                    position = ComputeCenter(sector);
                 }
                 break;
         }
+        DrawText(state, buffer, position, fg, bg);
     }
 }
 
@@ -771,7 +777,6 @@ void EditorWindow(bool *p_open, EdState *state)
                 HandleShortcuts(state);
 
                 bool shiftDown = igGetIO_Nil()->KeyShift;
-                HandleDragSelect(state, mousePos, shiftDown);
                 HandleZoom(state, (Vec2){ relX, relY }, mousePos);
 
 #ifdef _DEBUG
@@ -796,6 +801,7 @@ void EditorWindow(bool *p_open, EdState *state)
                 }
 
                 HandleInput(state, mousePos, vertexPos);
+                HandleDragSelect(state, mousePos, shiftDown);
             }
             else
             {
